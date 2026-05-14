@@ -1,0 +1,633 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mi Perfil - CLUB LOBBY69</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+        .profile-header {
+            background: linear-gradient(135deg, #d946ef 0%, #ec4899 100%);
+            padding: 40px 20px;
+            text-align: center;
+            color: white;
+            position: relative;
+        }
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 20px;
+            border: 4px solid white;
+            background: #ddd;
+            object-fit: cover;
+        }
+        .profile-name {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .profile-type-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.3);
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+        .edit-btn-header {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: background 0.3s;
+        }
+        .edit-btn-header:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        .tabs {
+            display: flex;
+            border-bottom: 2px solid #e0e0e0;
+            background: #f8f9fa;
+            overflow-x: auto;
+        }
+        .tab-btn {
+            flex: 1;
+            min-width: 120px;
+            padding: 15px;
+            background: none;
+            border: none;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            color: #999;
+            transition: all 0.3s;
+            border-bottom: 3px solid transparent;
+        }
+        .tab-btn.active {
+            color: #d946ef;
+            border-bottom-color: #d946ef;
+        }
+        .tab-btn:hover {
+            color: #d946ef;
+        }
+        .tab-content {
+            display: none;
+            padding: 40px;
+            animation: fadeIn 0.3s;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        .info-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+        .info-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        .info-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        .info-value {
+            font-size: 16px;
+            color: #333;
+            font-weight: 500;
+        }
+        .bio-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        .section-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #1a1a2e;
+            margin: 30px 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            border-bottom: 2px solid #d946ef;
+            padding-bottom: 10px;
+        }
+        .section-title:first-child {
+            margin-top: 0;
+        }
+        .gallery {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+        }
+        .gallery-item {
+            border-radius: 8px;
+            overflow: hidden;
+            background: #ddd;
+            aspect-ratio: 1;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+        .gallery-item:hover {
+            transform: scale(1.05);
+        }
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        .stat-box {
+            background: linear-gradient(135deg, #d946ef 0%, #ec4899 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .stat-number {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .checkbox-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        .checkbox-item input[type="checkbox"] {
+            margin-right: 10px;
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #d946ef;
+        }
+        .checkbox-item label {
+            margin: 0;
+            cursor: pointer;
+            flex: 1;
+            color: #333;
+            font-weight: 500;
+        }
+        .preference-section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #d946ef;
+        }
+        .preference-section h4 {
+            color: #d946ef;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+        .person-card {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            border-left: 4px solid #d946ef;
+        }
+        .person-card h4 {
+            color: #1a1a2e;
+            margin-bottom: 15px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header del Perfil -->
+        <div class="profile-header">
+            <a href="{% url 'pages:edit_profile' %}" class="edit-btn-header">✏️ Editar</a>
+
+            {% if profile.avatar_url %}
+                <img src="{{ profile.avatar_url }}" alt="{{ profile.display_name }}" class="profile-avatar">
+            {% else %}
+                <div class="profile-avatar" style="background: #d946ef; display: flex; align-items: center; justify-content: center; font-size: 40px;">
+                    👤
+                </div>
+            {% endif %}
+
+            <div class="profile-name">{{ profile.display_name }}</div>
+
+            {% if profile.age %}
+                <div style="font-size: 16px; margin: 5px 0;">{{ profile.age }} años</div>
+            {% endif %}
+
+            {% if profile.city %}
+                <div style="font-size: 14px; opacity: 0.9;">
+                    📍 {{ profile.city }}{% if profile.state %}, {{ profile.state }}{% endif %}
+                </div>
+            {% endif %}
+
+            <div class="profile-type-badge">{{ profile.profile_type|upper }}</div>
+        </div>
+
+        <!-- Pestañas -->
+        <div class="tabs">
+            <button class="tab-btn active" onclick="switchTab(event, 'informacion')">
+                📋 Información
+            </button>
+            <button class="tab-btn" onclick="switchTab(event, 'preferencias')">
+                ❤️ Preferencias
+            </button>
+            <button class="tab-btn" onclick="switchTab(event, 'estadisticas')">
+                📊 Estadísticas
+            </button>
+            <button class="tab-btn" onclick="switchTab(event, 'galeria')">
+                📸 Galería
+            </button>
+        </div>
+
+        <!-- PESTAÑA: INFORMACIÓN -->
+        <div id="informacion" class="tab-content active">
+            <div class="section-title">📋 Información Personal</div>
+
+            {% if profile.bio %}
+            <div class="bio-section">
+                <strong>Sobre mí:</strong><br><br>
+                {{ profile.bio }}
+            </div>
+            {% endif %}
+
+            <div class="info-row">
+                <div class="info-item">
+                    <div class="info-label">Género</div>
+                    <div class="info-value">{{ profile.gender|default:"No especificado" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Estado Civil</div>
+                    <div class="info-value">{{ profile.relationship_status|default:"No especificado" }}</div>
+                </div>
+            </div>
+
+            <div class="info-row">
+                <div class="info-item">
+                    <div class="info-label">País</div>
+                    <div class="info-value">{{ profile.country|default:"No especificado" }}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">Último activo</div>
+                    <div class="info-value">
+                        {% if profile.last_active_at %}
+                            {{ profile.last_active_at|date:"d/m/Y H:i" }}
+                        {% else %}
+                            Ahora mismo
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Información de Pareja -->
+            {% if profile_persons %}
+            <div class="section-title">👥 Información de Pareja</div>
+            {% for person in profile_persons %}
+                <div class="person-card">
+                    <h4>Persona {{ person.person_index }}</h4>
+
+                    <div class="info-row">
+                        <div class="info-item">
+                            <div class="info-label">Género</div>
+                            <div class="info-value">{{ person.gender|default:"No especificado" }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Edad</div>
+                            <div class="info-value">
+                                {% if person.birth_year %}
+                                    {{ person.birth_year }} años
+                                {% else %}
+                                    No especificada
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-item">
+                            <div class="info-label">Altura</div>
+                            <div class="info-value">
+                                {% if person.height_cm %}
+                                    {{ person.height_cm }} cm
+                                {% else %}
+                                    No especificada
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Peso</div>
+                            <div class="info-value">
+                                {% if person.weight_kg %}
+                                    {{ person.weight_kg }} kg
+                                {% else %}
+                                    No especificado
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-item">
+                            <div class="info-label">Tipo de Cuerpo</div>
+                            <div class="info-value">{{ person.body_type|default:"No especificado" }}</div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Nacionalidad</div>
+                            <div class="info-value">{{ person.nationality_id|default:"No especificada" }}</div>
+                        </div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-item">
+                            <div class="info-label">Tatuajes</div>
+                            <div class="info-value">
+                                {% if person.has_tattoos %}
+                                    ✅ Sí
+                                {% elif person.has_tattoos == False %}
+                                    ❌ No
+                                {% else %}
+                                    No especificado
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Piercings</div>
+                            <div class="info-value">
+                                {% if person.has_piercings %}
+                                    ✅ Sí
+                                {% elif person.has_piercings == False %}
+                                    ❌ No
+                                {% else %}
+                                    No especificado
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="info-row">
+                        <div class="info-item">
+                            <div class="info-label">Fuma</div>
+                            <div class="info-value">
+                                {% if person.smokes %}
+                                    ✅ Sí
+                                {% elif person.smokes == False %}
+                                    ❌ No
+                                {% else %}
+                                    No especificado
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="info-item">
+                            <div class="info-label">Bebe Alcohol</div>
+                            <div class="info-value">
+                                {% if person.drinks_alcohol %}
+                                    ✅ Sí
+                                {% elif person.drinks_alcohol == False %}
+                                    ❌ No
+                                {% else %}
+                                    No especificado
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- PESTAÑA: PREFERENCIAS (TEMPORAL) -->
+<div id="preferencias" class="tab-content">
+    <div class="section-title">❤️ Mis Preferencias</div>
+
+    <pre>{{ profile|safe }}</pre>
+
+    <p><strong>Looking For:</strong> {{ profile.looking_for }}</p>
+    <p><strong>Preferences:</strong> {{ profile.preferences }}</p>
+    <p><strong>Profile Persons:</strong> {{ profile_persons|length }} personas</p>
+    <p><strong>Sensitive Data:</strong> {{ sensitive_data }}</p>
+</div>
+
+
+            <!-- Sección 2: ¿Para Qué? -->
+            <div class="preference-section">
+                <h4>🎯 ¿Para Qué?</h4>
+                <div class="checkbox-grid">
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="intercambio_completo" {% if 'intercambio_completo' in profile.preferences %}checked{% endif %} disabled>
+                        <label for="intercambio_completo">Intercambio completo</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="trios" {% if 'trios' in profile.preferences %}checked{% endif %} disabled>
+                        <label for="trios">Tríos</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cuckold" {% if 'cuckold' in profile.preferences %}checked{% endif %} disabled>
+                        <label for="cuckold">Cuckold</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="cybersexo" {% if 'cybersexo' in profile.preferences %}checked{% endif %} disabled>
+                        <label for="cybersexo">Cybersexo</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="amistad" {% if 'amistad' in profile.preferences %}checked{% endif %} disabled>
+                        <label for="amistad">Amistad</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="intercambio_light" {% if 'intercambio_light' in profile.preferences %}checked{% endif %} disabled>
+                        <label for="intercambio_light">Intercambio light</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="solo_ellas" {% if 'solo_ellas' in profile.preferences %}checked{% endif %} disabled>
+                        <label for="solo_ellas">Sólo ellas</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="practicas_bdsm" {% if 'practicas_bdsm' in profile.preferences %}checked{% endif %} disabled>
+                        <label for="practicas_bdsm">Prácticas BDSM</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="sexo_grupo" {% if 'sexo_grupo' in profile.preferences %}checked{% endif %} disabled>
+                        <label for="sexo_grupo">Sexo en grupo</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="mirar_visto" {% if 'mirar_visto' in profile.preferences %}checked{% endif %} disabled>
+                        <label for="mirar_visto">Mirar y ser visto</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="compartir_fetiche" {% if 'compartir_fetiche' in profile.preferences %}checked{% endif %} disabled>
+                        <label for="compartir_fetiche">Compartir fetiches</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="intercambio_fotos" {% if 'intercambio_fotos' in profile.preferences %}checked{% endif %} disabled>
+                        <label for="intercambio_fotos">Intercambio de fotos</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="relaciones_abiertas" {% if 'relaciones_abiertas' in profile.preferences %}checked{% endif %} disabled>
+                        <label for="relaciones_abiertas">Relaciones abiertas</label>
+                    </div>
+                    <div class="checkbox-item">
+                        <input type="checkbox" id="otros" {% if 'otros' in profile.preferences %}checked{% endif %} disabled>
+                        <label for="otros">Otros</label>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sección 3: Atributos -->
+            <div class="preference-section">
+                <h4>🌈 Atributos</h4>
+                <div class="info-row">
+                    <div class="info-item">
+                        <div class="info-label">Orientación Sexual</div>
+                        <div class="info-value">{{ sensitive_data.sexual_orientation|default:"No especificada" }}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">Etnia</div>
+                        <div class="info-value">{{ sensitive_data.ethnicity|default:"No especificada" }}</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA: ESTADÍSTICAS -->
+        <div id="estadisticas" class="tab-content">
+            <div class="section-title">📊 Mis Estadísticas</div>
+
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-number">{{ stats.profile_views }}</div>
+                    <div class="stat-label">Visitas al Perfil</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">{{ stats.likes_received }}</div>
+                    <div class="stat-label">Likes Recibidos</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">{{ stats.connections }}</div>
+                    <div class="stat-label">Conexiones</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-number">{{ stats.posts }}</div>
+                    <div class="stat-label">Posts</div>
+                </div>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                <div class="info-label">Miembro desde</div>
+                <div style="font-size: 18px; color: #333; font-weight: bold; margin-top: 10px;">
+                    {% if profile.created_at %}
+                        {{ profile.created_at|date:"d de F de Y" }}
+                    {% else %}
+                        Recientemente
+                    {% endif %}
+                </div>
+            </div>
+
+            <div style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-top: 20px;">
+                <div class="info-label">Estado del Perfil</div>
+                <div style="font-size: 18px; color: #333; font-weight: bold; margin-top: 10px;">
+                    {% if profile.is_complete %}
+                        ✅ Completo
+                    {% else %}
+                        ⚠️ Incompleto
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- PESTAÑA: GALERÍA -->
+        <div id="galeria" class="tab-content">
+            <div class="section-title">📸 Mi Galería</div>
+
+            {% if media_items %}
+                <div class="gallery">
+                    {% for item in media_items %}
+                        <div class="gallery-item" title="{{ item.title|default:'Foto' }}">
+                            {% if item.storage_path %}
+                                <img src="{{ item.storage_path }}" alt="Foto">
+                            {% else %}
+                                <div style="background: #ddd; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center;">
+                                    📷
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div style="background: #f8f9fa; padding: 40px; border-radius: 8px; text-align: center;">
+                    <p style="color: #999; font-size: 16px;">📷 Aún no tienes fotos en tu galería</p>
+                    <a href="{% url 'pages:gallery' %}" style="color: #d946ef; text-decoration: none; font-weight: bold; margin-top: 10px; display: inline-block;">
+                        Subir fotos →
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <script>
+        function switchTab(evt, tabName) {
+            const tabContents = document.querySelectorAll('.tab-content');
+            tabContents.forEach(tab => tab.classList.remove('active'));
+
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            tabBtns.forEach(btn => btn.classList.remove('active'));
+
+            document.getElementById(tabName).classList.add('active');
+            evt.currentTarget.classList.add('active');
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,609 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Galería" %} - LOBBY69</title>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --accent-color: #4682b4;
+            --card-bg: #ffffff;
+        }
+
+        body.dark-mode {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #1a2d4a;
+            --text-primary: #ffffff;
+            --text-secondary: #b0c4de;
+            --border-color: #374a5e;
+            --accent-color: #5a96d3;
+            --card-bg: #0f1f32;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* NAVBAR */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo img {
+            height: 50px;
+            width: auto;
+        }
+
+        .navbar-menu {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+
+        .navbar-menu a {
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .navbar-menu a:hover {
+            color: var(--accent-color);
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: transform 0.3s;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(20deg);
+        }
+
+        .btn-logout {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .btn-logout:hover {
+            background-color: #c0392b;
+        }
+
+        /* CONTAINER */
+        .container {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* SIDEBAR IZQUIERDO */
+        .sidebar-left {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+        }
+
+        .sidebar-section h3 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .sidebar-link {
+            display: block;
+            padding: 10px 0;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border-color);
+            transition: color 0.3s;
+        }
+
+        .sidebar-link:hover {
+            color: var(--accent-color);
+        }
+
+        .filter-group {
+            margin-bottom: 15px;
+        }
+
+        .filter-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 8px;
+            color: var(--text-secondary);
+        }
+
+        .filter-group select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 5px;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* CONTENIDO PRINCIPAL */
+        .main-content {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 30px;
+        }
+
+        .content-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .content-header h2 {
+            font-size: 28px;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-upload {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-upload:hover {
+            background-color: #5a96d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(70, 130, 180, 0.3);
+        }
+
+        .btn-sort {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-sort:hover {
+            background-color: var(--border-color);
+        }
+
+        /* FILTROS Y TABS */
+        .gallery-filters {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .filter-tab {
+            padding: 8px 16px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 20px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .filter-tab:hover,
+        .filter-tab.active {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        /* GALERÍA GRID */
+        .gallery-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .gallery-item {
+            position: relative;
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, var(--accent-color), #2c5aa0);
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--border-color);
+            group: "gallery";
+        }
+
+        .gallery-item:hover {
+            transform: scale(1.05);
+            box-shadow: 0 15px 40px rgba(70, 130, 180, 0.3);
+        }
+
+        .gallery-item img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .gallery-item-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.7);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+            gap: 15px;
+        }
+
+        .gallery-item:hover .gallery-item-overlay {
+            opacity: 1;
+        }
+
+        .overlay-btn {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .overlay-btn:hover {
+            background-color: #5a96d3;
+            transform: scale(1.1);
+        }
+
+        .gallery-placeholder {
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 50px;
+        }
+
+        .gallery-item-info {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+            color: white;
+            padding: 15px;
+            font-size: 12px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .gallery-item:hover .gallery-item-info {
+            opacity: 1;
+        }
+
+        /* UPLOAD AREA */
+        .upload-area {
+            border: 2px dashed var(--border-color);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            background-color: var(--bg-secondary);
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-bottom: 30px;
+            display: none;
+        }
+
+        .upload-area.active {
+            display: block;
+        }
+
+        .upload-area:hover {
+            border-color: var(--accent-color);
+            background-color: rgba(70, 130, 180, 0.05);
+        }
+
+        .upload-icon {
+            font-size: 40px;
+            margin-bottom: 15px;
+        }
+
+        .upload-text {
+            font-size: 14px;
+            margin-bottom: 8px;
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        .upload-subtext {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        #uploadInput {
+            display: none;
+        }
+        #imageModal {
+    display: none !important;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    z-index: 1000;
+    justify-content: center;
+    align-items: center;
+}
+
+#imageModal.active {
+    display: flex !important;
+}
+
+
+   </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav>
+        <div class="navbar-left">
+            <div class="logo">
+                <a href="{% url 'pages:landing' %}">
+                    <img src="{% static 'images/Logo-Lobby69.jpg' %}" alt="LOBBY69 Logo">
+                </a>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="{% url 'pages:dashboard' %}">📰 {% trans "inicio" %}</a></li>
+                <li><a href="{% url 'pages:explore' %}">🔍 {% trans "Explorar" %}</a></li>
+                <li><a href="{% url 'pages:conversations' %}">💬 {% trans "Mensajes" %}</a></li>
+                <li><a href="{% url 'pages:my_profile' %}">👤 {% trans "Mi Perfil" %}</a></li>
+                <li><a href="{% url 'pages:gallery' %}" style="color: var(--accent-color); font-weight: 700;">🖼️ {% trans "Galería" %}</a></li>
+                <li><a href="{% url 'pages:memberships' %}">👑 {% trans "Membresías" %}</a></li>
+                <li><a href="{% url 'pages:notifications' %}">🔔 {% trans "Notificaciones" %}</a></li>
+                <li><a href="{% url 'pages:friend_requests' %}">👥 Solicitudes</a></li>
+                <li><a href="{% url 'pages:settings' %}">⚙️ {% trans "Configuración" %}</a></li>
+            </ul>
+        </div>
+        <div class="navbar-right">
+            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            <a href="{% url 'pages:logout' %}" class="btn-logout">{% trans "Cerrar Sesión" %}</a>
+        </div>
+    </nav>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="container">
+        <!-- SIDEBAR IZQUIERDO -->
+        <div class="sidebar-left">
+            <div class="sidebar-section">
+                <h3>{% trans "Filtros" %}</h3>
+
+                <div class="filter-group">
+                    <label for="dateFilter">{% trans "Período" %}</label>
+                    <select id="dateFilter">
+                        <option value="">{% trans "Todas las fechas" %}</option>
+                        <option value="week">{% trans "Última semana" %}</option>
+                        <option value="month">{% trans "Último mes" %}</option>
+                        <option value="year">{% trans "Último año" %}</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <label for="typeFilter">{% trans "Tipo" %}</label>
+                    <select id="typeFilter">
+                        <option value="">{% trans "Todos los tipos" %}</option>
+                        <option value="photos">{% trans "Fotos" %}</option>
+                        <option value="videos">{% trans "Videos" %}</option>
+                    </select>
+                </div>
+            </div>
+
+          </div>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="main-content">
+
+                  <!-- SIDEBAR DERECHO -->
+        <div class="sidebar-right" style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; height: fit-content; position: sticky; top: 80px;">
+            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 15px; color: var(--accent-color); text-transform: uppercase;">{% trans "Estadísticas" %}</h3>
+            <div style="padding: 10px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary); font-size: 12px;">{% trans "Total de fotos" %}</span>
+                <span style="font-weight: 600; color: var(--accent-color);">{{ media_items|length }}</span>
+            </div>
+            <div style="padding: 10px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary); font-size: 12px;">{% trans "Total de likes" %}</span>
+                <span style="font-weight: 600; color: var(--accent-color);">0</span>
+            </div>
+            <div style="padding: 10px 0; border-bottom: none; display: flex; justify-content: space-between;">
+                <span style="color: var(--text-secondary); font-size: 12px;">{% trans "Fotos privadas" %}</span>
+                <span style="font-weight: 600; color: var(--accent-color);">0</span>
+            </div>
+        </div>
+    </div>
+
+            <!-- HEADER -->
+            <div class="content-header">
+                <h2>{% trans "Mi Galería" %}</h2>
+                <div class="header-actions">
+                    <button class="btn-upload" onclick="triggerUpload()">📤 {% trans "Publicar Fotos" %}</button>
+                    <button class="btn-sort">⬇️ {% trans "Ordenar" %}</button>
+                </div>
+            </div>
+
+            <!-- UPLOAD AREA -->
+<!-- UPLOAD AREA - SIMPLIFICADO -->
+<form method="POST" enctype="multipart/form-data" style="margin-bottom: 30px;">
+    {% csrf_token %}
+    <div style="border: 2px dashed #ddd; padding: 30px; text-align: center; border-radius: 8px; background: #f5f5f5;">
+        <h3 style="margin-bottom: 15px;">📸 Selecciona tu foto a Publicar</h3>
+
+        <input type="file" name="photo" accept="image/*" required style="display: block; margin: 0 auto 15px;">
+
+        <textarea name="caption" placeholder="Descripción (opcional)" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;"></textarea>
+
+        <select name="visibility" style="width: 100%; padding: 8px; margin-bottom: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            <option value="public">🔓 Pública</option>
+            <option value="private">🔒 Privada</option>
+        </select>
+
+        <button type="submit" style="background: #4682b4; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">📤 Publicar Foto</button>
+    </div>
+</form>
+
+
+<!-- Barra de progreso -->
+<div id="progressContainer" style="display: none; margin-top: 15px;">
+    <div style="height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden;">
+        <div id="progressBar" style="height: 100%; background: #4682b4; width: 0%; transition: width 0.3s;"></div>
+    </div>
+    <p id="uploadStatus" style="text-align: center; margin-top: 8px; font-size: 12px; color: #666;">Publicando...</p>
+</div>
+
+<!-- Mensaje de estado -->
+<div id="uploadStatus" style="display: none; margin-top: 15px; padding: 10px; border-radius: 4px; text-align: center;"></div>
+
+            <!-- FILTROS -->
+            <div class="gallery-filters">
+                <button class="filter-tab active" onclick="filterGallery('all')">{% trans "Todos" %}</button>
+                <button class="filter-tab" onclick="filterGallery('recent')">{% trans "Recientes" %}</button>
+                <button class="filter-tab" onclick="filterGallery('popular')">{% trans "Populares" %}</button>
+                <button class="filter-tab" onclick="filterGallery('private')">{% trans "Privadas" %}</button>
+            </div>
+
+            <!-- GALERÍA -->
+<div class="gallery-grid">
+    {% if media_items %}
+        {% for photo in media_items %}
+        <div class="gallery-item" style="position: relative;">
+            <!-- Imagen clickeable -->
+            <img src="{{ photo.image_url }}" alt="Foto" style="width: 100%; height: 100%; object-fit: cover; cursor: pointer;">
+
+            <!-- Sello de agua -->
+            {% if photo.status == 'approved' %}
+            <div style="position: absolute; top: 5px; right: 5px; background: rgba(70, 130, 180, 0.9); color: white; padding: 3px 8px; border-radius: 12px; font-size: 10px; font-weight: 600;">✓ Validada</div>
+            {% endif %}
+
+            <!-- Botones overlay -->
+            <div class="gallery-item-overlay" style="z-index: 10;">
+                <button class="overlay-btn" onclick="event.stopPropagation(); editPhoto('{{ photo.id }}')">✏️</button>
+                <button class="overlay-btn" onclick="event.stopPropagation(); deletePhoto('{{ photo.id }}')">🗑️</button>
+            </div>
+
+            <!-- Info de la foto -->
+            <div class="gallery-item-info">
+                <div>{{ photo.caption|truncatewords:5 }}</div>
+                <div>👍 {{ photo.likes_count }} 💬 {{ photo.comments_count }}</div>
+                <small>{{ photo.uploaded_at|date:"d/m/Y H:i" }}</small>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 40px; color: #999;">
+            <p style="font-size: 18px;">📸 No tienes fotos en tu galería</p>
+            <p>Sube tu primera foto para comenzar</p>
+        </div>
+    {% endif %}
+</div>
+
+    <!-- MODAL PARA VER IMAGEN -->
+    <div id="imageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.8); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="position: relative; max-width: 90%; max-height: 90vh;">
+            <button onclick="closeModal()" style="position: absolute; top: -30px; right: 0; background: none; border: none; color: white; font-size: 24px; cursor: pointer;">✕</button>
+            <img id="modalImage" src="" alt="Foto grande" style="max-width: 100%; max-height: 90vh; object-fit: contain;">
+        </div>
+    </div>
+
+
+
+        <!-- SCRIPT -->
+
+
+</body>
+</html>

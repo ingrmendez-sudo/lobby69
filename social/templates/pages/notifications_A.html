@@ -1,0 +1,974 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% trans "Notificaciones" %} - LOBBY69</title>
+    <style>
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --text-primary: #1a1a1a;
+            --text-secondary: #666666;
+            --border-color: #e0e0e0;
+            --accent-color: #4682b4;
+            --card-bg: #ffffff;
+        }
+
+        body.dark-mode {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #1a2d4a;
+            --text-primary: #ffffff;
+            --text-secondary: #b0c4de;
+            --border-color: #374a5e;
+            --accent-color: #5a96d3;
+            --card-bg: #0f1f32;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            transition: background-color 0.3s ease, color 0.3s ease;
+        }
+
+        /* NAVBAR */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 30px;
+            background-color: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo img {
+            height: 50px;
+            width: auto;
+        }
+
+        .navbar-menu {
+            display: flex;
+            list-style: none;
+            gap: 25px;
+        }
+
+        .navbar-menu a {
+            text-decoration: none;
+            color: var(--text-primary);
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+
+        .navbar-menu a:hover {
+            color: var(--accent-color);
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: transform 0.3s;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(20deg);
+        }
+
+        .btn-logout {
+            background-color: #e74c3c;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: background-color 0.3s;
+        }
+
+        .btn-logout:hover {
+            background-color: #c0392b;
+        }
+
+        /* CONTAINER */
+        .container {
+            display: grid;
+            grid-template-columns: 250px 1fr 300px;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        /* SIDEBAR IZQUIERDO */
+        .sidebar-left {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+        }
+
+        .sidebar-section h3 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .filter-link {
+            display: block;
+            padding: 10px 0;
+            color: var(--text-primary);
+            text-decoration: none;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border-color);
+            transition: color 0.3s;
+            cursor: pointer;
+        }
+
+        .filter-link:hover,
+        .filter-link.active {
+            color: var(--accent-color);
+        }
+
+        /* CONTENIDO PRINCIPAL */
+        .main-content {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-header {
+            padding: 25px;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .content-header h2 {
+            font-size: 24px;
+            font-weight: 700;
+        }
+
+        .header-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-action {
+            background-color: var(--bg-secondary);
+            color: var(--text-primary);
+            border: 1px solid var(--border-color);
+            padding: 10px 15px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 13px;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+
+        .btn-action:hover {
+            background-color: var(--border-color);
+        }
+
+        .btn-action.primary {
+            background-color: var(--accent-color);
+            color: white;
+            border: none;
+        }
+
+        .btn-action.primary:hover {
+            background-color: #5a96d3;
+        }
+
+        /* NOTIFICATION TABS */
+        .notification-tabs {
+            display: flex;
+            padding: 0 25px;
+            border-bottom: 1px solid var(--border-color);
+            gap: 30px;
+        }
+
+        .tab-link {
+            padding: 15px 0;
+            border: none;
+            background: none;
+            color: var(--text-secondary);
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.3s;
+        }
+
+        .tab-link:hover,
+        .tab-link.active {
+            color: var(--accent-color);
+        }
+
+        .tab-link.active::after {
+            content: '';
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background-color: var(--accent-color);
+        }
+
+        .tab-badge {
+            display: inline-block;
+            background-color: var(--accent-color);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 11px;
+            font-weight: 700;
+            margin-left: 8px;
+        }
+
+        /* NOTIFICATIONS LIST */
+        .notifications-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 0;
+        }
+
+        .notification-item {
+            display: flex;
+            gap: 15px;
+            padding: 20px 25px;
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s;
+            cursor: pointer;
+            align-items: flex-start;
+            background-color: var(--card-bg);
+        }
+
+        .notification-item:hover {
+            background-color: var(--bg-secondary);
+        }
+
+        .notification-item.unread {
+            background-color: rgba(70, 130, 180, 0.05);
+            border-left: 4px solid var(--accent-color);
+            padding-left: 21px;
+        }
+
+        .notification-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent-color), #2c5aa0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .notification-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .notification-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 5px;
+        }
+
+        .notification-name {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .notification-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .notification-type {
+            display: inline-block;
+            padding: 3px 10px;
+            background-color: var(--bg-secondary);
+            color: var(--text-secondary);
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .notification-type.like {
+            background-color: rgba(231, 76, 60, 0.2);
+            color: #e74c3c;
+        }
+
+        .notification-type.message {
+            background-color: rgba(52, 152, 219, 0.2);
+            color: #3498db;
+        }
+
+        .notification-type.profile {
+            background-color: rgba(46, 204, 113, 0.2);
+            color: #2ecc71;
+        }
+
+        .notification-type.system {
+            background-color: rgba(155, 89, 182, 0.2);
+            color: #9b59b6;
+        }
+
+        .notification-message {
+            font-size: 13px;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .notification-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        .notification-action-btn {
+            padding: 6px 12px;
+            border: 1px solid var(--border-color);
+            background-color: var(--bg-primary);
+            color: var(--text-primary);
+            border-radius: 5px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .notification-action-btn:hover {
+            background-color: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        /* UNREAD INDICATOR */
+        .unread-dot {
+            width: 10px;
+            height: 10px;
+            background-color: var(--accent-color);
+            border-radius: 50%;
+            flex-shrink: 0;
+            margin-top: 5px;
+        }
+
+        /* EMPTY STATE */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 400px;
+            color: var(--text-secondary);
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 60px;
+            margin-bottom: 20px;
+        }
+
+        .empty-state-text h3 {
+            font-size: 18px;
+            margin-bottom: 10px;
+            color: var(--text-primary);
+        }
+
+        /* SIDEBAR DERECHO */
+        .sidebar-right {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            height: fit-content;
+            position: sticky;
+            top: 80px;
+        }
+
+        .sidebar-right h3 {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--accent-color);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .settings-group {
+            margin-bottom: 20px;
+        }
+
+        .settings-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid var(--border-color);
+            font-size: 13px;
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 40px;
+            height: 22px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: 0.3s;
+            border-radius: 22px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 18px;
+            width: 18px;
+            left: 2px;
+            bottom: 2px;
+            background-color: white;
+            transition: 0.3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: var(--accent-color);
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(18px);
+        }
+
+        .stat-item {
+            padding: 12px 0;
+            display: flex;
+            justify-content: space-between;
+            font-size: 13px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .stat-item:last-child {
+            border-bottom: none;
+        }
+
+        .stat-label {
+            color: var(--text-secondary);
+        }
+
+        .stat-value {
+            color: var(--accent-color);
+            font-weight: 700;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1024px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar-left,
+            .sidebar-right {
+                display: none;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                padding: 12px 15px;
+            }
+
+            .navbar-menu {
+                display: none;
+            }
+
+            .main-content {
+                border-radius: 0;
+            }
+
+            .content-header {
+                padding: 15px;
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .header-actions {
+                width: 100%;
+            }
+
+            .btn-action {
+                flex: 1;
+            }
+
+            .notification-tabs {
+                padding: 0 15px;
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+
+            .notification-item {
+                padding: 15px;
+            }
+
+            .notification-avatar {
+                width: 40px;
+                height: 40px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .content-header h2 {
+                font-size: 18px;
+            }
+
+            .notification-tabs {
+                gap: 20px;
+            }
+
+            .tab-link {
+                padding: 12px 0;
+                font-size: 12px;
+            }
+
+            .notification-item {
+                padding: 12px;
+                gap: 10px;
+            }
+
+            .notification-avatar {
+                width: 35px;
+                height: 35px;
+                font-size: 14px;
+            }
+
+            .notification-name {
+                font-size: 13px;
+            }
+
+            .notification-message {
+                font-size: 12px;
+            }
+
+            .notification-actions {
+                flex-wrap: wrap;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav>
+        <div class="navbar-left">
+            <div class="logo">
+                <a href="{% url 'pages:landing' %}">
+                    <img src="{% static 'images/Logo-Lobby69.jpg' %}" alt="LOBBY69 Logo">
+                </a>
+            </div>
+            <ul class="navbar-menu">
+                <li><a href="{% url 'pages:dashboard' %}">📰 {% trans "Inicio" %}</a></li>
+                <li><a href="{% url 'pages:explore' %}">🔍 {% trans "Explorar" %}</a></li>
+                <li><a href="{% url 'pages:conversations' %}">💬 {% trans "Mensajes" %}</a></li>
+                <li><a href="{% url 'pages:my_profile' %}">👤 {% trans "Mi Perfil" %}</a></li>
+                <li><a href="{% url 'pages:gallery' %}">🖼️ {% trans "Galería" %}</a></li>
+                <li><a href="{% url 'pages:memberships' %}">👑 {% trans "Membresías" %}</a></li>
+                <li><a href="{% url 'pages:notifications' %}" style="color: var(--accent-color); font-weight: 700;">🔔 {% trans "Notificaciones" %}</a></li>
+                <li><a href="{% url 'pages:friend_requests' %}">👥 Solicitudes</a></li>
+                <li><a href="{% url 'pages:settings' %}">⚙️ {% trans "Configuración" %}</a></li>
+            </ul>
+        </div>
+        <div class="navbar-right">
+            <button class="theme-toggle" onclick="toggleTheme()">🌙</button>
+            <a href="{% url 'pages:logout' %}" class="btn-logout">{% trans "Cerrar Sesión" %}</a>
+        </div>
+    </nav>
+
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="container">
+        <!-- SIDEBAR IZQUIERDO -->
+        <div class="sidebar-left">
+            <div class="sidebar-section">
+                <h3>{% trans "Filtros" %}</h3>
+                <span class="filter-link active" onclick="filterNotifications('all')">📬 {% trans "Todas" %}</span>
+                <span class="filter-link" onclick="filterNotifications('unread')">🆕 {% trans "No Leídas" %}</span>
+                <span class="filter-link" onclick="filterNotifications('likes')">❤️ {% trans "Me Gustas" %}</span>
+                <span class="filter-link" onclick="filterNotifications('messages')">💬 {% trans "Mensajes" %}</span>
+                <span class="filter-link" onclick="filterNotifications('visits')">👀 {% trans "Visitas" %}</span>
+                <span class="filter-link" onclick="filterNotifications('system')">⚠️ {% trans "Sistema" %}</span>
+            </div>
+        </div>
+
+        <!-- CONTENIDO PRINCIPAL -->
+        <div class="main-content">
+            <!-- HEADER -->
+            <div class="content-header">
+                <h2>{% trans "Notificaciones" %}</h2>
+                <div class="header-actions">
+                    <button class="btn-action" onclick="markAllAsRead()">{% trans "Marcar como leído" %}</button>
+                    <button class="btn-action" onclick="clearNotifications()">{% trans "Limpiar" %}</button>
+                </div>
+            </div>
+
+            <!-- TABS -->
+            <div class="notification-tabs">
+                <button class="tab-link active" onclick="switchNotificationTab('all', event)">
+                    {% trans "Todas" %}
+                    <span class="tab-badge">12</span>
+                </button>
+                <button class="tab-link" onclick="switchNotificationTab('unread', event)">
+                    {% trans "No Leídas" %}
+                    <span class="tab-badge">5</span>
+                </button>
+                <button class="tab-link" onclick="switchNotificationTab('important', event)">
+                    {% trans "Importantes" %}
+                    <span class="tab-badge">3</span>
+                </button>
+            </div>
+
+            <!-- NOTIFICACIONES -->
+            <div class="notifications-list">
+                <!-- NOTIFICACIÓN 1: LIKE -->
+                <div class="notification-item unread">
+                    <div class="unread-dot"></div>
+                    <div class="notification-avatar">S</div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-name">Sofia le gustó tu perfil</span>
+                            <span class="notification-time">Hace 5 min</span>
+                        </div>
+                        <span class="notification-type like">❤️ {% trans "Me gusta" %}</span>
+                        <div class="notification-message">Sofia encontró tu perfil interesante y le gustó. Ahora puedes enviarle un mensaje.</div>
+                        <div class="notification-actions">
+                            <button class="notification-action-btn" onclick="viewProfile('sofia')">{% trans "Ver Perfil" %}</button>
+                            <button class="notification-action-btn" onclick="sendMessage('sofia')">{% trans "Mensaje" %}</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOTIFICACIÓN 2: MENSAJE -->
+                <div class="notification-item unread">
+                    <div class="unread-dot"></div>
+                    <div class="notification-avatar">C</div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-name">Carlos te envió un mensaje</span>
+                            <span class="notification-time">Hace 15 min</span>
+                        </div>
+                        <span class="notification-type message">💬 {% trans "Mensaje" %}</span>
+                        <div class="notification-message">"Hola, vi tu perfil y me pareció interesante. ¿Podemos conversar?"</div>
+                        <div class="notification-actions">
+                            <button class="notification-action-btn" onclick="viewProfile('carlos')">{% trans "Ver Perfil" %}</button>
+                            <button class="notification-action-btn" onclick="goToChat('carlos')">{% trans "Responder" %}</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOTIFICACIÓN 3: VISITA -->
+                <div class="notification-item unread">
+                    <div class="unread-dot"></div>
+                    <div class="notification-avatar">A</div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-name">Andrea & Luis visitaron tu perfil</span>
+                            <span class="notification-time">Hace 30 min</span>
+                        </div>
+                        <span class="notification-type profile">👀 {% trans "Visita de perfil" %}</span>
+                        <div class="notification-message">Una pareja interesante visitó tu perfil. ¡Quizás te interese conocerlos!</div>
+                        <div class="notification-actions">
+                            <button class="notification-action-btn" onclick="viewProfile('andrea')">{% trans "Ver Perfil" %}</button>
+                            <button class="notification-action-btn" onclick="likeProfile('andrea')">👍 {% trans "Me gusta" %}</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOTIFICACIÓN 4: LIKE (LEÍDA) -->
+                <div class="notification-item">
+                    <div class="notification-avatar">V</div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-name">Valentina le gustó tu perfil</span>
+                            <span class="notification-time">Ayer</span>
+                        </div>
+                        <span class="notification-type like">❤️ {% trans "Me gusta" %}</span>
+                        <div class="notification-message">Valentina piensa que eres genial. ¿Quieres conocerla?</div>
+                        <div class="notification-actions">
+                            <button class="notification-action-btn" onclick="viewProfile('valentina')">{% trans "Ver Perfil" %}</button>
+                            <button class="notification-action-btn" onclick="sendMessage('valentina')">{% trans "Mensaje" %}</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOTIFICACIÓN 5: SYSTEM -->
+                <div class="notification-item">
+                    <div class="notification-avatar">ⓘ</div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-name">Tu membresía se renovará pronto</span>
+                            <span class="notification-time">Hace 2 días</span>
+                        </div>
+                        <span class="notification-type system">⚙️ {% trans "Sistema" %}</span>
+                        <div class="notification-message">Tu membresía VIP se renovará automáticamente el 15 de abril de 2026. Tienes 30 días de acceso premium.</div>
+                        <div class="notification-actions">
+                            <button class="notification-action-btn" onclick="manageMembership()">{% trans "Gestionar" %}</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOTIFICACIÓN 6: MENSAJE (LEÍDA) -->
+                <div class="notification-item">
+                    <div class="notification-avatar">M</div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-name">Marco te envió un mensaje</span>
+                            <span class="notification-time">Hace 3 días</span>
+                        </div>
+                        <span class="notification-type message">💬 {% trans "Mensaje" %}</span>
+                        <div class="notification-message">"Me encantó tu perfil. Espero poder conectar contigo pronto."</div>
+                        <div class="notification-actions">
+                            <button class="notification-action-btn" onclick="viewProfile('marco')">{% trans "Ver Perfil" %}</button>
+                            <button class="notification-action-btn" onclick="goToChat('marco')">{% trans "Responder" %}</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- NOTIFICACIÓN 7: VERIFICACIÓN -->
+                <div class="notification-item">
+                    <div class="notification-avatar">✓</div>
+                    <div class="notification-content">
+                        <div class="notification-header">
+                            <span class="notification-name">Tu perfil ha sido verificado</span>
+                            <span class="notification-time">Hace 1 semana</span>
+                        </div>
+                        <span class="notification-type system">✅ {% trans "Verificación" %}</span>
+                        <div class="notification-message">¡Felicitaciones! Tu perfil ha pasado la verificación de seguridad. Ahora tienes acceso completo a la plataforma.</div>
+                        <div class="notification-actions">
+                            <button class="notification-action-btn" onclick="viewProfile('me')">{% trans "Ver Mi Perfil" %}</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- SIDEBAR DERECHO -->
+        <div class="sidebar-right">
+            <h3>{% trans "Preferencias" %}</h3>
+
+            <div class="settings-group">
+                <div class="settings-item">
+                    <span>{% trans "Me Gustas" %}</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="settings-item">
+                    <span>{% trans "Mensajes" %}</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="settings-item">
+                    <span>{% trans "Visitas de Perfil" %}</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 25px;">{% trans "Canales" %}</h3>
+
+            <div class="settings-group">
+                <div class="settings-item">
+                    <span>{% trans "Email" %}</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="settings-item">
+                    <span>{% trans "Push" %}</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" checked>
+                        <span class="slider"></span>
+                    </label>
+                </div>
+                <div class="settings-item">
+                    <span>{% trans "SMS" %}</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+            </div>
+
+            <h3 style="margin-top: 25px;">{% trans "Estadísticas" %}</h3>
+
+            <div class="stat-item">
+                <span class="stat-label">{% trans "No leídas" %}</span>
+                <span class="stat-value">5</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">{% trans "Esta semana" %}</span>
+                <span class="stat-value">12</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-label">{% trans "Este mes" %}</span>
+                <span class="stat-value">47</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        function toggleTheme() {
+            document.body.classList.toggle('dark-mode');
+            const theme = document.body.classList.contains('dark-mode') ? 'dark' : 'light';
+            localStorage.setItem('theme', theme);
+            updateThemeIcon();
+        }
+
+        function updateThemeIcon() {
+            const icon = document.querySelector('.theme-toggle');
+            const isDark = document.body.classList.contains('dark-mode');
+            icon.textContent = isDark ? '☀️' : '🌙';
+        }
+
+        function filterNotifications(filterType) {
+            document.querySelectorAll('.filter-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            console.log('Filtrando notificaciones por:', filterType);
+        }
+
+        function switchNotificationTab(tabName, event) {
+            document.querySelectorAll('.tab-link').forEach(link => {
+                link.classList.remove('active');
+            });
+            event.target.closest('.tab-link').classList.add('active');
+            console.log('Mostrando tab:', tabName);
+        }
+
+        function markAllAsRead() {
+            document.querySelectorAll('.notification-item.unread').forEach(item => {
+                item.classList.remove('unread');
+                item.querySelector('.unread-dot').style.display = 'none';
+            });
+            alert('{% trans "Todas las notificaciones marcadas como leídas" %}');
+        }
+
+        function clearNotifications() {
+            if (confirm('{% trans "¿Eliminar todas las notificaciones?" %}')) {
+                document.querySelector('.notifications-list').innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">📭</div>
+                        <div class="empty-state-text">
+                            <h3>{% trans "Sin notificaciones" %}</h3>
+                            <p>{% trans "No hay notificaciones en este momento" %}</p>
+                        </div>
+                    </div>
+                `;
+            }
+        }
+
+        function viewProfile(username) {
+            alert(`{% trans "Abriendo perfil de" %}: ${username}`);
+        }
+
+        function sendMessage(username) {
+            alert(`{% trans "Abriendo chat con" %}: ${username}`);
+        }
+
+        function goToChat(username) {
+            alert(`{% trans "Abriendo conversación con" %}: ${username}`);
+        }
+
+        function likeProfile(username) {
+            alert(`{% trans "Te gusta el perfil de" %}: ${username}`);
+        }
+
+        function manageMembership() {
+            alert('{% trans "Abriendo gestión de membresía..." %}');
+        }
+
+        // Cargar tema al abrir la página
+        window.addEventListener('DOMContentLoaded', function() {
+            const savedTheme = localStorage.getItem('theme') || 'light';
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+            }
+            updateThemeIcon();
+        });
+    </script>
+</body>
+</html>
+

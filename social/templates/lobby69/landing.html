@@ -1,0 +1,417 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}LOBBY69 — Club Privado Premium{% endblock %}
+
+{% block extra_css %}
+<style>
+.lobby-hero {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #0d0d1a 0%, #1a0a30 40%, #0d0d1a 100%);
+  position: relative;
+  overflow: hidden;
+}
+.lobby-hero::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(ellipse at center, rgba(200,168,75,0.08) 0%, transparent 70%);
+  pointer-events: none;
+}
+.hero-badge {
+  background: rgba(200,168,75,0.15);
+  border: 1px solid rgba(200,168,75,0.4);
+  color: #c8a84b;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  display: inline-block;
+  margin-bottom: 20px;
+}
+.lobby-logo-text {
+  font-size: 72px;
+  font-weight: 900;
+  letter-spacing: -2px;
+  background: linear-gradient(135deg, #c8a84b 0%, #f5d78e 50%, #c8a84b 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  line-height: 1;
+}
+.feature-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 24px;
+  transition: all 0.3s ease;
+}
+.feature-card:hover {
+  background: rgba(200,168,75,0.08);
+  border-color: rgba(200,168,75,0.3);
+  transform: translateY(-4px);
+}
+.feature-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: rgba(200,168,75,0.1);
+  border: 1px solid rgba(200,168,75,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  margin-bottom: 16px;
+}
+.membership-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 20px;
+  padding: 32px 24px;
+  transition: all 0.3s ease;
+}
+.membership-card.featured {
+  background: rgba(200,168,75,0.08);
+  border-color: rgba(200,168,75,0.5);
+  position: relative;
+}
+.membership-card.featured::before {
+  content: 'MÁS POPULAR';
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #c8a84b, #f5d78e);
+  color: #0d0d1a;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  padding: 4px 16px;
+  border-radius: 20px;
+}
+.stat-number {
+  font-size: 36px;
+  font-weight: 900;
+  color: #c8a84b;
+  line-height: 1;
+}
+.divider-gold {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(200,168,75,0.4), transparent);
+  margin: 60px 0;
+}
+/* Age gate overlay */
+#ageGateOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(10,8,20,0.97);
+  z-index: 9999;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.age-gate-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(200,168,75,0.3);
+  border-radius: 24px;
+  padding: 48px 40px;
+  max-width: 460px;
+  width: 90%;
+  text-align: center;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- ─── AGE GATE ─── -->
+<div id="ageGateOverlay">
+  <div class="age-gate-card">
+    <div class="lobby-logo-text mb-3">LOBBY69</div>
+    <p style="color:#c8a84b; letter-spacing:3px; font-size:11px; text-transform:uppercase;">CLUB PRIVADO PREMIUM</p>
+    <hr style="border-color: rgba(200,168,75,0.2); margin: 24px 0;">
+    <h4 class="text-white mb-2">Verificación de edad</h4>
+    <p class="text-muted mb-4">
+      Este sitio contiene contenido exclusivo para adultos.<br>
+      Debes tener <strong style="color:#c8a84b;">18 años o más</strong> para continuar.
+    </p>
+    <div class="d-grid gap-3">
+      <button class="btn btn-lg btn-warning fw-bold" onclick="enterSite()" style="background: linear-gradient(135deg,#c8a84b,#f5d78e); border:none; color:#0d0d1a;">
+        <i class="bi bi-shield-check me-2"></i>Tengo 18 años o más — Entrar
+      </button>
+      <a href="https://www.google.com" class="btn btn-outline-secondary btn-sm">
+        No tengo 18 años — Salir
+      </a>
+    </div>
+    <p class="small text-muted mt-3" style="font-size:11px;">
+      Al entrar aceptas nuestros 
+      <a href="{% url 'pages:dynamic_pages' template_name='privacy-and-terms' %}" style="color:#c8a84b;">Términos y Privacidad</a>.
+      Este sitio usa cookies.
+    </p>
+  </div>
+</div>
+
+<!-- ─── LANDING NAVBAR ─── -->
+<nav class="navbar navbar-expand-lg fixed-top" style="background:rgba(13,13,26,0.95); backdrop-filter:blur(10px); border-bottom:1px solid rgba(200,168,75,0.15);">
+  <div class="container">
+    <a class="navbar-brand" href="/">
+      <span style="font-size:24px; font-weight:900; background:linear-gradient(135deg,#c8a84b,#f5d78e); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">LOBBY69</span>
+    </a>
+    <div class="ms-auto d-flex gap-2">
+      <a href="{% url 'pages:dynamic_pages' template_name='sign-in-advance' %}" class="btn btn-outline-light btn-sm">
+        <i class="bi bi-box-arrow-in-right me-1"></i>Iniciar sesión
+      </a>
+      <a href="{% url 'pages:invitation_request' %}" class="btn btn-warning btn-sm fw-bold" style="background:linear-gradient(135deg,#c8a84b,#f5d78e); border:none; color:#0d0d1a;">
+        <i class="bi bi-gem me-1"></i>Unirme
+      </a>
+    </div>
+  </div>
+</nav>
+
+<!-- ─── HERO ─── -->
+<section class="lobby-hero d-flex align-items-center" style="padding-top:80px;">
+  <div class="container">
+    <div class="row align-items-center">
+      <div class="col-lg-6">
+        <div class="hero-badge">
+          <i class="bi bi-gem me-1"></i>Club Privado Premium · México
+        </div>
+        <div class="lobby-logo-text mb-2">LOBBY69</div>
+        <h2 class="text-white mb-3" style="font-size:28px; font-weight:300; line-height:1.4;">
+          La comunidad más exclusiva<br>de México
+        </h2>
+        <p style="color:#8080a0; font-size:16px; line-height:1.7; max-width:480px;" class="mb-4">
+          Únete a una red privada de adultos liberales donde discreción, respeto y autenticidad son la base de cada conexión. Acceso solo por invitación o solicitud aprobada.
+        </p>
+        <div class="d-flex gap-3 flex-wrap">
+          <a href="{% url 'pages:invitation_request' %}" class="btn btn-lg fw-bold"
+            style="background:linear-gradient(135deg,#c8a84b,#f5d78e); border:none; color:#0d0d1a; padding:14px 32px;">
+            <i class="bi bi-send me-2"></i>Solicitar acceso
+          </a>
+          <a href="{% url 'pages:dynamic_pages' template_name='sign-in-advance' %}" class="btn btn-lg btn-outline-light"
+            style="border-color:rgba(255,255,255,0.2); padding:14px 32px;">
+            <i class="bi bi-box-arrow-in-right me-2"></i>Ya soy miembro
+          </a>
+        </div>
+        <!-- Stats -->
+        <div class="d-flex gap-4 mt-5">
+          <div>
+            <div class="stat-number">4.8K+</div>
+            <small style="color:#6060a0;">Miembros activos</small>
+          </div>
+          <div style="width:1px; background:rgba(200,168,75,0.2);"></div>
+          <div>
+            <div class="stat-number">32</div>
+            <small style="color:#6060a0;">Estados de México</small>
+          </div>
+          <div style="width:1px; background:rgba(200,168,75,0.2);"></div>
+          <div>
+            <div class="stat-number">100%</div>
+            <small style="color:#6060a0;">Verificados</small>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-6 d-none d-lg-flex justify-content-center">
+        <!-- Mockup visual abstracto del club -->
+        <div style="position:relative; width:420px; height:420px;">
+          <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+            width:320px; height:320px; border-radius:50%; 
+            background:radial-gradient(circle, rgba(200,168,75,0.15) 0%, transparent 70%);
+            border: 1px solid rgba(200,168,75,0.2);"></div>
+          <div style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%);
+            width:200px; height:200px; border-radius:50%; 
+            background:radial-gradient(circle, rgba(200,168,75,0.25) 0%, transparent 70%);
+            border: 2px solid rgba(200,168,75,0.4);
+            display:flex; align-items:center; justify-content:center;">
+            <span style="font-size:72px; font-weight:900; color:rgba(200,168,75,0.6);">69</span>
+          </div>
+          <!-- Avatares flotantes -->
+          {% for i in "1234567" %}
+          <div style="position:absolute; 
+            top:{% if forloop.counter == 1 %}10%{% elif forloop.counter == 2 %}30%{% elif forloop.counter == 3 %}60%{% elif forloop.counter == 4 %}80%{% elif forloop.counter == 5 %}70%{% elif forloop.counter == 6 %}15%{% else %}45%{% endif %};
+            left:{% if forloop.counter == 1 %}15%{% elif forloop.counter == 2 %}75%{% elif forloop.counter == 3 %}80%{% elif forloop.counter == 4 %}60%{% elif forloop.counter == 5 %}10%{% elif forloop.counter == 6 %}60%{% else %}90%{% endif %};">
+            <img src="{% static '/images/avatar/0' %}{{ i }}.jpg"
+              style="width:48px; height:48px; border-radius:50%; border:2px solid rgba(200,168,75,0.5);" alt="">
+          </div>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider-gold"></div>
+
+<!-- ─── FEATURES ─── -->
+<section style="background:#0d0d1a; padding:80px 0;">
+  <div class="container">
+    <div class="text-center mb-5">
+      <p style="color:#c8a84b; letter-spacing:3px; font-size:11px; text-transform:uppercase;">POR QUÉ LOBBY69</p>
+      <h2 class="text-white">Un espacio diseñado para adultos libres</h2>
+    </div>
+    <div class="row g-4">
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="color:#c8a84b;">🔒</div>
+          <h5 class="text-white">Privacidad total</h5>
+          <p style="color:#7070a0;">Perfiles con control absoluto de visibilidad. Tú decides quién te ve y cómo.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="color:#c8a84b;">✅</div>
+          <h5 class="text-white">Miembros verificados</h5>
+          <p style="color:#7070a0;">Verificación de edad obligatoria. Comunidad auténtica de adultos reales.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="color:#c8a84b;">💬</div>
+          <h5 class="text-white">Mensajería privada</h5>
+          <p style="color:#7070a0;">Chat privado y seguro. Sin rastros, sin historial expuesto.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="color:#c8a84b;">📍</div>
+          <h5 class="text-white">Toda México</h5>
+          <p style="color:#7070a0;">Miembros en los 32 estados. Encuentra personas cerca de ti.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="color:#c8a84b;">🎭</div>
+          <h5 class="text-white">Eventos exclusivos</h5>
+          <p style="color:#7070a0;">Noches temáticas, reuniones y torneos solo para miembros del club.</p>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="feature-card">
+          <div class="feature-icon" style="color:#c8a84b;">👫</div>
+          <h5 class="text-white">Parejas y solteros</h5>
+          <p style="color:#7070a0;">Perfiles para hombres, mujeres y parejas. Todos son bienvenidos.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider-gold"></div>
+
+<!-- ─── MEMBRESÍAS ─── -->
+<section style="background:#0a0814; padding:80px 0;">
+  <div class="container">
+    <div class="text-center mb-5">
+      <p style="color:#c8a84b; letter-spacing:3px; font-size:11px; text-transform:uppercase;">MEMBRESÍAS</p>
+      <h2 class="text-white">Elige tu nivel de acceso</h2>
+      <p style="color:#7070a0;">Todos los planes incluyen verificación de edad y privacidad garantizada.</p>
+    </div>
+    <div class="row g-4 justify-content-center">
+      <div class="col-md-4">
+        <div class="membership-card">
+          <p style="color:#c8a84b; text-transform:uppercase; letter-spacing:2px; font-size:12px;">Básico</p>
+          <div style="font-size:40px; font-weight:900; color:white;">Gratis</div>
+          <p style="color:#7070a0; font-size:13px;" class="mb-4">Para empezar a explorar</p>
+          <ul class="list-unstyled" style="color:#8080a0;">
+            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Perfil básico</li>
+            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Ver perfiles públicos</li>
+            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>5 fotos en perfil</li>
+            <li class="mb-2"><i class="bi bi-x text-danger me-2"></i>Mensajes privados</li>
+            <li class="mb-2"><i class="bi bi-x text-danger me-2"></i>Fotos privadas</li>
+          </ul>
+          <a href="{% url 'pages:invitation_request' %}" class="btn btn-outline-light w-100 mt-3">Solicitar acceso</a>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="membership-card featured">
+          <p style="color:#c8a84b; text-transform:uppercase; letter-spacing:2px; font-size:12px;">VIP</p>
+          <div style="font-size:40px; font-weight:900; color:#c8a84b;">$299 <small style="font-size:16px; color:#a0a060;">/mes</small></div>
+          <p style="color:#7070a0; font-size:13px;" class="mb-4">Para el miembro activo</p>
+          <ul class="list-unstyled" style="color:#a0a080;">
+            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Todo lo básico</li>
+            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Mensajes privados ilimitados</li>
+            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>20 fotos en perfil</li>
+            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Fotos privadas</li>
+            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Acceso a eventos</li>
+          </ul>
+          <a href="{% url 'pages:invitation_request' %}" class="btn w-100 mt-3 fw-bold"
+            style="background:linear-gradient(135deg,#c8a84b,#f5d78e); border:none; color:#0d0d1a;">
+            Comenzar ahora
+          </a>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="membership-card">
+          <p style="color:#c8a84b; text-transform:uppercase; letter-spacing:2px; font-size:12px;">Élite</p>
+          <div style="font-size:40px; font-weight:900; color:white;">$599 <small style="font-size:16px; color:#808080;">/mes</small></div>
+          <p style="color:#7070a0; font-size:13px;" class="mb-4">Para el miembro exclusivo</p>
+          <ul class="list-unstyled" style="color:#8080a0;">
+            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Todo lo VIP</li>
+            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Crear eventos privados</li>
+            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Fotos y videos sin límite</li>
+            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Badge Élite</li>
+            <li class="mb-2"><i class="bi bi-check text-success me-2"></i>Soporte prioritario</li>
+          </ul>
+          <a href="{% url 'pages:invitation_request' %}" class="btn btn-outline-warning w-100 mt-3">Solicitar Élite</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="divider-gold"></div>
+
+<!-- ─── CTA FINAL ─── -->
+<section style="background:#0d0d1a; padding:80px 0; text-align:center;">
+  <div class="container">
+    <div style="max-width:600px; margin:0 auto;">
+      <div class="lobby-logo-text mb-3" style="font-size:56px;">LOBBY69</div>
+      <p class="text-white mb-2" style="font-size:22px;">¿Listo para unirte?</p>
+      <p style="color:#7070a0;" class="mb-5">El club más discreto y exclusivo de México te espera.</p>
+      <a href="{% url 'pages:invitation_request' %}" class="btn btn-lg fw-bold px-5"
+        style="background:linear-gradient(135deg,#c8a84b,#f5d78e); border:none; color:#0d0d1a; padding:16px 48px; font-size:18px;">
+        <i class="bi bi-send me-2"></i>Solicitar mi acceso
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- ─── FOOTER ─── -->
+<footer style="background:#080610; padding:40px 0; border-top:1px solid rgba(200,168,75,0.15);">
+  <div class="container text-center">
+    <p style="color:#c8a84b; font-weight:700; font-size:18px;">LOBBY69</p>
+    <p style="color:#404060; font-size:13px;">
+      <a href="{% url 'pages:dynamic_pages' template_name='privacy-and-terms' %}" style="color:#606080;">Privacidad y Términos</a>
+      &nbsp;·&nbsp;
+      <a href="{% url 'pages:dynamic_pages' template_name='help' %}" style="color:#606080;">Ayuda</a>
+      &nbsp;·&nbsp;
+      <a href="{% url 'pages:dynamic_pages' template_name='settings' %}" style="color:#606080;">Configuración</a>
+    </p>
+    <p style="color:#303050; font-size:12px;">©2024 LOBBY69. Todos los derechos reservados. Solo para mayores de 18 años.</p>
+  </div>
+</footer>
+
+{% endblock content %}
+
+{% block extra_javascript %}
+<script>
+// Age gate: check session
+(function() {
+  if (sessionStorage.getItem('ageVerified') === '1') {
+    document.getElementById('ageGateOverlay').style.display = 'none';
+  }
+})();
+
+function enterSite() {
+  sessionStorage.setItem('ageVerified', '1');
+  var overlay = document.getElementById('ageGateOverlay');
+  overlay.style.opacity = '0';
+  overlay.style.transition = 'opacity 0.5s ease';
+  setTimeout(function() { overlay.style.display = 'none'; }, 500);
+}
+</script>
+{% endblock %}

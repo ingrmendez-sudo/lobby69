@@ -1,0 +1,219 @@
+{% extends 'base_authenticated.html' %}
+{% load static i18n %}
+
+{% block page_title %}{% trans "Solicitudes de Amistad" %} - LOBBY69{% endblock %}
+
+{% block left_sidebar %}
+<!-- SIDEBAR IZQUIERDO - ESTADÍSTICAS Y FILTROS -->
+<div class="stats-card" style="background: var(--card-bg); border: none; border-right: 1px solid var(--border-color); border-radius: 0; padding: 20px; height: 100%; overflow-y: auto; position: sticky; top: 80px;">
+    <!-- ESTADÍSTICAS -->
+    <div style="margin-bottom: 25px; padding-bottom: 25px; border-bottom: 1px solid var(--border-color);">
+        <h3 style="font-size: 14px; font-weight: 700; margin: 0 0 15px 0; color: var(--primary-color); padding-bottom: 10px; border-bottom: 1px solid var(--border-color); text-transform: uppercase;">📊 {% trans "Estadísticas" %}</h3>
+
+        <div class="stat-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
+            <span class="stat-label" style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">📌 {% trans "Solicitudes Pendientes" %}</span>
+            <span class="stat-value" style="font-size: 18px; font-weight: 700; color: var(--primary-color);">{{ pending_requests|length }}</span>
+        </div>
+
+        <div class="stat-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
+            <span class="stat-label" style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">✅ {% trans "Amigos Confirmados" %}</span>
+            <span class="stat-value" style="font-size: 18px; font-weight: 700; color: var(--primary-color);">{{ accepted_friends|length }}</span>
+        </div>
+
+        <div class="stat-row" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0;">
+            <span class="stat-label" style="font-size: 13px; color: var(--text-secondary); font-weight: 500;">🚫 {% trans "Bloqueados" %}</span>
+            <span class="stat-value" style="font-size: 18px; font-weight: 700; color: var(--primary-color);">0</span>
+        </div>
+    </div>
+
+    <!-- FILTROS -->
+    <div>
+        <h3 style="font-size: 14px; font-weight: 700; margin: 0 0 15px 0; color: var(--primary-color); padding-bottom: 10px; border-bottom: 1px solid var(--border-color); text-transform: uppercase;">🔍 {% trans "Filtros" %}</h3>
+
+        <label class="filter-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 8px; margin-bottom: 8px; border-radius: 6px; cursor: pointer; transition: all 0.3s;">
+            <input type="radio" name="filter" value="todas" checked onchange="filterFriendRequests('todas')" style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--primary-color);">
+            <span style="font-size: 13px; color: var(--text-primary); font-weight: 500;">👥 {% trans "Todas" %}</span>
+        </label>
+
+        <label class="filter-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 8px; margin-bottom: 8px; border-radius: 6px; cursor: pointer; transition: all 0.3s;">
+            <input type="radio" name="filter" value="pendientes" onchange="filterFriendRequests('pendientes')" style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--primary-color);">
+            <span style="font-size: 13px; color: var(--text-primary); font-weight: 500;">📌 {% trans "Pendientes" %}</span>
+        </label>
+
+        <label class="filter-item" style="display: flex; align-items: center; gap: 10px; padding: 10px 8px; margin-bottom: 0; border-radius: 6px; cursor: pointer; transition: all 0.3s;">
+            <input type="radio" name="filter" value="aceptadas" onchange="filterFriendRequests('aceptadas')" style="cursor: pointer; width: 18px; height: 18px; accent-color: var(--primary-color);">
+            <span style="font-size: 13px; color: var(--text-primary); font-weight: 500;">✅ {% trans "Aceptadas" %}</span>
+        </label>
+    </div>
+</div>
+{% endblock left_sidebar %}
+
+{% block main_content %}
+<!-- CONTENIDO PRINCIPAL -->
+<div style="background-color: var(--bg-primary);">
+    <!-- SOLICITUDES PENDIENTES -->
+    <section style="margin-bottom: 50px;">
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color);">
+            <h2 style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0;">📌 {% trans "Solicitudes Pendientes" %}</h2>
+            <span class="request-count" style="background: var(--primary-color); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;">{{ pending_requests|length }}</span>
+        </div>
+
+        {% if pending_requests %}
+            <div class="requests-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px; margin-bottom: 40px;">
+                {% for req in pending_requests %}
+                <div class="request-card" style="border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; text-align: center; background: var(--bg-secondary); transition: all 0.3s; display: flex; flex-direction: column;">
+                    <img src="{{ req.profile.avatar_url|default:'https://via.placeholder.com/100' }}" alt="{{ req.profile.nick }}" style="width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 15px; object-fit: cover; border: 3px solid var(--primary-color);">
+
+                    <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 5px 0;">{{ req.profile.display_name }}</h3>
+                    <p class="nick" style="color: var(--text-secondary); font-weight: 600; font-size: 11px; margin: 5px 0;">@{{ req.profile.nick }}</p>
+                    <p class="location" style="color: var(--text-secondary); font-size: 11px; margin-bottom: 15px;">📍 {{ req.profile.city|default:'Sin ubicación' }}</p>
+
+                    <div class="request-actions" style="display: flex; gap: 10px; margin-top: auto; padding-top: 15px;">
+                        <form method="post" action="{% url 'pages:accept_friend_request' req.friendship_id %}" style="flex: 1;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-success" style="width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-block; background: #27ae60; color: white;">✓ {% trans "Aceptar" %}</button>
+                        </form>
+                        <form method="post" action="{% url 'pages:reject_friend_request' req.friendship_id %}" style="flex: 1;">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-danger" style="width: 100%; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-block; background: #e74c3c; color: white;">✕ {% trans "Rechazar" %}</button>
+                        </form>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state" style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
+                <div class="empty-icon" style="font-size: 60px; margin-bottom: 15px;">📭</div>
+                <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; border: none;">{% trans "Sin solicitudes pendientes" %}</h3>
+                <p style="font-size: 14px; margin: 0;">{% trans "Cuando recibas solicitudes, aparecerán aquí" %}</p>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- AMIGOS CONFIRMADOS -->
+    <section>
+        <div class="section-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 2px solid var(--border-color);">
+            <h2 style="font-size: 22px; font-weight: 700; color: var(--text-primary); margin: 0;">✅ {% trans "Amigos Confirmados" %}</h2>
+            <span class="request-count" style="background: var(--primary-color); color: white; padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 700;">{{ accepted_friends|length }}</span>
+        </div>
+
+        {% if accepted_friends %}
+            <div class="friends-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 20px;">
+                {% for friend in accepted_friends %}
+                <div class="friend-card" style="border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; text-align: center; background: linear-gradient(135deg, rgba(70, 130, 180, 0.05), rgba(70, 130, 180, 0.02)); transition: all 0.3s; display: flex; flex-direction: column;">
+                    <img src="{{ friend.avatar_url|default:'https://via.placeholder.com/100' }}" alt="{{ friend.nick }}" style="width: 100px; height: 100px; border-radius: 50%; margin: 0 auto 15px; object-fit: cover; border: 3px solid var(--primary-color);">
+
+                    <h3 style="font-size: 16px; font-weight: 700; color: var(--text-primary); margin: 0 0 5px 0;">{{ friend.display_name }}</h3>
+                    <p class="nick" style="color: var(--text-secondary); font-weight: 600; font-size: 11px; margin: 5px 0;">@{{ friend.nick }}</p>
+                    <p class="location" style="color: var(--text-secondary); font-size: 11px; margin-bottom: 15px;">📍 {{ friend.city|default:'Sin ubicación' }}</p>
+
+                    <div class="friend-actions" style="display: flex; gap: 10px; margin-top: auto; padding-top: 15px;">
+                        <a href="{% url 'pages:user_profile' friend.nick %}" class="btn btn-primary" style="flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-block; background: var(--primary-color); color: white;">👁️ {% trans "Ver" %}</a>
+                        <button onclick="unfriendUser('{{ friend.id }}', '{{ friend.display_name }}')" class="btn btn-danger" style="flex: 1; padding: 10px; border: none; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; transition: all 0.3s; text-decoration: none; display: inline-block; background: #e74c3c; color: white;">🗑️ {% trans "Eliminar" %}</button>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state" style="text-align: center; padding: 60px 20px; color: var(--text-secondary);">
+                <div class="empty-icon" style="font-size: 60px; margin-bottom: 15px;">👥</div>
+                <h3 style="font-size: 18px; font-weight: 700; color: var(--text-primary); margin-bottom: 10px; border: none;">{% trans "Aún no tienes amigos confirmados" %}</h3>
+                <p style="font-size: 14px; margin: 0;">{% trans "¡Comienza a enviar solicitudes de amistad!" %}</p>
+            </div>
+        {% endif %}
+    </section>
+</div>
+{% endblock main_content %}
+
+{% block right_sidebar %}
+<!-- SIDEBAR DERECHO - AMIGOS ACTIVOS Y SUGERENCIAS -->
+<div class="friends-sidebar" style="background: var(--card-bg); border: none; border-left: 1px solid var(--border-color); border-radius: 0; padding: 20px; height: 100%; overflow-y: auto; position: sticky; top: 80px;">
+
+    <!-- AMIGOS ACTIVOS -->
+    <div class="sidebar-section" style="margin-bottom: 25px;">
+        <h3 style="font-size: 14px; font-weight: 700; margin: 0 0 15px 0; color: var(--primary-color); padding-bottom: 10px; border-bottom: 1px solid var(--border-color); text-transform: uppercase;">💚 {% trans "Amigos Activos" %}</h3>
+
+        <div class="friend-mini-card" style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: all 0.3s;" onclick="viewFriendProfile(1)">
+            <div class="friend-mini-avatar" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 20px; flex-shrink: 0;">S</div>
+            <div class="friend-mini-info" style="flex: 1; overflow: hidden;">
+                <div class="friend-mini-name" style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sofia</div>
+                <div class="friend-mini-status" style="font-size: 11px; color: var(--text-secondary);">{% trans "Hace 5 min" %}</div>
+            </div>
+            <div class="online-indicator" style="width: 12px; height: 12px; border-radius: 50%; background: #27ae60; flex-shrink: 0;"></div>
+        </div>
+
+        <div class="friend-mini-card" style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: all 0.3s;" onclick="viewFriendProfile(2)">
+            <div class="friend-mini-avatar" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 20px; flex-shrink: 0;">C</div>
+            <div class="friend-mini-info" style="flex: 1; overflow: hidden;">
+                <div class="friend-mini-name" style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Carlos</div>
+                <div class="friend-mini-status" style="font-size: 11px; color: var(--text-secondary);">{% trans "Hace 30 min" %}</div>
+            </div>
+            <div class="online-indicator" style="width: 12px; height: 12px; border-radius: 50%; background: #27ae60; flex-shrink: 0;"></div>
+        </div>
+
+        <div class="friend-mini-card" style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: none; cursor: pointer; transition: all 0.3s;" onclick="viewFriendProfile(3)">
+            <div class="friend-mini-avatar" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 20px; flex-shrink: 0;">A</div>
+            <div class="friend-mini-info" style="flex: 1; overflow: hidden;">
+                <div class="friend-mini-name" style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Andrea</div>
+                <div class="friend-mini-status" style="font-size: 11px; color: var(--text-secondary);">{% trans "En línea" %}</div>
+            </div>
+            <div class="online-indicator" style="width: 12px; height: 12px; border-radius: 50%; background: #27ae60; flex-shrink: 0;"></div>
+        </div>
+    </div>
+
+    <!-- SUGERENCIAS -->
+    <div class="sidebar-section" style="margin-bottom: 25px;">
+        <h3 style="font-size: 14px; font-weight: 700; margin: 0 0 15px 0; color: var(--primary-color); padding-bottom: 10px; border-bottom: 1px solid var(--border-color); text-transform: uppercase;">🎁 {% trans "Sugerencias" %}</h3>
+
+        <div class="suggestion-card" style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; margin-bottom: 12px; text-align: center; cursor: pointer; transition: all 0.3s;">
+            <div class="suggestion-avatar" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 20px; margin: 0 auto 8px;">V</div>
+            <div class="suggestion-name" style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">Valentina</div>
+            <div class="suggestion-info" style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">28, Colombia</div>
+            <button onclick="suggestFriend(4, 'Valentina')" class="suggestion-btn" style="width: 100%; padding: 6px; background: var(--primary-color); color: white; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s;">💬 {% trans "Solicitar" %}</button>
+        </div>
+
+        <div class="suggestion-card" style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; margin-bottom: 12px; text-align: center; cursor: pointer; transition: all 0.3s;">
+            <div class="suggestion-avatar" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 20px; margin: 0 auto 8px;">M</div>
+            <div class="suggestion-name" style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">Marco</div>
+            <div class="suggestion-info" style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">32, Argentina</div>
+            <button onclick="suggestFriend(5, 'Marco')" class="suggestion-btn" style="width: 100%; padding: 6px; background: var(--primary-color); color: white; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s;">💬 {% trans "Solicitar" %}</button>
+        </div>
+
+        <div class="suggestion-card" style="background: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; padding: 12px; text-align: center; cursor: pointer; transition: all 0.3s;">
+            <div class="suggestion-avatar" style="width: 50px; height: 50px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 20px; margin: 0 auto 8px;">J</div>
+            <div class="suggestion-name" style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">Jessica</div>
+            <div class="suggestion-info" style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">26, México</div>
+            <button onclick="suggestFriend(6, 'Jessica')" class="suggestion-btn" style="width: 100%; padding: 6px; background: var(--primary-color); color: white; border: none; border-radius: 4px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s;">💬 {% trans "Solicitar" %}</button>
+        </div>
+    </div>
+
+    <!-- TOP AMIGOS -->
+    <div class="sidebar-section" style="margin-bottom: 0;">
+        <h3 style="font-size: 14px; font-weight: 700; margin: 0 0 15px 0; color: var(--primary-color); padding-bottom: 10px; border-bottom: 1px solid var(--border-color); text-transform: uppercase;">⭐ {% trans "Top Amigos" %}</h3>
+
+        <div class="friend-mini-card" style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: all 0.3s;" onclick="viewFriendProfile(1)">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px; flex-shrink: 0;">🏆</div>
+            <div class="friend-mini-info" style="flex: 1; overflow: hidden;">
+                <div class="friend-mini-name" style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sofia</div>
+                <div class="friend-mini-status" style="font-size: 11px; color: var(--text-secondary);">👍 45 likes</div>
+            </div>
+        </div>
+
+        <div class="friend-mini-card" style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: all 0.3s;" onclick="viewFriendProfile(2)">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px; flex-shrink: 0;">🥈</div>
+            <div class="friend-mini-info" style="flex: 1; overflow: hidden;">
+                <div class="friend-mini-name" style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Carlos</div>
+                <div class="friend-mini-status" style="font-size: 11px; color: var(--text-secondary);">💬 38 chats</div>
+            </div>
+        </div>
+
+        <div class="friend-mini-card" style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: none; cursor: pointer; transition: all 0.3s;" onclick="viewFriendProfile(3)">
+            <div style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 16px; flex-shrink: 0;">🥉</div>
+            <div class="friend-mini-info" style="flex: 1; overflow: hidden;">
+                <div class="friend-mini-name" style="font-size: 13px; font-weight: 600; color: var(--text-primary); margin-bottom: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Andrea</div>
+                <div class="friend-mini-status" style="font-size: 11px; color: var(--text-secondary);">🎁 32 visitas</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock right_sidebar %}

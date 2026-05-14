@@ -1,0 +1,276 @@
+{% load static %}
+
+<header class="navbar-light fixed-top header-static bg-mode">
+
+    <!-- Logo Nav START -->
+    <nav class="navbar navbar-expand-lg">
+      <div class="container">
+        <!-- Logo START -->
+        <a class="navbar-brand" href="/">
+          <img class="light-mode-item navbar-brand-item" src="{% static '/images/logo.svg' %}" alt="LOBBY69">
+          <img class="dark-mode-item navbar-brand-item" src="{% static '/images/logo.svg' %}" alt="LOBBY69">
+        </a>
+        <!-- Logo END -->
+  
+        <!-- Responsive navbar toggler -->
+        <button class="navbar-toggler ms-auto icon-md btn btn-light p-0" type="button" data-bs-toggle="collapse"
+          data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false"
+          aria-label="Toggle navigation">
+          <span class="navbar-toggler-animation">
+            <span></span>
+            <span></span>
+            <span></span>
+          </span>
+        </button>
+  
+        <!-- Main navbar START -->
+        <div class="collapse navbar-collapse" id="navbarCollapse">
+  
+          <!-- Nav Search START -->
+          <div class="nav mt-3 mt-lg-0 flex-nowrap align-items-center px-4 px-lg-0">
+            <div class="nav-item w-100">
+              <form class="rounded position-relative">
+                <input class="form-control ps-5 bg-light" type="search" placeholder="Buscar jugadores, salas, torneos..." aria-label="Buscar">
+                <button class="btn bg-transparent px-2 py-0 position-absolute top-50 start-0 translate-middle-y"
+                  type="submit"><i class="bi bi-search fs-5"> </i></button>
+              </form>
+            </div>
+          </div>
+          <!-- Nav Search END -->
+  
+          <ul class="navbar-nav navbar-nav-scroll ms-auto">
+
+            <!-- Nav item 1: Jugar -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="playMenu" data-bs-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false"><i class="bi bi-controller me-1"></i>Jugar</a>
+              <ul class="dropdown-menu" aria-labelledby="playMenu">
+                <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='groups' %}">
+                  <i class="bi bi-grid-3x3 me-2 text-warning"></i>Salas disponibles</a></li>
+                <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='events' %}">
+                  <i class="bi bi-trophy me-2 text-warning"></i>Torneos activos</a></li>
+                <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='events-2' %}">
+                  <i class="bi bi-calendar-event me-2 text-warning"></i>Próximos eventos</a></li>
+                <li class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='group-details' %}">
+                  <i class="bi bi-plus-circle me-2 text-success"></i>Crear sala privada</a></li>
+              </ul>
+            </li>
+
+            <!-- Nav item 2: Comunidad -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="communityMenu" data-bs-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false"><i class="bi bi-people me-1"></i>Comunidad</a>
+              <ul class="dropdown-menu" aria-labelledby="communityMenu">
+                <li><a class="dropdown-item" href="/">
+                  <i class="bi bi-house me-2 text-info"></i>Feed principal</a></li>
+                <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='my-profile-connections' %}">
+                  <i class="bi bi-person-plus me-2 text-info"></i>Mis conexiones</a></li>
+                <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='groups' %}">
+                  <i class="bi bi-chat-square-dots me-2 text-info"></i>Grupos de juego</a></li>
+                <li class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='blog' %}">
+                  <i class="bi bi-newspaper me-2"></i>Noticias y estrategias</a></li>
+                <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='post-videos' %}">
+                  <i class="bi bi-play-circle me-2"></i>Videos de partidas</a></li>
+              </ul>
+            </li>
+
+            <!-- Nav item 3: Mi Club -->
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" id="clubMenu" data-bs-toggle="dropdown" aria-haspopup="true"
+                aria-expanded="false"><i class="bi bi-gem me-1"></i>Mi Club</a>
+              <ul class="dropdown-menu" aria-labelledby="clubMenu">
+                <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='my-profile' %}">
+                  <i class="bi bi-person-badge me-2 text-warning"></i>Mi perfil</a></li>
+                <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='my-profile-activity' %}">
+                  <i class="bi bi-activity me-2 text-warning"></i>Mi actividad</a></li>
+                <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='my-profile-media' %}">
+                  <i class="bi bi-images me-2 text-warning"></i>Mis capturas</a></li>
+                <li class="dropdown-divider"></li>
+                <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='settings' %}">
+                  <i class="bi bi-gear me-2"></i>Configuración</a></li>
+                <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='notifications' %}">
+                  <i class="bi bi-bell me-2"></i>Notificaciones</a></li>
+                <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='privacy-and-terms' %}">
+                  <i class="bi bi-shield-check me-2"></i>Privacidad</a></li>
+              </ul>
+            </li>
+
+          </ul>
+        </div>
+        <!-- Main navbar END -->
+  
+        <!-- Nav right START -->
+        <ul class="nav flex-nowrap align-items-center ms-sm-3 list-unstyled">
+
+          <!-- Mensajes -->
+          <li class="nav-item ms-2">
+            <a class="nav-link bg-light icon-md btn btn-light p-0" href="{% url 'pages:dynamic_pages' template_name='messaging' %}" title="Mensajes">
+              <i class="bi bi-chat-left-text-fill fs-6"> </i>
+            </a>
+          </li>
+
+          <!-- Configuración -->
+          <li class="nav-item ms-2">
+            <a class="nav-link bg-light icon-md btn btn-light p-0" href="{% url 'pages:dynamic_pages' template_name='settings' %}" title="Configuración">
+              <i class="bi bi-gear-fill fs-6"> </i>
+            </a>
+          </li>
+
+          <!-- Notificaciones dropdown -->
+          <li class="nav-item dropdown ms-2">
+            <a class="nav-link bg-light icon-md btn btn-light p-0" href="#" id="notifDropdown" role="button"
+              data-bs-toggle="dropdown" aria-expanded="false" data-bs-auto-close="outside">
+              <span class="badge-notif animation-blink"></span>
+              <i class="bi bi-bell-fill fs-6"> </i>
+            </a>
+            <div class="dropdown-menu dropdown-animation dropdown-menu-end dropdown-menu-size-md p-0 shadow-lg border-0"
+              aria-labelledby="notifDropdown">
+              <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                  <h6 class="m-0">Notificaciones <span class="badge bg-danger bg-opacity-10 text-danger ms-2">3 nuevas</span></h6>
+                  <a class="small" href="#">Limpiar</a>
+                </div>
+                <div class="card-body p-0">
+                  <ul class="list-group list-group-flush list-unstyled p-2">
+                    <!-- Notif: solicitud de sala -->
+                    <li>
+                      <div class="list-group-item list-group-item-action rounded badge-unread d-flex border-0 mb-1 p-3">
+                        <div class="avatar text-center d-none d-sm-inline-block">
+                          <div class="avatar-img rounded-circle bg-warning d-flex align-items-center justify-content-center">
+                            <i class="bi bi-trophy-fill text-dark"></i>
+                          </div>
+                        </div>
+                        <div class="ms-sm-3">
+                          <div class="d-flex">
+                            <p class="small mb-2"><b>El Torneo de Póker</b> empieza en 30 minutos.</p>
+                            <p class="small ms-3 text-nowrap">Ahora</p>
+                          </div>
+                          <div class="d-flex">
+                            <button class="btn btn-sm py-1 btn-primary me-2">Unirse</button>
+                            <button class="btn btn-sm py-1 btn-danger-soft">Ignorar</button>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
+                    <!-- Notif: conexión -->
+                    <li>
+                      <div class="list-group-item list-group-item-action rounded badge-unread d-flex border-0 mb-1 p-3">
+                        <div class="avatar text-center d-none d-sm-inline-block">
+                          <img class="avatar-img rounded-circle" src="{% static '/images/avatar/02.jpg' %}" alt="">
+                        </div>
+                        <div class="ms-sm-3 d-flex">
+                          <div>
+                            <p class="small mb-2"><b>Alex Rivera</b> quiere conectar contigo.</p>
+                            <button class="btn btn-sm btn-outline-light py-1 me-2">Aceptar</button>
+                          </div>
+                          <p class="small ms-3">5min</p>
+                        </div>
+                      </div>
+                    </li>
+                    <!-- Notif: sala disponible -->
+                    <li>
+                      <a href="#" class="list-group-item list-group-item-action rounded d-flex border-0 mb-1 p-3">
+                        <div class="avatar text-center d-none d-sm-inline-block">
+                          <div class="avatar-img rounded-circle bg-success d-flex align-items-center justify-content-center">
+                            <i class="bi bi-controller text-white"></i>
+                          </div>
+                        </div>
+                        <div class="ms-sm-3">
+                          <div class="d-flex">
+                            <p class="small mb-2">Sala <b>"BlackJack VIP"</b> tiene cupo disponible.</p>
+                            <p class="small ms-3">1hr</p>
+                          </div>
+                        </div>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+                <div class="card-footer text-center">
+                  <a href="{% url 'pages:dynamic_pages' template_name='notifications' %}" class="btn btn-sm btn-primary-soft">
+                    Ver toda la actividad
+                  </a>
+                </div>
+              </div>
+            </div>
+          </li>
+          <!-- Notificaciones END -->
+  
+          <!-- Avatar / Perfil dropdown -->
+          <li class="nav-item ms-2 dropdown">
+            <a class="nav-link btn icon-md p-0" href="#" id="profileDropdown" role="button" data-bs-auto-close="outside"
+              data-bs-display="static" data-bs-toggle="dropdown" aria-expanded="false">
+              <img class="avatar-img rounded-2" src="{% static '/images/avatar/07.jpg' %}" alt="Mi avatar">
+            </a>
+            <ul class="dropdown-menu dropdown-animation dropdown-menu-end pt-3 small me-md-n3"
+              aria-labelledby="profileDropdown">
+              <!-- Perfil info -->
+              <li class="px-3">
+                <div class="d-flex align-items-center position-relative">
+                  <div class="avatar me-3">
+                    <img class="avatar-img rounded-circle" src="{% static '/images/avatar/07.jpg' %}" alt="avatar">
+                  </div>
+                  <div>
+                    <a class="h6 stretched-link" href="{% url 'pages:dynamic_pages' template_name='my-profile' %}">Mi Perfil</a>
+                    <p class="small m-0" style="color: var(--lobby-gold);">
+                      <i class="bi bi-gem me-1"></i>Miembro VIP
+                    </p>
+                  </div>
+                </div>
+                <a class="dropdown-item btn btn-primary-soft btn-sm my-2 text-center"
+                  href="{% url 'pages:dynamic_pages' template_name='my-profile' %}">Ver perfil de jugador</a>
+              </li>
+              <!-- Links -->
+              <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='settings' %}">
+                <i class="bi bi-gear fa-fw me-2"></i>Configuración</a></li>
+              <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='notifications' %}">
+                <i class="bi bi-bell fa-fw me-2"></i>Notificaciones</a></li>
+              <li><a class="dropdown-item" href="{% url 'pages:dynamic_pages' template_name='help' %}">
+                <i class="fa-fw bi bi-life-preserver me-2"></i>Centro de ayuda</a></li>
+              <li class="dropdown-divider"></li>
+              <li><a class="dropdown-item bg-danger-soft-hover"
+                href="{% url 'pages:dynamic_pages' template_name='sign-in-advance' %}">
+                <i class="bi bi-power fa-fw me-2"></i>Cerrar sesión</a></li>
+              <li><hr class="dropdown-divider"></li>
+              <!-- Dark mode options START -->
+              <li>
+                <div class="modeswitch-item theme-icon-active d-flex justify-content-center gap-3 align-items-center p-2 pb-0">
+                  <span>Tema:</span>
+                  <button type="button" class="btn btn-modeswitch nav-link text-primary-hover mb-0"
+                    data-bs-theme-value="light" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Claro">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                      class="bi bi-sun fa-fw mode-switch" viewBox="0 0 16 16">
+                      <path d="M8 11a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm0 1a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM8 0a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 0zm0 13a.5.5 0 0 1 .5.5v2a.5.5 0 0 1-1 0v-2A.5.5 0 0 1 8 13zm8-5a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2a.5.5 0 0 1 .5.5zM3 8a.5.5 0 0 1-.5.5h-2a.5.5 0 0 1 0-1h2A.5.5 0 0 1 3 8zm10.657-5.657a.5.5 0 0 1 0 .707l-1.414 1.415a.5.5 0 1 1-.707-.708l1.414-1.414a.5.5 0 0 1 .707 0zm-9.193 9.193a.5.5 0 0 1 0 .707L3.05 13.657a.5.5 0 0 1-.707-.707l1.414-1.414a.5.5 0 0 1 .707 0zm9.193 2.121a.5.5 0 0 1-.707 0l-1.414-1.414a.5.5 0 0 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .707zM4.464 4.465a.5.5 0 0 1-.707 0L2.343 3.05a.5.5 0 1 1 .707-.707l1.414 1.414a.5.5 0 0 1 0 .708z"/>
+                      <use href="#"></use>
+                    </svg>
+                  </button>
+                  <button type="button" class="btn btn-modeswitch nav-link text-primary-hover mb-0"
+                    data-bs-theme-value="dark" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Oscuro">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                      class="bi bi-moon-stars fa-fw mode-switch" viewBox="0 0 16 16">
+                      <path d="M6 .278a.768.768 0 0 1 .08.858 7.208 7.208 0 0 0-.878 3.46c0 4.021 3.278 7.277 7.318 7.277.527 0 1.04-.055 1.533-.16a.787.787 0 0 1 .81.316.733.733 0 0 1-.031.893A8.349 8.349 0 0 1 8.344 16C3.734 16 0 12.286 0 7.71 0 4.266 2.114 1.312 5.124.06A.752.752 0 0 1 6 .278z"/>
+                      <use href="#"></use>
+                    </svg>
+                  </button>
+                  <button type="button" class="btn btn-modeswitch nav-link text-primary-hover mb-0 active"
+                    data-bs-theme-value="auto" data-bs-toggle="tooltip" data-bs-placement="top" data-bs-title="Auto">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                      class="bi bi-circle-half fa-fw mode-switch" viewBox="0 0 16 16">
+                      <path d="M8 15A7 7 0 1 0 8 1v14zm0 1A8 8 0 1 1 8 0a8 8 0 0 1 0 16z"/>
+                      <use href="#"></use>
+                    </svg>
+                  </button>
+                </div>
+              </li>
+              <!-- Dark mode END -->
+            </ul>
+          </li>
+          <!-- Perfil END -->
+  
+        </ul>
+        <!-- Nav right END -->
+      </div>
+    </nav>
+    <!-- Logo Nav END -->
+  </header>

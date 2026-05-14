@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}Solicitud enviada — LOBBY69{% endblock %}
+
+{% block content %}
+<main style="min-height:100vh; background:linear-gradient(135deg,#0d0d1a 0%,#1a0a30 50%,#0d0d1a 100%); display:flex; align-items:center;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-6 text-center">
+        <div style="width:80px; height:80px; border-radius:50%; background:rgba(200,168,75,0.15); border:2px solid rgba(200,168,75,0.5); display:flex; align-items:center; justify-content:center; margin:0 auto 24px;">
+          <i class="bi bi-check-lg" style="font-size:36px; color:#c8a84b;"></i>
+        </div>
+        <h3 class="text-white">¡Solicitud recibida!</h3>
+        <p style="color:#7070a0; font-size:16px;" class="mb-4">
+          Gracias por tu interés en LOBBY69.<br>
+          Revisaremos tu solicitud en las próximas <strong style="color:#c8a84b;">24–48 horas</strong> y te contactaremos por email.
+        </p>
+        <div class="d-grid gap-3 col-8 mx-auto">
+          <a href="{% url 'pages:landing' %}" class="btn btn-outline-light">
+            <i class="bi bi-arrow-left me-1"></i>Volver al inicio
+          </a>
+          <a href="{% url 'pages:dynamic_pages' template_name='sign-in-advance' %}" class="btn fw-bold"
+            style="background:linear-gradient(135deg,#c8a84b,#f5d78e); border:none; color:#0d0d1a;">
+            <i class="bi bi-box-arrow-in-right me-1"></i>Ya tengo cuenta — Entrar
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}

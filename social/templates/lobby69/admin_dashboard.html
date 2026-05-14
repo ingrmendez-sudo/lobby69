@@ -1,0 +1,236 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}Panel de Administración — LOBBY69{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'vendor/bootstrap-icons/font/bootstrap-icons.css' %}">
+{% endblock %}
+
+{% block content %}
+{% include "partials/navbar.html" %}
+
+<main style="padding-top: 70px;">
+<div class="container-fluid py-4">
+
+  <div class="d-flex align-items-center mb-4">
+    <h3 class="mb-0">
+      <i class="bi bi-shield-lock me-2" style="color:#c8a84b;"></i>
+      Panel de Administración LOBBY69
+    </h3>
+    <a href="/admin/" class="btn btn-sm btn-outline-secondary ms-auto">
+      <i class="bi bi-gear me-1"></i>Django Admin
+    </a>
+  </div>
+
+  <!-- Stats cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-sm-6 col-lg-2">
+      <div class="card text-center" style="border-color:rgba(200,168,75,0.3);">
+        <div class="card-body py-3">
+          <h3 style="color:#c8a84b;">{{ pending_requests }}</h3>
+          <small class="text-muted">Solicitudes pendientes</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-2">
+      <div class="card text-center" style="border-color:rgba(13,202,240,0.3);">
+        <div class="card-body py-3">
+          <h3 style="color:#0dcaf0;">{{ pending_profiles }}</h3>
+          <small class="text-muted">Perfiles pendientes</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-2">
+      <div class="card text-center" style="border-color:rgba(255,193,7,0.3);">
+        <div class="card-body py-3">
+          <h3 style="color:#ffc107;">{{ pending_posts }}</h3>
+          <small class="text-muted">Posts por moderar</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-2">
+      <div class="card text-center" style="border-color:rgba(12,188,135,0.3);">
+        <div class="card-body py-3">
+          <h3 style="color:#0cbc87;">{{ pending_payments }}</h3>
+          <small class="text-muted">Pagos pendientes</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-2">
+      <div class="card text-center" style="border-color:rgba(214,41,62,0.3);">
+        <div class="card-body py-3">
+          <h3 style="color:#d6293e;">{{ pending_reports }}</h3>
+          <small class="text-muted">Reportes</small>
+        </div>
+      </div>
+    </div>
+    <div class="col-sm-6 col-lg-2">
+      <div class="card text-center" style="border-color:rgba(200,168,75,0.3);">
+        <div class="card-body py-3">
+          <h3 style="color:#c8a84b;">{{ total_members }}</h3>
+          <small class="text-muted">Miembros activos</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+
+    <!-- Solicitudes de acceso recientes -->
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0"><i class="bi bi-person-plus me-2" style="color:#c8a84b;"></i>Solicitudes de acceso</h6>
+          <a href="/admin/invitations/invitationrequest/" class="btn btn-sm btn-outline-primary">Ver todas</a>
+        </div>
+        <div class="card-body p-0">
+          {% if recent_requests %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th class="small">Nombre</th>
+                  <th class="small">Tipo</th>
+                  <th class="small">Estado</th>
+                  <th class="small">Fecha</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for req in recent_requests %}
+                <tr>
+                  <td>
+                    <p class="mb-0 small fw-bold">{{ req.full_name }}</p>
+                    <small class="text-muted">{{ req.email }}</small>
+                  </td>
+                  <td><small>{{ req.get_profile_type_display }}</small></td>
+                  <td>
+                    <span class="badge {% if req.status == 'PENDIENTE' %}bg-warning{% elif req.status == 'APROBADA' %}bg-success{% else %}bg-danger{% endif %}">
+                      {{ req.get_status_display }}
+                    </span>
+                  </td>
+                  <td><small class="text-muted">{{ req.created_at|date:"d/m H:i" }}</small></td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-inbox fs-3 d-block mb-2"></i>
+            No hay solicitudes pendientes
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Posts pendientes de moderación -->
+    <div class="col-lg-6">
+      <div class="card h-100">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0"><i class="bi bi-shield-exclamation me-2" style="color:#ffc107;"></i>Posts por moderar</h6>
+          <a href="/admin/social_feed/post/" class="btn btn-sm btn-outline-warning">Ver todos</a>
+        </div>
+        <div class="card-body p-0">
+          {% if recent_posts %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th class="small">Autor</th>
+                  <th class="small">Contenido</th>
+                  <th class="small">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for post in recent_posts %}
+                <tr>
+                  <td><small class="fw-bold">{{ post.author.username }}</small></td>
+                  <td><small class="text-muted">{{ post.content|truncatechars:40 }}</small></td>
+                  <td>
+                    <form method="post" action="{% url 'pages:admin_moderate_post' post.id %}" class="d-inline">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="approve">
+                      <button type="submit" class="btn btn-xs btn-success me-1" title="Aprobar">
+                        <i class="bi bi-check-lg"></i>
+                      </button>
+                    </form>
+                    <form method="post" action="{% url 'pages:admin_moderate_post' post.id %}" class="d-inline">
+                      {% csrf_token %}
+                      <input type="hidden" name="action" value="reject">
+                      <button type="submit" class="btn btn-xs btn-danger" title="Rechazar">
+                        <i class="bi bi-x-lg"></i>
+                      </button>
+                    </form>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-check-circle fs-3 d-block mb-2"></i>
+            No hay posts pendientes
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagos pendientes -->
+    <div class="col-12">
+      <div class="card">
+        <div class="card-header d-flex justify-content-between align-items-center">
+          <h6 class="mb-0"><i class="bi bi-credit-card me-2" style="color:#0cbc87;"></i>Pagos pendientes de verificación</h6>
+          <a href="/admin/payments/payment/" class="btn btn-sm btn-outline-success">Ver todos</a>
+        </div>
+        <div class="card-body p-0">
+          {% if recent_payments %}
+          <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+              <thead>
+                <tr>
+                  <th class="small">Referencia</th>
+                  <th class="small">Usuario</th>
+                  <th class="small">Plan</th>
+                  <th class="small">Monto</th>
+                  <th class="small">Método</th>
+                  <th class="small">Fecha</th>
+                  <th class="small">Acción</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for payment in recent_payments %}
+                <tr>
+                  <td><small class="font-monospace">{{ payment.reference|truncatechars:12 }}</small></td>
+                  <td><small>{{ payment.user.email }}</small></td>
+                  <td><small>{{ payment.plan.name }}</small></td>
+                  <td><small class="fw-bold text-success">${{ payment.amount_mxn }} MXN</small></td>
+                  <td><small>{{ payment.get_method_display }}</small></td>
+                  <td><small class="text-muted">{{ payment.created_at|date:"d/m H:i" }}</small></td>
+                  <td>
+                    <a href="/admin/payments/payment/{{ payment.id }}/change/" class="btn btn-xs btn-outline-success">
+                      <i class="bi bi-check-circle me-1"></i>Revisar
+                    </a>
+                  </td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+          {% else %}
+          <div class="text-center py-4 text-muted">
+            <i class="bi bi-currency-dollar fs-3 d-block mb-2"></i>
+            No hay pagos pendientes
+          </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+  </div><!-- row -->
+</div><!-- container -->
+</main>
+{% endblock %}

@@ -1,0 +1,217 @@
+{% extends 'base_authenticated.html' %}
+{% load static i18n %}
+
+{% block page_title %}{% trans "Chats" %} - LOBBY69{% endblock %}
+
+{% block left_sidebar %}
+<!-- LISTA DE CONVERSACIONES -->
+<div class="conversations-list" id="convList" style="background-color: var(--card-bg); border-right: 1px solid var(--border-color); display: flex; flex-direction: column; height: 100%; border-radius: 0;">
+    <div class="conversations-header" style="padding: 20px; border-bottom: 1px solid var(--border-color); position: sticky; top: 0; background-color: var(--card-bg); z-index: 10;">
+        <h2 style="font-size: 18px; margin-bottom: 15px;">{% trans "Mensajes" %}</h2>
+        <input type="text" class="search-conv" id="searchConv" placeholder="{% trans 'Buscar...' %}" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 5px; background-color: var(--bg-primary); color: var(--text-primary); font-size: 13px; font-family: inherit;">
+    </div>
+    <div class="conversations-body" style="flex: 1; overflow-y: auto; padding: 0;">
+        <!-- Conversación 1 -->
+        <div class="conversation-item active" onclick="openChat(1, 'Sofia', event)" style="padding: 15px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: all 0.3s; background-color: var(--card-bg);">
+            <div class="conv-avatar" style="width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; margin-bottom: 8px;">S</div>
+            <div class="conv-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
+                <span class="conv-name" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Sofia</span>
+                <span class="conv-time" style="font-size: 11px; color: var(--text-secondary);">10:30</span>
+            </div>
+            <div class="conv-message" style="font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Claro, me encantaría conectar contigo...</div>
+        </div>
+
+        <!-- Conversación 2 -->
+        <div class="conversation-item" onclick="openChat(2, 'Carlos', event)" style="padding: 15px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: all 0.3s; background-color: var(--card-bg);">
+            <div class="conv-avatar" style="width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; margin-bottom: 8px;">C</div>
+            <div class="conv-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
+                <span class="conv-name" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Carlos</span>
+                <span class="conv-time" style="font-size: 11px; color: var(--text-secondary);">09:15</span>
+            </div>
+            <div class="conv-message" style="font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">¿Cómo estás? ¿Estás disponible?</div>
+        </div>
+
+        <!-- Conversación 3 -->
+        <div class="conversation-item" onclick="openChat(3, 'Andrea & Luis', event)" style="padding: 15px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: all 0.3s; background-color: var(--card-bg);">
+            <div class="conv-avatar" style="width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; margin-bottom: 8px;">A</div>
+            <div class="conv-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
+                <span class="conv-name" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Andrea & Luis</span>
+                <span class="conv-time" style="font-size: 11px; color: var(--text-secondary);">Ayer</span>
+            </div>
+            <div class="conv-message" style="font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Nos gustaría conocerte en persona...</div>
+        </div>
+
+        <!-- Conversación 4 -->
+        <div class="conversation-item" onclick="openChat(4, 'Valentina', event)" style="padding: 15px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: all 0.3s; background-color: var(--card-bg);">
+            <div class="conv-avatar" style="width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; margin-bottom: 8px;">V</div>
+            <div class="conv-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
+                <span class="conv-name" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Valentina</span>
+                <span class="conv-time" style="font-size: 11px; color: var(--text-secondary);">Hace 2 días</span>
+            </div>
+            <div class="conv-message" style="font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Fue un placer conocerte 😊</div>
+        </div>
+
+        <!-- Conversación 5 -->
+        <div class="conversation-item" onclick="openChat(5, 'Marco', event)" style="padding: 15px; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: all 0.3s; background-color: var(--card-bg);">
+            <div class="conv-avatar" style="width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; margin-bottom: 8px;">M</div>
+            <div class="conv-header" style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 5px;">
+                <span class="conv-name" style="font-size: 14px; font-weight: 700; color: var(--text-primary);">Marco</span>
+                <span class="conv-time" style="font-size: 11px; color: var(--text-secondary);">Hace 1 semana</span>
+            </div>
+            <div class="conv-message" style="font-size: 12px; color: var(--text-secondary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Espero que estés bien...</div>
+        </div>
+    </div>
+</div>
+{% endblock left_sidebar %}
+
+{% block main_content %}
+<!-- ÁREA DE CHAT -->
+<div class="chat-area" id="chatArea" style="display: flex; flex-direction: column; background-color: var(--bg-primary); border-radius: 0; height: 100%;">
+    <!-- Chat Header -->
+    <div class="chat-header" style="padding: 20px; border-bottom: 1px solid var(--border-color); background-color: var(--card-bg); display: flex; justify-content: space-between; align-items: center;">
+        <div class="chat-header-info" style="display: flex; align-items: center; gap: 15px;">
+            <div class="chat-header-avatar" style="width: 45px; height: 45px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700;">S</div>
+            <div class="chat-header-text">
+                <h3 id="chatName" style="font-size: 15px; margin-bottom: 3px;">Sofia</h3>
+                <p style="font-size: 12px; color: var(--text-secondary);">{% trans "Activa ahora" %}</p>
+            </div>
+        </div>
+        <div class="chat-options" style="display: flex; gap: 10px;">
+            <button class="chat-option-btn" title="{% trans 'Llamada de voz' %}" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-secondary); transition: color 0.3s; padding: 5px;">📞</button>
+            <button class="chat-option-btn" title="{% trans 'Llamada de video' %}" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-secondary); transition: color 0.3s; padding: 5px;">📹</button>
+            <button class="chat-option-btn" title="{% trans 'Información' %}" style="background: none; border: none; font-size: 18px; cursor: pointer; color: var(--text-secondary); transition: color 0.3s; padding: 5px;">ℹ️</button>
+        </div>
+    </div>
+
+    <!-- Mensajes -->
+    <div class="messages" id="messagesContainer" style="flex: 1; overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 15px;">
+        <!-- Mensaje recibido -->
+        <div class="message received" style="display: flex; gap: 12px; animation: fadeIn 0.3s ease; justify-content: flex-start;">
+            <div class="message-avatar" style="width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0;">S</div>
+            <div>
+                <div class="message-bubble" style="max-width: 60%; padding: 12px 16px; border-radius: 15px; word-wrap: break-word; font-size: 14px; line-height: 1.4; background-color: var(--bg-secondary); color: var(--text-primary); border-bottom-left-radius: 5px;">Hola, ¿cómo estás?</div>
+                <div class="message-time" style="font-size: 11px; color: var(--text-secondary); margin-top: 5px;">10:15</div>
+            </div>
+        </div>
+
+        <!-- Mensaje enviado -->
+        <div class="message sent" style="display: flex; gap: 12px; animation: fadeIn 0.3s ease; justify-content: flex-end;">
+            <div>
+                <div class="message-bubble" style="max-width: 60%; padding: 12px 16px; border-radius: 15px; word-wrap: break-word; font-size: 14px; line-height: 1.4; background-color: var(--primary-color); color: white; border-bottom-right-radius: 5px;">¡Hola Sofia! Muy bien, ¿y tú?</div>
+                <div class="message-time" style="font-size: 11px; color: var(--text-secondary); margin-top: 5px; text-align: right;">10:16</div>
+            </div>
+        </div>
+
+        <!-- Mensaje recibido -->
+        <div class="message received" style="display: flex; gap: 12px; animation: fadeIn 0.3s ease; justify-content: flex-start;">
+            <div class="message-avatar" style="width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0;">S</div>
+            <div>
+                <div class="message-bubble" style="max-width: 60%; padding: 12px 16px; border-radius: 15px; word-wrap: break-word; font-size: 14px; line-height: 1.4; background-color: var(--bg-secondary); color: var(--text-primary); border-bottom-left-radius: 5px;">Excelente también. Claro, me encantaría conectar contigo y explorar nuevas experiencias juntos.</div>
+                <div class="message-time" style="font-size: 11px; color: var(--text-secondary); margin-top: 5px;">10:30</div>
+            </div>
+        </div>
+
+        <!-- Mensaje enviado -->
+        <div class="message sent" style="display: flex; gap: 12px; animation: fadeIn 0.3s ease; justify-content: flex-end;">
+            <div>
+                <div class="message-bubble" style="max-width: 60%; padding: 12px 16px; border-radius: 15px; word-wrap: break-word; font-size: 14px; line-height: 1.4; background-color: var(--primary-color); color: white; border-bottom-right-radius: 5px;">Suena perfecto. ¿Cuándo podríamos vernos?</div>
+                <div class="message-time" style="font-size: 11px; color: var(--text-secondary); margin-top: 5px; text-align: right;">10:31</div>
+            </div>
+        </div>
+
+        <!-- Mensaje recibido -->
+        <div class="message received" style="display: flex; gap: 12px; animation: fadeIn 0.3s ease; justify-content: flex-start;">
+            <div class="message-avatar" style="width: 35px; height: 35px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0;">S</div>
+            <div>
+                <div class="message-bubble" style="max-width: 60%; padding: 12px 16px; border-radius: 15px; word-wrap: break-word; font-size: 14px; line-height: 1.4; background-color: var(--bg-secondary); color: var(--text-primary); border-bottom-left-radius: 5px;">Podría ser este fin de semana. ¿Te viene bien?</div>
+                <div class="message-time" style="font-size: 11px; color: var(--text-secondary); margin-top: 5px;">10:32</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input Area -->
+    <div class="chat-input-area" style="padding: 20px; background-color: var(--card-bg); border-top: 1px solid var(--border-color);">
+        <div class="input-form" style="display: flex; gap: 10px; align-items: flex-end;">
+            <textarea class="input-field" id="messageInput" placeholder="{% trans 'Escribe un mensaje...' %}" rows="1" style="flex: 1; padding: 12px 16px; border: 1px solid var(--border-color); border-radius: 20px; background-color: var(--bg-primary); color: var(--text-primary); font-size: 14px; resize: none; max-height: 100px; font-family: inherit;"></textarea>
+            <button class="btn-send" onclick="sendMessage()" style="background-color: var(--primary-color); color: white; border: none; padding: 12px 20px; border-radius: 20px; cursor: pointer; font-size: 16px; transition: all 0.3s; flex-shrink: 0;">📤</button>
+        </div>
+    </div>
+</div>
+
+<!-- Empty State (mostrar cuando no hay chat seleccionado) -->
+<div class="empty-state" id="emptyState" style="display: none; flex-direction: column; align-items: center; justify-content: center; height: 100%; color: var(--text-secondary); text-align: center;">
+    <div class="empty-state-icon" style="font-size: 60px; margin-bottom: 20px;">💬</div>
+    <div class="empty-state-text">
+        <h3 style="font-size: 18px; margin-bottom: 10px; color: var(--text-primary);">{% trans "Selecciona una conversación" %}</h3>
+        <p>{% trans "Elige una conversación existente o inicia una nueva" %}</p>
+    </div>
+</div>
+{% endblock main_content %}
+
+{% block right_sidebar %}
+<!-- SIDEBAR DERECHO - HISTORIAS Y ANUNCIOS -->
+<div class="sidebar-right" style="background-color: var(--card-bg); border-left: 1px solid var(--border-color); border-radius: 0; display: flex; flex-direction: column; gap: 20px; padding: 20px; overflow-y: auto;">
+
+    <!-- SECCIÓN DE HISTORIAS (RELATOS) -->
+    <div class="stories-section" style="background-color: var(--bg-secondary); border-radius: 8px; padding: 15px;">
+        <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 15px; color: var(--primary-color); text-transform: uppercase;">📖 {% trans "Historias" %}</h3>
+
+        <!-- Historias Carousel -->
+        <div class="stories-carousel" style="display: flex; gap: 10px; overflow-x: auto; padding-bottom: 5px;">
+            <!-- Historia 1 -->
+            <div class="story-item" style="min-width: 70px; cursor: pointer; text-align: center; transition: all 0.3s;" onclick="viewStory('Sofia')">
+                <div style="width: 70px; height: 80px; border-radius: 8px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; margin-bottom: 8px; border: 2px solid var(--primary-color);">📸</div>
+                <span style="font-size: 11px; color: var(--text-secondary); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Sofia</span>
+            </div>
+
+            <!-- Historia 2 -->
+            <div class="story-item" style="min-width: 70px; cursor: pointer; text-align: center; transition: all 0.3s;" onclick="viewStory('Carlos')">
+                <div style="width: 70px; height: 80px; border-radius: 8px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; margin-bottom: 8px; border: 2px solid var(--primary-color);">🎥</div>
+                <span style="font-size: 11px; color: var(--text-secondary); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Carlos</span>
+            </div>
+
+            <!-- Historia 3 -->
+            <div class="story-item" style="min-width: 70px; cursor: pointer; text-align: center; transition: all 0.3s;" onclick="viewStory('Andrea')">
+                <div style="width: 70px; height: 80px; border-radius: 8px; background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; margin-bottom: 8px; border: 2px solid var(--primary-color);">✨</div>
+                <span style="font-size: 11px; color: var(--text-secondary); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Andrea</span>
+            </div>
+
+            <!-- Historia 4 -->
+            <div class="story-item" style="min-width: 70px; cursor: pointer; text-align: center; transition: all 0.3s;" onclick="viewStory('Valentina')">
+                <div style="width: 70px; height: 80px; border-radius: 8px; background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 24px; margin-bottom: 8px; border: 2px solid var(--primary-color);">🌟</div>
+                <span style="font-size: 11px; color: var(--text-secondary); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">Valentina</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- SECCIÓN DE ANUNCIOS -->
+    <div class="ads-section" style="background-color: var(--bg-secondary); border-radius: 8px; padding: 15px;">
+        <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 15px; color: var(--primary-color); text-transform: uppercase;">📢 {% trans "Anuncios" %}</h3>
+
+        <!-- Anuncio 1 -->
+        <div class="ad-item" style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 12px; cursor: pointer; transition: all 0.3s;">
+            <div style="background: linear-gradient(135deg, var(--primary-color), #2c5aa0); width: 100%; height: 100px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 32px; margin-bottom: 10px;">💎</div>
+            <h4 style="font-size: 12px; font-weight: 700; margin-bottom: 5px; color: var(--text-primary);">{% trans "Membresía Premium" %}</h4>
+            <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">{% trans "Acceso ilimitado a todos los perfiles" %}</p>
+            <button style="width: 100%; padding: 8px; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s;">{% trans "Más info" %}</button>
+        </div>
+
+        <!-- Anuncio 2 -->
+        <div class="ad-item" style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; margin-bottom: 12px; cursor: pointer; transition: all 0.3s;">
+            <div style="background: linear-gradient(135deg, #f5576c, #f093fb); width: 100%; height: 100px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 32px; margin-bottom: 10px;">🎉</div>
+            <h4 style="font-size: 12px; font-weight: 700; margin-bottom: 5px; color: var(--text-primary);">{% trans "Evento Especial" %}</h4>
+            <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">{% trans "Únete a nuestro evento del fin de semana" %}</p>
+            <button style="width: 100%; padding: 8px; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s;">{% trans "Más info" %}</button>
+        </div>
+
+        <!-- Anuncio 3 -->
+        <div class="ad-item" style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 12px; cursor: pointer; transition: all 0.3s;">
+            <div style="background: linear-gradient(135deg, #4facfe, #00f2fe); width: 100%; height: 100px; border-radius: 6px; display: flex; align-items: center; justify-content: center; color: white; font-size: 32px; margin-bottom: 10px;">🌍</div>
+            <h4 style="font-size: 12px; font-weight: 700; margin-bottom: 5px; color: var(--text-primary);">{% trans "Conecta Globalmente" %}</h4>
+            <p style="font-size: 11px; color: var(--text-secondary); margin-bottom: 8px;">{% trans "Conoce gente de todo el mundo" %}</p>
+            <button style="width: 100%; padding: 8px; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s;">{% trans "Más info" %}</button>
+        </div>
+    </div>
+</div>
+{% endblock right_sidebar %}
+

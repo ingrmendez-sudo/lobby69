@@ -1,0 +1,218 @@
+{% extends 'base_authenticated.html' %}
+{% load static %}
+{% load i18n %}
+
+{% block page_title %}{{ profile.nick }} - LOBBY69{% endblock %}
+
+{% block left_sidebar %}
+    <div class="profile-sidebar-left">
+        <div class="sidebar-title">📊 {% trans "Estadísticas" %}</div>
+
+        <div class="stat-item">
+            <span class="stat-label">{% trans "Amigos" %}</span>
+            <span class="stat-value">{{ friends_count|default:"0" }}</span>
+        </div>
+
+        <div class="stat-item">
+            <span class="stat-label">{% trans "Fotos" %}</span>
+            <span class="stat-value">{{ photos|length|default:"0" }}</span>
+        </div>
+
+        <div class="stat-item">
+            <span class="stat-label">{% trans "Me Gustas" %}</span>
+            <span class="stat-value">{{ likes_count|default:"0" }}</span>
+        </div>
+
+        <div class="stat-item">
+            <span class="stat-label">{% trans "Visitantes" %}</span>
+            <span class="stat-value">{{ visitors_count|default:"0" }}</span>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-title">🏷️ {% trans "Intereses" %}</div>
+            {% if profile.interests %}
+                {% for interest in profile.interests %}
+                    <span class="profile-badge">{{ interest }}</span>
+                {% endfor %}
+            {% else %}
+                <p style="font-size: 13px; color: var(--text-secondary);">{% trans "No especificado" %}</p>
+            {% endif %}
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-title">🔄 {% trans "Acciones Rápidas" %}</div>
+            <button class="quick-action-btn" onclick="alert('Reportar usuario')">🚩 {% trans "Reportar" %}</button>
+            <button class="quick-action-btn" onclick="alert('Bloquear usuario')">🚫 {% trans "Bloquear" %}</button>
+        </div>
+
+        <div class="sidebar-section">
+            <div class="sidebar-title">ℹ️ {% trans "Información" %}</div>
+            <p style="font-size: 12px; color: var(--text-secondary); line-height: 1.5;">
+                {% trans "Perfil activo desde" %}
+                <strong>{{ profile.created_at|date:"d/m/Y"|default:"N/A" }}</strong>
+            </p>
+        </div>
+    </div>
+{% endblock %}
+
+{% block main_content %}
+    <div class="profile-main">
+        <!-- PROFILE HEADER -->
+        <div class="profile-header">
+            <div class="profile-avatar">👤</div>
+
+            <div class="profile-info">
+                <h1 class="profile-name">{{ profile.nick }}</h1>
+
+                <div class="profile-meta">
+                    <div class="profile-meta-item">📍 {{ profile.city|default:"México" }}</div>
+                    <div class="profile-meta-item">👥 {{ friends_count|default:"0" }} {% trans "amigos" %}</div>
+                    <div class="profile-meta-item">📸 {{ photos|length|default:"0" }} {% trans "fotos" %}</div>
+                </div>
+
+                {% if profile.bio %}
+                    <p class="profile-bio">{{ profile.bio }}</p>
+                {% endif %}
+
+                <div class="profile-actions">
+                    <button class="btn btn-primary" onclick="alert('Abrir chat')">💬 {% trans "Enviar Mensaje" %}</button>
+                    {% if friendship_status == 'accepted' %}
+                        <button class="btn btn-secondary" disabled>✓ {% trans "Amigos" %}</button>
+                    {% elif friendship_status == 'pending' %}
+                        <button class="btn btn-secondary" disabled>⏳ {% trans "Solicitud Pendiente" %}</button>
+                    {% else %}
+                        <button class="btn btn-primary" onclick="agregarAmigo('{{ profile.nick }}')">➕ {% trans "Agregar Amigo" %}</button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- GALLERY SECTION -->
+        <div class="gallery-section">
+            <div class="gallery-header">📸 {% trans "Galería" %}</div>
+
+            {% if photos %}
+                <div class="gallery-grid">
+                    {% for photo in photos %}
+                        <div class="gallery-item" data-image="{{ photo.image_url }}" data-caption="{{ photo.caption|default:'' }}" data-id="{{ photo.id }}" onclick="openPhotoModal(event)">
+                            <img src="{{ photo.image_url }}" alt="{% trans 'Foto' %}">
+                            <div class="gallery-item-overlay">
+                                <button class="overlay-btn" onclick="event.stopPropagation(); toggleLike('{{ photo.id }}')">👍 {{ photo.likes_count|default:0 }}</button>
+                                <button class="overlay-btn" onclick="event.stopPropagation(); openPhotoModal(event);">💬 {% trans "Ver" %}</button>
+                            </div>
+                        </div>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-gallery">
+                    <p>📸 {% trans "Este usuario no tiene fotos públicas aún" %}</p>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- MODAL DE FOTO -->
+    <div id="photoModal">
+        <div class="photo-modal-container">
+            <!-- Foto -->
+            <div class="photo-section">
+                <button class="close-modal" onclick="closePhotoModal()">&times;</button>
+                <img id="modalImage" src="" alt="{% trans 'Foto' %}">
+            </div>
+
+            <!-- Info y comentarios -->
+            <div class="comments-section">
+                <div class="photo-info">
+                    <h3 id="modalCaption">{% trans "Sin título" %}</h3>
+                    <div class="photo-actions">
+                        <button onclick="toggleLike(currentPhotoId)" class="btn-action">❤️ {% trans "Like" %}</button>
+                        <button class="btn-action" onclick="alert('Guardar foto')">💾 {% trans "Guardar" %}</button>
+                    </div>
+                </div>
+
+                <!-- Formulario de comentario -->
+                <div class="comment-form">
+                    <textarea id="commentText" placeholder="{% trans 'Escribe un comentario...' %}" maxlength="500" rows="3"></textarea>
+                    <button onclick="submitComment()">{% trans "Publicar comentario" %}</button>
+                    <small id="charCount">0/500</small>
+                </div>
+
+                <!-- Lista de comentarios -->
+                <div class="comments-list" id="commentsList">
+                    <p style="text-align: center; color: #999; font-size: 13px;">{% trans "Cargando comentarios..." %}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% csrf_token %}
+{% endblock %}
+
+{% block right_sidebar %}
+    <div class="profile-sidebar-right">
+        <div class="sidebar-right-title">💫 {% trans "Perfil" %}</div>
+
+        <div class="info-card">
+            <div class="info-card-title">{% trans "Estado" %}</div>
+            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                <span class="status-indicator"></span>
+                <span class="info-value-small">{% trans "Activo ahora" %}</span>
+            </div>
+            <div style="font-size: 12px; color: var(--text-secondary);">
+                {% trans "Última actividad: Hace 2 horas" %}
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-title">{% trans "Me Gustas Recibidos" %}</div>
+            <div class="info-value-big">{{ likes_count|default:"0" }}</div>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                {% trans "Esta semana" %}: <strong>+5</strong>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-title">{% trans "Visitantes" %}</div>
+            <div class="info-value-big">{{ visitors_count|default:"0" }}</div>
+            <div style="font-size: 12px; color: var(--text-secondary); margin-top: 4px;">
+                {% trans "Esta semana" %}: <strong>+12</strong>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-title">{% trans "Acciones" %}</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px;">
+                <div class="action-card" onclick="alert('Ver amigos')">
+                    <div class="action-card-icon">👥</div>
+                    <div class="action-card-text">{% trans "Amigos" %}</div>
+                </div>
+                <div class="action-card" onclick="alert('Ver visitantes')">
+                    <div class="action-card-icon">👁️</div>
+                    <div class="action-card-text">{% trans "Visitantes" %}</div>
+                </div>
+                <div class="action-card" onclick="alert('Ver me gustas')">
+                    <div class="action-card-icon">❤️</div>
+                    <div class="action-card-text">{% trans "Me Gustas" %}</div>
+                </div>
+                <div class="action-card" onclick="alert('Compartir perfil')">
+                    <div class="action-card-icon">📤</div>
+                    <div class="action-card-text">{% trans "Compartir" %}</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-card">
+            <div class="info-card-title">🎁 {% trans "Datos Verificados" %}</div>
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 6px;">
+                <span style="color: #2ecc71;">✓</span>
+                <span style="font-size: 13px;">{% trans "Foto de perfil" %}</span>
+            </div>
+            <div style="display: flex; align-items: center; gap: 6px;">
+                <span style="color: #2ecc71;">✓</span>
+                <span style="font-size: 13px;">{% trans "Email verificado" %}</span>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+<script src="{% static 'js/user_profile.js' %}"></script>

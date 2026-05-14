@@ -1,0 +1,454 @@
+{% load i18n %}
+{% load static %}
+{% load account socialaccount %}
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOBBY69 - Iniciar Sesión</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a0f1a 0%, #0f1628 50%, #1a2d4a 100%);
+            color: #ffffff;
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .login-container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 60px;
+            max-width: 1000px;
+            width: 100%;
+            align-items: center;
+        }
+
+        /* LEFT SECTION */
+        .login-left {
+            text-align: center;
+            padding: 40px 20px;
+        }
+
+        .logo-section {
+            margin-bottom: 50px;
+        }
+
+        .logo-box-login {
+            border: 2px solid #c0c0c0;
+            border-radius: 15px;
+            padding: 35px;
+            background: rgba(192, 192, 192, 0.08);
+            width: 240px;
+            height: 240px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 40px;
+            box-shadow: inset 0 0 20px rgba(192, 192, 192, 0.1);
+        }
+
+        .logo-box-login img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .login-left h1 {
+            font-size: 36px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            margin-bottom: 15px;
+            color: #ffffff;
+        }
+
+        .login-left p {
+            font-size: 15px;
+            color: #a9b8c7;
+            line-height: 1.6;
+            max-width: 300px;
+            margin: 0 auto;
+        }
+
+        /* RIGHT SECTION - FORM */
+        .login-right {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(245, 248, 252, 1) 100%);
+            border-radius: 16px;
+            padding: 50px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+
+        .login-right h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #0a0f1a;
+            margin-bottom: 35px;
+            text-align: center;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #1a2d4a;
+            margin-bottom: 10px;
+            letter-spacing: 0.5px;
+        }
+
+        .form-group input,
+        .form-group textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e0e7f1;
+            border-radius: 8px;
+            font-size: 14px;
+            background: #f5f8fc;
+            color: #1a2d4a;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-group input::placeholder {
+            color: #a0a9b8;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            background: #ffffff;
+            border-color: #4682b4;
+            box-shadow: 0 0 0 3px rgba(70, 130, 180, 0.1);
+        }
+
+        .form-group input:hover {
+            border-color: #4682b4;
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            font-size: 13px;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .remember-me input[type="checkbox"] {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            accent-color: #4682b4;
+        }
+
+        .remember-me label {
+            margin: 0;
+            color: #4a5a6a;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .forgot-password {
+            color: #4682b4;
+            text-decoration: none;
+            transition: color 0.3s ease;
+            font-weight: 600;
+        }
+
+        .forgot-password:hover {
+            color: #5a96d3;
+            text-decoration: underline;
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: #4682b4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 0.5px;
+            margin-bottom: 20px;
+        }
+
+        .btn-login:hover {
+            background: #5a96d3;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(70, 130, 180, 0.3);
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin: 30px 0;
+            color: #a0a9b8;
+            font-size: 13px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: #e0e7f1;
+        }
+
+        .signup-section {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #e0e7f1;
+        }
+
+        .signup-section p {
+            font-size: 13px;
+            color: #4a5a6a;
+            margin-bottom: 10px;
+        }
+
+        .signup-section a {
+            color: #4682b4;
+            text-decoration: none;
+            font-weight: 700;
+            transition: color 0.3s ease;
+        }
+
+        .signup-section a:hover {
+            color: #5a96d3;
+            text-decoration: underline;
+        }
+
+        .back-to-home {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #b0c4de;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-to-home:hover {
+            color: #4682b4;
+        }
+
+        .errorlist {
+            list-style: none;
+            color: #d32f2f;
+            margin-bottom: 20px;
+            font-size: 13px;
+            padding: 12px;
+            background: rgba(211, 47, 47, 0.1);
+            border-radius: 8px;
+            border-left: 3px solid #d32f2f;
+        }
+
+        .errorlist li {
+            margin-bottom: 5px;
+        }
+
+        .fieldhelp {
+            display: none;
+        }
+
+        ul {
+            list-style: none;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            body {
+                padding: 20px;
+            }
+
+            .login-container {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .login-left {
+                padding: 20px;
+                order: 2;
+            }
+
+            .login-right {
+                order: 1;
+                padding: 35px 25px;
+            }
+
+            .login-left h1 {
+                font-size: 28px;
+            }
+
+            .login-right h2 {
+                font-size: 24px;
+                margin-bottom: 25px;
+            }
+
+            .logo-box-login {
+                width: 180px;
+                height: 180px;
+                padding: 25px;
+                margin-bottom: 30px;
+            }
+
+            .remember-forgot {
+                flex-direction: column;
+                gap: 15px;
+                align-items: flex-start;
+            }
+
+            .back-to-home {
+                position: relative;
+                justify-content: center;
+                margin-bottom: 20px;
+                top: auto;
+                left: auto;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 15px;
+            }
+
+            .login-right {
+                padding: 25px 20px;
+            }
+
+            .login-left h1 {
+                font-size: 24px;
+            }
+
+            .login-right h2 {
+                font-size: 20px;
+            }
+
+            .form-group input {
+                padding: 12px 14px;
+                font-size: 13px;
+            }
+
+            .btn-login {
+                padding: 12px;
+                font-size: 14px;
+            }
+
+            .logo-box-login {
+                width: 140px;
+                height: 140px;
+                padding: 20px;
+                margin-bottom: 20px;
+            }
+
+            .login-left p {
+                font-size: 13px;
+            }
+        }
+
+        input:-webkit-autofill,
+        input:-webkit-autofill:hover,
+        input:-webkit-autofill:focus {
+            -webkit-box-shadow: 0 0 0 1000px #f5f8fc inset !important;
+            -webkit-text-fill-color: #1a2d4a !important;
+        }
+    </style>
+</head>
+<body>
+    <a href="{% url 'pages:landing' %}" class="back-to-home">← Volver al inicio</a>
+
+    <div class="login-container">
+        <!-- LEFT SECTION -->
+        <div class="login-left">
+            <div class="logo-section">
+                <div class="logo-box-login">
+                    <img src="{% static 'images/Logo-Lobby69.jpg' %}" alt="LOBBY69 Logo">
+                </div>
+            </div>
+            <h1>Bienvenido</h1>
+            <p>Accede a tu cuenta para conectar con la comunidad</p>
+        </div>
+
+        <!-- RIGHT SECTION - FORM -->
+        <div class="login-right">
+            <h2>{% trans "Iniciar Sesión" %}</h2>
+
+            {% if form.non_field_errors %}
+                <ul class="errorlist">
+                    {% for error in form.non_field_errors %}
+                        <li>{{ error }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+
+            <form method="POST" class="login">
+                {% csrf_token %}
+
+                <div class="form-group">
+                    <label for="{{ form.login.id_for_label }}">{% trans "Usuario o Correo Electrónico" %}</label>
+                    {{ form.login }}
+                    {% if form.login.errors %}
+                        <small style="color: #d32f2f; margin-top: 5px; display: block;">{{ form.login.errors.0 }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="form-group">
+                    <label for="{{ form.password.id_for_label }}">{% trans "Contraseña" %}</label>
+                    {{ form.password }}
+                    {% if form.password.errors %}
+                        <small style="color: #d32f2f; margin-top: 5px; display: block;">{{ form.password.errors.0 }}</small>
+                    {% endif %}
+                </div>
+
+                <div class="remember-forgot">
+                    <div class="remember-me">
+                        {{ form.remember }}
+                        <label for="{{ form.remember.id_for_label }}">{% trans "Recuérdame" %}</label>
+                    </div>
+                    <a href="{% url 'account_reset_password' %}" class="forgot-password">{% trans "¿Olvidaste tu contraseña?" %}</a>
+                </div>
+
+                <button type="submit" class="btn-login">{% trans "Iniciar Sesión" %}</button>
+            </form>
+
+            <div class="divider">o</div>
+
+            <div class="signup-section">
+                <p>{% trans "¿No tienes cuenta?" %}</p>
+                <a href="{% url 'account_signup' %}">{% trans "Regístrate aquí" %}</a> | <a href="{% url 'pages:landing' %}">{% trans "Volver al inicio" %}</a>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

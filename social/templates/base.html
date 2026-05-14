@@ -1,0 +1,59 @@
+{% load static i18n %}
+<!DOCTYPE html>
+{% get_current_language as LANGUAGE_CODE %}
+<html lang="{{ LANGUAGE_CODE }}" {% block html_attribute %}{% endblock html_attribute %}>
+
+<head>
+  <title>{% block page_title %}LOBBY69 — Tu Club de Juego{% endblock page_title %}</title>
+
+  <!-- Meta Tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="author" content="LOBBY69">
+  <meta name="description" content="LOBBY69 — La plataforma privada de juego, comunidad y entretenimiento premium.">
+
+  <!-- Favicon -->
+  <link rel="shortcut icon" href="{% static '/images/favicon.ico' %}">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap">
+
+  <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'fontawesomefree/css/brands.css' %}" rel="stylesheet" type="text/css">
+  <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
+
+  {% block css %}
+  <!-- Your stuff: Third-party CSS libraries go here -->
+  <!-- This file stores project-specific CSS -->
+
+  {% block extra_css %}{% endblock extra_css %}
+
+  <link href="{% static 'css/vendor.min.css' %}" rel="stylesheet" />
+  
+  <link href="{% static 'css/style.css' %}" rel="stylesheet" />
+
+  {% include 'partials/head-css.html' %}
+
+  <!-- LOBBY69 Custom Theme -->
+  <link href="{% static 'css/lobby69.css' %}" rel="stylesheet" />
+
+  {% endblock css %}
+
+</head>
+
+<body {% block body_attribute %}{% endblock body_attribute %}>
+
+  {% block content %}{% endblock content %}
+
+  {% block javascript %}
+
+  <script src="{% static 'js/vendors.js' %}"></script>
+
+  <script src="{% static 'js/functions.js' %}"></script>  
+
+  {% block extra_javascript %}{% endblock extra_javascript %}
+
+  {% endblock javascript %}
+</body>
+
+</html>

@@ -1,0 +1,1056 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOBBY69 - Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f5f5f5;
+            --bg-tertiary: #efefef;
+            --text-primary: #000000;
+            --text-secondary: #65676b;
+            --border-color: #ccc;
+            --navbar-bg: #ffffff;
+            --card-bg: #ffffff;
+            --hover-bg: #f0f0f0;
+        }
+
+        body.dark-mode {
+            --bg-primary: #0a0f1a;
+            --bg-secondary: #0f1628;
+            --bg-tertiary: #1a2d4a;
+            --text-primary: #ffffff;
+            --text-secondary: #b0c4de;
+            --border-color: #4682b4;
+            --navbar-bg: #0f1628;
+            --card-bg: #1a2d4a;
+            --hover-bg: #2a4a6a;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-secondary);
+            color: var(--text-primary);
+            transition: background 0.3s, color 0.3s;
+        }
+
+        /* NAVBAR */
+        nav {
+            background: var(--navbar-bg);
+            border-bottom: 1px solid var(--border-color);
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar-left {
+            display: flex;
+            align-items: center;
+            gap: 40px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: var(--text-primary);
+        }
+
+        .logo img {
+            width: 60px;
+            height: 60px;
+            object-fit: contain;
+        }
+
+        .nav-menu {
+            display: flex;
+            gap: 25px;
+            list-style: none;
+        }
+
+        .nav-menu a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+            font-weight: 500;
+            padding: 8px 12px;
+            border-radius: 4px;
+        }
+
+        .nav-menu a:hover {
+            color: #4682b4;
+            background: var(--hover-bg);
+        }
+
+        .navbar-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .theme-toggle {
+            background: none;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: transform 0.3s;
+        }
+
+        .theme-toggle:hover {
+            transform: rotate(20deg);
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+        }
+
+        .user-avatar {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            background: #4682b4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .logout-btn {
+            background: #d32f2f;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            transition: background 0.3s;
+        }
+
+        .logout-btn:hover {
+            background: #b71c1c;
+        }
+
+        /* MAIN CONTAINER */
+        .container {
+            display: grid;
+            grid-template-columns: 280px 1fr 320px;
+            gap: 20px;
+            max-width: 1400px;
+            margin: 20px auto;
+            padding: 0 10px;
+        }
+
+        /* LEFT COLUMN - MI PERFIL */
+        .left-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-card {
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: #4682b4;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 40px;
+        }
+
+        .profile-name {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-location {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .profile-bio {
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .membership-badge {
+            background: #4682b4;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 15px;
+        }
+
+        .btn-edit-profile {
+            width: 100%;
+            padding: 10px;
+            background: #4682b4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .btn-edit-profile:hover {
+            background: #5a96d3;
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .visit-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .visit-item:hover {
+            background: var(--hover-bg);
+            padding: 8px;
+            margin: -8px 0 12px 0;
+        }
+
+        .visit-item:last-child {
+            border-bottom: none;
+        }
+
+        .visit-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4682b4;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 16px;
+        }
+
+        .visit-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .visit-name {
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .visit-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* CENTER COLUMN - FEED */
+        .center-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .post {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .post-header {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 15px;
+            align-items: center;
+        }
+
+        .post-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: #4682b4;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .post-meta {
+            flex: 1;
+        }
+
+        .post-author {
+            font-weight: 600;
+            font-size: 14px;
+            color: var(--text-primary);
+        }
+
+        .post-time {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        .post-content {
+            font-size: 14px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: var(--text-primary);
+        }
+
+        .post-image {
+            width: 100%;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            background: transparent;  /* ← CAMBIO: transparente en lugar de gris */
+            height: 350px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            object-fit: contain;
+            cursor: pointer;
+            transition: transform 0.3s;
+        }
+
+
+        .post-image:hover {
+            transform: scale(1.02);
+        }
+
+        .post-actions {
+            display: flex;
+            gap: 20px;
+            padding-top: 15px;
+            border-top: 1px solid var(--border-color);
+        }
+
+        .action-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: color 0.3s;
+        }
+
+        .action-btn:hover {
+            color: #4682b4;
+        }
+
+        /* RIGHT COLUMN - RECOMENDACIONES */
+        .right-column {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .profile-card-small {
+            background: var(--card-bg);
+            border-radius: 10px;
+            padding: 15px;
+            text-align: center;
+            border: 1px solid var(--border-color);
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .profile-card-small:hover {
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .profile-avatar-small {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: #4682b4;
+            margin: 0 auto 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 28px;
+            object-fit: cover;
+        }
+
+        .profile-name-small {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .profile-location-small {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+        }
+
+        .profile-bio-small {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            line-height: 1.4;
+        }
+
+        .btn-add {
+            width: 100%;
+            padding: 8px;
+            background: #4682b4;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 12px;
+            transition: background 0.3s;
+        }
+
+        .btn-add:hover {
+            background: #5a96d3;
+        }
+
+        .ad-space {
+            background: var(--bg-tertiary);
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            color: var(--text-secondary);
+            font-size: 12px;
+            min-height: 250px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 1px dashed var(--border-color);
+        }
+
+        .empty-feed {
+            text-align: center;
+            padding: 40px 20px;
+            color: var(--text-secondary);
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 1200px) {
+            .container {
+                grid-template-columns: 260px 1fr 280px;
+                gap: 15px;
+            }
+        }
+
+        @media (max-width: 992px) {
+            .container {
+                grid-template-columns: 1fr;
+                max-width: 100%;
+            }
+
+            .left-column,
+            .center-column,
+            .right-column {
+                max-width: 100%;
+            }
+
+            .nav-menu {
+                gap: 15px;
+            }
+
+            .nav-menu a {
+                font-size: 12px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            nav {
+                padding: 10px 15px;
+            }
+
+            .navbar-left {
+                gap: 15px;
+            }
+
+            .nav-menu {
+                display: none;
+            }
+
+            .logo img {
+                width: 50px;
+                height: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+   {% csrf_token %}
+    <!-- NAVBAR -->
+    <nav>
+        <div class="navbar-left">
+            <a href="{% url 'pages:dashboard' %}" class="logo">
+                <img src="{% static 'images/Logo-Lobby69.jpg' %}" alt="LOBBY69">
+            </a>
+            <ul class="nav-menu">
+                <li><a href="{% url 'pages:dashboard' %}">📰 Incio</a></li>
+                <li><a href="{% url 'pages:explore' %}">🔍 Explorar</a></li>
+                <li><a href="{% url 'pages:conversations' %}">💬 Mensajes</a></li>
+                <li><a href="{% url 'pages:my_profile' %}">👤 Mi Perfil</a></li>
+                <li><a href="{% url 'pages:gallery' %}">🖼️ Galería</a></li>
+                <li><a href="{% url 'pages:memberships' %}">💎 Membresías</a></li>
+                <li><a href="{% url 'pages:notifications' %}">🔔 Notificaciones</a></li>
+                <li><a href="{% url 'pages:friend_requests' %}">👥 Solicitudes</a></li>
+                <li><a href="{% url 'pages:settings' %}">⚙️ Configuración</a></li>
+            </ul>
+        </div>
+
+        <div class="navbar-right">
+            <button class="theme-toggle" onclick="toggleTheme()" title="Cambiar tema">
+                <span id="theme-icon">🌙</span>
+            </button>
+            <div class="user-menu">
+                <div class="user-avatar">{{ user.username|first|upper }}</div>
+            </div>
+            <a href="{% url 'pages:logout' %}" class="logout-btn">Cerrar Sesión</a>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTAINER -->
+    <div class="container">
+        <!-- LEFT COLUMN -->
+        <div class="left-column">
+            <!-- Mi Perfil -->
+            <div class="card profile-card">
+                <div class="profile-avatar">👤</div>
+                <h3 class="profile-name">{{ user.username }}</h3>
+                <p class="profile-location">📍 México</p>
+                <p class="profile-bio">Bienvenido a la comunidad LOBBY69. Completa tu perfil para conectar mejor.</p>
+                <div class="membership-badge">Miembro Activo</div>
+                <a href="{% url 'pages:my_profile' %}" class="btn-edit-profile">Editar Perfil</a>
+            </div>
+
+            <!-- Quiénes te han visitado -->
+            <div class="card">
+                <h4 class="section-title">👁 Te han visitado</h4>
+                {% if visited_by %}
+                    {% for visitor in visited_by|slice:":3" %}
+                    <div class="visit-item">
+                        <div class="visit-avatar">👥</div>
+                        <div class="visit-info">
+                            <div class="visit-name">{{ visitor.nick }}</div>
+                            <div class="visit-time">Hace poco</div>
+                        </div>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="font-size: 13px; color: var(--text-secondary);">Sin visitas aún</p>
+                {% endif %}
+            </div>
+
+            <!-- Historias -->
+            <div class="card">
+                <h4 class="section-title">📸 Historias</h4>
+                <div style="text-align: center; color: var(--text-secondary); font-size: 13px;">
+                    <p>Comparte tu historia con la comunidad</p>
+                    <button style="width: 100%; padding: 10px; background: #4682b4; color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; font-weight: 600;">
+                        + Nueva Historia
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- CENTER COLUMN - FEED -->
+        <div class="center-column">
+            {% if photos %}
+                {% for photo in photos %}
+                <div class="post">
+                    <div class="post-header" onclick="window.location.href = `/usuario/{{ photo.user_nick }}/`" style="cursor: pointer;">
+                        <div class="post-avatar">👤</div>
+                        <div class="post-meta">
+                            <div class="post-author" style="color: #4682b4; font-weight: 600;">{{ photo.user_nick }}</div>
+                            <div class="post-time">{{ photo.uploaded_at|date:"d/m/Y H:i" }}</div>
+                        </div>
+                    </div>
+
+
+                    {% if photo.image_url %}
+                      <div style="position: relative;">
+                          <img src="{{ photo.image_url }}" alt="Foto" class="post-image" data-image="{{ photo.image_url }}" data-caption="{{ photo.caption|default:''|escapejs }}" data-id="{{ photo.id }}" onclick="openPhotoModal(event)" style="cursor: pointer;">
+                          <!--<div style="position: absolute; bottom: 10px; right: 10px; display: flex; gap: 10px; font-size: 12px; background: rgba(0,0,0,0.7); color: white; padding: 5px 10px; border-radius: 4px;">
+                              <span id="likes-{{ photo.id }}">👍 0</span>
+                              <span id="comments-{{ photo.id }}">💬 0</span>
+                          </div> -->
+                      </div>
+                  {% endif %}
+
+                    {% if photo.caption %}
+                        <p class="post-content">{{ photo.caption }}</p>
+                    {% endif %}
+
+                    <div class="post-actions">
+                        <button class="action-btn" onclick="toggleLike('{{ photo.id }}')">👍 <span id="likes-{{ photo.id }}">{{ photo.likes_count|default:0 }} Me gusta</span></button>
+                        <button class="action-btn" onclick="savePost('{{ photo.id }}')">❤️ Me encanta<span id="saves-{{ photo.id }}"></span></button>
+                        <button class="action-btn" onclick="openPhotoModal(event)" data-image="{{ photo.image_url }}" data-caption="{{ photo.caption|default:''|escapejs }}" data-id="{{ photo.id }}" style="cursor: pointer;">💬 <span id="comments-{{ photo.id }}">{{ photo.comments_count|default:0 }}</span></button>
+
+
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="post empty-feed">
+                    <p>📸 No hay fotos en el feed aún</p>
+                    <p style="font-size: 12px; margin-top: 10px;">Sigue a más usuarios o visita la galería</p>
+                </div>
+            {% endif %}
+        </div>
+
+        <!-- RIGHT COLUMN - RECOMENDACIONES -->
+        <div class="right-column">
+            <!-- Usuarios Conectados -->
+            <div class="card">
+                <h4 class="section-title">🟢 Conectados</h4>
+                {% if connected_users %}
+                    {% for user_online in connected_users|slice:":3" %}
+                    <div class="profile-card-small" onclick="window.location.href = `/usuario/{{ user_online.nick }}/`">
+                        <div class="profile-avatar-small">👥</div>
+                        <div class="profile-name-small">{{ user_online.nick }}</div>
+                        <div class="profile-location-small">📍 {{ user_online.city|default:"México" }}</div>
+                        <button class="btn-add">Ver Perfil</button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="font-size: 12px; color: var(--text-secondary); text-align: center;">Sin usuarios en línea</p>
+                {% endif %}
+            </div>
+
+
+            <!-- Nuevos Perfiles -->
+            <div class="card">
+                <h4 class="section-title">✨ Nuevos Perfiles</h4>
+                {% if suggested_profiles %}
+                    {% for profile in suggested_profiles|slice:":2" %}
+                    <div class="profile-card-small" onclick="viewProfile('{{ profile.id }}')">
+                        <div class="profile-avatar-small">👥</div>
+                        <div class="profile-name-small">{{ profile.nick }}</div>
+                        <div class="profile-location-small">📍 {{ profile.city|default:"México" }}</div>
+                        <div class="profile-bio-small">{{ profile.bio|default:"Sin descripción"|truncatewords:5 }}</div>
+                        <button class="btn-add">+ Agregar</button>
+                    </div>
+                    {% endfor %}
+                {% else %}
+                    <p style="font-size: 12px; color: var(--text-secondary); text-align: center;">Sin perfiles disponibles</p>
+                {% endif %}
+            </div>
+
+            <!-- Anuncios -->
+            <div class="card">
+                <h4 class="section-title">📢 Anuncios</h4>
+                <div class="ad-space">
+                    Espacio para anuncios y promociones
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Tema día/noche
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+
+            body.classList.toggle('dark-mode');
+
+            if (body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                icon.textContent = '☀️';
+            } else {
+                localStorage.setItem('theme', 'light');
+                icon.textContent = '🌙';
+            }
+        }
+
+        // Cargar tema guardado
+        window.addEventListener('DOMContentLoaded', function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            const icon = document.getElementById('theme-icon');
+
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+                icon.textContent = '☀️';
+            } else {
+                icon.textContent = '🌙';
+            }
+        });
+
+        // Like a foto
+        function toggleLike(photoId) {
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        fetch(`/galeria/like/${photoId}/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrftoken}
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + d.error);
+            }
+        })
+        .catch(e => alert('Error: ' + e));
+        }
+
+        // Cargar contadores de comentarios al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const photos = document.querySelectorAll('[data-id]');
+            photos.forEach(photo => {
+                const photoId = photo.dataset.id;
+                fetch(`/galeria/foto/${photoId}/comentarios/`)
+                    .then(r => r.json())
+                    .then(data => {
+                        const el = document.getElementById(`comments-${photoId}`);
+                        if (el) {
+                            el.textContent = ` ${data.comments ? data.comments.length : 0} Comentarios`;
+                        }
+                    })
+                    .catch(e => console.error(e));
+            });
+        });
+
+
+        // Ver perfil de usuario
+        function viewProfile(userId) {
+            window.location.href = '/usuario/${userId}/';
+        }
+
+        // Abrir modal de foto
+        function openPhotoModal(imageSrc, caption) {
+            const modal = document.getElementById('photoModal');
+            const modalImg = document.getElementById('modalImage');
+            const modalCaption = document.getElementById('modalCaption');
+
+            modalImg.src = imageSrc;
+            modalCaption.textContent = caption || '';
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Evitar scroll
+        }
+
+        // Cerrar modal de foto
+        function closePhotoModal() {
+            const modal = document.getElementById('photoModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Permitir scroll
+        }
+
+      // Cerrar modal al hacer clic fuera
+      document.addEventListener('DOMContentLoaded', function() {
+          const modal = document.getElementById('photoModal');
+          if (modal) {
+              modal.addEventListener('click', function(e) {
+                  if (e.target.id === 'photoModal') {
+                      closePhotoModal();
+                  }
+              });
+          }
+
+          // Cerrar con tecla ESC
+          document.addEventListener('keydown', function(e) {
+              if (e.key === 'Escape') {
+                  closePhotoModal();
+              }
+          });
+      });
+
+    let currentPhotoId = null;
+
+      function openPhotoModal(event) {
+          const element = event.currentTarget;
+          const image = element.dataset.image;
+          const caption = element.dataset.caption;
+          const photoId = element.dataset.id;
+          currentPhotoId = photoId;
+          const modal = document.getElementById('photoModal');
+          document.getElementById('modalImage').src = image;
+          document.getElementById('modalCaption').textContent = caption || 'Sin título';
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          loadComments(photoId);
+      }
+
+      function savePost(photoId) {
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            fetch(`/galeria/guardar/${photoId}/`, {
+                method: 'POST',
+                headers: {'X-CSRFToken': csrftoken}
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const el = document.getElementById(`saves-${photoId}`);
+                    if (el) {
+                        el.textContent = data.count;
+                    }
+                    loadSavesCounts();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(e => alert('Error: ' + e));
+        }
+
+function loadSavesCounts() {
+    const photos = document.querySelectorAll('[data-id]');
+    photos.forEach(photo => {
+        const photoId = photo.dataset.id;
+        fetch(`/galeria/guardar/${photoId}/contador/`)
+            .then(r => r.json())
+            .then(data => {
+                const el = document.getElementById(`saves-${photoId}`);
+                if (el) {
+                    el.textContent = data.count;
+                }
+            })
+            .catch(e => console.error(e));
+    });
+}
+
+document.addEventListener('DOMContentLoaded', loadSavesCounts);
+
+
+
+      function closePhotoModal() {
+          const modal = document.getElementById('photoModal');
+          modal.classList.remove('active');
+          document.body.style.overflow = 'auto';
+          document.getElementById('commentText').value = '';
+          document.getElementById('charCount').textContent = '0/500';
+      }
+
+      function loadComments(photoId) {
+          fetch(`/galeria/foto/${photoId}/comentarios/`)
+              .then(r => r.json())
+              .then(data => {
+                  const commentsList = document.getElementById('commentsList');
+                  const commentCount = document.getElementById('commentCount');
+
+                  // Actualizar contador
+                  commentCount.textContent = `💬 ${data.comments ? data.comments.length : 0}`;
+
+                  if (!data.comments || data.comments.length === 0) {
+                      commentsList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No hay comentarios aún</p>';
+                  } else {
+                      commentsList.innerHTML = data.comments.map(c => `
+                          <div class="comment-item">
+                              <div class="comment-header">
+                                  <strong>${c.user_nick}</strong>
+                                  <small>${new Date(c.created_at).toLocaleDateString()}</small>
+                              </div>
+                              <p>${c.comment_text}</p>
+                          </div>
+                      `).join('');
+                  }
+              })
+              .catch(e => {
+                  console.error(e);
+                  document.getElementById('commentsList').innerHTML = '<p style="color: red;">Error cargando comentarios</p>';
+              });
+      }
+
+      function getCookie(name) {
+          let value = null;
+          if (document.cookie && document.cookie !== '') {
+              const cookies = document.cookie.split(';');
+              for (let i = 0; i < cookies.length; i++) {
+                  const cookie = cookies[i].trim();
+                  if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                      value = decodeURIComponent(cookie.substring(name.length + 1));
+                      break;
+                  }
+              }
+          }
+          return value;
+      }
+
+      function submitComment() {
+          const text = document.getElementById('commentText').value.trim();
+          if (!text) { alert('Escribe un comentario'); return; }
+
+          const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+          const formData = new FormData();
+          formData.append('comment_text', text);
+
+          fetch(`/galeria/comentar/${currentPhotoId}/`, {
+              method: 'POST',
+              headers: {'X-CSRFToken': csrftoken},
+              body: formData
+          })
+          .then(r => r.json())
+          .then(data => {
+              if (data.success) {
+                  document.getElementById('commentText').value = '';
+                  document.getElementById('charCount').textContent = '0/500';
+                  loadComments(currentPhotoId);
+                  // AGREGAR MENSAJE DE ÉXITO
+                  const msg = document.createElement('div');
+                  msg.textContent = '✓ Comentario publicado';
+                  msg.style.cssText = 'padding: 10px; background: #27ae60; color: white; border-radius: 4px; margin-bottom: 10px; text-align: center;';
+                  document.getElementById('commentsList').parentElement.insertBefore(msg, document.getElementById('commentsList'));
+                  setTimeout(() => msg.remove(), 3000);
+              } else {
+                  alert('Error: ' + data.error);
+              }
+          })
+          .catch(e => { console.error(e); alert('Error: ' + e); });
+      }
+
+
+      document.getElementById('commentText')?.addEventListener('keyup', function() {
+          document.getElementById('charCount').textContent = this.value.length + '/500';
+      });
+
+    </script>
+
+<!-- MODAL DE FOTO CON COMENTARIOS -->
+<div id="photoModal" class="photo-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 9999; justify-content: center; align-items: center; padding: 20px; overflow-y: auto;">
+    <div class="photo-modal-content" style="position: relative; max-width: 1200px; width: 100%; display: flex; gap: 20px; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; max-height: 90vh;">
+
+        <!-- Botón cerrar -->
+        <button onclick="closePhotoModal()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 28px; cursor: pointer; z-index: 10000;">✕</button>
+
+        <!-- SECCIÓN IZQUIERDA: FOTO -->
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center; background: #000; padding: 20px;">
+            <img id="modalImage" src="" alt="Foto grande" style="max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px;">
+        </div>
+
+        <!-- SECCIÓN DERECHA: COMENTARIOS -->
+        <div style="flex: 0 0 400px; display: flex; flex-direction: column; padding: 20px; background: var(--bg-primary); overflow-y: auto;">
+
+            <!-- Info de foto -->
+            <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+                <p id="modalCaption" style="font-size: 14px; margin: 0 0 10px 0; color: var(--text-primary); line-height: 1.5;"></p>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button onclick="toggleLike(currentPhotoId)" class="btn-action" style="flex: 1; padding: 8px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">❤️ Me encanta</button>
+                    <span id="commentCount" style="font-size: 13px; color: var(--text-secondary); background: var(--bg-secondary); padding: 8px 12px; border-radius: 4px;">💬 0</span>
+                </div>
+            </div>
+
+
+            <!-- Formulario comentario -->
+            <div style="margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px;">
+                <textarea id="commentText" placeholder="Escribe un comentario..." maxlength="500" rows="3" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-family: Arial, sans-serif; resize: none;"></textarea>
+                <button onclick="submitComment()" style="padding: 10px; background: #4682b4; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">Comentar</button>
+                <small id="charCount" style="font-size: 12px; color: var(--text-secondary);">0/500</small>
+            </div>
+
+            <!-- Lista comentarios -->
+            <div id="commentsList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+                <p style="text-align: center; color: var(--text-secondary);">Cargando comentarios...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.photo-modal {
+    display: none !important;
+}
+
+.photo-modal.active {
+    display: flex !important;
+}
+
+.comment-item {
+    padding: 10px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    border-left: 3px solid #4682b4;
+}
+
+.comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.comment-header strong {
+    color: #4682b4;
+}
+
+.comment-header small {
+    color: var(--text-secondary);
+}
+
+.comment-item p {
+    margin: 0;
+    color: var(--text-primary);
+    word-wrap: break-word;
+    line-height: 1.4;
+    font-size: 13px;
+}
+</style>
+
+
+</body>
+</html>

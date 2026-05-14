@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOBBY69 - Club Privado Swinger México</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0a1628 0%, #1a2d4a 100%);
+            color: #ffffff;
+            line-height: 1.6;
+        }
+
+        /* NAVBAR */
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 50px;
+            background: rgba(10, 22, 40, 0.95);
+            border-bottom: 1px solid rgba(70, 130, 180, 0.3);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: bold;
+            letter-spacing: 2px;
+            color: #ffffff;
+        }
+
+        nav ul {
+            display: flex;
+            list-style: none;
+            gap: 30px;
+        }
+
+        nav a {
+            color: #ffffff;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+
+        nav a:hover {
+            color: #4682b4;
+        }
+
+        .btn-acceso {
+            background: #4682b4;
+            color: white;
+            padding: 10px 25px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.3s;
+        }
+
+        .btn-acceso:hover {
+            background: #5a96d3;
+        }
+
+        /* HERO SECTION */
+        .hero {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            min-height: 100vh;
+            padding: 60px 20px;
+            background: linear-gradient(135deg, rgba(10, 22, 40, 0.8), rgba(26, 45, 74, 0.8)),
+                        url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 800"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(70,130,180,0.1)" stroke-width="1"/></pattern></defs><rect width="1200" height="800" fill="url(%23grid)"/></svg>');
+        }
+
+        .logo-box {
+            border: 2px solid #4682b4;
+            border-radius: 15px;
+            padding: 40px;
+            margin-bottom: 50px;
+            background: rgba(70, 130, 180, 0.05);
+            width: 250px;
+            height: 150px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .logo-box .logo-text {
+            font-size: 18px;
+            letter-spacing: 3px;
+            text-align: center;
+        }
+
+        .logo-box .logo-icon {
+            font-size: 40px;
+            margin-right: 15px;
+        }
+
+        .hero h1 {
+            font-size: 48px;
+            margin-bottom: 20px;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        .hero .subtitle {
+            font-size: 18px;
+            color: #b0c4de;
+            margin-bottom: 10px;
+            font-weight: 500;
+        }
+
+        .hero .description {
+            max-width: 700px;
+            font-size: 14px;
+            color: #a9b8c7;
+            margin-bottom: 30px;
+            line-height: 1.8;
+        }
+
+        .feature-list {
+            max-width: 700px;
+            margin-bottom: 30px;
+            font-size: 13px;
+            color: #b0c4de;
+        }
+
+        .feature-list p {
+            margin: 8px 0;
+        }
+
+        .check-mark {
+            color: #4682b4;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .cta-buttons {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+            flex-wrap: wrap;
+        }
+
+        .btn-primary {
+            background: #4682b4;
+            color: white;
+            padding: 15px 40px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-primary:hover {
+            background: #5a96d3;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(70, 130, 180, 0.4);
+        }
+
+        .btn-secondary {
+            background: transparent;
+            color: #4682b4;
+            padding: 15px 40px;
+            border: 2px solid #4682b4;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #4682b4;
+            color: white;
+        }
+
+        /* PREFERENCIAS SECTION */
+        .preferencias {
+            padding: 100px 50px;
+            background: linear-gradient(135deg, #0f1f32 0%, #1a2d4a 100%);
+            text-align: center;
+        }
+
+        .section-title {
+            font-size: 36px;
+            margin-bottom: 15px;
+            letter-spacing: 1px;
+            font-weight: 700;
+        }
+
+        .section-subtitle {
+            font-size: 16px;
+            color: #a9b8c7;
+            margin-bottom: 50px;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .preferencias-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .pref-card {
+            background: rgba(70, 130, 180, 0.1);
+            border: 1px solid rgba(70, 130, 180, 0.3);
+            border-radius: 12px;
+            padding: 40px 30px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .pref-card:hover {
+            background: rgba(70, 130, 180, 0.2);
+            border-color: #4682b4;
+            transform: translateY(-5px);
+        }
+
+        .pref-card .icon {
+            font-size: 40px;
+            margin-bottom: 20px;
+        }
+
+        .pref-card h3 {
+            font-size: 18px;
+            margin-bottom: 15px;
+            letter-spacing: 0.5px;
+        }
+
+        .pref-card p {
+            font-size: 13px;
+            color: #a9b8c7;
+            line-height: 1.6;
+        }
+
+        /* BENEFICIOS SECTION */
+        .beneficios {
+            padding: 100px 50px;
+            background: linear-gradient(135deg, #1a2d4a 0%, #0f1f32 100%);
+        }
+
+        .beneficios-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 50px;
+            max-width: 1200px;
+            margin: 0 auto;
+            align-items: center;
+        }
+
+        .beneficios-content h3 {
+            font-size: 28px;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+
+        .beneficio-item {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 25px;
+        }
+
+        .beneficio-item .check {
+            color: #4682b4;
+            font-size: 24px;
+            flex-shrink: 0;
+        }
+
+        .beneficio-item p {
+            font-size: 14px;
+            color: #b0c4de;
+        }
+
+        .beneficios-image {
+            text-align: center;
+            font-size: 80px;
+            opacity: 0.3;
+        }
+
+        /* MEMBRESÍAS SECTION */
+        .membresias {
+            padding: 100px 50px;
+            background: linear-gradient(135deg, #0f1f32 0%, #1a2d4a 100%);
+            text-align: center;
+        }
+
+        .membresias-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .membresia-card {
+            background: rgba(70, 130, 180, 0.1);
+            border: 1px solid rgba(70, 130, 180, 0.3);
+            border-radius: 12px;
+            padding: 40px;
+            transition: all 0.3s;
+            position: relative;
+        }
+
+        .membresia-card:hover {
+            background: rgba(70, 130, 180, 0.2);
+            border-color: #4682b4;
+            transform: translateY(-10px);
+        }
+
+        .membresia-card.featured {
+            background: linear-gradient(135deg, rgba(70, 130, 180, 0.3), rgba(70, 130, 180, 0.15));
+            border: 2px solid #4682b4;
+            transform: scale(1.05);
+        }
+
+        .membresia-card.featured::before {
+            content: "POPULAR";
+            position: absolute;
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #4682b4;
+            color: white;
+            padding: 5px 20px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: bold;
+            letter-spacing: 1px;
+        }
+
+        .membresia-name {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+
+        .membresia-price {
+            font-size: 36px;
+            font-weight: 700;
+            color: #4682b4;
+            margin-bottom: 10px;
+        }
+
+        .membresia-period {
+            font-size: 12px;
+            color: #a9b8c7;
+            margin-bottom: 30px;
+        }
+
+        .membresia-features {
+            list-style: none;
+            margin-bottom: 30px;
+            text-align: left;
+        }
+
+        .membresia-features li {
+            font-size: 13px;
+            color: #b0c4de;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(70, 130, 180, 0.2);
+        }
+
+        .membresia-features li::before {
+            content: "✓ ";
+            color: #4682b4;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+
+        .btn-membresia {
+            background: #4682b4;
+            color: white;
+            padding: 12px 30px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            width: 100%;
+            transition: all 0.3s;
+        }
+
+        .btn-membresia:hover {
+            background: #5a96d3;
+        }
+
+        .membresia-card.featured .btn-membresia {
+            background: #4682b4;
+        }
+
+        /* FAQ SECTION */
+        .faq {
+            padding: 100px 50px;
+            background: linear-gradient(135deg, #1a2d4a 0%, #0f1f32 100%);
+            text-align: center;
+        }
+
+        .faq-grid {
+            max-width: 900px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: rgba(70, 130, 180, 0.1);
+            border: 1px solid rgba(70, 130, 180, 0.3);
+            border-radius: 8px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+
+        .faq-question {
+            background: rgba(70, 130, 180, 0.15);
+            padding: 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            font-size: 15px;
+            transition: background 0.3s;
+        }
+
+        .faq-question:hover {
+            background: rgba(70, 130, 180, 0.25);
+        }
+
+        .faq-answer {
+            padding: 20px;
+            font-size: 14px;
+            color: #b0c4de;
+            display: none;
+            text-align: left;
+        }
+
+        .faq-answer.active {
+            display: block;
+        }
+
+        .faq-icon {
+            transition: transform 0.3s;
+        }
+
+        .faq-icon.active {
+            transform: rotate(180deg);
+        }
+
+        /* FOOTER */
+        footer {
+            background: rgba(10, 22, 40, 0.95);
+            border-top: 1px solid rgba(70, 130, 180, 0.3);
+            padding: 40px 50px;
+            text-align: center;
+            color: #a9b8c7;
+            font-size: 13px;
+        }
+
+        footer a {
+            color: #4682b4;
+            text-decoration: none;
+            transition: color 0.3s;
+        }
+
+        footer a:hover {
+            color: #5a96d3;
+        }
+
+        /* RESPONSIVE */
+        @media (max-width: 768px) {
+            nav {
+                padding: 15px 20px;
+                flex-direction: column;
+                gap: 15px;
+            }
+
+            nav ul {
+                gap: 15px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+
+            .hero {
+                min-height: auto;
+                padding: 40px 20px;
+            }
+
+            .hero h1 {
+                font-size: 32px;
+            }
+
+            .section-title {
+                font-size: 24px;
+            }
+
+            .preferencias, .beneficios, .membresias, .faq {
+                padding: 60px 20px;
+            }
+
+            .beneficios-grid {
+                grid-template-columns: 1fr;
+                gap: 30px;
+            }
+
+            .membresia-card.featured {
+                transform: scale(1);
+            }
+
+            .cta-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .btn-primary, .btn-secondary {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav>
+        <div class="logo">LOBBY69</div>
+        <ul>
+            <li><a href="#nosotros">Nosotros</a></li>
+            <li><a href="#membresias">Membresías</a></li>
+            <li><a href="#preguntas">Preguntas</a></li>
+        </ul>
+        <button class="btn-acceso" onclick="scrollToSection('membresias')">Acceso</button>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <section class="hero" id="inicio">
+        <div class="logo-box">
+            <div style="text-align: center;">
+                <div class="logo-icon">♡</div>
+                <div class="logo-text">LOBBY69</div>
+            </div>
+        </div>
+
+        <h1>LOBBY69</h1>
+        <p class="subtitle">Tu acceso exclusivo al placer compartido</p>
+
+        <p class="description">
+            La comunidad swinger más discreta de México te espera.
+        </p>
+
+        <div class="feature-list">
+            <p><span class="check-mark">✓</span> Un club privado para mayores de 18 años donde conectas con personas afines en un espacio seguro y confidencial.</p>
+            <p><span class="check-mark">✓</span> Mantenemos nuestra comunidad auténtica y segura a través de membresías verificadas.</p>
+            <p style="margin-top: 15px; font-style: italic;">Si aún no tienes acceso, solicita una invitación aquí y te ayudaremos a contactar con la comunidad.</p>
+        </div>
+
+        <div class="cta-buttons">
+            <button class="btn-primary" onclick="scrollToSection('membresias')">
+                ★ Acceso a Miembros
+            </button>
+            <button class="btn-secondary" onclick="scrollToSection('contacto')">
+                ✉ Solicitar Invitación
+            </button>
+        </div>
+    </section>
+
+    <!-- PREFERENCIAS SECTION -->
+    <section class="preferencias" id="nosotros">
+        <h2 class="section-title">¿Por qué elegir LOBBY69?</h2>
+        <p class="section-subtitle">Creemos en crear un espacio donde la confianza, la privacidad y la autenticidad son lo primero.</p>
+
+        <div class="preferencias-grid">
+            <div class="pref-card">
+                <div class="icon">🔒</div>
+                <h3>Privacidad Total</h3>
+                <p>Tu información es completamente confidencial. Utilizamos encriptación de nivel empresarial para proteger tus datos.</p>
+            </div>
+
+            <div class="pref-card">
+                <div class="icon">✓</div>
+                <h3>Miembros Verificados</h3>
+                <p>Todos nuestros miembros pasan por un proceso de verificación para garantizar una comunidad segura y auténtica.</p>
+            </div>
+
+            <div class="pref-card">
+                <div class="icon">👥</div>
+                <h3>Comunidad Activa</h3>
+                <p>Conecta con miles de personas en México que comparten tus intereses en un ambiente seguro y respetuoso.</p>
+            </div>
+
+            <div class="pref-card">
+                <div class="icon">💬</div>
+                <h3>Comunicación Discreta</h3>
+                <p>Chatea, intercambia fotos y conoce gente nueva de forma segura a través de nuestra plataforma encrypted.</p>
+            </div>
+
+            <div class="pref-card">
+                <div class="icon">🎯</div>
+                <h3>Eventos Exclusivos</h3>
+                <p>Accede a eventos privados y reuniones exclusivas organizadas para miembros verificados.</p>
+            </div>
+
+            <div class="pref-card">
+                <div class="icon">🌟</div>
+                <h3>Soporte 24/7</h3>
+                <p>Nuestro equipo está disponible para ayudarte con cualquier pregunta o inquietud en cualquier momento.</p>
+            </div>
+        </div>
+    </section>
+
+    <!-- BENEFICIOS SECTION -->
+    <section class="beneficios">
+        <div class="beneficios-grid">
+            <div class="beneficios-content">
+                <h3>Beneficios de Ser Miembro</h3>
+
+                <div class="beneficio-item">
+                    <div class="check">✓</div>
+                    <p><strong>Perfil Verificado:</strong> Demuestra que eres miembro verificado y auténtico.</p>
+                </div>
+
+                <div class="beneficio-item">
+                    <div class="check">✓</div>
+                    <p><strong>Mensajes Ilimitados:</strong> Comunícate sin restricciones con otros miembros.</p>
+                </div>
+
+                <div class="beneficio-item">
+                    <div class="check">✓</div>
+                    <p><strong>Galería de Fotos:</strong> Sube y comparte tus mejores momentos de forma privada.</p>
+                </div>
+
+                <div class="beneficio-item">
+                    <div class="check">✓</div>
+                    <p><strong>Filtros Avanzados:</strong> Busca miembros según tus preferencias específicas.</p>
+                </div>
+
+                <div class="beneficio-item">
+                    <div class="check">✓</div>
+                    <p><strong>Notificaciones en Tiempo Real:</strong> No te pierdas ningún mensaje importante.</p>
+                </div>
+
+                <div class="beneficio-item">
+                    <div class="check">✓</div>
+                    <p><strong>Acceso a Eventos:</strong> Participa en eventos exclusivos de la comunidad.</p>
+                </div>
+            </div>
+
+            <div class="beneficios-image">
+                🔓
+            </div>
+        </div>
+    </section>
+
+    <!-- MEMBRESÍAS SECTION -->
+    <section class="membresias" id="membresias">
+        <h2 class="section-title">Planes de Membresía</h2>
+        <p class="section-subtitle">Elige el plan perfecto para ti y comienza a conectar con nuestra comunidad exclusiva.</p>
+
+        <div class="membresias-grid">
+            <!-- Plan Básico -->
+            <div class="membresia-card">
+                <h3 class="membresia-name">Explorador</h3>
+                <div class="membresia-price">$9.99</div>
+                <div class="membresia-period">por mes</div>
+
+                <ul class="membresia-features">
+                    <li>Perfil Básico</li>
+                    <li>Ver Perfiles de Miembros</li>
+                    <li>Mensajes Limitados (10/mes)</li>
+                    <li>1 Foto en Galería</li>
+                    <li>Búsqueda Básica</li>
+                </ul>
+
+                <button class="btn-membresia" onclick="seleccionarPlan('Explorador')">Comenzar Ahora</button>
+            </div>
+
+            <!-- Plan Premium -->
+            <div class="membresia-card featured">
+                <h3 class="membresia-name">Aventurero</h3>
+                <div class="membresia-price">$24.99</div>
+                <div class="membresia-period">por mes</div>
+
+                <ul class="membresia-features">
+                    <li>Perfil Verificado ★</li>
+                    <li>Mensajes Ilimitados</li>
+                    <li>Galería de 20 Fotos</li>
+                    <li>Filtros Avanzados</li>
+                    <li>Ver Quién Te Visitó</li>
+                    <li>Destacado en Búsquedas</li>
+                    <li>Soporte Prioritario</li>
+                </ul>
+
+                <button class="btn-membresia" onclick="seleccionarPlan('Aventurero')">Seleccionar Plan</button>
+            </div>
+
+            <!-- Plan VIP -->
+            <div class="membresia-card">
+                <h3 class="membresia-name">Círculo VIP</h3>
+                <div class="membresia-price">$49.99</div>
+                <div class="membresia-period">por mes</div>
+
+                <ul class="membresia-features">
+                    <li>Todo en Aventurero +</li>
+                    <li>Galería Ilimitada</li>
+                    <li>Acceso a Eventos Exclusivos</li>
+                    <li>Consulta Privada (1/mes)</li>
+                    <li>Badge VIP Distintivo</li>
+                    <li>Invisibilidad (Ver sin ser visto)</li>
+                    <li>Soporte 24/7 Dedicado</li>
+                </ul>
+
+                <button class="btn-membresia" onclick="seleccionarPlan('VIP')">Upgrade a VIP</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ SECTION -->
+    <section class="faq" id="preguntas">
+        <h2 class="section-title">Preguntas Frecuentes</h2>
+        <p class="section-subtitle">Resuelve tus dudas sobre LOBBY69</p>
+
+        <div class="faq-grid">
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>¿Cómo verifico mi perfil?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    El proceso de verificación es simple. Debes proporcionar un documento de identidad válido y fotos de verificación. Esto nos ayuda a mantener nuestra comunidad segura y auténtica. El proceso toma entre 24-48 horas.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>¿Mi privacidad está garantizada?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    Absolutamente. Utilizamos encriptación de nivel empresarial para proteger toda tu información. Nunca compartimos datos con terceros. Puedes usar pseudónimos y controlar quién ve tu perfil en todo momento.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>¿Puedo cancelar mi membresía cuando quiera?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    Sí. Puedes cancelar tu membresía en cualquier momento desde tu panel de control. No hay compromisos a largo plazo ni cargos ocultos. Tu cancelación surtirá efecto al final del ciclo de facturación actual.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>¿Cómo funciona el sistema de invitaciones?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    Si aún no tienes acceso, puedes solicitar una invitación. Revisamos tu solicitud y nos ponemos en contacto contigo para verificar tus datos. Una vez verificado, recibirás tu invitación para unirte a la comunidad.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>¿Hay restricciones de edad?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    LOBBY69 es exclusivamente para mayores de 18 años. Verificamos la edad durante el proceso de registro. Esto es para mantener un ambiente seguro y legal.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <div class="faq-question" onclick="toggleFAQ(this)">
+                    <span>¿Qué métodos de pago aceptan?</span>
+                    <span class="faq-icon">▼</span>
+                </div>
+                <div class="faq-answer">
+                    Aceptamos tarjetas de crédito/débito (Visa, Mastercard), transferencias bancarias, y billeteras digitales. Todos los pagos son procesados de forma segura y encriptada.
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer id="contacto">
+        <p>&copy; 2024 LOBBY69 - Club Privado Swinger. Todos los derechos reservados.</p>
+        <p style="margin-top: 10px;">
+            <a href="#privacy">Política de Privacidad</a> |
+            <a href="#terms">Términos de Servicio</a> |
+            <a href="#contact">Contacto</a>
+        </p>
+        <p style="margin-top: 10px; color: #707a88;">
+            Plataforma segura y verificada. Mayores de 18 años únicamente.
+        </p>
+    </footer>
+
+    <script>
+        function scrollToSection(id) {
+            const element = document.getElementById(id);
+            if (element) {
+                element.scrollIntoView({ behavior: 'smooth' });
+            }
+        }
+
+        function toggleFAQ(element) {
+            const answer = element.nextElementSibling;
+            const icon = element.querySelector('.faq-icon');
+
+            // Cerrar todos los demás FAQs
+            document.querySelectorAll('.faq-answer').forEach(item => {
+                if (item !== answer) {
+                    item.classList.remove('active');
+                }
+            });
+
+            document.querySelectorAll('.faq-icon').forEach(item => {
+                if (item !== icon) {
+                    item.classList.remove('active');
+                }
+            });
+
+            // Toggle el FAQ actual
+            answer.classList.toggle('active');
+            icon.classList.toggle('active');
+        }
+
+        function seleccionarPlan(plan) {
+            alert(`Has seleccionado el plan: ${plan}\n\nSerás redirigido al proceso de pago.`);
+            // Aquí va la lógica para ir al procesamiento de pago
+        }
+    </script>
+</body>
+</html>

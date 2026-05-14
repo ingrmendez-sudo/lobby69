@@ -1,0 +1,132 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans "Detalle de Foto" %}{% endblock %}
+
+{% block content %}
+<div style="padding: 20px; max-width: 900px; margin: 0 auto;">
+    <a href="{% url 'pages:gallery' %}" style="text-decoration: none; color: #4682b4; font-weight: 600;">← {% trans "Volver a Galería" %}</a>
+
+    <div style="background: white; border-radius: 8px; padding: 20px; margin-top: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+        <!-- FOTO GRANDE -->
+        <div style="text-align: center; margin-bottom: 20px;">
+            <img src="{{ photo.image_url }}" alt="Foto" class="photo-img" style="max-width: 100%; max-height: 600px; border-radius: 8px;">
+        </div>
+
+        <!-- INFORMACIÓN -->
+        <div style="border-bottom: 1px solid #eee; padding-bottom: 20px;">
+            <h2>{{ photo.caption }}</h2>
+            <p style="color: #666; margin: 10px 0;">📅 {{ photo.uploaded_at|date:"d/m/Y H:i" }}</p>
+
+            <!-- BOTONES DE ACCIÓN -->
+            <div style="display: flex; gap: 15px; margin-top: 15px;">
+                <button onclick="toggleLike('{{ photo.id }}')" style="background: {% if user_liked %}#e74c3c{% else %}#4682b4{% endif %}; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                    👍 <span id="likes-count">{{ likes_count }}</span>
+                </button>
+
+                <button onclick="toggleVisibility('{{ photo.id }}', '{{ photo.visibility }}')" style="background: #666; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                    {% if photo.visibility == 'public' %}🔓 Pública{% else %}🔒 Privada{% endif %}
+                </button>
+
+                <button onclick="deletePhoto('{{ photo.id }}')" style="background: #e74c3c; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                    🗑️ {% trans "Eliminar" %}
+                </button>
+            </div>
+        </div>
+
+        <!-- COMENTARIOS -->
+        <div style="margin-top: 20px;">
+            <h3>{% trans "Comentarios" %} ({{ comments|length }})</h3>
+
+            <!-- FORMULARIO DE COMENTARIO -->
+            <form id="commentForm" style="margin-bottom: 20px;">
+                {% csrf_token %}
+                <textarea name="comment" placeholder="{% trans 'Escribe un comentario...' %}" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 4px; min-height: 80px;"></textarea>
+                <button type="submit" style="background: #4682b4; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; margin-top: 10px; font-weight: 600;">{% trans "Comentar" %}</button>
+            </form>
+
+            <!-- LISTA DE COMENTARIOS -->
+            <div id="comments-list">
+                {% for comment in comments %}
+                <div style="background: #f9f9f9; padding: 15px; border-radius: 4px; margin-bottom: 10px;">
+                    <p style="font-weight: 600; margin: 0;">{{ comment.user_name|default:'Usuario' }}</p>
+                    <p style="margin: 5px 0; color: #333;">{{ comment.comment_text }}</p>
+                    <small style="color: #999;">{{ comment.created_at|date:"d/m/Y H:i" }}</small>
+                </div>
+                {% empty %}
+                <p style="color: #999;">{% trans "No hay comentarios aún. ¡Sé el primero!" %}</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    window.toggleLike = (photoId) => {
+        console.log('[DEBUG] Toggle like');
+        fetch(`/galeria/like/${photoId}/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value}
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                document.getElementById('likes-count').textContent = d.likes_count;
+                location.reload();
+            }
+        });
+    };
+
+    window.toggleVisibility = (photoId, currentVisibility) => {
+        const newVis = currentVisibility === 'public' ? 'private' : 'public';
+        fetch(`/galeria/cambiar-visibilidad/${photoId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ visibility: newVis })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) location.reload();
+        });
+    };
+
+    window.deletePhoto = (id) => {
+        if (confirm('¿Eliminar esta foto?')) {
+            fetch(`/galeria/eliminar/${id}/`, {
+                method: 'POST',
+                headers: {'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value}
+            }).then(r => r.json()).then(d => {
+                if (d.success) window.location = '{% url "pages:gallery" %}';
+            });
+        }
+    };
+
+    document.getElementById('commentForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const comment = document.querySelector('textarea[name="comment"]').value.trim();
+        if (!comment) {
+            alert('Escribe un comentario');
+            return;
+        }
+
+        fetch(`/galeria/comentar/{{ photo.id }}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ comment_text: comment })
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) location.reload();
+            else alert('Error: ' + d.error);
+        });
+    });
+</script>
+
+{% endblock %}

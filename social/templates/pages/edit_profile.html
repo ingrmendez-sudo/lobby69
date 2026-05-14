@@ -1,0 +1,587 @@
+{% extends 'base_authenticated.html' %}
+{% load static %}
+
+{% block left_sidebar %}
+{% endblock left_sidebar %}
+
+{% block main_content %}
+<div class="edit-profile-container">
+    <div class="edit-profile-header">
+        <h1 class="edit-profile-title">Editar Mi Perfil</h1>
+    </div>
+
+    <!-- ALERTAS -->
+    {% if messages %}
+    <div class="alerts-container">
+        {% for message in messages %}
+        <div class="alert alert-{% if message.tags %}{{ message.tags }}{% else %}info{% endif %}">
+            {{ message }}
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- FORMULARIO -->
+    <form id="profileForm" method="POST" class="profile-form">
+        {% csrf_token %}
+
+        <!-- SECCIÓN 1: INFORMACIÓN PERSONAL -->
+        <section class="form-section">
+            <h2 class="section-title">Información Personal</h2>
+
+            <div class="form-row-3col">
+                <div class="form-group">
+                    <label for="nombre">Nombre *</label>
+                    <input type="text" id="nombre" name="nombre" value="{{ profile.display_name }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="edad">Edad *</label>
+                    <input type="number" id="edad" name="edad" min="18" max="99" value="{{ profile.age }}" required>
+                </div>
+                <div class="form-group">
+                    <label for="genero">Género *</label>
+                    <select id="genero" name="genero" required>
+                        <option value="">-- Selecciona --</option>
+                        <option value="Masculino" {% if profile.gender == 'Masculino' %}selected{% endif %}>Masculino</option>
+                        <option value="Femenino" {% if profile.gender == 'Femenino' %}selected{% endif %}>Femenino</option>
+                        <option value="Otro" {% if profile.gender == 'Otro' %}selected{% endif %}>Otro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="descripcion">Descripción (mínimo 50 caracteres) *</label>
+                <textarea id="descripcion" name="descripcion" rows="4" required>{{ profile.bio }}</textarea>
+                <div class="char-counter">
+                    <span id="charCount">0 / 50</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 2: UBICACIÓN -->
+        <section class="form-section">
+            <h2 class="section-title">Ubicación</h2>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="estado">Estado *</label>
+                    <select id="estado" name="estado" required>
+                        <option value="">-- Selecciona --</option>
+                        {% for state in states %}
+                            <option value="{{ state.0 }}" {% if profile.state == state.0 %}selected{% endif %}>{{ state.0 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div id="ciudadGroup" class="form-group hidden">
+                    <label for="ciudad">Alcaldía *</label>
+                    <select id="ciudad" name="ciudad">
+                        <option value="">-- Selecciona --</option>
+                        {% for alcaldia in alcaldias %}
+                            <option value="{{ alcaldia.0 }}" {% if profile.city == alcaldia.0 %}selected{% endif %}>{{ alcaldia.0 }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 3: TIPO DE PERFIL -->
+        <section class="form-section">
+            <h2 class="section-title">Tipo de Perfil</h2>
+
+            <div class="profile-type-group">
+                <label class="radio-label">
+                    <input type="radio" name="profile_type" value="single" {% if profile.profile_type == 'single' %}checked{% endif %}>
+                    <span>Single</span>
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="profile_type" value="unicornio" {% if profile.profile_type == 'unicornio' %}checked{% endif %}>
+                    <span>Unicornio</span>
+                </label>
+                <label class="radio-label">
+                    <input type="radio" name="profile_type" value="pareja" {% if profile.profile_type == 'pareja' %}checked{% endif %}>
+                    <span>Pareja</span>
+                </label>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 4: INFORMACIÓN DE LA PAREJA (solo si profile_type == 'pareja') -->
+        <section id="parejaSection" class="form-section hidden">
+            <h2 class="section-title">Información de la Pareja</h2>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="pareja_nombre">Nombre de la Pareja *</label>
+                    <input type="text" id="pareja_nombre" name="pareja_nombre" value="{{ profile.pareja_nombre }}">
+                </div>
+                <div class="form-group">
+                    <label for="pareja_edad">Edad de la Pareja *</label>
+                    <input type="number" id="pareja_edad" name="pareja_edad" min="18" max="99" value="{{ profile.pareja_edad }}">
+                </div>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="pareja_genero">Género de la Pareja *</label>
+                    <select id="pareja_genero" name="pareja_genero">
+                        <option value="">-- Selecciona --</option>
+                        <option value="Masculino" {% if profile.pareja_genero == 'Masculino' %}selected{% endif %}>Masculino</option>
+                        <option value="Femenino" {% if profile.pareja_genero == 'Femenino' %}selected{% endif %}>Femenino</option>
+                        <option value="Otro" {% if profile.pareja_genero == 'Otro' %}selected{% endif %}>Otro</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="pareja_descripcion">Descripción de la Pareja (mínimo 50 caracteres) *</label>
+                <textarea id="pareja_descripcion" name="pareja_descripcion" rows="4">{{ profile.pareja_descripcion }}</textarea>
+                <div class="char-counter">
+                    <span id="parejaCharCount">0 / 50</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 5: ¿QUÉ BUSCAS? -->
+        <section class="form-section">
+            <h2 class="section-title">¿Qué buscas?</h2>
+            <div class="checkbox-group checkbox-2col">
+                <label><input type="checkbox" name="buscas" value="Parejas heterosexuales" {% if 'Parejas heterosexuales' in profile.buscas %}checked{% endif %}> Parejas heterosexuales</label>
+                <label><input type="checkbox" name="buscas" value="Parejas bisexuales" {% if 'Parejas bisexuales' in profile.buscas %}checked{% endif %}> Parejas bisexuales</label>
+                <label><input type="checkbox" name="buscas" value="Parejas (ella bisexual)" {% if 'Parejas (ella bisexual)' in profile.buscas %}checked{% endif %}> Parejas (ella bisexual)</label>
+                <label><input type="checkbox" name="buscas" value="Hombres heterosexuales" {% if 'Hombres heterosexuales' in profile.buscas %}checked{% endif %}> Hombres heterosexuales</label>
+                <label><input type="checkbox" name="buscas" value="Hombres bisexuales" {% if 'Hombres bisexuales' in profile.buscas %}checked{% endif %}> Hombres bisexuales</label>
+                <label><input type="checkbox" name="buscas" value="Mujeres heterosexuales" {% if 'Mujeres heterosexuales' in profile.buscas %}checked{% endif %}> Mujeres heterosexuales</label>
+                <label><input type="checkbox" name="buscas" value="Mujeres bisexuales" {% if 'Mujeres bisexuales' in profile.buscas %}checked{% endif %}> Mujeres bisexuales</label>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 6: ¿PARA QUÉ? -->
+        <section class="form-section">
+            <h2 class="section-title">¿Para qué?</h2>
+            <div class="checkbox-group checkbox-3col">
+                <label><input type="checkbox" name="para_que" value="Intercambio completo" {% if 'Intercambio completo' in profile.para_que %}checked{% endif %}> Intercambio completo</label>
+                <label><input type="checkbox" name="para_que" value="Trios" {% if 'Trios' in profile.para_que %}checked{% endif %}> Trios</label>
+                <label><input type="checkbox" name="para_que" value="Cuckold" {% if 'Cuckold' in profile.para_que %}checked{% endif %}> Cuckold</label>
+                <label><input type="checkbox" name="para_que" value="Cybersexo" {% if 'Cybersexo' in profile.para_que %}checked{% endif %}> Cybersexo</label>
+                <label><input type="checkbox" name="para_que" value="Amistad" {% if 'Amistad' in profile.para_que %}checked{% endif %}> Amistad</label>
+                <label><input type="checkbox" name="para_que" value="Intercambio light" {% if 'Intercambio light' in profile.para_que %}checked{% endif %}> Intercambio light</label>
+                <label><input type="checkbox" name="para_que" value="Mirar y ser vistos" {% if 'Mirar y ser vistos' in profile.para_que %}checked{% endif %}> Mirar y ser vistos</label>
+                <label><input type="checkbox" name="para_que" value="Compartir fetishes" {% if 'Compartir fetishes' in profile.para_que %}checked{% endif %}> Compartir fetishes</label>
+                <label><input type="checkbox" name="para_que" value="Intercambio de fotos" {% if 'Intercambio de fotos' in profile.para_que %}checked{% endif %}> Intercambio de fotos</label>
+                <label><input type="checkbox" name="para_que" value="Solo ellas" {% if 'Solo ellas' in profile.para_que %}checked{% endif %}> Solo ellas</label>
+                <label><input type="checkbox" name="para_que" value="Practicas BDSM" {% if 'Practicas BDSM' in profile.para_que %}checked{% endif %}> Practicas BDSM</label>
+                <label><input type="checkbox" name="para_que" value="Sexo en grupo" {% if 'Sexo en grupo' in profile.para_que %}checked{% endif %}> Sexo en grupo</label>
+                <label><input type="checkbox" name="para_que" value="Relaciones abiertas" {% if 'Relaciones abiertas' in profile.para_que %}checked{% endif %}> Relaciones abiertas</label>
+                <label><input type="checkbox" name="para_que" value="Otros" {% if 'Otros' in profile.para_que %}checked{% endif %}> Otros</label>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 7: NO QUIERO QUE VEAN MI PERFIL -->
+        <section class="form-section privacy-section">
+            <h2 class="section-title">No quiero que vean mi perfil...</h2>
+            <p class="section-subtitle">Selecciona quién NO debe ver tu perfil:</p>
+            <div class="checkbox-group checkbox-2col">
+                <label><input type="checkbox" name="privacidad" value="Chicos solos" {% if 'Chicos solos' in profile.privacidad %}checked{% endif %}> Chicos solos</label>
+                <label><input type="checkbox" name="privacidad" value="Extranjeros no amigos" {% if 'Extranjeros no amigos' in profile.privacidad %}checked{% endif %}> Extranjeros no amigos</label>
+                <label><input type="checkbox" name="privacidad" value="Locales/Clubs" {% if 'Locales/Clubs' in profile.privacidad %}checked{% endif %}> Locales/Clubs</label>
+                <label><input type="checkbox" name="privacidad" value="Miembros Basic que no pagan" {% if 'Miembros Basic que no pagan' in profile.privacidad %}checked{% endif %}> Miembros Basic que no pagan</label>
+            </div>
+        </section>
+
+        <!-- SECCIÓN 8: AVISAR POR E-MAIL -->
+        <section class="form-section">
+            <h2 class="section-title">Avisar por e-mail</h2>
+            <div class="checkbox-group checkbox-3col">
+                <label><input type="checkbox" name="notificaciones" value="Cuando me envien un mensaje" {% if 'Cuando me envien un mensaje' in profile.notificaciones %}checked{% endif %}> Cuando me envien un mensaje</label>
+                <label><input type="checkbox" name="notificaciones" value="Cuando alguien me envie o acepte solicitud de amistad" {% if 'Cuando alguien me envie o acepte solicitud de amistad' in profile.notificaciones %}checked{% endif %}> Cuando alguien me envie o acepte solicitud de amistad</label>
+                <label><input type="checkbox" name="notificaciones" value="Cuando alguien verifique mi perfil" {% if 'Cuando alguien verifique mi perfil' in profile.notificaciones %}checked{% endif %}> Cuando alguien verifique mi perfil</label>
+                <label><input type="checkbox" name="notificaciones" value="Cuando a alguien le guste mi perfil o fotos" {% if 'Cuando a alguien le guste mi perfil o fotos' in profile.notificaciones %}checked{% endif %}> Cuando a alguien le guste mi perfil o fotos</label>
+                <label><input type="checkbox" name="notificaciones" value="Cuando alguien escriba en mi muro" {% if 'Cuando alguien escriba en mi muro' in profile.notificaciones %}checked{% endif %}> Cuando alguien escriba en mi muro</label>
+                <label><input type="checkbox" name="notificaciones" value="Cuando alguien comente una foto de otro perfil" {% if 'Cuando alguien comente una foto de otro perfil' in profile.notificaciones %}checked{% endif %}> Cuando alguien comente una foto de otro perfil</label>
+                <label><input type="checkbox" name="notificaciones" value="Cuando alguien comente una de mis fotos" {% if 'Cuando alguien comente una de mis fotos' in profile.notificaciones %}checked{% endif %}> Cuando alguien comente una de mis fotos</label>
+                <label><input type="checkbox" name="notificaciones" value="Cuando alguien interesante esta disponible" {% if 'Cuando alguien interesante esta disponible' in profile.notificaciones %}checked{% endif %}> Cuando alguien interesante esta disponible</label>
+            </div>
+        </section>
+
+        <!-- BOTONES -->
+        <div class="form-actions">
+            <a href="{% url 'pages:my_profile' %}" class="btn btn-secondary">Cancelar</a>
+            <button type="submit" id="submitBtn" class="btn btn-primary">Guardar</button>
+        </div>
+    </form>
+</div>
+
+<style>
+    .edit-profile-container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 20px;
+    }
+
+    .edit-profile-header {
+        margin-bottom: 30px;
+    }
+
+    .edit-profile-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: #333;
+        margin: 0;
+    }
+
+    .alerts-container {
+        margin-bottom: 20px;
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: 6px;
+        margin-bottom: 10px;
+        font-size: 14px;
+        animation: slideIn 0.3s ease;
+    }
+
+    .alert-error {
+        background: #fee;
+        color: #c33;
+        border-left: 4px solid #c33;
+    }
+
+    .alert-success {
+        background: #efe;
+        color: #3c3;
+        border-left: 4px solid #3c3;
+    }
+
+    @keyframes slideIn {
+        from { opacity: 0; transform: translateY(-10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+
+    .profile-form {
+        display: flex;
+        flex-direction: column;
+        gap: 30px;
+    }
+
+    .form-section {
+        background: #f9f9f9;
+        padding: 20px;
+        border-radius: 8px;
+        border-left: 4px solid #6200ee;
+    }
+
+    .form-section.privacy-section {
+        background: #fff8e1;
+        border-left-color: #ffc107;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #333;
+        margin: 0 0 15px 0;
+    }
+
+    .section-subtitle {
+        font-size: 13px;
+        color: #666;
+        margin: 0 0 12px 0;
+        font-style: italic;
+    }
+
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .form-row:last-child {
+        margin-bottom: 0;
+    }
+
+    .form-row-3col {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group label {
+        font-weight: 500;
+        margin-bottom: 6px;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .form-group input[type="text"],
+    .form-group input[type="number"],
+    .form-group select,
+    .form-group textarea {
+        padding: 10px 12px;
+        border: 1px solid #ddd;
+        border-radius: 6px;
+        font-size: 14px;
+        font-family: inherit;
+        transition: border-color 0.2s;
+    }
+
+    .form-group input[type="text"]:focus,
+    .form-group input[type="number"]:focus,
+    .form-group select:focus,
+    .form-group textarea:focus {
+        outline: none;
+        border-color: #6200ee;
+        box-shadow: 0 0 0 3px rgba(98, 0, 238, 0.1);
+    }
+
+    .form-group textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+
+    .char-counter {
+        margin-top: 6px;
+        font-size: 12px;
+        color: #999;
+    }
+
+    .profile-type-group {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+    }
+
+    .radio-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .radio-label input[type="radio"] {
+        cursor: pointer;
+    }
+
+    .checkbox-group {
+        display: grid;
+        gap: 12px;
+    }
+
+    .checkbox-2col {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .checkbox-3col {
+        grid-template-columns: 1fr 1fr 1fr;
+    }
+
+    .checkbox-group label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .checkbox-group input[type="checkbox"] {
+        cursor: pointer;
+    }
+
+    .hidden {
+        display: none;
+    }
+
+    .form-actions {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-end;
+        margin-top: 20px;
+    }
+
+    .btn {
+        padding: 12px 28px;
+        border-radius: 6px;
+        border: none;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+        text-decoration: none;
+        display: inline-block;
+    }
+
+    .btn-primary {
+        background: #4a90e2;
+        color: white;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        background: #3a7bc8;
+    }
+
+    .btn-primary:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+        opacity: 0.6;
+    }
+
+    .btn-secondary {
+        background: #e0e0e0;
+        color: #333;
+    }
+
+    .btn-secondary:hover {
+        background: #d0d0d0;
+    }
+
+    @media (max-width: 768px) {
+        .form-row-3col {
+            grid-template-columns: 1fr;
+        }
+
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+
+        .checkbox-2col {
+            grid-template-columns: 1fr;
+        }
+
+        .checkbox-3col {
+            grid-template-columns: 1fr 1fr;
+        }
+
+        .edit-profile-container {
+            padding: 12px;
+        }
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const profileTypeRadios = document.querySelectorAll('input[name="profile_type"]');
+    const parejaSection = document.getElementById('parejaSection');
+    const estadoSelect = document.getElementById('estado');
+    const ciudadGroup = document.getElementById('ciudadGroup');
+    const ciudadSelect = document.getElementById('ciudad');
+    const descripcionTA = document.getElementById('descripcion');
+    const charCountSpan = document.getElementById('charCount');
+    const parejaDescripcionTA = document.getElementById('pareja_descripcion');
+    const parejaCharCountSpan = document.getElementById('parejaCharCount');
+    const submitBtn = document.getElementById('submitBtn');
+    const profileForm = document.getElementById('profileForm');
+
+    function toggleParejaSection() {
+        const selectedType = document.querySelector('input[name="profile_type"]:checked').value;
+        if (selectedType === 'pareja') {
+            parejaSection.classList.remove('hidden');
+        } else {
+            parejaSection.classList.add('hidden');
+            document.getElementById('pareja_nombre').value = '';
+            document.getElementById('pareja_edad').value = '';
+            document.getElementById('pareja_genero').value = '';
+            parejaDescripcionTA.value = '';
+            updateParejaCharCount();
+        }
+    }
+
+    function toggleAlcaldia() {
+        const estado = estadoSelect.value;
+        if (estado === 'CDMX') {
+            ciudadGroup.classList.remove('hidden');
+            ciudadSelect.setAttribute('required', 'required');
+        } else {
+            ciudadGroup.classList.add('hidden');
+            ciudadSelect.removeAttribute('required');
+            ciudadSelect.value = '';
+        }
+    }
+
+    function updateCharCount() {
+        const len = descripcionTA.value.trim().length;
+        charCountSpan.textContent = `${len} / 50`;
+        if (len < 50) {
+            charCountSpan.style.color = '#f44';
+        } else {
+            charCountSpan.style.color = '#4a4';
+        }
+        validateForm();
+    }
+
+    function updateParejaCharCount() {
+        const len = parejaDescripcionTA.value.trim().length;
+        parejaCharCountSpan.textContent = `${len} / 50`;
+        if (len < 50) {
+            parejaCharCountSpan.style.color = '#f44';
+        } else {
+            parejaCharCountSpan.style.color = '#4a4';
+        }
+        validateForm();
+    }
+
+    function validateForm() {
+        const descLen = descripcionTA.value.trim().length;
+        const selectedType = document.querySelector('input[name="profile_type"]:checked').value;
+        let isValid = descLen >= 50;
+
+        if (selectedType === 'pareja') {
+            const parejaDescLen = parejaDescripcionTA.value.trim().length;
+            isValid = isValid && parejaDescLen >= 50;
+        }
+
+        submitBtn.disabled = !isValid;
+    }
+
+    profileTypeRadios.forEach(radio => {
+        radio.addEventListener('change', toggleParejaSection);
+    });
+
+    estadoSelect.addEventListener('change', toggleAlcaldia);
+    descripcionTA.addEventListener('input', updateCharCount);
+    parejaDescripcionTA.addEventListener('input', updateParejaCharCount);
+
+    profileForm.addEventListener('submit', function(e) {
+        const descLen = descripcionTA.value.trim().length;
+        if (descLen < 50) {
+            e.preventDefault();
+            alert('La descripción debe tener mínimo 50 caracteres.');
+            return;
+        }
+
+        const selectedType = document.querySelector('input[name="profile_type"]:checked').value;
+        if (selectedType === 'pareja') {
+            const parejaDescLen = parejaDescripcionTA.value.trim().length;
+            if (parejaDescLen < 50) {
+                e.preventDefault();
+                alert('La descripción de la pareja debe tener mínimo 50 caracteres.');
+                return;
+            }
+        }
+    });
+
+    toggleParejaSection();
+    toggleAlcaldia();
+    updateCharCount();
+    updateParejaCharCount();
+    validateForm();
+
+    document.querySelectorAll('.alert').forEach(alert => {
+        setTimeout(() => {
+            alert.style.opacity = '0';
+            alert.style.transition = 'opacity 0.5s';
+            setTimeout(() => alert.remove(), 500);
+        }, 5000);
+    });
+});
+</script>
+{% endblock main_content %}
+
+{% block right_sidebar %}
+{% endblock right_sidebar %}

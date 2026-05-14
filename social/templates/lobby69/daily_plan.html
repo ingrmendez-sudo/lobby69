@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}Plan del día — LOBBY69{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'vendor/bootstrap-icons/font/bootstrap-icons.css' %}">
+{% endblock %}
+
+{% block content %}
+{% include "partials/navbar.html" %}
+
+<main>
+<div class="container" style="padding-top:70px; padding-bottom:40px;">
+  <div class="row g-4">
+
+    <!-- Sidebar -->
+    <div class="col-lg-3 d-none d-lg-block">
+      <div class="position-sticky top-header">
+        {% include "partials/sidenav.html" %}
+      </div>
+    </div>
+
+    <!-- Contenido principal -->
+    <div class="col-lg-9">
+
+      <div class="d-flex align-items-center mb-4">
+        <h5 class="mb-0">
+          <i class="bi bi-calendar-check me-2" style="color:#c8a84b;"></i>
+          Agenda del Club
+        </h5>
+        <span class="badge bg-secondary ms-2">{{ today|date:"d/m/Y" }}</span>
+      </div>
+
+      {% if plans %}
+      <div class="row g-3">
+        {% for plan in plans %}
+        <div class="col-md-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <div class="d-flex align-items-start gap-3">
+                <!-- Fecha -->
+                <div class="text-center rounded p-2"
+                  style="background:rgba(200,168,75,0.1); border:1px solid rgba(200,168,75,0.3); min-width:56px;">
+                  <p class="mb-0 fw-bold" style="color:#c8a84b; font-size:20px;">{{ plan.date|date:"d" }}</p>
+                  <small style="color:#a0a060; font-size:10px; text-transform:uppercase;">{{ plan.date|date:"M" }}</small>
+                </div>
+                <!-- Info -->
+                <div class="flex-grow-1">
+                  <div class="d-flex align-items-center gap-2 mb-1">
+                    <h6 class="mb-0">{{ plan.title }}</h6>
+                    {% if plan.is_members_only %}
+                    <span class="badge badge-sm" style="background:rgba(200,168,75,0.2); color:#c8a84b; font-size:10px;">
+                      VIP
+                    </span>
+                    {% endif %}
+                  </div>
+                  <p class="small mb-1" style="color:#7070a0;">
+                    <i class="bi bi-clock me-1"></i>{{ plan.start_time|time:"H:i" }}h
+                    {% if plan.end_time %} — {{ plan.end_time|time:"H:i" }}h{% endif %}
+                    &nbsp;·&nbsp;
+                    <span class="badge bg-secondary bg-opacity-50">{{ plan.get_plan_type_display }}</span>
+                  </p>
+                  {% if plan.location %}
+                  <p class="small mb-1" style="color:#6060a0;">
+                    <i class="bi bi-geo-alt me-1"></i>{{ plan.location }}
+                  </p>
+                  {% endif %}
+                  <p class="small mt-2" style="color:#8080a0;">{{ plan.description }}</p>
+                  {% if plan.max_participants %}
+                  <small style="color:#5050a0;">
+                    <i class="bi bi-people me-1"></i>Máx. {{ plan.max_participants }} participantes
+                  </small>
+                  {% endif %}
+                </div>
+              </div>
+            </div>
+            <div class="card-footer p-2">
+              <a href="{% url 'pages:dynamic_pages' template_name='event-details' %}"
+                class="btn btn-sm btn-primary-soft w-100">
+                <i class="bi bi-info-circle me-1"></i>Ver detalles
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="card text-center py-5">
+        <div class="card-body">
+          <i class="bi bi-calendar-x" style="font-size:3rem; color:rgba(200,168,75,0.3);"></i>
+          <h6 class="mt-3 text-white">No hay eventos próximos</h6>
+          <p class="text-muted">El calendario estará disponible pronto.</p>
+          <a href="{% url 'pages:dashboard' %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-house me-1"></i>Volver al feed
+          </a>
+        </div>
+      </div>
+      {% endif %}
+
+    </div>
+  </div>
+</div>
+</main>
+
+{% include "partials/sidenav.html" %}
+{% endblock %}

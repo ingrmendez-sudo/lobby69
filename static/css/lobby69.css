@@ -1,0 +1,335 @@
+/* ============================================================
+   LOBBY69 - Customización sobre Social Template (StackBros)
+   Método: Override de variables + clases adicionales
+   NO modifica vendor.min.css ni style.css originales
+   ============================================================ */
+
+/* ── VARIABLES CSS (Override de Bootstrap/Theme) ─────────── */
+:root {
+  /* Paleta LOBBY69 */
+  --lobby-gold:        #c8a84b;
+  --lobby-gold-light:  #f0d080;
+  --lobby-gold-dark:   #9a7a2e;
+  --lobby-red:         #e84040;
+  --lobby-red-dark:    #b02020;
+  --lobby-dark:        #0d0d1a;
+  --lobby-dark-2:      #14142a;
+  --lobby-dark-3:      #1e1e3a;
+  --lobby-dark-card:   #181830;
+
+  /* Override variables del tema */
+  --bs-primary:        #c8a84b;
+  --bs-primary-rgb:    200, 168, 75;
+  --bs-dark:           #0d0d1a;
+  --bs-body-bg:        #0f0f20;
+  --bs-body-color:     #d0d0e0;
+  --bs-border-color:   #2a2a4a;
+}
+
+/* ── BODY & BACKGROUND ────────────────────────────────────── */
+body {
+  background-color: var(--lobby-dark) !important;
+  color: #d0d0e0 !important;
+}
+
+/* ── NAVBAR ────────────────────────────────────────────────── */
+.navbar-light.header-static.bg-mode,
+.navbar-light.fixed-top {
+  background-color: var(--lobby-dark-2) !important;
+  border-bottom: 1px solid var(--lobby-gold-dark) !important;
+  box-shadow: 0 2px 20px rgba(200, 168, 75, 0.15) !important;
+}
+
+.navbar-light .navbar-brand-item {
+  height: 38px;
+}
+
+.navbar-light .nav-link {
+  color: #c0c0d8 !important;
+  font-weight: 500;
+  transition: color 0.2s;
+}
+.navbar-light .nav-link:hover,
+.navbar-light .nav-link.active {
+  color: var(--lobby-gold) !important;
+}
+
+/* Botón hamburguesa mobile */
+.navbar-toggler.btn.btn-light {
+  background-color: var(--lobby-dark-3) !important;
+  border-color: var(--lobby-gold-dark) !important;
+  color: var(--lobby-gold) !important;
+}
+
+/* Iconos del nav derecho */
+.nav .btn.btn-light.icon-md {
+  background-color: var(--lobby-dark-3) !important;
+  border-color: var(--lobby-dark-3) !important;
+  color: var(--lobby-gold) !important;
+}
+.nav .btn.btn-light.icon-md:hover {
+  background-color: var(--lobby-gold) !important;
+  color: var(--lobby-dark) !important;
+}
+
+/* ── DROPDOWN MENUS ─────────────────────────────────────────── */
+.dropdown-menu {
+  background-color: var(--lobby-dark-2) !important;
+  border: 1px solid var(--lobby-gold-dark) !important;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+}
+.dropdown-item {
+  color: #c0c0d8 !important;
+}
+.dropdown-item:hover {
+  background-color: var(--lobby-dark-3) !important;
+  color: var(--lobby-gold) !important;
+}
+.dropdown-divider {
+  border-color: #2a2a4a !important;
+}
+
+/* ── CARDS ──────────────────────────────────────────────────── */
+.card {
+  background-color: var(--lobby-dark-card) !important;
+  border-color: #252545 !important;
+  color: #d0d0e0 !important;
+}
+.card-header {
+  background-color: var(--lobby-dark-3) !important;
+  border-bottom-color: #252545 !important;
+  color: #e0e0f0 !important;
+}
+.card-footer {
+  background-color: var(--lobby-dark-2) !important;
+  border-top-color: #252545 !important;
+}
+
+/* ── OFFCANVAS / SIDENAV ─────────────────────────────────────── */
+.offcanvas {
+  background-color: var(--lobby-dark-2) !important;
+  border-right-color: var(--lobby-gold-dark) !important;
+}
+.btn-close {
+  filter: invert(1) sepia(1) saturate(2) hue-rotate(10deg);
+}
+
+/* Stat mini en sidenav */
+.card .hstack h6 {
+  color: var(--lobby-gold) !important;
+}
+.card .hstack small {
+  color: #8080a0 !important;
+}
+
+/* ── BOTONES PRIMARY ─────────────────────────────────────────── */
+.btn-primary {
+  background: linear-gradient(135deg, var(--lobby-gold-dark), var(--lobby-gold)) !important;
+  border-color: var(--lobby-gold) !important;
+  color: var(--lobby-dark) !important;
+  font-weight: 600;
+}
+.btn-primary:hover {
+  background: linear-gradient(135deg, var(--lobby-gold), var(--lobby-gold-light)) !important;
+  border-color: var(--lobby-gold-light) !important;
+  color: var(--lobby-dark) !important;
+}
+.btn-primary-soft {
+  background-color: rgba(200, 168, 75, 0.15) !important;
+  color: var(--lobby-gold) !important;
+  border: 1px solid rgba(200, 168, 75, 0.3) !important;
+}
+.btn-primary-soft:hover {
+  background-color: rgba(200, 168, 75, 0.25) !important;
+  color: var(--lobby-gold-light) !important;
+}
+
+/* Botón danger (rojo) */
+.btn-danger-soft {
+  background-color: rgba(232, 64, 64, 0.15) !important;
+  color: var(--lobby-red) !important;
+}
+
+/* ── FORMULARIOS ─────────────────────────────────────────────── */
+.form-control,
+.form-select {
+  background-color: var(--lobby-dark-3) !important;
+  border-color: #2a2a4a !important;
+  color: #d0d0e0 !important;
+}
+.form-control:focus,
+.form-select:focus {
+  background-color: var(--lobby-dark-3) !important;
+  border-color: var(--lobby-gold) !important;
+  box-shadow: 0 0 0 3px rgba(200, 168, 75, 0.2) !important;
+  color: #ffffff !important;
+}
+.form-control::placeholder {
+  color: #5a5a7a !important;
+}
+
+/* Input de búsqueda en navbar */
+.navbar .form-control.bg-light {
+  background-color: var(--lobby-dark-3) !important;
+  color: #d0d0e0 !important;
+  border-color: #2a2a4a !important;
+}
+
+/* ── NAV PILLS / TABS ─────────────────────────────────────────── */
+.nav-pills .nav-link.active {
+  background-color: var(--lobby-gold) !important;
+  color: var(--lobby-dark) !important;
+}
+.nav-pills .nav-link {
+  color: #9090b0 !important;
+}
+.nav-pills .nav-link:hover {
+  color: var(--lobby-gold) !important;
+  background-color: rgba(200, 168, 75, 0.1) !important;
+}
+
+/* Nav stack dentro del feed */
+.nav-stack .nav-link.bg-light {
+  background-color: var(--lobby-dark-3) !important;
+  color: #a0a0c0 !important;
+}
+.nav-stack .nav-link.bg-light:hover {
+  background-color: rgba(200, 168, 75, 0.15) !important;
+  color: var(--lobby-gold) !important;
+}
+
+/* ── BADGES ──────────────────────────────────────────────────── */
+.badge-notif {
+  background-color: var(--lobby-red) !important;
+}
+.badge.bg-danger {
+  background-color: var(--lobby-red) !important;
+}
+
+/* ── LIST GROUP ──────────────────────────────────────────────── */
+.list-group-item {
+  background-color: transparent !important;
+  border-color: #252545 !important;
+  color: #d0d0e0 !important;
+}
+.list-group-item:hover,
+.list-group-item-action:hover {
+  background-color: var(--lobby-dark-3) !important;
+  color: #ffffff !important;
+}
+.badge-unread {
+  background-color: rgba(200, 168, 75, 0.07) !important;
+}
+
+/* ── TEXTOS ──────────────────────────────────────────────────── */
+h1, h2, h3, h4, h5, h6 {
+  color: #e8e8f8 !important;
+}
+.text-primary {
+  color: var(--lobby-gold) !important;
+}
+a {
+  color: var(--lobby-gold) !important;
+}
+a:hover {
+  color: var(--lobby-gold-light) !important;
+}
+small, .small {
+  color: #7070a0 !important;
+}
+p {
+  color: #b0b0cc;
+}
+
+/* ── SEPARADORES ─────────────────────────────────────────────── */
+hr {
+  border-color: #252545 !important;
+  opacity: 1 !important;
+}
+.vr {
+  background-color: #252545 !important;
+}
+
+/* ── STORIES WRAPPER ─────────────────────────────────────────── */
+.card.border.border-dashed {
+  background-color: rgba(200, 168, 75, 0.05) !important;
+  border-color: var(--lobby-gold-dark) !important;
+}
+.card.border.border-dashed .btn-light {
+  background-color: var(--lobby-dark-3) !important;
+  color: var(--lobby-gold) !important;
+  border: 1px solid var(--lobby-gold-dark) !important;
+}
+
+/* ── AVATAR ──────────────────────────────────────────────────── */
+.avatar-img {
+  border-color: var(--lobby-gold-dark) !important;
+}
+.avatar-img.rounded.border {
+  border-color: var(--lobby-gold) !important;
+}
+
+/* ── MODO DARK FORZADO (tema predeterminado LOBBY69) ──────── */
+[data-bs-theme="dark"],
+[data-bs-theme="light"],
+[data-bs-theme="auto"] {
+  /* Siempre mantener el dark de LOBBY69 */
+  --bs-body-bg: #0f0f20;
+  --bs-body-color: #d0d0e0;
+  --bs-card-bg: #181830;
+  --bs-border-color: #252545;
+}
+
+/* ── COMPONENTE: LOBBY69 BADGE ONLINE ────────────────────── */
+.lobby-badge-online {
+  display: inline-block;
+  width: 10px; height: 10px;
+  border-radius: 50%;
+  background: #00e676;
+  border: 2px solid var(--lobby-dark-2);
+}
+
+/* ── COMPONENTE: SALA CARD ────────────────────────────────── */
+.lobby-room-card {
+  border-left: 3px solid var(--lobby-gold) !important;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.lobby-room-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 8px 24px rgba(200, 168, 75, 0.2) !important;
+}
+
+/* ── COMPONENTE: BANNER GOLD ─────────────────────────────── */
+.lobby-gold-banner {
+  background: linear-gradient(135deg, var(--lobby-dark-2), var(--lobby-dark-3));
+  border: 1px solid var(--lobby-gold-dark);
+  border-radius: 12px;
+  padding: 1.5rem;
+}
+
+/* ── PERFIL HEADER ───────────────────────────────────────── */
+.profile-foreground {
+  background: linear-gradient(135deg, var(--lobby-dark-2) 0%, #1a0a30 100%) !important;
+}
+
+/* ── SCROLLBAR personalizada ─────────────────────────────── */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: var(--lobby-dark-2); }
+::-webkit-scrollbar-thumb { background: var(--lobby-gold-dark); border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: var(--lobby-gold); }
+
+/* ── ANIMACIONES ─────────────────────────────────────────── */
+@keyframes lobby-glow {
+  0%, 100% { box-shadow: 0 0 8px rgba(200, 168, 75, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(200, 168, 75, 0.7); }
+}
+.lobby-glow {
+  animation: lobby-glow 2s ease-in-out infinite;
+}
+
+/* ── RESPONSIVE ajustes ──────────────────────────────────── */
+@media (max-width: 767px) {
+  .navbar-light.fixed-top {
+    padding: 0.5rem 0 !important;
+  }
+}

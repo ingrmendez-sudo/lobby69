@@ -1,0 +1,507 @@
+
+{% extends 'base_authenticated.html' %}
+{% load static %}
+
+{% block page_title %}Dashboard - LOBBY69{% endblock page_title %}
+
+{% block left_sidebar %}
+    <!-- Mi Perfil -->
+    <div class="card profile-card">
+        <div class="profile-avatar">👤</div>
+        <h3 class="profile-name">{{ user.username }}</h3>
+        <p class="profile-location">📍 México</p>
+        <p class="profile-bio">Bienvenido a la comunidad LOBBY69. Completa tu perfil para conectar mejor.</p>
+        <div class="membership-badge">Miembro Activo</div>
+        <a href="{% url 'pages:my_profile' %}" class="btn-edit-profile">Editar Perfil</a>
+    </div>
+
+    <!-- Quiénes te han visitado -->
+    <div class="card">
+        <h4 class="section-title">👁 Te han visitado</h4>
+        {% if visited_by %}
+            {% for visitor in visited_by|slice:":3" %}
+            <div class="visit-item">
+                <div class="visit-avatar">👥</div>
+                <div class="visit-info">
+                    <div class="visit-name">{{ visitor.nick }}</div>
+                    <div class="visit-time">Hace poco</div>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="font-size: 13px; color: var(--text-secondary);">Sin visitas aún</p>
+        {% endif %}
+    </div>
+
+    <!-- Historias -->
+    <div class="card">
+        <h4 class="section-title">📸 Historias</h4>
+        <div style="text-align: center; color: var(--text-secondary); font-size: 13px;">
+            <p>Comparte tu historia con la comunidad</p>
+            <button style="width: 100%; padding: 10px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; font-weight: 600;">
+                + Nueva Historia
+            </button>
+        </div>
+    </div>
+{% endblock left_sidebar %}
+
+{% block main_content %}
+    {% csrf_token %}
+    {% if photos %}
+        {% for photo in photos %}
+        <div class="post">
+            <div class="post-header" onclick="window.location.href = `/usuario/{{ photo.user_nick }}/`" style="cursor: pointer;">
+                <div class="post-avatar">👤</div>
+                <div class="post-meta">
+                    <div class="post-author" style="color: var(--primary-color); font-weight: 600;">{{ photo.user_nick }}</div>
+                    <div class="post-time">{{ photo.uploaded_at|date:"d/m/Y H:i" }}</div>
+                </div>
+            </div>
+
+            {% if photo.image_url %}
+                <div style="position: relative;">
+                    <img src="{{ photo.image_url }}" alt="Foto" class="post-image" data-image="{{ photo.image_url }}" data-caption="{{ photo.caption|default:''|escapejs }}" data-id="{{ photo.id }}" onclick="openPhotoModal(event)" style="cursor: pointer;">
+                </div>
+            {% endif %}
+
+            {% if photo.caption %}
+                <p class="post-content">{{ photo.caption }}</p>
+            {% endif %}
+
+            <div class="post-actions">
+                <button class="action-btn" onclick="toggleLike('{{ photo.id }}')">👍 <span id="likes-{{ photo.id }}">{{ photo.likes_count|default:0 }} Me gusta</span></button>
+                <button class="action-btn" onclick="savePost('{{ photo.id }}')">❤️ Me encanta<span id="saves-{{ photo.id }}"></span></button>
+                <button class="action-btn" onclick="openPhotoModal(event)" data-image="{{ photo.image_url }}" data-caption="{{ photo.caption|default:''|escapejs }}" data-id="{{ photo.id }}" style="cursor: pointer;">💬 <span id="comments-{{ photo.id }}">{{ photo.comments_count|default:0 }}</span></button>
+            </div>
+        </div>
+        {% endfor %}
+    {% else %}
+        <div class="post empty-feed">
+            <p>📸 No hay fotos en el feed aún</p>
+            <p style="font-size: 12px; margin-top: 10px;">Sigue a más usuarios o visita la galería</p>
+        </div>
+    {% endif %}
+
+    <!-- MODAL DE FOTO CON COMENTARIOS -->
+    <div id="photoModal" class="photo-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 9999; justify-content: center; align-items: center; padding: 20px; overflow-y: auto;">
+        <div class="photo-modal-content" style="position: relative; max-width: 1200px; width: 100%; display: flex; gap: 20px; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; max-height: 90vh;">
+
+            <!-- Botón cerrar -->
+            <button onclick="closePhotoModal()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 28px; cursor: pointer; z-index: 10000;">✕</button>
+
+            <!-- SECCIÓN IZQUIERDA: FOTO -->
+            <div style="flex: 1; display: flex; align-items: center; justify-content: center; background: #000; padding: 20px;">
+                <img id="modalImage" src="" alt="Foto grande" style="max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px;">
+            </div>
+
+            <!-- SECCIÓN DERECHA: COMENTARIOS -->
+            <div style="flex: 0 0 400px; display: flex; flex-direction: column; padding: 20px; background: var(--bg-primary); overflow-y: auto;">
+
+                <!-- Info de foto -->
+                <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+                    <p id="modalCaption" style="font-size: 14px; margin: 0 0 10px 0; color: var(--text-primary); line-height: 1.5;"></p>
+                    <div style="display: flex; gap: 10px; align-items: center;">
+                        <button onclick="toggleLike(currentPhotoId)" class="btn-action" style="flex: 1; padding: 8px; background: var(--danger-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">❤️ Me encanta</button>
+                        <span id="commentCount" style="font-size: 13px; color: var(--text-secondary); background: var(--bg-secondary); padding: 8px 12px; border-radius: 4px;">💬 0</span>
+                    </div>
+                </div>
+
+                <!-- Formulario comentario -->
+                <div style="margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px;">
+                    <textarea id="commentText" placeholder="Escribe un comentario..." maxlength="500" rows="3" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-family: Arial, sans-serif; resize: none;"></textarea>
+                    <button onclick="submitComment()" style="padding: 10px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">Comentar</button>
+                    <small id="charCount" style="font-size: 12px; color: var(--text-secondary);">0/500</small>
+                </div>
+
+                <!-- Lista comentarios -->
+                <div id="commentsList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+                    <p style="text-align: center; color: var(--text-secondary);">Cargando comentarios...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock main_content %}
+
+{% block right_sidebar %}
+    <!-- Usuarios Conectados -->
+    <div class="card">
+        <h4 class="section-title">🟢 Conectados</h4>
+        {% if connected_users %}
+            {% for user_online in connected_users|slice:":3" %}
+            <div class="profile-card-small" onclick="window.location.href = `/usuario/{{ user_online.nick }}/`">
+                <div class="profile-avatar-small">👥</div>
+                <div class="profile-name-small">{{ user_online.nick }}</div>
+                <div class="profile-location-small">📍 {{ user_online.city|default:"México" }}</div>
+                <button class="btn-add">Ver Perfil</button>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="font-size: 12px; color: var(--text-secondary); text-align: center;">Sin usuarios en línea</p>
+        {% endif %}
+    </div>
+
+    <!-- Nuevos Perfiles -->
+    <div class="card">
+        <h4 class="section-title">✨ Nuevos Perfiles</h4>
+        {% if suggested_profiles %}
+            {% for profile in suggested_profiles|slice:":2" %}
+            <div class="profile-card-small" onclick="viewProfile('{{ profile.id }}')">
+                <div class="profile-avatar-small">👥</div>
+                <div class="profile-name-small">{{ profile.nick }}</div>
+                <div class="profile-location-small">📍 {{ profile.city|default:"México" }}</div>
+                <div class="profile-bio-small">{{ profile.bio|default:"Sin descripción"|truncatewords:5 }}</div>
+                <button class="btn-add">+ Agregar</button>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p style="font-size: 12px; color: var(--text-secondary); text-align: center;">Sin perfiles disponibles</p>
+        {% endif %}
+    </div>
+
+    <!-- Anuncios -->
+    <div class="card">
+        <h4 class="section-title">📢 Anuncios</h4>
+        <div class="ad-space">
+            Espacio para anuncios y promociones
+        </div>
+    </div>
+{% endblock right_sidebar %}
+
+    <script>
+        // Tema día/noche
+        function toggleTheme() {
+            const body = document.body;
+            const icon = document.getElementById('theme-icon');
+
+            body.classList.toggle('dark-mode');
+
+            if (body.classList.contains('dark-mode')) {
+                localStorage.setItem('theme', 'dark');
+                icon.textContent = '☀️';
+            } else {
+                localStorage.setItem('theme', 'light');
+                icon.textContent = '🌙';
+            }
+        }
+
+        // Cargar tema guardado
+        window.addEventListener('DOMContentLoaded', function() {
+            const theme = localStorage.getItem('theme') || 'light';
+            const icon = document.getElementById('theme-icon');
+
+            if (theme === 'dark') {
+                document.body.classList.add('dark-mode');
+                icon.textContent = '☀️';
+            } else {
+                icon.textContent = '🌙';
+            }
+        });
+
+        // Like a foto
+        function toggleLike(photoId) {
+        const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+        fetch(`/galeria/like/${photoId}/`, {
+            method: 'POST',
+            headers: {'X-CSRFToken': csrftoken}
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.success) {
+                location.reload();
+            } else {
+                alert('Error: ' + d.error);
+            }
+        })
+        .catch(e => alert('Error: ' + e));
+        }
+
+        // Cargar contadores de comentarios al cargar la página
+        document.addEventListener('DOMContentLoaded', function() {
+            const photos = document.querySelectorAll('[data-id]');
+            photos.forEach(photo => {
+                const photoId = photo.dataset.id;
+                fetch(`/galeria/foto/${photoId}/comentarios/`)
+                    .then(r => r.json())
+                    .then(data => {
+                        const el = document.getElementById(`comments-${photoId}`);
+                        if (el) {
+                            el.textContent = ` ${data.comments ? data.comments.length : 0} Comentarios`;
+                        }
+                    })
+                    .catch(e => console.error(e));
+            });
+        });
+
+
+        // Ver perfil de usuario
+        function viewProfile(userId) {
+            window.location.href = '/usuario/${userId}/';
+        }
+
+        // Abrir modal de foto
+        function openPhotoModal(imageSrc, caption) {
+            const modal = document.getElementById('photoModal');
+            const modalImg = document.getElementById('modalImage');
+            const modalCaption = document.getElementById('modalCaption');
+
+            modalImg.src = imageSrc;
+            modalCaption.textContent = caption || '';
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden'; // Evitar scroll
+        }
+
+        // Cerrar modal de foto
+        function closePhotoModal() {
+            const modal = document.getElementById('photoModal');
+            modal.style.display = 'none';
+            document.body.style.overflow = 'auto'; // Permitir scroll
+        }
+
+      // Cerrar modal al hacer clic fuera
+      document.addEventListener('DOMContentLoaded', function() {
+          const modal = document.getElementById('photoModal');
+          if (modal) {
+              modal.addEventListener('click', function(e) {
+                  if (e.target.id === 'photoModal') {
+                      closePhotoModal();
+                  }
+              });
+          }
+
+          // Cerrar con tecla ESC
+          document.addEventListener('keydown', function(e) {
+              if (e.key === 'Escape') {
+                  closePhotoModal();
+              }
+          });
+      });
+
+    let currentPhotoId = null;
+
+      function openPhotoModal(event) {
+          const element = event.currentTarget;
+          const image = element.dataset.image;
+          const caption = element.dataset.caption;
+          const photoId = element.dataset.id;
+          currentPhotoId = photoId;
+          const modal = document.getElementById('photoModal');
+          document.getElementById('modalImage').src = image;
+          document.getElementById('modalCaption').textContent = caption || 'Sin título';
+          modal.classList.add('active');
+          document.body.style.overflow = 'hidden';
+          loadComments(photoId);
+      }
+
+      function savePost(photoId) {
+            const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+            fetch(`/galeria/guardar/${photoId}/`, {
+                method: 'POST',
+                headers: {'X-CSRFToken': csrftoken}
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    const el = document.getElementById(`saves-${photoId}`);
+                    if (el) {
+                        el.textContent = data.count;
+                    }
+                    loadSavesCounts();
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            })
+            .catch(e => alert('Error: ' + e));
+        }
+
+function loadSavesCounts() {
+    const photos = document.querySelectorAll('[data-id]');
+    photos.forEach(photo => {
+        const photoId = photo.dataset.id;
+        fetch(`/galeria/guardar/${photoId}/contador/`)
+            .then(r => r.json())
+            .then(data => {
+                const el = document.getElementById(`saves-${photoId}`);
+                if (el) {
+                    el.textContent = data.count;
+                }
+            })
+            .catch(e => console.error(e));
+    });
+}
+
+document.addEventListener('DOMContentLoaded', loadSavesCounts);
+
+
+
+      function closePhotoModal() {
+          const modal = document.getElementById('photoModal');
+          modal.classList.remove('active');
+          document.body.style.overflow = 'auto';
+          document.getElementById('commentText').value = '';
+          document.getElementById('charCount').textContent = '0/500';
+      }
+
+      function loadComments(photoId) {
+          fetch(`/galeria/foto/${photoId}/comentarios/`)
+              .then(r => r.json())
+              .then(data => {
+                  const commentsList = document.getElementById('commentsList');
+                  const commentCount = document.getElementById('commentCount');
+
+                  // Actualizar contador
+                  commentCount.textContent = `💬 ${data.comments ? data.comments.length : 0}`;
+
+                  if (!data.comments || data.comments.length === 0) {
+                      commentsList.innerHTML = '<p style="text-align: center; color: var(--text-secondary);">No hay comentarios aún</p>';
+                  } else {
+                      commentsList.innerHTML = data.comments.map(c => `
+                          <div class="comment-item">
+                              <div class="comment-header">
+                                  <strong>${c.user_nick}</strong>
+                                  <small>${new Date(c.created_at).toLocaleDateString()}</small>
+                              </div>
+                              <p>${c.comment_text}</p>
+                          </div>
+                      `).join('');
+                  }
+              })
+              .catch(e => {
+                  console.error(e);
+                  document.getElementById('commentsList').innerHTML = '<p style="color: red;">Error cargando comentarios</p>';
+              });
+      }
+
+      function getCookie(name) {
+          let value = null;
+          if (document.cookie && document.cookie !== '') {
+              const cookies = document.cookie.split(';');
+              for (let i = 0; i < cookies.length; i++) {
+                  const cookie = cookies[i].trim();
+                  if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                      value = decodeURIComponent(cookie.substring(name.length + 1));
+                      break;
+                  }
+              }
+          }
+          return value;
+      }
+
+      function submitComment() {
+          const text = document.getElementById('commentText').value.trim();
+          if (!text) { alert('Escribe un comentario'); return; }
+
+          const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
+          const formData = new FormData();
+          formData.append('comment_text', text);
+
+          fetch(`/galeria/comentar/${currentPhotoId}/`, {
+              method: 'POST',
+              headers: {'X-CSRFToken': csrftoken},
+              body: formData
+          })
+          .then(r => r.json())
+          .then(data => {
+              if (data.success) {
+                  document.getElementById('commentText').value = '';
+                  document.getElementById('charCount').textContent = '0/500';
+                  loadComments(currentPhotoId);
+                  // AGREGAR MENSAJE DE ÉXITO
+                  const msg = document.createElement('div');
+                  msg.textContent = '✓ Comentario publicado';
+                  msg.style.cssText = 'padding: 10px; background: #27ae60; color: white; border-radius: 4px; margin-bottom: 10px; text-align: center;';
+                  document.getElementById('commentsList').parentElement.insertBefore(msg, document.getElementById('commentsList'));
+                  setTimeout(() => msg.remove(), 3000);
+              } else {
+                  alert('Error: ' + data.error);
+              }
+          })
+          .catch(e => { console.error(e); alert('Error: ' + e); });
+      }
+
+
+      document.getElementById('commentText')?.addEventListener('keyup', function() {
+          document.getElementById('charCount').textContent = this.value.length + '/500';
+      });
+
+     </script>
+
+<!-- MODAL DE FOTO CON COMENTARIOS -->
+<div id="photoModal" class="photo-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 9999; justify-content: center; align-items: center; padding: 20px; overflow-y: auto;">
+    <div class="photo-modal-content" style="position: relative; max-width: 1200px; width: 100%; display: flex; gap: 20px; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; max-height: 90vh;">
+
+        <!-- Botón cerrar -->
+        <button onclick="closePhotoModal()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 28px; cursor: pointer; z-index: 10000;">✕</button>
+
+        <!-- SECCIÓN IZQUIERDA: FOTO -->
+        <div style="flex: 1; display: flex; align-items: center; justify-content: center; background: #000; padding: 20px;">
+            <img id="modalImage" src="" alt="Foto grande" style="max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px;">
+        </div>
+
+        <!-- SECCIÓN DERECHA: COMENTARIOS -->
+        <div style="flex: 0 0 400px; display: flex; flex-direction: column; padding: 20px; background: var(--bg-primary); overflow-y: auto;">
+
+            <!-- Info de foto -->
+            <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
+                <p id="modalCaption" style="font-size: 14px; margin: 0 0 10px 0; color: var(--text-primary); line-height: 1.5;"></p>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <button onclick="toggleLike(currentPhotoId)" class="btn-action" style="flex: 1; padding: 8px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">❤️ Me encanta</button>
+                    <span id="commentCount" style="font-size: 13px; color: var(--text-secondary); background: var(--bg-secondary); padding: 8px 12px; border-radius: 4px;">💬 0</span>
+                </div>
+            </div>
+
+
+            <!-- Formulario comentario -->
+            <div style="margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px;">
+                <textarea id="commentText" placeholder="Escribe un comentario..." maxlength="500" rows="3" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-family: Arial, sans-serif; resize: none;"></textarea>
+                <button onclick="submitComment()" style="padding: 10px; background: #4682b4; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">Comentar</button>
+                <small id="charCount" style="font-size: 12px; color: var(--text-secondary);">0/500</small>
+            </div>
+
+            <!-- Lista comentarios -->
+            <div id="commentsList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
+                <p style="text-align: center; color: var(--text-secondary);">Cargando comentarios...</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.photo-modal {
+    display: none !important;
+}
+
+.photo-modal.active {
+    display: flex !important;
+}
+
+.comment-item {
+    padding: 10px;
+    background: var(--bg-secondary);
+    border-radius: 4px;
+    border-left: 3px solid #4682b4;
+}
+
+/* .comment-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 12px;
+}
+
+.comment-header strong {
+    color: #4682b4;
+}
+
+.comment-header small {
+    color: var(--text-secondary);
+}
+
+.comment-item p {
+    margin: 0;
+    color: var(--text-primary);
+    word-wrap: break-word;
+    line-height: 1.4;
+    font-size: 13px;
+} */
+</style>
+

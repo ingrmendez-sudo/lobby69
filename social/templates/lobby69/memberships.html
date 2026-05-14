@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}Membresías — LOBBY69{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'vendor/bootstrap-icons/font/bootstrap-icons.css' %}">
+{% endblock %}
+
+{% block content %}
+{% include "partials/navbar.html" %}
+
+<main style="padding-top:70px; min-height:100vh; background:linear-gradient(135deg,#0d0d1a 0%,#1a0a30 40%,#0d0d1a 100%);">
+<div class="container py-5">
+
+  <div class="text-center mb-5">
+    <p style="color:#c8a84b; letter-spacing:3px; font-size:11px; text-transform:uppercase;">PLANES</p>
+    <h2 class="text-white">Tu membresía LOBBY69</h2>
+    {% if current_membership %}
+    <p style="color:#7070a0;">
+      Plan actual: <strong style="color:#c8a84b;">{{ current_membership.plan.name }}</strong>
+      {% if current_membership.expires_at %}
+      · Vence: {{ current_membership.expires_at|date:"d/m/Y" }}
+      {% endif %}
+    </p>
+    {% endif %}
+  </div>
+
+  <div class="row g-4 justify-content-center">
+    {% for plan in plans %}
+    <div class="col-md-4">
+      <div class="card h-100 {% if plan.plan_type == 'VIP' %}border{% endif %}"
+        style="{% if plan.plan_type == 'VIP' %}border-color:rgba(200,168,75,0.5) !important; background:rgba(200,168,75,0.05);{% else %}background:rgba(255,255,255,0.03);{% endif %}">
+        {% if plan.plan_type == 'VIP' %}
+        <div class="card-header text-center py-2" style="background:linear-gradient(135deg,#c8a84b,#f5d78e); border:none;">
+          <small style="color:#0d0d1a; font-weight:700; letter-spacing:2px; font-size:11px;">⭐ MÁS POPULAR</small>
+        </div>
+        {% endif %}
+        <div class="card-body p-4">
+          <p style="color:#c8a84b; text-transform:uppercase; letter-spacing:2px; font-size:12px;">{{ plan.name }}</p>
+          <div class="mb-3">
+            {% if plan.price_mxn_monthly == 0 %}
+            <span style="font-size:36px; font-weight:900; color:white;">Gratis</span>
+            {% else %}
+            <span style="font-size:36px; font-weight:900; color:{% if plan.plan_type == 'VIP' %}#c8a84b{% else %}white{% endif %};">
+              ${{ plan.price_mxn_monthly }}
+            </span>
+            <span style="color:#7070a0; font-size:14px;">/mes</span>
+            {% endif %}
+          </div>
+          <p style="color:#7070a0; font-size:13px;" class="mb-4">{{ plan.description }}</p>
+
+          <!-- Features del plan -->
+          <ul class="list-unstyled mb-4" style="color:#8080a0;">
+            <li class="mb-2">
+              <i class="bi bi-image text-success me-2"></i>
+              {{ plan.max_photos }} fotos en perfil
+            </li>
+            <li class="mb-2">
+              <i class="bi bi-film text-success me-2"></i>
+              {{ plan.max_videos }} videos
+            </li>
+            <li class="mb-2">
+              <i class="bi bi-chat-dots {% if plan.can_view_private_photos %}text-success{% else %}text-danger{% endif %} me-2"></i>
+              {% if plan.can_view_private_photos %}Ver fotos privadas{% else %}Sin fotos privadas{% endif %}
+            </li>
+            <li class="mb-2">
+              <i class="bi bi-send {% if plan.can_send_invitations %}text-success{% else %}text-danger{% endif %} me-2"></i>
+              {% if plan.can_send_invitations %}Enviar invitaciones{% else %}Sin invitaciones{% endif %}
+            </li>
+            <li class="mb-2">
+              <i class="bi bi-calendar-event {% if plan.can_join_events %}text-success{% else %}text-danger{% endif %} me-2"></i>
+              {% if plan.can_join_events %}Acceso a eventos{% else %}Sin eventos{% endif %}
+            </li>
+            {% if plan.can_create_events %}
+            <li class="mb-2">
+              <i class="bi bi-plus-circle text-success me-2"></i>
+              Crear eventos privados
+            </li>
+            {% endif %}
+          </ul>
+
+          {% if current_membership and current_membership.plan == plan %}
+          <button class="btn w-100 btn-outline-secondary" disabled>
+            <i class="bi bi-check-circle me-1"></i>Plan actual
+          </button>
+          {% elif plan.price_mxn_monthly == 0 %}
+          <a href="{% url 'pages:dashboard' %}" class="btn btn-outline-light w-100">
+            <i class="bi bi-house me-1"></i>Ir al feed
+          </a>
+          {% else %}
+          <a href="{% url 'pages:checkout' plan_type=plan.plan_type %}" 
+            class="btn w-100 fw-bold {% if plan.plan_type == 'VIP' %}btn-warning{% else %}btn-outline-warning{% endif %}"
+            {% if plan.plan_type == 'VIP' %}style="background:linear-gradient(135deg,#c8a84b,#f5d78e); border:none; color:#0d0d1a;"{% endif %}>
+            <i class="bi bi-gem me-1"></i>Activar {{ plan.name }}
+          </a>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <!-- Planes por defecto si no hay datos en BD -->
+    <div class="col-12 text-center">
+      <p class="text-muted">Cargando planes...</p>
+      <a href="{% url 'pages:dashboard' %}" class="btn btn-primary">Ir al feed</a>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- Garantías -->
+  <div class="row g-3 mt-5 text-center">
+    <div class="col-md-4">
+      <i class="bi bi-shield-check fs-3 mb-2 d-block" style="color:#c8a84b;"></i>
+      <p class="text-white small mb-0">Pago 100% seguro</p>
+      <small style="color:#6060a0;">SSL y cifrado de extremo a extremo</small>
+    </div>
+    <div class="col-md-4">
+      <i class="bi bi-arrow-repeat fs-3 mb-2 d-block" style="color:#c8a84b;"></i>
+      <p class="text-white small mb-0">Cancela cuando quieras</p>
+      <small style="color:#6060a0;">Sin contratos ni penalidades</small>
+    </div>
+    <div class="col-md-4">
+      <i class="bi bi-eye-slash fs-3 mb-2 d-block" style="color:#c8a84b;"></i>
+      <p class="text-white small mb-0">Cargo discreto</p>
+      <small style="color:#6060a0;">No aparece LOBBY69 en tu estado de cuenta</small>
+    </div>
+  </div>
+
+</div>
+</main>
+{% endblock %}

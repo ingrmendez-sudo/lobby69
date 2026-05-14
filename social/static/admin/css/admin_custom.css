@@ -1,0 +1,30 @@
+/* Separar botones de acciones */
+.button {
+    margin-right: 10px !important;
+    margin-bottom: 5px !important;
+    display: inline-block !important;
+}
+
+/* Estilos para los botones de acción en list_display */
+a.button {
+    padding: 8px 12px !important;
+    font-size: 13px !important;
+    margin: 2px !important;
+}
+
+/* Fondo para la columna de acciones */
+.field-acciones_rapidas {
+    min-width: 300px !important;
+}
+
+/* Mejorar visualización del badge de estado */
+.field-estado_badge {
+    min-width: 150px !important;
+}
+
+/* Columnas responsivas */
+@media (max-width: 1200px) {
+    .field-acciones_rapidas {
+        min-width: 250px !important;
+    }
+}

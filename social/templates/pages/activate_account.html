@@ -1,0 +1,169 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Activar Cuenta - CLUB LOBBY69</title>
+    <style>
+        * {margin:0;padding:0;box-sizing:border-box;}
+        body {font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:linear-gradient(135deg,#0a0f1a 0%,#0f1628 50%,#1a2d4a 100%);color:#fff;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
+        .container {max-width:600px;width:100%;background:rgba(15,22,40,0.95);border-radius:16px;padding:50px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+        .header {text-align:center;margin-bottom:40px;}
+        .logo {width:80px;height:80px;background:rgba(192,192,192,.1);border:2px solid #c0c0c0;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin:0 auto 20px;}
+        .logo img {width:100%;height:100%;object-fit:contain;}
+        h1 {font-size:28px;margin-bottom:10px;color:#fff;}
+        .subtitle {font-size:14px;color:#a9b8c7;margin-bottom:30px;}
+        .alert {padding:15px;border-radius:8px;margin-bottom:20px;border-left:4px solid #dc3545;background:#dc3545;color:#fff;font-size:13px;}
+        .info-box {background:rgba(70,130,180,.1);border-left:4px solid #4682b4;border-radius:8px;padding:15px;margin-bottom:30px;font-size:13px;color:#a9b8c7;line-height:1.6;}
+        .form-group {margin-bottom:20px;}
+        .form-group label {font-size:13px;color:#a9b8c7;display:block;margin-bottom:8px;font-weight:600;}
+        .form-group input {width:100%;padding:12px;background:#1a2d4a;border:1px solid rgba(192,192,192,.2);border-radius:8px;color:#fff;font-size:14px;}
+        .form-group input:focus {outline:none;border-color:#4682b4;box-shadow:0 0 0 3px rgba(70,130,180,.1);}
+        .password-requirements {background:rgba(255,255,255,.05);border-radius:8px;padding:15px;margin-top:20px;font-size:12px;color:#a9b8c7;}
+        .password-requirements h4 {color:#4682b4;margin-bottom:10px;}
+        .requirement {display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+        .requirement.ok {color:#28a745;}
+        .requirement.pending {color:#ffc107;}
+        .requirement-icon {font-weight:bold;}
+        .btn-container {margin-top:30px;}
+        .btn-submit {width:100%;padding:12px;background:#4682b4;color:#fff;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.3s;}
+        .btn-submit:hover {background:#5a96d3;}
+        .btn-submit:disabled {background:#6c757d;cursor:not-allowed;}
+        .form-info {background:rgba(255,255,255,.05);border-radius:8px;padding:15px;margin-bottom:20px;font-size:13px;color:#a9b8c7;}
+        .form-info strong {color:#fff;}
+        @media(max-width:768px) {
+            .container {padding:30px;}
+            h1 {font-size:22px;}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <img src="{% static 'images/Logo-Lobby69.jpg' %}" alt="CLUB LOBBY69" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext x=%2250%22 y=%2250%22 font-size=%2240%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 fill=%22%23c0c0c0%22 font-weight=%22bold%22%3EL69%3C/text%3E%3C/svg%3E'">
+            </div>
+            <h1>Activar Cuenta</h1>
+            <p class="subtitle">Completa tu registro en CLUB LOBBY69</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <div class="info-box">
+            <strong>📋 Información verificada:</strong><br>
+            Nombre: <strong>{{ nombre }}</strong><br>
+            Email: <strong>{{ email }}</strong>
+        </div>
+
+        <form method="POST" id="activateForm">
+            {% csrf_token %}
+            <input type="hidden" name="token" value="{{ token }}">
+
+            <div class="form-group">
+                <label for="username">Nombre de usuario <span style="color:#e74c3c;">*</span></label>
+                <input type="text" id="username" name="username" required placeholder="Tu nombre de usuario (mínimo 4 caracteres)" minlength="4">
+            </div>
+
+            <div class="form-group">
+                <label for="password">Contraseña <span style="color:#e74c3c;">*</span></label>
+                <input type="password" id="password" name="password" required placeholder="Contraseña segura (mínimo 8 caracteres)" minlength="8" onkeyup="validarContraseña()">
+            </div>
+
+            <div class="form-group">
+                <label for="password_confirm">Confirmar contraseña <span style="color:#e74c3c;">*</span></label>
+                <input type="password" id="password_confirm" name="password_confirm" required placeholder="Repite tu contraseña" minlength="8" onkeyup="validarContraseña()">
+            </div>
+
+            <div class="password-requirements">
+                <h4>📋 Requisitos de contraseña:</h4>
+                <div class="requirement pending" id="req-length">
+                    <span class="requirement-icon">○</span>
+                    <span>Mínimo 8 caracteres</span>
+                </div>
+                <div class="requirement pending" id="req-match">
+                    <span class="requirement-icon">○</span>
+                    <span>Contraseñas coinciden</span>
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <button type="submit" class="btn-submit" id="btn-submit">Activar Cuenta</button>
+            </div>
+        </form>
+
+        <div class="form-info" style="margin-top:30px;text-align:center;border-top:1px solid rgba(192,192,192,.1);padding-top:20px;">
+            Una vez activada tu cuenta, podrás acceder a CLUB LOBBY69 con tu nuevo usuario y contraseña.
+        </div>
+    </div>
+
+    <script>
+        function validarContraseña() {
+            const password = document.getElementById('password').value;
+            const passwordConfirm = document.getElementById('password_confirm').value;
+            const btnSubmit = document.getElementById('btn-submit');
+
+            const reqLength = document.getElementById('req-length');
+            const reqMatch = document.getElementById('req-match');
+
+            let valid = true;
+
+            // Validar longitud
+            if (password.length >= 8) {
+                reqLength.classList.remove('pending');
+                reqLength.classList.add('ok');
+                reqLength.querySelector('.requirement-icon').textContent = '✓';
+            } else {
+                reqLength.classList.remove('ok');
+                reqLength.classList.add('pending');
+                reqLength.querySelector('.requirement-icon').textContent = '○';
+                valid = false;
+            }
+
+            // Validar coincidencia
+            if (password && passwordConfirm && password === passwordConfirm && password.length >= 8) {
+                reqMatch.classList.remove('pending');
+                reqMatch.classList.add('ok');
+                reqMatch.querySelector('.requirement-icon').textContent = '✓';
+            } else if (password || passwordConfirm) {
+                reqMatch.classList.remove('ok');
+                reqMatch.classList.add('pending');
+                reqMatch.querySelector('.requirement-icon').textContent = '○';
+                valid = false;
+            }
+
+            // Habilitar/deshabilitar botón
+            btnSubmit.disabled = !valid;
+        }
+
+        // Validar al enviar
+        document.getElementById('activateForm').addEventListener('submit', function(e) {
+            const password = document.getElementById('password').value;
+            const passwordConfirm = document.getElementById('password_confirm').value;
+            const username = document.getElementById('username').value;
+
+            if (username.length < 4) {
+                e.preventDefault();
+                alert('El nombre de usuario debe tener al menos 4 caracteres');
+                return false;
+            }
+
+            if (password.length < 8) {
+                e.preventDefault();
+                alert('La contraseña debe tener al menos 8 caracteres');
+                return false;
+            }
+
+            if (password !== passwordConfirm) {
+                e.preventDefault();
+                alert('Las contraseñas no coinciden');
+                return false;
+            }
+        });
+    </script>
+</body>
+</html>

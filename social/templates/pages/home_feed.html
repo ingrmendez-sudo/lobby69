@@ -1,0 +1,173 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - CLUB LOBBY69</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .navbar {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+        .navbar h1 {
+            color: #1a1a2e;
+            font-size: 24px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 20px;
+        }
+        .nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 600;
+            padding: 10px 15px;
+            border-radius: 8px;
+            transition: all 0.3s;
+        }
+        .nav-links a:hover {
+            background: #f0f0f0;
+            color: #d946ef;
+        }
+        .logout-btn {
+            background: #d946ef;
+            color: white !important;
+        }
+        .logout-btn:hover {
+            background: #c639d9 !important;
+        }
+        .welcome-card {
+            background: linear-gradient(135deg, #d946ef 0%, #ec4899 100%);
+            color: white;
+            padding: 40px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 30px rgba(217, 70, 239, 0.3);
+        }
+        .welcome-card h2 {
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+        .welcome-card p {
+            opacity: 0.9;
+            font-size: 16px;
+        }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+            text-decoration: none;
+            color: #333;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+        }
+        .card-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+        }
+        .card h3 {
+            color: #1a1a2e;
+            margin-bottom: 10px;
+            font-size: 18px;
+        }
+        .card p {
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Navbar -->
+        <div class="navbar">
+            <h1>🎉 CLUB LOBBY69</h1>
+            <div class="nav-links">
+                <a href="{% url 'pages:profile' %}">👤 Mi Perfil</a>
+                <a href="{% url 'pages:explore' %}">🔍 Explorar</a>
+                <a href="{% url 'pages:conversations' %}">💬 Mensajes</a>
+                <a href="{% url 'pages:gallery' %}">📸 Galería</a>
+                <a href="{% url 'pages:memberships' %}">🏆 Membresías</a>
+                <li><a href="{% url 'pages:friend_requests' %}">👥 Solicitudes</a></li>
+                <a href="{% url 'pages:logout' %}" class="logout-btn">🚪 Salir</a>
+            </div>
+        </div>
+
+        <!-- Welcome Card -->
+        <div class="welcome-card">
+            <h2>¡Bienvenido, {{ user.username }}! 👋</h2>
+            <p>Estamos felices de verte de nuevo en CLUB LOBBY69</p>
+        </div>
+
+        <!-- Main Grid -->
+        <div class="grid">
+            <a href="{% url 'pages:profile' %}" class="card">
+                <div class="card-icon">👤</div>
+                <h3>Mi Perfil</h3>
+                <p>Ver y editar mi información personal</p>
+            </a>
+
+            <a href="{% url 'pages:explore' %}" class="card">
+                <div class="card-icon">🔍</div>
+                <h3>Explorar</h3>
+                <p>Descubre perfiles interesantes</p>
+            </a>
+
+            <a href="{% url 'pages:conversations' %}" class="card">
+                <div class="card-icon">💬</div>
+                <h3>Mensajes</h3>
+                <p>Chatea con tus conexiones</p>
+            </a>
+
+            <a href="{% url 'pages:gallery' %}" class="card">
+                <div class="card-icon">📸</div>
+                <h3>Galería</h3>
+                <p>Gestiona tus fotos y videos</p>
+            </a>
+
+            <a href="{% url 'pages:memberships' %}" class="card">
+                <div class="card-icon">🏆</div>
+                <h3>Membresías</h3>
+                <p>Descubre planes premium</p>
+            </a>
+
+            <a href="{% url 'pages:notifications' %}" class="card">
+                <div class="card-icon">🔔</div>
+                <h3>Notificaciones</h3>
+                <p>Mantente actualizado</p>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,135 @@
+{% extends 'base_authenticated.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block page_title %}Mensajes - LOBBY69{% endblock page_title %}
+
+{% block main_content %}
+
+<div class="container">
+    <!-- LISTA DE CONVERSACIONES -->
+    <div class="conversations-list" id="convList">
+        <div class="conversations-header">
+            <h2>{% trans "Mensajes" %}</h2>
+            <input type="text" class="search-conv" placeholder="{% trans 'Buscar...' %}" id="searchConv">
+        </div>
+        <div class="conversations-body">
+            <!-- Conversación 1 -->
+            <div class="conversation-item active" onclick="openChat(1, 'Sofia')">
+                <div class="conv-avatar">S</div>
+                <div class="conv-header">
+                    <span class="conv-name">Sofia</span>
+                    <span class="conv-time">10:30</span>
+                </div>
+                <div class="conv-message">Claro, me encantaría conectar contigo...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ÁREA DE CHAT -->
+    <div class="chat-area" id="chatArea">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            <div class="chat-header-info">
+                <div class="chat-header-avatar">S</div>
+                <div class="chat-header-text">
+                    <h3 id="chatName">Sofia</h3>
+                    <p>{% trans "Activa ahora" %}</p>
+                </div>
+            </div>
+            <div class="chat-options">
+                <button class="chat-option-btn" title="{% trans 'Llamada de voz' %}">📞</button>
+                <button class="chat-option-btn" title="{% trans 'Llamada de video' %}">📹</button>
+                <button class="chat-option-btn" title="{% trans 'Información' %}">ℹ️</button>
+            </div>
+        </div>
+
+        <!-- Mensajes -->
+        <div class="messages" id="messagesContainer">
+            <div class="message received">
+                <div class="message-avatar">S</div>
+                <div>
+                    <div class="message-bubble">Hola, ¿cómo estás?</div>
+                    <div class="message-time">10:15</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Input Area -->
+        <div class="chat-input-area">
+            <div class="input-form">
+                <textarea class="input-field" id="messageInput" placeholder="{% trans 'Escribe un mensaje...' %}" rows="1"></textarea>
+                <button class="btn-send" onclick="sendMessage()">📤</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    <div class="empty-state" id="emptyState" style="display: none;">
+        <div class="empty-state-icon">💬</div>
+        <div class="empty-state-text">
+            <h3>{% trans "Selecciona una conversación" %}</h3>
+            <p>{% trans "Elige una conversación existente o inicia una nueva" %}</p>
+        </div>
+    </div>
+</div>
+
+<script>
+    function openChat(convId, name) {
+        document.getElementById('chatName').textContent = name;
+        document.querySelectorAll('.conversation-item').forEach(item => {
+            item.classList.remove('active');
+        });
+        event.target.closest('.conversation-item').classList.add('active');
+        document.getElementById('chatArea').style.display = 'flex';
+        document.getElementById('emptyState').style.display = 'none';
+        setTimeout(() => {
+            const messagesContainer = document.getElementById('messagesContainer');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }, 100);
+    }
+
+    function sendMessage() {
+        const input = document.getElementById('messageInput');
+        const message = input.value.trim();
+        if (message) {
+            const messagesContainer = document.getElementById('messagesContainer');
+            const newMessage = document.createElement('div');
+            newMessage.className = 'message sent';
+            newMessage.innerHTML = `
+                <div>
+                    <div class="message-bubble">${message}</div>
+                    <div class="message-time">${new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</div>
+                </div>
+            `;
+            messagesContainer.appendChild(newMessage);
+            input.value = '';
+            input.style.height = 'auto';
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+    }
+
+    const textarea = document.getElementById('messageInput');
+    if (textarea) {
+        textarea.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+        });
+        textarea.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+    }
+
+    document.getElementById('searchConv').addEventListener('keyup', function(e) {
+        const searchTerm = e.target.value.toLowerCase();
+        document.querySelectorAll('.conversation-item').forEach(item => {
+            const name = item.querySelector('.conv-name').textContent.toLowerCase();
+            item.style.display = name.includes(searchTerm) ? '' : 'none';
+        });
+    });
+</script>
+
+{% endblock main_content %}

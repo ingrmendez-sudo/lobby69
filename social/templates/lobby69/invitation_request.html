@@ -1,0 +1,136 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block page_title %}Solicitar acceso — LOBBY69{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" type="text/css" href="{% static 'vendor/bootstrap-icons/font/bootstrap-icons.css' %}">
+{% endblock %}
+
+{% block content %}
+<main style="min-height:100vh; background:linear-gradient(135deg,#0d0d1a 0%,#1a0a30 50%,#0d0d1a 100%); display:flex; align-items:center; padding:80px 0;">
+  <div class="container">
+    <div class="row justify-content-center">
+      <div class="col-md-8 col-lg-6">
+
+        <!-- Header -->
+        <div class="text-center mb-4">
+          <a href="{% url 'pages:landing' %}">
+            <span style="font-size:36px; font-weight:900; background:linear-gradient(135deg,#c8a84b,#f5d78e); -webkit-background-clip:text; -webkit-text-fill-color:transparent; background-clip:text;">LOBBY69</span>
+          </a>
+          <h4 class="text-white mt-3">Solicitar acceso al club</h4>
+          <p style="color:#7070a0;">Solo para mayores de 18 años. Revisaremos tu solicitud en 24–48h.</p>
+        </div>
+
+        <!-- Form Card -->
+        <div class="card" style="background:rgba(255,255,255,0.04); border:1px solid rgba(200,168,75,0.2);">
+          <div class="card-body p-4">
+
+            {% if messages %}
+            {% for message in messages %}
+            <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+              {{ message }}
+              <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            </div>
+            {% endfor %}
+            {% endif %}
+
+            <form method="post" action="{% url 'pages:invitation_request' %}">
+              {% csrf_token %}
+
+              <!-- Nombre -->
+              <div class="mb-3">
+                <label class="form-label text-white">Nombre completo <span class="text-danger">*</span></label>
+                <input type="text" name="full_name" class="form-control" placeholder="Tu nombre o el de la pareja" required>
+              </div>
+
+              <!-- Email -->
+              <div class="mb-3">
+                <label class="form-label text-white">Email <span class="text-danger">*</span></label>
+                <input type="email" name="email" class="form-control" placeholder="tu@email.com" required>
+              </div>
+
+              <!-- Teléfono -->
+              <div class="mb-3">
+                <label class="form-label text-white">WhatsApp (opcional)</label>
+                <input type="tel" name="phone" class="form-control" placeholder="+52 55 0000 0000">
+              </div>
+
+              <!-- Tipo de perfil -->
+              <div class="mb-3">
+                <label class="form-label text-white">Tipo de perfil <span class="text-danger">*</span></label>
+                <div class="d-flex gap-2">
+                  <label class="flex-fill">
+                    <input type="radio" name="profile_type" value="HOMBRE" class="btn-check" id="typeHombre" checked>
+                    <label class="btn btn-outline-secondary w-100" for="typeHombre">
+                      <i class="bi bi-person me-1"></i>Hombre
+                    </label>
+                  </label>
+                  <label class="flex-fill">
+                    <input type="radio" name="profile_type" value="MUJER" class="btn-check" id="typeMujer">
+                    <label class="btn btn-outline-secondary w-100" for="typeMujer">
+                      <i class="bi bi-person me-1"></i>Mujer
+                    </label>
+                  </label>
+                  <label class="flex-fill">
+                    <input type="radio" name="profile_type" value="PAREJA" class="btn-check" id="typePareja">
+                    <label class="btn btn-outline-secondary w-100" for="typePareja">
+                      <i class="bi bi-people me-1"></i>Pareja
+                    </label>
+                  </label>
+                </div>
+              </div>
+
+              <!-- Mensaje / motivación -->
+              <div class="mb-3">
+                <label class="form-label text-white">¿Por qué quieres unirte? (opcional)</label>
+                <textarea name="message" class="form-control" rows="3"
+                  placeholder="Cuéntanos un poco sobre ti o ustedes..."></textarea>
+              </div>
+
+              <!-- Código de referido -->
+              <div class="mb-3">
+                <label class="form-label text-white">Código de referido (opcional)</label>
+                <input type="text" name="referral_code" class="form-control" placeholder="Si alguien te invitó">
+              </div>
+
+              <hr style="border-color:rgba(200,168,75,0.15);">
+
+              <!-- Checkboxes de consentimiento -->
+              <div class="mb-3">
+                <div class="form-check mb-2">
+                  <input class="form-check-input" type="checkbox" name="age_confirmed" id="ageConfirm" required>
+                  <label class="form-check-label text-white" for="ageConfirm">
+                    <strong style="color:#c8a84b;">Confirmo que tengo 18 años o más</strong>
+                  </label>
+                </div>
+                <div class="form-check">
+                  <input class="form-check-input" type="checkbox" name="terms_accepted" id="termsAccept" required>
+                  <label class="form-check-label" style="color:#8080a0;" for="termsAccept">
+                    Acepto los 
+                    <a href="{% url 'pages:dynamic_pages' template_name='privacy-and-terms' %}" style="color:#c8a84b;" target="_blank">
+                      Términos y Política de Privacidad
+                    </a>
+                    de LOBBY69.
+                  </label>
+                </div>
+              </div>
+
+              <button type="submit" class="btn w-100 fw-bold py-3"
+                style="background:linear-gradient(135deg,#c8a84b,#f5d78e); border:none; color:#0d0d1a; font-size:16px;">
+                <i class="bi bi-send me-2"></i>Enviar solicitud
+              </button>
+            </form>
+
+            <p class="text-center mt-3" style="color:#6060a0; font-size:13px;">
+              ¿Ya tienes cuenta? 
+              <a href="{% url 'pages:dynamic_pages' template_name='sign-in-advance' %}" style="color:#c8a84b;">Iniciar sesión</a>
+            </p>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+{% endblock %}

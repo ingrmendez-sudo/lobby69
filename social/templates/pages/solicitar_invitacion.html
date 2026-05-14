@@ -1,0 +1,457 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Solicitar Invitación - CLUB LOBBY69</title>
+    <style>
+        * {margin:0;padding:0;box-sizing:border-box;}
+        body {font-family:'Segoe UI',Tahoma,Arial,sans-serif;background:linear-gradient(135deg,#0a0f1a 0%,#0f1628 50%,#1a2d4a 100%);color:#fff;min-height:100vh;padding:20px;}
+        .container {max-width:900px;margin:0 auto;background:rgba(15,22,40,0.95);border-radius:16px;padding:50px;box-shadow:0 20px 60px rgba(0,0,0,.5);}
+        .header {text-align:center;margin-bottom:40px;display:flex;flex-direction:column;align-items:center;}
+        .logo {width:100px;height:100px;background:rgba(192,192,192,.1);border:2px solid #c0c0c0;border-radius:12px;display:flex;align-items:center;justify-content:center;overflow:hidden;margin-bottom:20px;}
+        .logo img {width:100%;height:100%;object-fit:contain;}
+        h1 {font-size:32px;margin-bottom:10px;color:#fff;}
+        .subtitle {font-size:15px;color:#a9b8c7;margin-bottom:30px;}
+        .alert {padding:15px;border-radius:8px;margin-bottom:20px;border-left:4px solid #dc3545;background:#dc3545;color:#fff;font-size:13px;}
+        .form-section {margin-bottom:30px;padding:20px;background:rgba(255,255,255,.05);border-radius:12px;border-left:4px solid #4682b4;}
+        .form-section h3 {font-size:16px;color:#4682b4;margin-bottom:15px;}
+        .form-group {margin-bottom:20px;}
+        .form-group label {font-size:14px;color:#a9b8c7;display:block;margin-bottom:8px;font-weight:600;}
+        .form-group input, .form-group select, .form-group textarea {width:100%;padding:12px;background:#1a2d4a;border:1px solid rgba(192,192,192,.2);border-radius:8px;color:#fff;font-size:14px;}
+        .form-group input:focus, .form-group select:focus, .form-group textarea:focus {outline:none;border-color:#4682b4;box-shadow:0 0 0 3px rgba(70,130,180,.1);}
+        .form-group textarea {resize:vertical;min-height:100px;}
+        .char-count {font-size:12px;color:#a9b8c7;margin-top:5px;}
+        .char-count.warning {color:#ffc107;}
+        .char-count.ok {color:#28a745;}
+        .form-row {display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;}
+        .form-row.full {grid-template-columns:1fr;}
+        .required {color:#e74c3c;}
+        .checkbox-group {display:flex;align-items:flex-start;gap:10px;padding:12px;background:rgba(255,255,255,.05);border-radius:8px;margin-bottom:10px;}
+        .checkbox-group input {width:auto;cursor:pointer;margin-top:3px;}
+        .checkbox-group label {margin:0;font-size:13px;color:#a9b8c7;cursor:pointer;}
+        .terms-link {color:#4682b4;text-decoration:underline;cursor:pointer;}
+        .terms-link:hover {color:#5a96d3;}
+        .modal {display:none;position:fixed;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,.8);z-index:1000;align-items:center;justify-content:center;padding:20px;}
+        .modal.active {display:flex;}
+        .modal-content {background:#0f1628;border-radius:12px;padding:30px;max-width:700px;max-height:80vh;overflow-y:auto;border:1px solid rgba(192,192,192,.1);}
+        .modal-header {font-size:22px;font-weight:700;margin-bottom:20px;color:#fff;display:flex;justify-content:space-between;align-items:center;}
+        .modal-close {background:none;border:none;color:#a9b8c7;cursor:pointer;font-size:28px;}
+        .modal-close:hover {color:#fff;}
+        .modal-body {font-size:13px;line-height:1.6;color:#a9b8c7;}
+        .modal-body h4 {color:#4682b4;margin-top:15px;margin-bottom:8px;}
+        .modal-body ul {margin-left:20px;margin-top:10px;}
+        .modal-body li {margin-bottom:8px;}
+        .btn-container {display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:30px;}
+        .btn {padding:12px;border:none;border-radius:8px;font-size:15px;font-weight:700;cursor:pointer;transition:all 0.3s;}
+        .btn-submit {background:#4682b4;color:#fff;}
+        .btn-submit:hover {background:#5a96d3;}
+        .btn-submit:disabled {background:#6c757d;cursor:not-allowed;}
+        .btn-cancel {background:transparent;color:#a9b8c7;border:1px solid #a9b8c7;}
+        .btn-cancel:hover {background:rgba(255,255,255,.05);}
+        @media(max-width:768px) {
+            .form-row {grid-template-columns:1fr;}
+            .btn-container {grid-template-columns:1fr;}
+            .container {padding:30px;}
+            h1 {font-size:24px;}
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo">
+                <img src="{% static 'images/Logo-Lobby69.jpg' %}" alt="CLUB LOBBY69" onerror="this.src='data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext x=%2250%22 y=%2250%22 font-size=%2240%22 text-anchor=%22middle%22 dominant-baseline=%22middle%22 fill=%22%23c0c0c0%22 font-weight=%22bold%22%3EL69%3C/text%3E%3C/svg%3E'">
+            </div>
+            <h1>Solicitar Invitación</h1>
+            <p class="subtitle">Únete a la comunidad swinger más exclusiva de México</p>
+        </div>
+
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+
+        <form method="POST" action="{% url 'pages:solicitar' %}" id="form">
+            {% csrf_token %}
+
+            <!-- INFORMACIÓN PERSONAL -->
+            <div class="form-section">
+                <h3>📋 INFORMACIÓN PERSONAL</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Nombre Completo <span class="required">*</span></label>
+                        <input type="text" name="name" required placeholder="Tu nombre completo">
+                    </div>
+                    <div class="form-group">
+                        <label>Email <span class="required">*</span></label>
+                        <input type="email" name="email" required placeholder="tu@ejemplo.com">
+                    </div>
+                    <div class="form-group">
+                      <label>¿Quién te invitó? <span class="optional">(Opcional - email o nick)</span></label>
+                      <input type="text" name="invited_by" placeholder="Email o nick de quien te invitó" value="{{ request.POST.invited_by }}">
+                     </div>
+
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Edad <span class="required">*</span></label>
+                        <input type="number" name="edad" min="18" max="120" required placeholder="21">
+                    </div>
+                </div>
+            </div>
+
+            <!-- UBICACIÓN -->
+            <div class="form-section">
+                <h3>🌍 UBICACIÓN</h3>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>País <span class="required">*</span></label>
+                        <select name="pais" id="pais" required onchange="actualizarEstados()">
+                            <option value="">Selecciona un país</option>
+                            <option value="Mexico">🇲🇽 México</option>
+                            <option value="Argentina">🇦🇷 Argentina</option>
+                            <option value="Brasil">🇧🇷 Brasil</option>
+                            <option value="Chile">🇨🇱 Chile</option>
+                            <option value="Colombia">🇨🇴 Colombia</option>
+                            <option value="Costa Rica">🇨🇷 Costa Rica</option>
+                            <option value="Ecuador">🇪🇨 Ecuador</option>
+                            <option value="El Salvador">🇸🇻 El Salvador</option>
+                            <option value="España">🇪🇸 España</option>
+                            <option value="Estados Unidos">🇺🇸 Estados Unidos</option>
+                            <option value="Guatemala">🇬🇹 Guatemala</option>
+                            <option value="Honduras">🇭🇳 Honduras</option>
+                            <option value="Nicaragua">🇳🇮 Nicaragua</option>
+                            <option value="Panamá">🇵🇦 Panamá</option>
+                            <option value="Paraguay">🇵🇾 Paraguay</option>
+                            <option value="Perú">🇵🇪 Perú</option>
+                            <option value="Puerto Rico">🇵🇷 Puerto Rico</option>
+                            <option value="República Dominicana">🇩🇴 República Dominicana</option>
+                            <option value="Uruguay">🇺🇾 Uruguay</option>
+                            <option value="Venezuela">🇻🇪 Venezuela</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row full" id="estados-container" style="display:none;">
+                    <div class="form-group">
+                        <label>Estado <span class="required">*</span></label>
+                        <select name="estado" id="estado" onchange="actualizarMunicipios()">
+                            <option value="">Selecciona un estado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row full" id="municipios-container" style="display:none;">
+                    <div class="form-group">
+                        <label>Municipio o Alcaldía <span class="required">*</span></label>
+                        <select name="municipio" id="municipio">
+                            <option value="">Selecciona primero un estado</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row full" id="ubicacion-otro-container" style="display:none;">
+                    <div class="form-group">
+                        <label>Ciudad/Región <span class="required">*</span></label>
+                        <input type="text" name="ubicacion_otro" placeholder="Escribe tu ciudad o región">
+                    </div>
+                </div>
+            </div>
+
+            <!-- PERFIL -->
+            <div class="form-section">
+                <h3>👤 PERFIL</h3>
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label>¿Me gustaría acceder al club como? <span class="required">*</span></label>
+                        <select name="tipo_perfil" required>
+                            <option value="">Selecciona</option>
+                            <option value="single">Single</option>
+                            <option value="unicornio">Unicornio</option>
+                            <option value="pareja">Pareja</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <!-- MOTIVO -->
+            <div class="form-section">
+                <h3>💬 MOTIVO DE INTEGRACIÓN</h3>
+                <div class="form-row full">
+                    <div class="form-group">
+                        <label>¿Motivo por el cual quieres integrarte al club? <span class="required">*</span> (Mínimo 30 caracteres)</label>
+                        <textarea name="motivo" id="motivo" required rows="5" placeholder="Cuéntanos brevemente por qué deseas unirte a CLUB LOBBY69..." onkeyup="contarCaracteres()"></textarea>
+                        <div class="char-count"><span id="char-display">0</span>/30 caracteres mínimo</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- TÉRMINOS Y CONDICIONES -->
+            <div class="form-section">
+                <h3>⚖️ TÉRMINOS Y ACEPTACIONES</h3>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="terminos" name="terminos" required>
+                    <label for="terminos">He leído y acepto los <span class="terms-link" onclick="openModal('termsModal')">términos y condiciones</span> de CLUB LOBBY69 <span class="required">*</span></label>
+                </div>
+                <div class="checkbox-group">
+                    <input type="checkbox" id="privacidad" name="privacidad" required>
+                    <label for="privacidad">He leído y acepto la <span class="terms-link" onclick="openModal('privacyModal')">política de privacidad</span> <span class="required">*</span></label>
+                </div>
+            </div>
+
+            <div class="btn-container">
+                <button type="submit" class="btn btn-submit" id="btn-submit">Enviar Solicitud</button>
+                <button type="reset" class="btn btn-cancel">Limpiar</button>
+            </div>
+        </form>
+    </div>
+
+    <!-- MODAL: TÉRMINOS Y CONDICIONES -->
+    <div id="termsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Términos y Condiciones
+                <button class="modal-close" onclick="closeModal('termsModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <h4>1. ACEPTACIÓN DE TÉRMINOS</h4>
+                <p>Al acceder y utilizar CLUB LOBBY69, aceptas estos términos y condiciones en su totalidad. Si no estás de acuerdo, no debes usar esta plataforma.</p>
+
+                <h4>2. ELEGIBILIDAD</h4>
+                <p>Debes tener al menos 18 años de edad. CLUB LOBBY69 no es responsable de verificar la identidad de los usuarios.</p>
+
+                <h4>3. CONTENIDO PERMITIDO</h4>
+                <p>Se permite el intercambio de contenido explícito relacionado únicamente con el ámbito swinger. Está prohibido:</p>
+                <ul>
+                    <li>Pornografía infantil</li>
+                    <li>Contenido que aluda al crimen organizado</li>
+                    <li>Zoofilia u otro contenido ilegal</li>
+                    <li>Acoso, discriminación o difamación</li>
+                    <li>Suplantación de identidad</li>
+                    <li>Estafas o fraudes</li>
+                </ul>
+
+                <h4>4. RESPONSABILIDAD DEL USUARIO</h4>
+                <p>El usuario es responsable de todo contenido que comparta. CLUB LOBBY69 se reserva el derecho de eliminar cuentas que violen estas normas sin previo aviso.</p>
+
+                <h4>5. RESERVA DE DERECHOS DE ADMISIÓN</h4>
+                <p>CLUB LOBBY69 se reserva el derecho de admisión. Podemos rechazar solicitudes sin proporcionar razón alguna o si consideramos que la información proporcionada no es confiable.</p>
+
+                <h4>6. MODIFICACIONES</h4>
+                <p>Estos términos pueden ser modificados en cualquier momento. Notificaremos cambios a través del correo registrado.</p>
+
+                <h4>7. LIMITACIÓN DE RESPONSABILIDAD</h4>
+                <p>CLUB LOBBY69 se proporciona "tal cual". No nos hacemos responsables de daños, pérdidas o problemas derivados del uso de la plataforma.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL: POLÍTICA DE PRIVACIDAD -->
+    <div id="privacyModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                Política de Privacidad
+                <button class="modal-close" onclick="closeModal('privacyModal')">✕</button>
+            </div>
+            <div class="modal-body">
+                <h4>1. RECOPILACIÓN DE DATOS</h4>
+                <p>Recopilamos información personal (nombre, email, edad, ubicación) únicamente para gestionar tu cuenta y validar solicitudes de acceso.</p>
+
+                <h4>2. NO COMPARTIMOS DATOS</h4>
+                <p>Tu información personal NO será compartida con terceros bajo ninguna circunstancia, excepto cuando sea requerido por ley.</p>
+
+                <h4>3. DATOS SENSIBLES</h4>
+                <p>No almacenamos documentos de identidad ni datos biométricos. Solo almacenamos información básica del perfil.</p>
+
+                <h4>4. VALIDACIÓN DE CONTENIDO</h4>
+                <p>Todo contenido compartido es validado para cumplir con nuestras políticas. Nos reservamos el derecho de eliminar contenido que viole nuestras normas.</p>
+
+                <h4>5. SEGURIDAD</h4>
+                <p>Utilizamos encriptación estándar para proteger tu información. Implementamos medidas de seguridad razonables, aunque no garantizamos seguridad absoluta.</p>
+
+                <h4>6. DERECHOS DEL USUARIO</h4>
+                <p>Puedes solicitar la eliminación de tu cuenta y datos en cualquier momento contactando a admin@lobby69.com. También puedes solicitar acceso a tus datos personales.</p>
+
+                <h4>7. COOKIES Y RASTREO</h4>
+                <p>Utilizamos cookies para mejorar tu experiencia. Puedes deshabilitarlas en tu navegador, aunque esto puede afectar la funcionalidad.</p>
+
+                <h4>8. LEGISLACIÓN MEXICANA</h4>
+                <p>Esta política cumple con la Ley Federal de Protección de Datos Personales en Posesión de Particulares (LFPDPPP) de México y leyes aplicables.</p>
+
+                <h4>9. CONTACTO</h4>
+                <p>Para preguntas sobre privacidad, contacta a: admin@lobby69.com</p>
+
+                <h4>10. CAMBIOS EN LA POLÍTICA</h4>
+                <p>Nos reservamos el derecho de actualizar esta política. Los cambios serán notificados por correo electrónico.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const estadosPorPais = {
+            'Mexico': [
+                ['aguascalientes', 'Aguascalientes'],
+                ['baja_california', 'Baja California'],
+                ['baja_california_sur', 'Baja California Sur'],
+                ['campeche', 'Campeche'],
+                ['chiapas', 'Chiapas'],
+                ['chihuahua', 'Chihuahua'],
+                ['cdmx', 'Ciudad de México'],
+                ['coahuila', 'Coahuila'],
+                ['colima', 'Colima'],
+                ['durango', 'Durango'],
+                ['guanajuato', 'Guanajuato'],
+                ['guerrero', 'Guerrero'],
+                ['hidalgo', 'Hidalgo'],
+                ['jalisco', 'Jalisco'],
+                ['mexico', 'Estado de México'],
+                ['michoacan', 'Michoacán'],
+                ['morelos', 'Morelos'],
+                ['nayarit', 'Nayarit'],
+                ['nuevo_leon', 'Nuevo León'],
+                ['oaxaca', 'Oaxaca'],
+                ['puebla', 'Puebla'],
+                ['queretaro', 'Querétaro'],
+                ['quintana_roo', 'Quintana Roo'],
+                ['san_luis_potosi', 'San Luis Potosí'],
+                ['sinaloa', 'Sinaloa'],
+                ['sonora', 'Sonora'],
+                ['tabasco', 'Tabasco'],
+                ['tamaulipas', 'Tamaulipas'],
+                ['tlaxcala', 'Tlaxcala'],
+                ['veracruz', 'Veracruz'],
+                ['yucatan', 'Yucatán'],
+                ['zacatecas', 'Zacatecas'],
+            ]
+        };
+
+        const municipiosPorEstado = {
+            'cdmx': [
+                ['alvaro_obregon', 'Álvaro Obregón'],
+                ['azcapotzalco', 'Azcapotzalco'],
+                ['benito_juarez', 'Benito Juárez'],
+                ['coyoacan', 'Coyoacán'],
+                ['cuajimalpa', 'Cuajimalpa de Morelos'],
+                ['cuauhtemoc', 'Cuauhtémoc'],
+                ['gustavo_madero', 'Gustavo A. Madero'],
+                ['iztapalapa', 'Iztapalapa'],
+                ['iztacalco', 'Iztacalco'],
+                ['la_magdalena', 'La Magdalena Contreras'],
+                ['miguel_hidalgo', 'Miguel Hidalgo'],
+                ['milpa_alta', 'Milpa Alta'],
+                ['tlahuac', 'Tláhuac'],
+                ['tlalpan', 'Tlalpan'],
+                ['xochimilco', 'Xochimilco'],
+                ['venustiano_carranza', 'Venustiano Carranza'],
+            ],
+            'mexico': [
+                ['acambay', 'Acambay de Ruíz Castañeda'],
+                ['acolman', 'Acolman'],
+                ['aculco', 'Aculco'],
+                ['almoloya_alquisiras', 'Almoloya de Alquisiras'],
+                ['almoloya_juarez', 'Almoloya de Juárez'],
+                ['almoloya_rio', 'Almoloya del Río'],
+                ['amanalco', 'Amanalco'],
+                ['amatepec', 'Amatepec'],
+                ['amecameca', 'Amecameca'],
+                ['apaxco', 'Apaxco'],
+            ],
+        };
+
+        function actualizarEstados() {
+            const paisSelect = document.getElementById('pais');
+            const estadosContainer = document.getElementById('estados-container');
+            const municipiosContainer = document.getElementById('municipios-container');
+            const ubicacionOtroContainer = document.getElementById('ubicacion-otro-container');
+            const estadoSelect = document.getElementById('estado');
+
+            estadoSelect.innerHTML = '<option value="">Selecciona un estado</option>';
+            document.getElementById('municipio').innerHTML = '<option value="">Selecciona primero un estado</option>';
+
+            if (paisSelect.value === 'Mexico') {
+                estadosContainer.style.display = 'grid';
+                ubicacionOtroContainer.style.display = 'none';
+
+                if (estadosPorPais['Mexico']) {
+                    estadosPorPais['Mexico'].forEach(([clave, nombre]) => {
+                        const option = document.createElement('option');
+                        option.value = clave;
+                        option.textContent = nombre;
+                        estadoSelect.appendChild(option);
+                    });
+                }
+            } else if (paisSelect.value) {
+                estadosContainer.style.display = 'none';
+                municipiosContainer.style.display = 'none';
+                ubicacionOtroContainer.style.display = 'grid';
+            } else {
+                estadosContainer.style.display = 'none';
+                municipiosContainer.style.display = 'none';
+                ubicacionOtroContainer.style.display = 'none';
+            }
+        }
+
+        function actualizarMunicipios() {
+            const estadoSelect = document.getElementById('estado');
+            const municipioSelect = document.getElementById('municipio');
+            const municipiosContainer = document.getElementById('municipios-container');
+            const estadoValue = estadoSelect.value;
+
+            municipioSelect.innerHTML = '<option value="">Selecciona un municipio</option>';
+
+            if (municipiosPorEstado[estadoValue]) {
+                municipiosContainer.style.display = 'grid';
+                municipiosPorEstado[estadoValue].forEach(([clave, nombre]) => {
+                    const option = document.createElement('option');
+                    option.value = clave;
+                    option.textContent = nombre;
+                    municipioSelect.appendChild(option);
+                });
+            } else {
+                municipiosContainer.style.display = 'none';
+            }
+        }
+
+        function contarCaracteres() {
+            const motivo = document.getElementById('motivo').value;
+            const charDisplay = document.getElementById('char-display');
+            const charCount = document.querySelector('.char-count');
+            charDisplay.textContent = motivo.length;
+
+            if (motivo.length < 30) {
+                charCount.classList.remove('ok');
+                charCount.classList.add('warning');
+            } else {
+                charCount.classList.remove('warning');
+                charCount.classList.add('ok');
+            }
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+        }
+
+        window.addEventListener('click', function(event) {
+            if (event.target.classList.contains('modal')) {
+                event.target.classList.remove('active');
+            }
+        });
+
+        // Validar en tiempo real
+        document.getElementById('form').addEventListener('submit', function(e) {
+            const motivo = document.getElementById('motivo').value.trim();
+            if (motivo.length < 30) {
+                e.preventDefault();
+                alert('El motivo debe tener al menos 30 caracteres. Actual: ' + motivo.length);
+            }
+        });
+    </script>
+</body>
+</html>
