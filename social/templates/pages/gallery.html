@@ -1,192 +1,193 @@
 {% extends 'base_authenticated.html' %}
-{% load i18n %}
-{% load static %}
+{% load i18n static %}
 
 {% block page_title %}{% trans "Mi Galería" %} - LOBBY69{% endblock %}
 
 {% block left_sidebar %}
-<!-- SIDEBAR IZQUIERDO - FILTROS -->
-<div class="sidebar-left-gallery" style="background: var(--card-bg); padding: 20px; border-radius: 0; border-right: 1px solid var(--border-color); height: 100%; overflow-y: auto; border-radius: 0; position: sticky; top: 80px;">
-    <h3 style="margin-bottom: 15px; color: var(--primary-color); font-size: 14px; text-transform: uppercase;">🔍 {% trans "Filtros" %}</h3>
+<div class="sidebar-left-gallery">
+    <div class="gallery-stats">
+        <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 15px; color: var(--text-primary);">
+            📊 {% trans "Mis Estadísticas" %}
+        </h3>
 
-    <div class="filter-group" style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-secondary); font-weight: 600;">{% trans "Período" %}</label>
-        <select onchange="filterGallery(this.value)" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--bg-primary); color: var(--text-primary); font-family: inherit; font-size: 13px;">
-            <option value="">{% trans "Todos" %}</option>
-            <option value="recent">{% trans "Últimos 7 días" %}</option>
-            <option value="month">{% trans "Este mes" %}</option>
-            <option value="year">{% trans "Este año" %}</option>
-        </select>
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+            <span style="font-size: 13px; color: var(--text-secondary);">🖼️ {% trans "Fotos" %}</span>
+            <span style="font-size: 16px; font-weight: 700; color: var(--primary-color);">{{ media_items|length }}</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+            <span style="font-size: 13px; color: var(--text-secondary);">✓ {% trans "Validadas" %}</span>
+            <span style="font-size: 16px; font-weight: 700; color: var(--accent-color);">{{ approved_count }}</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+            <span style="font-size: 13px; color: var(--text-secondary);">⏳ {% trans "Pendientes" %}</span>
+            <span style="font-size: 16px; font-weight: 700; color: #f59e0b;">{{ pending_count }}</span>
+        </div>
     </div>
 
-    <div class="filter-group" style="margin-bottom: 15px;">
-        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-secondary); font-weight: 600;">{% trans "Visibilidad" %}</label>
-        <select onchange="filterGallery(this.value)" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--bg-primary); color: var(--text-primary); font-family: inherit; font-size: 13px;">
-            <option value="">{% trans "Todas" %}</option>
-            <option value="public">🔓 {% trans "Públicas" %}</option>
-            <option value="private">🔒 {% trans "Privadas" %}</option>
-        </select>
-    </div>
+    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+        <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 12px; color: var(--text-primary);">
+            ❤️ {% trans "Interacciones" %}
+        </h3>
 
-    <div class="filter-group">
-        <label style="display: block; margin-bottom: 8px; font-size: 12px; color: var(--text-secondary); font-weight: 600;">{% trans "Estado" %}</label>
-        <select onchange="filterGallery(this.value)" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--bg-primary); color: var(--text-primary); font-family: inherit; font-size: 13px;">
-            <option value="">{% trans "Todos" %}</option>
-            <option value="pending">⏳ {% trans "Pendiente" %}</option>
-            <option value="approved">✓ {% trans "Validadas" %}</option>
-        </select>
+        <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border-color);">
+            <span style="font-size: 13px; color: var(--text-secondary);">❤️ {% trans "Me Gusta" %}</span>
+            <span style="font-size: 16px; font-weight: 700; color: #ef4444;">{{ total_likes }}</span>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; padding: 8px 0;">
+            <span style="font-size: 13px; color: var(--text-secondary);">💬 {% trans "Comentarios" %}</span>
+            <span style="font-size: 16px; font-weight: 700;">{{ total_comments }}</span>
+        </div>
     </div>
 </div>
 {% endblock left_sidebar %}
 
 {% block main_content %}
-<!-- CONTENIDO PRINCIPAL -->
-<div style="background-color: var(--bg-primary);">
-    <!-- ENCABEZADO -->
-    <div class="gallery-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid var(--border-color);">
-        <h1 style="color: var(--text-primary); font-size: 24px;">🖼️ {% trans "Mi Galería" %}</h1>
-        <button class="btn-upload" onclick="triggerUpload()" style="background: var(--primary-color); color: white; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 600; transition: all 0.3s;">📤 {% trans "Subir Foto" %}</button>
+<div class="gallery-main">
+    <div class="gallery-header">
+        <div>
+            <h2>🖼️ {% trans "Mi Galería" %}</h2>
+            <p>{% trans "Comparte tus mejores momentos" %}</p>
+        </div>
+        <button class="btn-upload" onclick="triggerUpload()">
+            📸 {% trans "Subir Foto" %}
+        </button>
     </div>
 
-    <!-- FORMULARIO DE CARGA (OCULTO) -->
-    <form id="uploadForm" enctype="multipart/form-data" method="POST" style="display: none; margin-bottom: 20px;">
+    <form id="uploadForm" style="display: none; background: var(--card-bg); padding: 20px; border-radius: 8px; border: 1px solid var(--border-color); margin-bottom: 25px;">
+        <h3 style="margin: 0 0 15px 0; font-size: 16px; color: var(--text-primary);">📸 {% trans "Subir Nueva Foto" %}</h3>
         {% csrf_token %}
-        <div class="upload-area" style="background: var(--bg-secondary); border: 2px dashed var(--border-color); padding: 30px; border-radius: 8px; text-align: center;">
-            <h3 style="color: var(--text-primary); margin-bottom: 15px;">📸 {% trans "Subir nueva foto" %}</h3>
-            <input type="file" id="uploadInput" name="photo" accept="image/*" required style="padding: 10px; cursor: pointer;">
 
-            <div class="form-group" style="margin: 15px 0;">
-                <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--text-primary);">{% trans "Descripción" %}</label>
-                <textarea name="caption" placeholder="{% trans 'Descripción (opcional)' %}" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--bg-primary); color: var(--text-primary); font-family: inherit; font-size: 13px; resize: vertical; min-height: 80px;"></textarea>
-            </div>
+        <div style="margin-bottom: 15px;">
+            <label for="uploadInput" style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--text-primary);">
+                {% trans "Seleccionar Foto" %} <span style="color: #ef4444;">*</span>
+            </label>
+            <input type="file" id="uploadInput" name="photo" accept="image/*" required style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary);">
+        </div>
 
-            <div class="form-group" style="margin: 15px 0;">
-                <label style="display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; color: var(--text-primary);">{% trans "Visibilidad" %}:</label>
-                <select name="visibility" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 6px; background-color: var(--bg-primary); color: var(--text-primary); font-family: inherit; font-size: 13px;">
-                    <option value="public">🔓 {% trans "Pública" %}</option>
-                    <option value="private">🔒 {% trans "Privada (solo amigos)" %}</option>
-                </select>
-            </div>
+        <div style="margin-bottom: 15px;">
+            <label for="photoDesc" style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--text-primary);">
+                {% trans "Descripción" %}
+            </label>
+            <textarea id="photoDesc" name="description" rows="3" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary); font-family: inherit;"></textarea>
+        </div>
 
-            <div class="form-group" style="margin: 15px 0;">
-                <label style="font-size: 14px; font-weight: 600; color: var(--text-primary);">
-                    <input type="checkbox" name="allow_comments" checked style="cursor: pointer; accent-color: var(--primary-color); margin-right: 8px;">
-                    {% trans "Permitir comentarios" %}
-                </label>
-            </div>
+        <div style="margin-bottom: 15px;">
+            <label for="photoVis" style="display: block; margin-bottom: 8px; font-size: 13px; font-weight: 600; color: var(--text-primary);">
+                👁️ {% trans "Visibilidad" %}
+            </label>
+            <select id="photoVis" name="visibility" style="width: 100%; padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-primary); color: var(--text-primary);">
+                <option value="public">🌍 {% trans "Pública" %}</option>
+                <option value="friends">👥 {% trans "Solo amigos" %}</option>
+                <option value="private">🔒 {% trans "Privada" %}</option>
+            </select>
+        </div>
 
-            <div>
-                <button type="submit" class="btn-primary" style="padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; margin: 8px 5px 8px 0; font-weight: 600; transition: all 0.3s; background: var(--primary-color); color: white;">📤 {% trans "Subir Foto" %}</button>
-                <button type="button" onclick="closeUploadForm()" class="btn-secondary" style="padding: 10px 20px; border: 1px solid var(--border-color); border-radius: 6px; cursor: pointer; margin: 8px 5px 8px 0; font-weight: 600; transition: all 0.3s; background: var(--bg-secondary); color: var(--text-primary);">{% trans "Cancelar" %}</button>
+        <div id="progressContainer" style="display: none; margin-bottom: 15px;">
+            <div id="progressBar" style="width: 100%; height: 6px; background: var(--border-color); border-radius: 3px; overflow: hidden;">
+                <div style="height: 100%; background: var(--primary-color); width: 0%; transition: width 0.3s;"></div>
             </div>
+        </div>
 
-            <div id="progressContainer" style="display: none; margin-top: 15px;">
-                <div style="height: 6px; background: #e0e0e0; border-radius: 3px; overflow: hidden;">
-                    <div id="progressBar" style="height: 100%; background: var(--primary-color); width: 0%; transition: width 0.3s;"></div>
-                </div>
-                <p id="uploadStatus" style="text-align: center; margin-top: 8px; font-size: 12px; color: var(--text-secondary);">{% trans "Subiendo..." %}</p>
-            </div>
+        <div style="display: flex; gap: 10px;">
+            <button type="submit" class="btn btn-primary" style="flex: 1; cursor: pointer;">✅ {% trans "Subir Foto" %}</button>
+            <button type="button" onclick="closeUploadForm()" style="flex: 1; padding: 10px; background: var(--bg-primary); border: 1px solid var(--border-color); border-radius: 4px; color: var(--text-primary); cursor: pointer;">❌ {% trans "Cancelar" %}</button>
         </div>
     </form>
 
-    <!-- FILTROS DE VISTA -->
-    <div class="filter-tabs" style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); overflow-x: auto;">
-        <button class="tab-btn active" onclick="filterGallery('todos')" style="background: none; border: none; padding: 12px 20px; cursor: pointer; border-bottom: 3px solid transparent; color: var(--text-secondary); font-weight: 600; transition: all 0.3s; white-space: nowrap;">👁️ {% trans "Todos" %}</button>
-        <button class="tab-btn" onclick="filterGallery('recientes')" style="background: none; border: none; padding: 12px 20px; cursor: pointer; border-bottom: 3px solid transparent; color: var(--text-secondary); font-weight: 600; transition: all 0.3s; white-space: nowrap;">⏰ {% trans "Recientes" %}</button>
-        <button class="tab-btn" onclick="filterGallery('populares')" style="background: none; border: none; padding: 12px 20px; cursor: pointer; border-bottom: 3px solid transparent; color: var(--text-secondary); font-weight: 600; transition: all 0.3s; white-space: nowrap;">🔥 {% trans "Populares" %}</button>
-        <button class="tab-btn" onclick="filterGallery('privadas')" style="background: none; border: none; padding: 12px 20px; cursor: pointer; border-bottom: 3px solid transparent; color: var(--text-secondary); font-weight: 600; transition: all 0.3s; white-space: nowrap;">🔒 {% trans "Privadas" %}</button>
+    <div style="display: flex; gap: 10px; margin-bottom: 20px; border-bottom: 2px solid var(--border-color); padding-bottom: 0;">
+        <button class="tab-btn active" data-filter="all" style="padding: 12px 16px; background: none; border: none; border-bottom: 3px solid var(--primary-color); color: var(--text-primary); font-size: 14px; font-weight: 600; cursor: pointer;">
+            • {% trans "Todos" %}
+        </button>
+        <button class="tab-btn" data-filter="recent" style="padding: 12px 16px; background: none; border: none; border-bottom: 3px solid transparent; color: var(--text-secondary); font-size: 14px; cursor: pointer;">
+            🕐 {% trans "Recientes" %}
+        </button>
+        <button class="tab-btn" data-filter="popular" style="padding: 12px 16px; background: none; border: none; border-bottom: 3px solid transparent; color: var(--text-secondary); font-size: 14px; cursor: pointer;">
+            🔥 {% trans "Populares" %}
+        </button>
     </div>
 
-    <!-- GALERÍA DE FOTOS -->
-    <div class="gallery-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 15px; margin-bottom: 20px;">
+    <div class="gallery-grid">
         {% if media_items %}
-            {% for photo in media_items %}
-            <div class="gallery-item" style="background: var(--bg-secondary); border-radius: 8px; overflow: hidden; cursor: pointer; transition: all 0.3s; height: 150px; border: 1px solid var(--border-color); position: relative;">
-                <div style="width: 100%; height: 100%; cursor: pointer;" onclick="window.location='/galeria/foto/{{ photo.id }}/'; return false;">
-                    <img src="{{ photo.image_url }}" alt="Foto" style="width: 100%; height: 100%; object-fit: cover;">
-                </div>
+            {% for item in media_items %}
+            <div class="gallery-item" data-id="{{ item.id }}">
+                <img src="{{ item.image_url }}" alt="{{ item.caption }}" loading="lazy">
 
-                {% if photo.status == 'approved' %}
-                <div style="position: absolute; top: 5px; right: 5px; background: rgba(70, 130, 180, 0.9); color: white; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 600; z-index: 3;">✓ {% trans "Validada" %}</div>
+                {% if item.status == 'approved' %}
+                <div class="badge-validation">✓ {% trans "Validada" %}</div>
+                {% elif item.status == 'pending' %}
+                <div class="badge-pending">⏳ {% trans "Pendiente" %}</div>
                 {% endif %}
 
-                <div class="gallery-item-overlay" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.6); display: flex; justify-content: center; align-items: center; gap: 10px; opacity: 0; transition: opacity 0.3s; z-index: 5;">
-                    <button class="overlay-btn" onclick="event.stopPropagation(); toggleLike('{{ photo.id }}')" title="{% trans 'Me gusta' %}" style="background: white; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; justify-content: center; align-items: center; transition: all 0.3s;">❤️</button>
-                    <button class="overlay-btn" onclick="event.stopPropagation(); toggleVisibility('{{ photo.id }}', '{{ photo.visibility }}')" title="{% trans 'Cambiar visibilidad' %}" style="background: white; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; justify-content: center; align-items: center; transition: all 0.3s;">
-                        {% if photo.visibility == 'public' %}🔓{% else %}🔒{% endif %}
+                <div class="gallery-overlay">
+                    <button class="overlay-btn" data-action="comment" data-photo-id="{{ item.id }}">
+                        👁️ {% trans "Ver" %}
                     </button>
-                    <button class="overlay-btn" onclick="event.stopPropagation(); deletePhoto('{{ photo.id }}')" style="background: white; border: none; width: 36px; height: 36px; border-radius: 50%; cursor: pointer; font-size: 18px; display: flex; justify-content: center; align-items: center; transition: all 0.3s;">🗑️</button>
-                </div>
-
-                <div class="gallery-item-info" style="position: absolute; bottom: 0; left: 0; right: 0; background: rgba(0, 0, 0, 0.8); color: white; padding: 10px; font-size: 11px; line-height: 1.4;">
-                    <div style="margin-bottom: 5px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ photo.caption|truncatewords:5 }}</div>
-                    <div>👍 <span id="likes-{{ photo.id }}">{{ photo.likes_count }}</span> 💬 {{ photo.comments_count }}</div>
-                    <small>{{ photo.uploaded_at|date:"d/m/Y H:i" }}</small>
+                    <button class="overlay-btn" data-action="like" data-photo-id="{{ item.id }}">
+                        ❤️ {{ item.likes_count|default:"0" }}
+                    </button>
                 </div>
             </div>
             {% endfor %}
         {% else %}
-            <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; color: var(--text-secondary);">
-                <p style="font-size: 18px; margin-bottom: 10px;">📸 {% trans "No tienes fotos en tu galería" %}</p>
-                <p>{% trans "Sube tu primera foto para comenzar" %}</p>
-            </div>
+        <div class="empty-state">
+            <p style="font-size: 48px; margin: 0 0 15px 0;">📸</p>
+            <h3 style="font-size: 18px; margin: 0 0 8px 0; color: var(--text-primary);">{% trans "Tu galería está vacía" %}</h3>
+            <p style="font-size: 13px; color: var(--text-secondary); margin: 0 0 20px 0;">
+                {% trans "¡Sube tu primera foto!" %}
+            </p>
+            <button class="btn-upload" onclick="triggerUpload()">📸 {% trans "Subir Foto" %}</button>
+        </div>
         {% endif %}
     </div>
 </div>
 {% endblock main_content %}
 
 {% block right_sidebar %}
-<!-- SIDEBAR DERECHO - ESTADÍSTICAS -->
-<div class="sidebar-right-gallery" style="background: var(--card-bg); padding: 20px; border-radius: 0; border-left: 1px solid var(--border-color); height: 100%; overflow-y: auto; position: sticky; top: 80px;">
-    <h3 style="margin-bottom: 15px; color: var(--primary-color); font-size: 14px; text-transform: uppercase;">📊 {% trans "Estadísticas" %}</h3>
-
-    <div class="stat-item" style="padding: 15px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-        <span class="stat-label" style="color: var(--text-secondary); font-size: 13px; font-weight: 500;">📸 {% trans "Total de fotos" %}</span>
-        <span class="stat-value" style="font-weight: 700; color: var(--primary-color); font-size: 18px;">{{ media_items|length }}</span>
-    </div>
-
-    <div class="stat-item" style="padding: 15px 0; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
-        <span class="stat-label" style="color: var(--text-secondary); font-size: 13px; font-weight: 500;">❤️ {% trans "Total de likes" %}</span>
-        <span class="stat-value" style="font-weight: 700; color: var(--primary-color); font-size: 18px;">0</span>
-    </div>
-
-    <div class="stat-item" style="padding: 15px 0; display: flex; justify-content: space-between; align-items: center;">
-        <span class="stat-label" style="color: var(--text-secondary); font-size: 13px; font-weight: 500;">🔒 {% trans "Fotos privadas" %}</span>
-        <span class="stat-value" style="font-weight: 700; color: var(--primary-color); font-size: 18px;">0</span>
-    </div>
-
-    <!-- GRÁFICO DE ACTIVIDAD -->
-    <div class="stats-chart" style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
-        <h4 style="font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--primary-color);">📈 {% trans "Actividad" %}</h4>
-
-        <div class="chart-item" style="margin-bottom: 12px;">
-            <div class="chart-label" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">{% trans "Esta semana" %}</div>
-            <div class="chart-bar" style="height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
-                <div class="chart-bar-fill" style="height: 100%; background: linear-gradient(90deg, var(--primary-color), var(--primary-light)); width: 65%;"></div>
-            </div>
+<div class="sidebar-right-gallery">
+    <div>
+        <h3>🟢 {% trans "Conectados" %}</h3>
+        <div style="max-height: 280px; overflow-y: auto;">
+            {% if connected_users %}
+                {% for u in connected_users|slice:":6" %}
+                <div style="display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 6px; margin-bottom: 8px; background: var(--bg-primary); cursor: pointer;">
+                    <div style="width: 36px; height: 36px; border-radius: 50%; background: var(--primary-color); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0;">
+                        {{ u.nick|first|upper }}
+                    </div>
+                    <div style="flex: 1; min-width: 0;">
+                        <p style="margin: 0; font-size: 12px; font-weight: 600; color: var(--text-primary); overflow: hidden; text-overflow: ellipsis;">
+                            {{ u.nick }}
+                        </p>
+                        <p style="margin: 2px 0 0 0; font-size: 11px; color: var(--accent-color);">🟢 {% trans "En línea" %}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            {% else %}
+            <p style="font-size: 12px; color: var(--text-secondary); text-align: center; padding: 15px 0;">
+                {% trans "Nadie en línea" %}
+            </p>
+            {% endif %}
         </div>
+    </div>
 
-        <div class="chart-item" style="margin-bottom: 12px;">
-            <div class="chart-label" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">{% trans "Este mes" %}</div>
-            <div class="chart-bar" style="height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
-                <div class="chart-bar-fill" style="height: 100%; background: linear-gradient(90deg, var(--primary-color), var(--primary-light)); width: 85%;"></div>
-            </div>
-        </div>
+    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+        <h3>👁️ {% trans "Visitas" %}</h3>
+        <p style="font-size: 12px; color: var(--text-secondary); text-align: center;">{% trans "Sin visitas aún" %}</p>
+    </div>
 
-        <div class="chart-item">
-            <div class="chart-label" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 4px;">{% trans "Este año" %}</div>
-            <div class="chart-bar" style="height: 6px; background: var(--bg-secondary); border-radius: 3px; overflow: hidden;">
-                <div class="chart-bar-fill" style="height: 100%; background: linear-gradient(90deg, var(--primary-color), var(--primary-light)); width: 100%;"></div>
-            </div>
+    <div style="margin-top: 20px; padding-top: 20px; border-top: 1px solid var(--border-color);">
+        <h3>📰 {% trans "Noticias" %}</h3>
+        <div style="padding: 10px; background: var(--bg-primary); border-radius: 6px; border-left: 3px solid var(--accent-color);">
+            <p style="margin: 0; font-size: 12px; font-weight: 600; color: var(--text-primary);">🎉 {% trans "Nuevo filtro" %}</p>
+            <p style="margin: 3px 0 0 0; font-size: 11px; color: var(--text-secondary);">{% trans "Mejora tus fotos" %}</p>
         </div>
     </div>
 </div>
 {% endblock right_sidebar %}
 
-<!-- MODAL PARA VER IMAGEN -->
-<div id="imageModal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 1000; justify-content: center; align-items: center;">
-    <div style="position: relative; max-width: 90%; max-height: 90vh;">
-        <button onclick="closeModal()" class="modal-close-btn" style="position: absolute; top: -40px; right: 0; background: none; border: none; color: white; font-size: 28px; cursor: pointer; transition: all 0.3s;">✕</button>
-        <img id="modalImage" src="" alt="Foto" style="max-width: 100%; max-height: 90vh; object-fit: contain;">
-    </div>
-</div>
+{% block extra_js %}
+<script src="{% static 'js/gallery.js' %}"></script>
+<script src="{% static 'js/gallery-modal.js' %}"></script>
+{% endblock extra_js %}

@@ -7,8 +7,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block page_title %}LOBBY69{% endblock page_title %}</title>
+    {% csrf_token %}
+    <!-- CSS GLOBAL Y RESPONSIVE -->
     <link rel="stylesheet" href="{% static 'css/main.css' %}">
+    <link rel="stylesheet" href="{% static 'css/responsive-layout.css' %}">
+
+    <!-- CSS POR PÁGINA -->
     <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
+    <link rel="stylesheet" href="{% static 'css/explore.css' %}">
     <link rel="stylesheet" href="{% static 'css/conversations.css' %}">
     <link rel="stylesheet" href="{% static 'css/my_profile.css' %}">
     <link rel="stylesheet" href="{% static 'css/gallery.css' %}">
@@ -21,6 +27,7 @@
 </head>
 
 <body>
+
    <!-- NAVBAR -->
 <nav>
     <div class="navbar-left">
@@ -61,8 +68,7 @@
     </div>
 </nav>
 
-
-      <!-- MAIN CONTAINER -->
+      <!-- MAIN CONTAINER - 3 COLUMNAS -->
     <div class="container">
         <div class="left-column">
             {% block left_sidebar %}{% endblock left_sidebar %}
@@ -75,6 +81,7 @@
         </div>
     </div>
 
+    <!-- SCRIPTS -->
     <script src="{% static 'js/main.js' %}"></script>
     <script src="{% static 'js/hamburger.js' %}"></script>
     <script src="{% static 'js/drawer.js' %}"></script>
@@ -88,6 +95,8 @@
     <script src="{% static 'js/friend_requests.js' %}"></script>
     <script src="{% static 'js/settings.js' %}"></script>
     <script src="{% static 'js/user_profile.js' %}"></script>
+
+    {% block extra_js %}{% endblock extra_js %}
 
 </body>
 </html>

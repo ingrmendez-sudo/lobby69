@@ -1,134 +1,229 @@
-// CONVERSATIONS - FUNCIONES ESPECÍFICAS
+/* CONVERSATIONS PAGE - FUNCIONES ESPECÍFICAS */
 
-function openChat(convId, name, event) {
-    document.getElementById('chatName').textContent = name;
+document.addEventListener('DOMContentLoaded', function() {
+  console.log('conversations.js: Inicializando...');
 
-    // Actualizar item activo
-    document.querySelectorAll('.conversation-item').forEach(item => {
-        item.classList.remove('active');
+  initializeConversationsList();
+  initializeSearchConversations();
+  initializeMessageInput();
+  initializeChatOptions();
+  loadDefaultChat();
+});
+
+/**
+ * LISTA DE CONVERSACIONES
+ */
+function initializeConversationsList() {
+  document.querySelectorAll('.conversation-item').forEach(item => {
+    item.addEventListener('click', function(e) {
+      e.preventDefault();
+      const conversationId = this.dataset.conversationId;
+      const conversationName = this.querySelector('.conv-name').textContent;
+
+      openChat(conversationId, conversationName);
+
+      // Marcar como activo
+      document.querySelectorAll('.conversation-item').forEach(i => {
+        i.classList.remove('active');
+      });
+      this.classList.add('active');
     });
-    event.target.closest('.conversation-item').classList.add('active');
+  });
+}
 
-    // Mostrar chat area
-    document.getElementById('chatArea').style.display = 'flex';
-    document.getElementById('emptyState').style.display = 'none';
+function openChat(conversationId, conversationName) {
+  console.log('Abriendo chat:', conversationId, conversationName);
 
-    // Scroll al último mensaje
-    setTimeout(() => {
-        const messagesContainer = document.getElementById('messagesContainer');
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
-    }, 100);
+  const chatNameEl = document.getElementById('chatName');
+  if (chatNameEl) {
+    chatNameEl.textContent = conversationName;
+  }
+
+  // Cargar mensajes via AJAX
+  loadMessages(conversationId);
+}
+
+function loadDefaultChat() {
+  const firstConversation = document.querySelector('.conversation-item');
+  if (firstConversation) {
+    firstConversation.click();
+  }
+}
+
+/**
+ * BÚSQUEDA DE CONVERSACIONES
+ */
+function initializeSearchConversations() {
+  const searchInput = document.getElementById('searchConv');
+  if (searchInput) {
+    searchInput.addEventListener('input', debounce(handleSearchConversations, 300));
+  }
+}
+
+function handleSearchConversations(event) {
+  const searchTerm = event.target.value.toLowerCase();
+  console.log('Buscando conversaciones:', searchTerm);
+
+  document.querySelectorAll('.conversation-item').forEach(item => {
+    const name = item.querySelector('.conv-name').textContent.toLowerCase();
+    const message = item.querySelector('.conv-message').textContent.toLowerCase();
+
+    if (name.includes(searchTerm) || message.includes(searchTerm)) {
+      item.style.display = 'block';
+    } else {
+      item.style.display = 'none';
+    }
+  });
+}
+
+/**
+ * MENSAJES
+ */
+function loadMessages(conversationId) {
+  const csrfToken = getCookie('csrftoken');
+
+  fetch(`/api/messages/${conversationId}/`, {
+    method: 'GET',
+    headers: {
+      'X-CSRFToken': csrfToken,
+    }
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      renderMessages(data.messages);
+      console.log('Mensajes cargados:', data.messages.length);
+    }
+  })
+  .catch(error => console.error('Error al cargar mensajes:', error));
+}
+
+function renderMessages(messages) {
+  const messagesContainer = document.getElementById('messagesContainer');
+  if (!messagesContainer) return;
+
+  messagesContainer.innerHTML = '';
+
+  messages.forEach(msg => {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `message ${msg.is_sent ? 'sent' : 'received'}`;
+    messageDiv.innerHTML = `
+      ${!msg.is_sent ? `<div class="message-avatar">${msg.sender_initial}</div>` : ''}
+      <div>
+        <div class="message-bubble">${msg.text}</div>
+        <div class="message-time">${msg.time}</div>
+      </div>
+      ${msg.is_sent ? `<div class="message-avatar">${msg.sender_initial}</div>` : ''}
+    `;
+    messagesContainer.appendChild(messageDiv);
+  });
+
+  // Scroll hacia abajo
+  messagesContainer.scrollTop = messagesContainer.scrollHeight;
+}
+
+/**
+ * INPUT DE MENSAJE
+ */
+function initializeMessageInput() {
+  const messageInput = document.querySelector('.message-input');
+  const sendBtn = document.querySelector('.btn-send');
+
+  if (messageInput && sendBtn) {
+    sendBtn.addEventListener('click', sendMessage);
+    messageInput.addEventListener('keypress', function(e) {
+      if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendMessage();
+      }
+    });
+  }
 }
 
 function sendMessage() {
-    const input = document.getElementById('messageInput');
-    const message = input.value.trim();
+  const messageInput = document.querySelector('.message-input');
+  if (!messageInput || !messageInput.value.trim()) {
+    console.log('Mensaje vacío');
+    return;
+  }
 
-    if (message) {
-        // Crear elemento del mensaje
-        const messagesContainer = document.getElementById('messagesContainer');
-        const newMessage = document.createElement('div');
-        newMessage.className = 'message sent';
-        newMessage.innerHTML = `
-            <div>
-                <div class="message-bubble">${escapeHtml(message)}</div>
-                <div class="message-time">${new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</div>
-            </div>
-        `;
-        messagesContainer.appendChild(newMessage);
+  const message = messageInput.value;
+  const conversationItem = document.querySelector('.conversation-item.active');
+  const conversationId = conversationItem?.dataset.conversationId;
 
-        // Limpiar input
-        input.value = '';
-        input.style.height = 'auto';
+  if (!conversationId) {
+    console.error('No hay conversación activa');
+    return;
+  }
 
-        // Scroll al último mensaje
-        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+  const csrfToken = getCookie('csrftoken');
 
-        // Simular respuesta (después de 1 segundo)
-        setTimeout(() => {
-            const responseMessage = document.createElement('div');
-            responseMessage.className = 'message received';
-            responseMessage.innerHTML = `
-                <div class="message-avatar">S</div>
-                <div>
-                    <div class="message-bubble">Gracias por tu mensaje 😊</div>
-                    <div class="message-time">${new Date().toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' })}</div>
-                </div>
-            `;
-            messagesContainer.appendChild(responseMessage);
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
-        }, 1000);
+  fetch('/api/send-message/', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': csrfToken,
+    },
+    body: JSON.stringify({
+      conversation_id: conversationId,
+      message: message
+    })
+  })
+  .then(response => response.json())
+  .then(data => {
+    if (data.success) {
+      console.log('Mensaje enviado');
+      messageInput.value = '';
+      loadMessages(conversationId);
+    } else {
+      console.error('Error al enviar mensaje:', data.error);
     }
+  })
+  .catch(error => console.error('Error:', error));
 }
 
-// Función auxiliar para escapar HTML
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
-}
+/**
+ * OPCIONES DE CHAT
+ */
+function initializeChatOptions() {
+  document.querySelectorAll('.chat-option-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const action = this.title;
+      console.log('Acción de chat:', action);
 
-// Auto-resize textarea
-document.addEventListener('DOMContentLoaded', function() {
-    const textarea = document.getElementById('messageInput');
-    if (textarea) {
-        textarea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = Math.min(this.scrollHeight, 100) + 'px';
-        });
-
-        textarea.addEventListener('keydown', function(e) {
-            if (e.key === 'Enter' && !e.shiftKey) {
-                e.preventDefault();
-                sendMessage();
-            }
-        });
-    }
-
-    // Buscar conversaciones
-    const searchInput = document.getElementById('searchConv');
-    if (searchInput) {
-        searchInput.addEventListener('keyup', function(e) {
-            const searchTerm = e.target.value.toLowerCase();
-            document.querySelectorAll('.conversation-item').forEach(item => {
-                const name = item.querySelector('.conv-name').textContent.toLowerCase();
-                item.style.display = name.includes(searchTerm) ? '' : 'none';
-            });
-        });
-    }
-});
-
-// FUNCIÓN PARA VER HISTORIA
-function viewStory(name) {
-    alert('👁️ Viendo historia de ' + name);
-    // Aquí puedes agregar lógica para mostrar la historia en modal
-}
-
-// Agregar hover effects a los anuncios
-document.addEventListener('DOMContentLoaded', function() {
-    const adItems = document.querySelectorAll('.ad-item');
-    adItems.forEach(ad => {
-        ad.addEventListener('mouseenter', function() {
-            this.style.boxShadow = '0 8px 16px rgba(70, 130, 180, 0.2)';
-            this.style.transform = 'translateY(-3px)';
-        });
-        ad.addEventListener('mouseleave', function() {
-            this.style.boxShadow = 'none';
-            this.style.transform = 'translateY(0)';
-        });
+      // Aquí se implementarían las acciones (llamada, video, info)
     });
+  });
+}
 
-    // Scroll horizontal en historias
-    const storiesCarousel = document.querySelector('.stories-carousel');
-    if (storiesCarousel) {
-        const storyItems = storiesCarousel.querySelectorAll('.story-item');
-        storyItems.forEach(item => {
-            item.addEventListener('mouseenter', function() {
-                this.style.transform = 'scale(1.08)';
-            });
-            item.addEventListener('mouseleave', function() {
-                this.style.transform = 'scale(1)';
-            });
-        });
+/**
+ * UTILIDADES
+ */
+function debounce(func, wait) {
+  let timeout;
+  return function executedFunction(...args) {
+    const later = () => {
+      clearTimeout(timeout);
+      func(...args);
+    };
+    clearTimeout(timeout);
+    timeout = setTimeout(later, wait);
+  };
+}
+
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== '') {
+    const cookies = document.cookie.split(';');
+    for (let i = 0; i < cookies.length; i++) {
+      const cookie = cookies[i].trim();
+      if (cookie.substring(0, name.length + 1) === (name + '=')) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
     }
-});
+  }
+  return cookieValue;
+}
+
+console.log('conversations.js: Cargado exitosamente ✓');

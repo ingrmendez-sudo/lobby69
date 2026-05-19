@@ -5,48 +5,51 @@
 {% block page_title %}{% trans "Explorar Perfiles" %} - LOBBY69{% endblock page_title %}
 
 {% block left_sidebar %}
-    <div class="sidebar-left" style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; height: fit-content; position: sticky; top: 80px;">
-        <div class="sidebar-section">
-            <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 15px; color: var(--primary-color); text-transform: uppercase;">{% trans "Filtros" %}</h3>
+    <div class="explore-sidebar-left">
+        <!-- SECCIÓN FILTROS -->
+        <div class="filters-section">
+            <h3 class="section-title">🔍 {% trans "Filtros" %}</h3>
 
-            <div class="filter-group" style="margin-bottom: 15px;">
-                <label for="gender" style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary);">{% trans "Género" %}</label>
-                <select id="gender" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 5px; background-color: var(--bg-primary); color: var(--text-primary); font-size: 13px; cursor: pointer;">
+            <!-- Tipo de Perfil -->
+            <div class="filter-group">
+                <label for="profile-type">{% trans "Tipo de Perfil" %}</label>
+                <select id="profile-type" onchange="applyFilters()">
                     <option value="">{% trans "Todos" %}</option>
-                    <option value="male">{% trans "Hombre" %}</option>
-                    <option value="female">{% trans "Mujer" %}</option>
-                    <option value="non-binary">{% trans "No binario" %}</option>
+                    <option value="single">{% trans "Single" %}</option>
+                    <option value="pareja">{% trans "Pareja" %}</option>
+                    <option value="unicornio">{% trans "Unicornio" %}</option>
                 </select>
             </div>
 
-            <div class="filter-group" style="margin-bottom: 15px;">
-                <label for="age-min" style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary);">{% trans "Edad mínima" %}</label>
-                <input type="number" id="age-min" placeholder="18" min="18" max="120" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 5px; background-color: var(--bg-primary); color: var(--text-primary); font-size: 13px;">
-            </div>
-
-            <div class="filter-group" style="margin-bottom: 15px;">
-                <label for="age-max" style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary);">{% trans "Edad máxima" %}</label>
-                <input type="number" id="age-max" placeholder="65" min="18" max="120" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 5px; background-color: var(--bg-primary); color: var(--text-primary); font-size: 13px;">
-            </div>
-
-            <div class="filter-group" style="margin-bottom: 15px;">
-                <label for="city" style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary);">{% trans "Ciudad" %}</label>
-                <input type="text" id="city" placeholder="{% trans 'Buscar ciudad' %}" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 5px; background-color: var(--bg-primary); color: var(--text-primary); font-size: 13px;">
-            </div>
-
-            <div class="filter-group" style="margin-bottom: 15px;">
-                <label for="profile-type" style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary);">{% trans "Tipo de perfil" %}</label>
-                <select id="profile-type" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 5px; background-color: var(--bg-primary); color: var(--text-primary); font-size: 13px; cursor: pointer;">
+            <!-- Estado -->
+            <div class="filter-group">
+                <label for="state">{% trans "Estado" %}</label>
+                <select id="state" onchange="applyFilters()">
                     <option value="">{% trans "Todos" %}</option>
-                    <option value="individual">{% trans "Individual" %}</option>
-                    <option value="couple">{% trans "Pareja" %}</option>
-                    <option value="group">{% trans "Grupo" %}</option>
+                    <option value="cdmx">{% trans "CDMX" %}</option>
+                    <option value="edomex">{% trans "Estado de México" %}</option>
+                    <option value="jalisco">{% trans "Jalisco" %}</option>
+                    <option value="veracruz">{% trans "Veracruz" %}</option>
+                    <option value="otro">{% trans "Otro" %}</option>
                 </select>
             </div>
 
-            <div class="filter-group" style="margin-bottom: 15px;">
-                <label for="membership" style="display: block; font-size: 12px; font-weight: 600; margin-bottom: 8px; color: var(--text-secondary);">{% trans "Membresía" %}</label>
-                <select id="membership" style="width: 100%; padding: 8px; border: 1px solid var(--border-color); border-radius: 5px; background-color: var(--bg-primary); color: var(--text-primary); font-size: 13px; cursor: pointer;">
+            <!-- Edad Mínima -->
+            <div class="filter-group">
+                <label for="age-min">{% trans "Edad Mínima" %}</label>
+                <input type="number" id="age-min" placeholder="18" min="18" max="120" onchange="applyFilters()">
+            </div>
+
+            <!-- Edad Máxima -->
+            <div class="filter-group">
+                <label for="age-max">{% trans "Edad Máxima" %}</label>
+                <input type="number" id="age-max" placeholder="65" min="18" max="120" onchange="applyFilters()">
+            </div>
+
+            <!-- Membresía -->
+            <div class="filter-group">
+                <label for="membership">{% trans "Membresía" %}</label>
+                <select id="membership" onchange="applyFilters()">
                     <option value="">{% trans "Todas" %}</option>
                     <option value="free">{% trans "Gratuita" %}</option>
                     <option value="explorador">{% trans "Explorador" %}</option>
@@ -55,91 +58,154 @@
                 </select>
             </div>
 
-            <button class="btn-apply-filters" style="width: 100%; padding: 10px; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; font-size: 13px; font-weight: 700; cursor: pointer; margin-top: 15px;">{% trans "Aplicar Filtros" %}</button>
+            <!-- Calificación -->
+            <div class="filter-group">
+                <label for="rating">{% trans "Calificación Mínima" %}</label>
+                <select id="rating" onchange="applyFilters()">
+                    <option value="">{% trans "Todas" %}</option>
+                    <option value="5">⭐⭐⭐⭐⭐ 5.0</option>
+                    <option value="4">⭐⭐⭐⭐ 4.0+</option>
+                    <option value="3">⭐⭐⭐ 3.0+</option>
+                </select>
+            </div>
+
+            <button class="btn btn-primary btn-apply-filters" onclick="applyFilters()" type="button">{% trans "Aplicar Filtros" %}</button>
+        </div>
+
+        <!-- SECCIÓN ESTADÍSTICAS -->
+        <div class="stats-section">
+            <h3 class="section-title">📊 {% trans "Estadísticas" %}</h3>
+
+            <div class="stats-box">
+                <div class="stats-item">
+                    <span class="stats-label">👁️ {% trans "Perfiles Hoy" %}</span>
+                    <span class="stats-value">{{ profiles_count|default:"0" }}</span>
+                </div>
+
+                <div class="stats-item">
+                    <span class="stats-label">❤️ {% trans "Me Gustas Recibidos" %}</span>
+                    <span class="stats-value">{{ likes_count|default:"0" }}</span>
+                </div>
+
+                <div class="stats-item">
+                    <span class="stats-label">👥 {% trans "Conectados" %}</span>
+                    <span class="stats-value">{{ connected_count|default:"0" }}</span>
+                </div>
+            </div>
         </div>
     </div>
 {% endblock left_sidebar %}
 
-
 {% block main_content %}
-    <div class="main-content">
-        <div class="content-header">
+    <div class="explore-main">
+        <div class="explore-header">
             <h2>{% trans "Explorar Perfiles" %}</h2>
             <div class="search-box">
-                <input type="text" id="search-profiles" placeholder="{% trans 'Buscar por nombre...' %}">
+                <input type="text" id="search-profiles" placeholder="{% trans 'Buscar por nombre...' %}" onkeyup="filterProfiles()">
             </div>
         </div>
 
         <!-- GRID DE PERFILES -->
-        <div class="profiles-grid" style="display: grid !important; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)) !important; gap: 20px !important; margin-top: 20px !important;">
-            {% for profile in profiles_page %}
-            <div class="profile-card" style="background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 8px; overflow: hidden; transition: all 0.3s ease; cursor: pointer;">
-                <div class="profile-card-image" style="width: 100%; height: 250px; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); display: flex; align-items: center; justify-content: center; font-size: 50px; color: white; position: relative; overflow: hidden;">
-                    {% if profile.last_active_at %}
-                        <div class="online-badge" style="position: absolute; top: 10px; right: 10px; width: 12px; height: 12px; background-color: #27ae60; border: 2px solid white; border-radius: 50%;"></div>
-                    {% endif %}
-                    👤
-                </div>
-                <div class="profile-card-info" style="padding: 15px;">
-                    <div class="profile-card-name" style="font-size: 16px; font-weight: 700; margin-bottom: 5px; color: var(--text-primary);">{{ profile.display_name }}, {{ profile.age }}</div>
-                    <div class="profile-card-location" style="font-size: 12px; color: var(--text-secondary); margin-bottom: 8px;">📍 {{ profile.city }}, {{ profile.country }}</div>
-                    <div class="profile-card-bio" style="font-size: 12px; color: var(--text-secondary); line-height: 1.4; margin-bottom: 10px;">{{ profile.bio|truncatewords:15 }}</div>
-                    <span class="profile-card-membership" style="display: inline-block; padding: 4px 8px; background-color: var(--primary-color); color: white; border-radius: 3px; font-size: 11px; font-weight: 600;">{{ profile.profile_type|default:"Individual" }}</span>
-                    <div class="profile-card-actions" style="display: flex; gap: 10px; margin-top: 10px;">
-                        <button class="btn-small btn-view" onclick="window.location.href = '/usuario/{{ profile.nick }}/'" style="flex: 1; padding: 8px; border: none; border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; background-color: var(--primary-color); color: white;">{% trans "Ver" %}</button>
-                        <button class="btn-small btn-like" onclick="likeProfile('{{ profile.id }}')" style="flex: 1; padding: 8px; border: 1px solid var(--primary-color); border-radius: 5px; font-size: 12px; font-weight: 600; cursor: pointer; background-color: var(--bg-primary); color: var(--primary-color);">❤️</button>
-                    </div>
-                </div>
-            </div>
-            {% empty %}
-            <div style="grid-column: 1 / -1; text-align: center; padding: 40px;">
-                <p>{% trans "No hay perfiles disponibles" %}</p>
-            </div>
-            {% endfor %}
+<div class="profiles-grid">
+    {% for profile in profiles_page %}
+    <div class="profile-card"
+         data-profile-id="{{ profile.id }}"
+         data-profile-nick="{{ profile.nick }}"
+         data-name="{{ profile.display_name }}"
+         data-city="{{ profile.city }}"
+         data-state="{{ profile.state }}"
+         data-age="{{ profile.age }}"
+         data-profile-type="{{ profile.profile_type }}"
+         data-membership="{{ profile.membership_type }}"
+         data-rating="{{ profile.rating|default:0 }}">
+
+        <div class="profile-card-image">
+            {% if profile.last_active_at %}
+                <div class="online-badge"></div>
+            {% endif %}
+            {% if profile.avatar %}
+                <img src="{{ profile.avatar }}" alt="{{ profile.display_name }}" style="width: 100%; height: 100%; object-fit: cover;">
+            {% else %}
+                👤
+            {% endif %}
         </div>
+
+        <div class="profile-card-info">
+            <div class="profile-card-name">{{ profile.display_name }}, {{ profile.age }}</div>
+            <div class="profile-card-location">📍 {{ profile.city }}, {{ profile.state }}</div>
+            <div class="profile-card-bio">{{ profile.bio|truncatewords:15 }}</div>
+            <div class="profile-card-meta">
+                <span class="profile-card-membership">{{ profile.profile_type|upper }}</span>
+                {% if profile.rating %}
+                    <span class="profile-card-rating">⭐ {{ profile.rating }}</span>
+                {% endif %}
+            </div>
+            <div class="profile-card-actions">
+                <button class="btn btn-small btn-view" data-profile-id="{{ profile.id }}" onclick="viewProfile('{{ profile.nick }}')" type="button">{% trans "Ver" %}</button>
+                <button class="btn btn-small btn-like" data-profile-id="{{ profile.id }}" onclick="toggleLike(event)" type="button">❤️</button>
+            </div>
+        </div>
+    </div>
+    {% empty %}
+    <div class="empty-state">
+        <p>{% trans "No hay perfiles disponibles con los filtros seleccionados" %}</p>
+    </div>
+    {% endfor %}
+</div>
 
 
         <!-- PAGINACIÓN -->
-        <div style="display: flex; justify-content: center; gap: 10px; margin-top: 30px; padding: 20px;">
+        {% if profiles_page.has_previous or profiles_page.has_next %}
+        <div class="pagination">
             {% if profiles_page.has_previous %}
-                <a href="?page=1" class="btn-small btn-view" style="width: auto; padding: 10px 15px;">« {% trans "Primera" %}</a>
-                <a href="?page={{ profiles_page.previous_page_number }}" class="btn-small btn-view" style="width: auto; padding: 10px 15px;">‹ {% trans "Anterior" %}</a>
+                <a href="?page=1">« {% trans "Primera" %}</a>
+                <a href="?page={{ profiles_page.previous_page_number }}">‹ {% trans "Anterior" %}</a>
             {% endif %}
 
-            <span style="align-self: center; color: var(--text-secondary);">
-                {% trans "Página" %} {{ profiles_page.number }} {% trans "de" %} {{ paginator.num_pages }}
-            </span>
+            <span class="pagination-info">{% trans "Página" %} {{ profiles_page.number }} {% trans "de" %} {{ paginator.num_pages }}</span>
 
             {% if profiles_page.has_next %}
-                <a href="?page={{ profiles_page.next_page_number }}" class="btn-small btn-view" style="width: auto; padding: 10px 15px;">{% trans "Siguiente" %} ›</a>
-                <a href="?page={{ paginator.num_pages }}" class="btn-small btn-view" style="width: auto; padding: 10px 15px;">{% trans "Última" %} »</a>
+                <a href="?page={{ profiles_page.next_page_number }}">{% trans "Siguiente" %} ›</a>
+                <a href="?page={{ paginator.num_pages }}">{% trans "Última" %} »</a>
             {% endif %}
         </div>
+        {% endif %}
     </div>
 {% endblock main_content %}
 
 {% block right_sidebar %}
-    <div class="sidebar-right" style="background-color: var(--card-bg); border: 1px solid var(--border-color); border-radius: 8px; padding: 20px; height: fit-content; position: sticky; top: 80px;">
-        <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 15px; color: var(--primary-color); text-transform: uppercase;">{% trans "Conectados" %}</h3>
+    <div class="explore-sidebar-right">
+        <h3>🟢 {% trans "Conectados Ahora" %}</h3>
         {% for user in connected_users %}
-        <a href="/usuario/{{ user.nick }}/" class="sidebar-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: all 0.3s; text-decoration: none; color: inherit;">
-            <div class="sidebar-item-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0;">{{ user.nick|first|upper }}</div>
-            <div class="sidebar-item-info" style="flex: 1; overflow: hidden;">
-                <div class="sidebar-item-name" style="font-size: 13px; font-weight: 600; color: var(--text-primary);">{{ user.display_name }}</div>
-                <div class="sidebar-item-status" style="font-size: 11px; color: var(--text-secondary);">{% trans "En línea" %}</div>
+        <div class="connected-user" onclick="navigateToProfile('{{ user.nick }}')">
+            <div class="connected-avatar">{{ user.display_name|first|upper }}</div>
+            <div class="connected-info">
+                <div class="connected-name">{{ user.display_name }}</div>
+                <div class="connected-status">🟢 {% trans "Activo" %}</div>
             </div>
-        </a>
+        </div>
+        {% empty %}
+        <p class="empty-text">{% trans "Sin usuarios conectados" %}</p>
         {% endfor %}
 
-        <h3 style="margin-top: 25px; font-size: 14px; font-weight: 700; margin-bottom: 15px; color: var(--primary-color); text-transform: uppercase;">{% trans "Recomendados" %}</h3>
+        <hr>
+
+        <h3>⭐ {% trans "Recomendados" %}</h3>
         {% for profile in suggested_profiles %}
-        <a href="/usuario/{{ profile.nick }}/" class="sidebar-item" style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border-color); cursor: pointer; transition: all 0.3s; text-decoration: none; color: inherit;">
-            <div class="sidebar-item-avatar" style="width: 40px; height: 40px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), var(--primary-dark)); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; flex-shrink: 0;">{{ profile.nick|first|upper }}</div>
-            <div class="sidebar-item-info" style="flex: 1; overflow: hidden;">
-                <div class="sidebar-item-name" style="font-size: 13px; font-weight: 600; color: var(--text-primary);">{{ profile.display_name }}</div>
-                <div class="sidebar-item-status" style="font-size: 11px; color: var(--text-secondary);">{{ profile.city }}</div>
+        <div class="connected-user" onclick="navigateToProfile('{{ profile.nick }}')">
+            <div class="connected-avatar">{{ profile.display_name|first|upper }}</div>
+            <div class="connected-info">
+                <div class="connected-name">{{ profile.display_name }}</div>
+                <div class="connected-status">📍 {{ profile.city }}</div>
             </div>
-        </a>
+        </div>
+        {% empty %}
+        <p class="empty-text">{% trans "Sin recomendaciones" %}</p>
         {% endfor %}
     </div>
 {% endblock right_sidebar %}
+
+
+{% block extra_js %}
+    <script src="{% static 'js/explore.js' %}"></script>
+{% endblock extra_js %}

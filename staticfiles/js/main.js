@@ -1,3 +1,76 @@
+/**
+ * FIX: Forzar renderizado correcto de sidebars al cargar la página
+ */
+
+console.log('🔧 Initializing sidebar rendering fix...');
+
+// Esperar a que el DOM esté completamente cargado
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ DOM fully loaded');
+
+    // Forzar reflow
+    const container = document.querySelector('.container');
+    if (container) {
+        // Trigger reflow
+        const _ = container.offsetHeight;
+        console.log('✅ Reflow triggered');
+    }
+
+    // Asegurar visibilidad de sidebars
+    const leftColumn = document.querySelector('.left-column');
+    const rightColumn = document.querySelector('.right-column');
+    const centerColumn = document.querySelector('.center-column');
+
+    if (leftColumn) {
+        leftColumn.style.visibility = 'visible';
+        leftColumn.style.opacity = '1';
+        leftColumn.style.display = 'flex';
+        console.log('✅ Left sidebar visible');
+    }
+
+    if (rightColumn) {
+        rightColumn.style.visibility = 'visible';
+        rightColumn.style.opacity = '1';
+        rightColumn.style.display = 'flex';
+        console.log('✅ Right sidebar visible');
+    }
+
+    if (centerColumn) {
+        centerColumn.style.visibility = 'visible';
+        centerColumn.style.opacity = '1';
+        centerColumn.style.display = 'flex';
+        console.log('✅ Center column visible');
+    }
+});
+
+// TAMBIÉN al cargar la página completamente
+window.addEventListener('load', function() {
+    console.log('🔧 Window fully loaded - Final visibility check');
+
+    // Último check de visibilidad
+    document.querySelectorAll('.left-column, .center-column, .right-column').forEach(col => {
+        col.style.visibility = 'visible';
+        col.style.opacity = '1';
+        col.style.display = 'flex';
+    });
+
+    console.log('✅ All columns forced to visible');
+});
+
+// ResizeObserver para detectar cambios
+const resizeObserver = new ResizeObserver((entries) => {
+    entries.forEach((entry) => {
+        if (entry.target.classList.contains('container')) {
+            console.log('📐 Container resized:', entry.contentRect);
+        }
+    });
+});
+
+const container = document.querySelector('.container');
+if (container) {
+    resizeObserver.observe(container);
+}
+
 // TEMA DÍA/NOCHE
 function toggleTheme() {
     const body = document.body;

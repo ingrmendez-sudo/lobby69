@@ -736,7 +736,7 @@ def profile_detail_view(request, nickname):
 
 @login_required(login_url='pages:login')
 def explore_view(request):
-    """Explore profiles with pagination"""
+    """Explore profiles with filtering"""
     from supabase import create_client
     from django.core.paginator import Paginator
 
@@ -747,20 +747,84 @@ def explore_view(request):
         profiles_resp = supabase.table('profiles').select('*').order('created_at', desc=True).execute()
         all_profiles = profiles_resp.data if profiles_resp.data else []
 
-        print(f"[DEBUG] Total perfiles cargados: {len(all_profiles)}")
+        print(f"[DEBUG] Total perfiles sin filtrar: {len(all_profiles)}")
 
-        # 2. Paginar (20 por página)
-        paginator = Paginator(all_profiles, 20)
+        # 2. APLICAR FILTROS
+        profile_type = request.GET.get('profile_type', '').strip()
+        state = request.GET.get('state', '').strip()
+        age_min = request.GET.get('age_min', '').strip()
+        age_max = request.GET.get('age_max', '').strip()
+        membership = request.GET.get('membership', '').strip()
+        rating = request.GET.get('rating', '').strip()
+        search = request.GET.get('search', '').strip()
+
+        filtered_profiles = all_profiles
+
+        # Filtro por tipo de perfil
+        if profile_type:
+            filtered_profiles = [p for p in filtered_profiles if p.get('profile_type', '').lower() == profile_type.lower()]
+            print(f"[DEBUG] Después filtro profile_type: {len(filtered_profiles)}")
+
+        # Filtro por estado
+        if state:
+            filtered_profiles = [p for p in filtered_profiles if p.get('state', '').lower() == state.lower()]
+            print(f"[DEBUG] Después filtro state: {len(filtered_profiles)}")
+
+        # Filtro por edad mínima
+        if age_min:
+            try:
+                age_min_int = int(age_min)
+                filtered_profiles = [p for p in filtered_profiles if p.get('age', 0) >= age_min_int]
+                print(f"[DEBUG] Después filtro age_min: {len(filtered_profiles)}")
+            except ValueError:
+                pass
+
+        # Filtro por edad máxima
+        if age_max:
+            try:
+                age_max_int = int(age_max)
+                filtered_profiles = [p for p in filtered_profiles if p.get('age', 0) <= age_max_int]
+                print(f"[DEBUG] Después filtro age_max: {len(filtered_profiles)}")
+            except ValueError:
+                pass
+
+        # Filtro por membresía
+        if membership:
+            filtered_profiles = [p for p in filtered_profiles if p.get('membership_type', '').lower() == membership.lower()]
+            print(f"[DEBUG] Después filtro membership: {len(filtered_profiles)}")
+
+        # Filtro por calificación
+        if rating:
+            try:
+                rating_float = float(rating)
+                filtered_profiles = [p for p in filtered_profiles if p.get('rating', 0) >= rating_float]
+                print(f"[DEBUG] Después filtro rating: {len(filtered_profiles)}")
+            except ValueError:
+                pass
+
+        # Búsqueda por nombre o ciudad
+        if search:
+            filtered_profiles = [p for p in filtered_profiles
+                               if search.lower() in p.get('display_name', '').lower() or
+                                  search.lower() in p.get('city', '').lower()]
+            print(f"[DEBUG] Después búsqueda: {len(filtered_profiles)}")
+
+        # 3. PAGINAR (20 por página)
+        paginator = Paginator(filtered_profiles, 20)
         page_number = request.GET.get('page', 1)
         profiles_page = paginator.get_page(page_number)
 
-        # 3. Obtener usuarios conectados
+        # 4. Obtener usuarios conectados
         connected_resp = supabase.table('profiles').select('id, nick, display_name, city, avatar_url, last_active_at').order('last_active_at', desc=True).limit(10).execute()
         connected_users = connected_resp.data if connected_resp.data else []
 
-        # 4. Obtener perfiles sugeridos
+        # 5. Obtener perfiles sugeridos
         suggested_resp = supabase.table('profiles').select('id, nick, display_name, city, avatar_url, bio').limit(5).execute()
         suggested_profiles = suggested_resp.data if suggested_resp.data else []
+
+        # 6. Contar estadísticas
+        profiles_today = len([p for p in all_profiles if p.get('last_active_at')])  # Aproximado
+        likes_count = 0  # TODO: Implementar contador de likes reales
 
         context = {
             'user': request.user,
@@ -768,6 +832,9 @@ def explore_view(request):
             'connected_users': connected_users,
             'suggested_profiles': suggested_profiles,
             'paginator': paginator,
+            'profiles_count': profiles_today,
+            'likes_count': likes_count,
+            'connected_count': len(connected_users),
         }
 
         return render(request, 'pages/explore.html', context)
@@ -776,114 +843,14 @@ def explore_view(request):
         print(f"[ERROR] Error en explore_view: {e}")
         import traceback
         traceback.print_exc()
-        return render(request, 'pages/explore.html', {'user': request.user, 'profiles_page': [], 'connected_users': [], 'suggested_profiles': []})
-
-
-@login_required(login_url='pages:login')
-def gallery_view(request):
-    """Gestionar galería de fotos del usuario"""
-    user = request.user
-    user_id = str(user.id)
-
-    if request.method == "POST":
-        print(f"[DEBUG] POST recibido")
-
-        try:
-            if 'photo' not in request.FILES:
-                print("[ERROR] No hay archivo 'photo'")
-                return JsonResponse({'error': 'No hay archivo'}, status=400)
-
-            photo = request.FILES['photo']
-            caption = request.POST.get('caption', '').strip()
-            visibility = request.POST.get('visibility', 'public')
-            album_name = request.POST.get('album_name', '').strip()
-
-            print(f"[DEBUG] Archivo: {photo.name}, Tamaño: {photo.size}")
-
-            # Validaciones
-            if photo.size > 10 * 1024 * 1024:
-                return JsonResponse({'error': 'Archivo muy grande (máx 10MB)'}, status=400)
-
-            allowed_types = ['image/jpeg', 'image/png', 'image/webp', 'image/gif']
-            if photo.content_type not in allowed_types:
-                return JsonResponse({'error': 'Tipo de archivo no permitido'}, status=400)
-
-            from supabase import create_client
-            supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
-
-            # Generar nombre único
-            file_name = f"{user_id}/{uuid.uuid4()}/{photo.name}"
-            print(f"[DEBUG] Subiendo a: {file_name}")
-
-            # Subir a Storage
-            response = supabase.storage.from_('gallery').upload(
-                file_name,
-                photo.read(),
-                {'content-type': photo.content_type}
-            )
-            print(f"[DEBUG] Storage response: {response}")
-
-            # Obtener URL pública
-            image_url = supabase.storage.from_('gallery').get_public_url(file_name)
-            print(f"[DEBUG] URL pública: {image_url}")
-
-            # UUID consistente para el usuario
-            account_uuid = uuid.uuid5(uuid.NAMESPACE_DNS, f'user-{user_id}')
-
-            # Guardar en Supabase
-            supabase_data = {
-                'account_id': str(account_uuid),
-                'user_nick': request.user.username,  # ← AGREGAR user_nick
-                'image_url': image_url,
-                'caption': caption if caption else None,
-                'visibility': visibility,
-                'status': 'pending',
-                'album_name': album_name if album_name else None,
-                'is_primary': False
-            }
-
-            print(f"[DEBUG] Datos a guardar: {supabase_data}")
-            resp = supabase.table('gallery').insert(supabase_data).execute()
-            print(f"[DEBUG] Respuesta Supabase: {resp.data}")
-
-            if resp.data:
-                return JsonResponse({
-                    'success': True,
-                    'message': 'Foto subida correctamente. Pendiente de validación.',
-                    'photo_id': str(resp.data[0]['id'] if isinstance(resp.data, list) else resp.data['id']),
-                    'image_url': image_url
-                })
-            else:
-                return JsonResponse({'error': 'Error al guardar en Supabase'}, status=500)
-
-        except Exception as e:
-            print(f"[ERROR] {str(e)}")
-            import traceback
-            traceback.print_exc()
-            return JsonResponse({'error': str(e)}, status=500)
-
-    # GET
-    try:
-        from supabase import create_client
-        supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
-
-        account_uuid = uuid.uuid5(uuid.NAMESPACE_DNS, f'user-{user_id}')
-        print(f"[DEBUG] Cargando galería para: {account_uuid}")
-
-        resp = supabase.table('gallery').select('*').eq('account_id', str(account_uuid)).eq('status', 'approved').order('uploaded_at', desc=True).execute()
-        media_items = resp.data if resp.data else []
-
-        print(f"[DEBUG] Fotos cargadas: {len(media_items)}")
-
-        return render(request, 'pages/gallery.html', {
-            'user': user,
-            'media_items': media_items
+        return render(request, 'pages/explore.html', {
+            'user': request.user,
+            'profiles_page': [],
+            'connected_users': [],
+            'suggested_profiles': [],
+            'paginator': None
         })
-    except Exception as e:
-        print(f"[ERROR] Error cargando galería: {e}")
-        import traceback
-        traceback.print_exc()
-        return render(request, 'pages/gallery.html', {'user': user, 'media_items': []})
+
 
 @login_required(login_url='pages:login')
 @require_http_methods(["POST"])
@@ -924,51 +891,40 @@ def conversations_view(request):
 
 @login_required(login_url='pages:login')
 @require_http_methods(["POST"])
-def like_photo_view(request, photo_id):
-    """Dar/quitar like a una foto"""
+def like_profile_view(request, profile_id):
+    """Like/Unlike a profile"""
     try:
+        import json
         from supabase import create_client
+
         supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+
+        data = json.loads(request.body)
+        action = data.get('action', 'like')
 
         user_id = str(request.user.id)
 
-        # Obtener la foto para verificar quién es el dueño
-        photo_resp = supabase.table('gallery').select('account_id').eq('id', str(photo_id)).execute()
-
-        if not photo_resp.data:
-            return JsonResponse({'error': 'Foto no encontrada'}, status=404)
-
-        photo_owner = photo_resp.data[0]['account_id']
-
-        # Verificar que NO sea el dueño
-        if str(photo_owner) == str(user_id):
-            return JsonResponse({'error': 'No puedes dar like a tu propia foto'}, status=403)
-
         # Verificar si ya existe el like
-        existing = supabase.table('photo_likes').select('*').eq('photo_id', str(photo_id)).eq('user_id', user_id).execute()
+        existing = supabase.table('profile_likes').select('*').eq('profile_id', str(profile_id)).eq('user_id', user_id).execute()
 
-        if existing.data and len(existing.data) > 0:
+        if action and existing.data:
             # Eliminar like
-            supabase.table('photo_likes').delete().eq('photo_id', str(photo_id)).eq('user_id', user_id).execute()
-            action = 'unlike'
-        else:
+            supabase.table('profile_likes').delete().eq('profile_id', str(profile_id)).eq('user_id', user_id).execute()
+            return JsonResponse({'success': True, 'action': 'unlike'})
+        elif action:
             # Añadir like
-            supabase.table('photo_likes').insert({
-                'photo_id': str(photo_id),
+            supabase.table('profile_likes').insert({
+                'profile_id': str(profile_id),
                 'user_id': user_id
             }).execute()
-            action = 'like'
+            return JsonResponse({'success': True, 'action': 'like'})
+        else:
+            return JsonResponse({'success': False, 'error': 'Invalid action'}, status=400)
 
-        # Actualizar contador
-        likes_resp = supabase.table('photo_likes').select('*', count='exact').eq('photo_id', str(photo_id)).execute()
-        likes_count = likes_resp.count
-
-        supabase.table('gallery').update({'likes_count': likes_count}).eq('id', str(photo_id)).execute()
-
-        return JsonResponse({'success': True, 'action': action, 'likes_count': likes_count})
     except Exception as e:
-        print(f"[ERROR] Error en like: {e}")
+        print(f"[ERROR] {e}")
         return JsonResponse({'error': str(e)}, status=500)
+
 
 @login_required(login_url='pages:login')
 @require_http_methods(["POST"])
@@ -1529,4 +1485,14 @@ def create_notification(user_id, sender_nick, notification_type, title, message,
     except Exception as e:
         print(f"Error creando notificación: {e}")
 
+@login_required
+def gallery_view(request):
+    """Gallery view - shows user's photos"""
+    from django.shortcuts import render
+    user = request.user
+    context = {
+        'user': user,
+        'photos': [],
+    }
+    return render(request, 'pages/gallery.html', context)
 

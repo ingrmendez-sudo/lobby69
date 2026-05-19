@@ -1,403 +1,270 @@
-{% extends 'base_authenticated.html' %}
-{% load static %}
-{% load i18n %}
+﻿{% extends 'base_authenticated.html' %}
+{% load static i18n %}
 
 {% block page_title %}{% trans "Configuración" %} - LOBBY69{% endblock %}
 
 {% block left_sidebar %}
-    <div class="settings-sidebar-left">
-        <ul class="settings-menu">
-            <li><a href="#" data-section="account" class="active" onclick="switchSettings('account', event)">👤 {% trans "Cuenta" %}</a></li>
-            <li><a href="#" data-section="privacy" onclick="switchSettings('privacy', event)">🔒 {% trans "Privacidad" %}</a></li>
-            <li><a href="#" data-section="notifications" onclick="switchSettings('notifications', event)">🔔 {% trans "Notificaciones" %}</a></li>
-            <li><a href="#" data-section="security" onclick="switchSettings('security', event)">🔐 {% trans "Seguridad" %}</a></li>
-            <li><a href="#" data-section="preferences" onclick="switchSettings('preferences', event)">⭐ {% trans "Preferencias" %}</a></li>
-            <li><a href="#" data-section="blocked" onclick="switchSettings('blocked', event)">🚫 {% trans "Bloqueados" %}</a></li>
-            <li><a href="#" data-section="help" onclick="switchSettings('help', event)">❓ {% trans "Ayuda" %}</a></li>
-        </ul>
+<div class="explore-sidebar-left">
+    <!-- MENÚ DE CONFIGURACIÓN -->
+    <div class="filters-section">
+        <h3 class="section-title">⚙️ {% trans "Configuración" %}</h3>
+
+        <div class="settings-menu">
+            <a href="#account" data-section="account" class="settings-menu-item active" onclick="switchSettings('account', event)">👤 {% trans "Cuenta" %}</a>
+            <a href="#privacy" data-section="privacy" class="settings-menu-item" onclick="switchSettings('privacy', event)">🔒 {% trans "Privacidad" %}</a>
+            <a href="#notifications" data-section="notifications" class="settings-menu-item" onclick="switchSettings('notifications', event)">🔔 {% trans "Notificaciones" %}</a>
+            <a href="#security" data-section="security" class="settings-menu-item" onclick="switchSettings('security', event)">🔐 {% trans "Seguridad" %}</a>
+            <a href="#preferences" data-section="preferences" class="settings-menu-item" onclick="switchSettings('preferences', event)">⭐ {% trans "Preferencias" %}</a>
+            <a href="#blocked" data-section="blocked" class="settings-menu-item" onclick="switchSettings('blocked', event)">🚫 {% trans "Bloqueados" %}</a>
+            <a href="#help" data-section="help" class="settings-menu-item" onclick="switchSettings('help', event)">❓ {% trans "Ayuda" %}</a>
+        </div>
     </div>
-{% endblock %}
+
+    <!-- ESTADÍSTICAS -->
+    <div class="stats-section">
+        <h3 class="section-title">📊 {% trans "Datos" %}</h3>
+
+        <div class="stats-box">
+            <div class="stats-item">
+                <span class="stats-label">👥 {% trans "Bloqueados" %}</span>
+                <span class="stats-value">2</span>
+            </div>
+
+            <div class="stats-item">
+                <span class="stats-label">🔐 {% trans "Sesiones" %}</span>
+                <span class="stats-value">2</span>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock left_sidebar %}
 
 {% block main_content %}
-    <div class="settings-main">
-        <!-- SECCIÓN: CUENTA -->
-        <div id="account" class="settings-section active">
-            <div class="section-header">
-                <h2>👤 {% trans "Configuración de Cuenta" %}</h2>
-                <p>{% trans "Gestiona tu información personal y datos de acceso" %}</p>
-            </div>
+<div class="settings-main">
+    <!-- SECCIÓN: CUENTA -->
+    <div id="account" class="settings-section active">
+        <div class="section-header">
+            <h2>👤 {% trans "Configuración de Cuenta" %}</h2>
+            <p>{% trans "Gestiona tu información personal y datos de acceso" %}</p>
+        </div>
 
+        <div class="form-group">
+            <label for="username">{% trans "Nombre de Usuario" %}</label>
+            <input type="text" id="username" value="juan_diaz_28" readonly>
+            <div class="form-help-text">{% trans "Este nombre no se puede cambiar" %}</div>
+        </div>
+
+        <div class="form-group-row">
             <div class="form-group">
-                <label for="username">{% trans "Nombre de Usuario" %}</label>
-                <input type="text" id="username" value="juan_diaz_28" readonly>
-                <div class="form-help-text">{% trans "Este nombre no se puede cambiar" %}</div>
+                <label for="firstname">{% trans "Nombre" %}</label>
+                <input type="text" id="firstname" value="Juan">
             </div>
-
-            <div class="form-group-row">
-                <div class="form-group">
-                    <label for="firstname">{% trans "Nombre" %}</label>
-                    <input type="text" id="firstname" value="Juan">
-                </div>
-                <div class="form-group">
-                    <label for="lastname">{% trans "Apellido" %}</label>
-                    <input type="text" id="lastname" value="Díaz">
-                </div>
-            </div>
-
             <div class="form-group">
-                <label for="email">{% trans "Correo Electrónico" %}</label>
-                <input type="email" id="email" value="juan@example.com">
-                <div class="form-help-text">✓ {% trans "Verificado el 10 de marzo de 2026" %}</div>
-            </div>
-
-            <div class="form-group">
-                <label for="phone">{% trans "Teléfono" %}</label>
-                <input type="tel" id="phone" placeholder="+52 1234567890">
-                <div class="form-help-text">{% trans "Opcional. Se usa para recuperación de cuenta" %}</div>
-            </div>
-
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="saveSettings()">💾 {% trans "Guardar Cambios" %}</button>
-                <button class="btn btn-secondary" onclick="resetSettings()">↻ {% trans "Descartar" %}</button>
+                <label for="lastname">{% trans "Apellido" %}</label>
+                <input type="text" id="lastname" value="Díaz">
             </div>
         </div>
 
-        <!-- SECCIÓN: PRIVACIDAD -->
-        <div id="privacy" class="settings-section">
-            <div class="section-header">
-                <h2>🔒 {% trans "Privacidad" %}</h2>
-                <p>{% trans "Controla quién puede verte y contactarte" %}</p>
-            </div>
-
-            <div class="toggle-item">
-                <div class="toggle-label">
-                    <span class="toggle-label-main">{% trans "Perfil Público" %}</span>
-                    <span class="toggle-label-sub">{% trans "Otros pueden ver tu perfil" %}</span>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div class="toggle-item">
-                <div class="toggle-label">
-                    <span class="toggle-label-main">{% trans "Mostrar en Búsquedas" %}</span>
-                    <span class="toggle-label-sub">{% trans "Aparecer en búsquedas y recomendaciones" %}</span>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div class="toggle-item">
-                <div class="toggle-label">
-                    <span class="toggle-label-main">{% trans "Permitir Mensajes Anónimos" %}</span>
-                    <span class="toggle-label-sub">{% trans "Recibir mensajes de no verificados" %}</span>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox">
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div class="toggle-item">
-                <div class="toggle-label">
-                    <span class="toggle-label-main">{% trans "Permitir Visitas de Perfil" %}</span>
-                    <span class="toggle-label-sub">{% trans "Otros ven que visitas sus perfiles" %}</span>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="saveSettings()">💾 {% trans "Guardar" %}</button>
-            </div>
+        <div class="form-group">
+            <label for="email">{% trans "Correo Electrónico" %}</label>
+            <input type="email" id="email" value="juan@example.com">
+            <div class="form-help-text">✓ {% trans "Verificado el 10 de marzo de 2026" %}</div>
         </div>
 
-        <!-- SECCIÓN: NOTIFICACIONES -->
-        <div id="notifications" class="settings-section">
-            <div class="section-header">
-                <h2>🔔 {% trans "Notificaciones" %}</h2>
-                <p>{% trans "Elige qué notificaciones deseas recibir y cómo" %}</p>
-            </div>
-
-            <h4 style="margin-bottom: 15px; font-weight: 700;">{% trans "Tipos de Notificaciones" %}</h4>
-
-            <div class="toggle-item">
-                <div class="toggle-label">
-                    <span class="toggle-label-main">{% trans "Me Gustas" %}</span>
-                    <span class="toggle-label-sub">{% trans "Notificaciones cuando alguien te gusta" %}</span>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div class="toggle-item">
-                <div class="toggle-label">
-                    <span class="toggle-label-main">{% trans "Mensajes" %}</span>
-                    <span class="toggle-label-sub">{% trans "Notificaciones de nuevos mensajes" %}</span>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div class="toggle-item">
-                <div class="toggle-label">
-                    <span class="toggle-label-main">{% trans "Visitas de Perfil" %}</span>
-                    <span class="toggle-label-sub">{% trans "Notificaciones cuando alguien visita tu perfil" %}</span>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <h4 style="margin-bottom: 15px; margin-top: 25px; font-weight: 700;">{% trans "Canales" %}</h4>
-
-            <div class="toggle-item">
-                <div class="toggle-label">
-                    <span class="toggle-label-main">{% trans "Email" %}</span>
-                    <span class="toggle-label-sub">{% trans "Recibir notificaciones por correo" %}</span>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div class="toggle-item">
-                <div class="toggle-label">
-                    <span class="toggle-label-main">{% trans "Push" %}</span>
-                    <span class="toggle-label-sub">{% trans "Notificaciones push en el navegador" %}</span>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="saveSettings()">💾 {% trans "Guardar" %}</button>
-            </div>
+        <div class="form-group">
+            <label for="phone">{% trans "Teléfono" %}</label>
+            <input type="tel" id="phone" placeholder="+52 1234567890">
+            <div class="form-help-text">{% trans "Opcional. Se usa para recuperación de cuenta" %}</div>
         </div>
 
-        <!-- SECCIÓN: SEGURIDAD -->
-        <div id="security" class="settings-section">
-            <div class="section-header">
-                <h2>🔐 {% trans "Seguridad" %}</h2>
-                <p>{% trans "Protege tu cuenta con configuraciones de seguridad" %}</p>
-            </div>
-
-            <div class="alert alert-info">
-                ℹ️ {% trans "Tu cuenta está protegida con una contraseña fuerte" %}
-            </div>
-
-            <h4 style="margin-bottom: 15px; font-weight: 700;">{% trans "Cambiar Contraseña" %}</h4>
-
-            <div class="form-group">
-                <label for="current-password">{% trans "Contraseña Actual" %}</label>
-                <input type="password" id="current-password" placeholder="••••••••">
-            </div>
-
-            <div class="form-group">
-                <label for="new-password">{% trans "Nueva Contraseña" %}</label>
-                <input type="password" id="new-password" placeholder="••••••••">
-            </div>
-
-            <div class="form-group">
-                <label for="confirm-password">{% trans "Confirmar Contraseña" %}</label>
-                <input type="password" id="confirm-password" placeholder="••••••••">
-                <div class="form-help-text">{% trans "Mínimo 8 caracteres, incluye mayúsculas, minúsculas y números" %}</div>
-            </div>
-
-            <button class="btn btn-primary" style="margin-bottom: 30px;" onclick="changePassword()">{% trans "Cambiar Contraseña" %}</button>
-
-            <h4 style="margin-bottom: 15px; font-weight: 700;">{% trans "Sesiones Activas" %}</h4>
-
-            <div class="settings-grid">
-                <div class="settings-card">
-                    <h4>💻 {% trans "Chrome - Windows" %}</h4>
-                    <p>{% trans "Última actividad: Hace 5 minutos" %}</p>
-                    <button class="btn btn-secondary" style="font-size: 12px; padding: 8px 15px; width: 100%;">{% trans "Cerrar Sesión" %}</button>
-                </div>
-                <div class="settings-card">
-                    <h4>📱 {% trans "Safari - iPhone" %}</h4>
-                    <p>{% trans "Última actividad: Hace 2 horas" %}</p>
-                    <button class="btn btn-secondary" style="font-size: 12px; padding: 8px 15px; width: 100%;">{% trans "Cerrar Sesión" %}</button>
-                </div>
-            </div>
-
-            <button class="btn btn-danger" style="margin-top: 20px; width: 100%;" onclick="logoutAllDevices()">{% trans "Cerrar Todas las Sesiones" %}</button>
-        </div>
-
-        <!-- SECCIÓN: PREFERENCIAS -->
-        <div id="preferences" class="settings-section">
-            <div class="section-header">
-                <h2>⭐ {% trans "Preferencias" %}</h2>
-                <p>{% trans "Personaliza tu experiencia en LOBBY69" %}</p>
-            </div>
-
-            <div class="form-group">
-                <label for="language">{% trans "Idioma" %}</label>
-                <select id="language">
-                    <option value="es" selected>Español</option>
-                    <option value="en">English</option>
-                    <option value="pt">Português</option>
-                    <option value="fr">Français</option>
-                </select>
-            </div>
-
-            <div class="form-group">
-                <label for="timezone">{% trans "Zona Horaria" %}</label>
-                <select id="timezone">
-                    <option value="America/Mexico_City" selected>América/Ciudad de México (GMT-6)</option>
-                    <option value="America/New_York">América/Nueva York (GMT-5)</option>
-                    <option value="America/Los_Angeles">América/Los Ángeles (GMT-8)</option>
-                    <option value="Europe/Madrid">Europa/Madrid (GMT+1)</option>
-                </select>
-            </div>
-
-            <div class="toggle-item">
-                <div class="toggle-label">
-                    <span class="toggle-label-main">{% trans "Tema Oscuro por Defecto" %}</span>
-                    <span class="toggle-label-sub">{% trans "Inicia sesión en modo oscuro" %}</span>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox">
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div class="toggle-item">
-                <div class="toggle-label">
-                    <span class="toggle-label-main">{% trans "Animaciones" %}</span>
-                    <span class="toggle-label-sub">{% trans "Mostrar transiciones y animaciones" %}</span>
-                </div>
-                <label class="toggle-switch">
-                    <input type="checkbox" checked>
-                    <span class="slider"></span>
-                </label>
-            </div>
-
-            <div class="button-group">
-                <button class="btn btn-primary" onclick="saveSettings()">💾 {% trans "Guardar" %}</button>
-            </div>
-        </div>
-
-        <!-- SECCIÓN: BLOQUEADOS -->
-        <div id="blocked" class="settings-section">
-            <div class="section-header">
-                <h2>🚫 {% trans "Usuarios Bloqueados" %}</h2>
-                <p>{% trans "Gestiona los usuarios que has bloqueado" %}</p>
-            </div>
-
-            <div class="alert alert-info">
-                ℹ️ {% trans "Has bloqueado 2 usuarios" %}
-            </div>
-
-            <div style="margin-top: 20px;">
-                <div class="blocked-user-item">
-                    <div class="blocked-user-info">
-                        <div class="blocked-user-name">Usuario123</div>
-                        <div class="blocked-user-date">{% trans "Bloqueado el 5 de marzo de 2026" %}</div>
-                    </div>
-                    <button class="btn btn-secondary" style="font-size: 12px; padding: 8px 15px;" onclick="unblockUser('Usuario123')">{% trans "Desbloquear" %}</button>
-                </div>
-
-                <div class="blocked-user-item">
-                    <div class="blocked-user-info">
-                        <div class="blocked-user-name">PerfilBloqueado</div>
-                        <div class="blocked-user-date">{% trans "Bloqueado el 1 de marzo de 2026" %}</div>
-                    </div>
-                    <button class="btn btn-secondary" style="font-size: 12px; padding: 8px 15px;" onclick="unblockUser('PerfilBloqueado')">{% trans "Desbloquear" %}</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- SECCIÓN: AYUDA -->
-        <div id="help" class="settings-section">
-            <div class="section-header">
-                <h2>❓ {% trans "Ayuda y Soporte" %}</h2>
-                <p>{% trans "Obtén ayuda sobre LOBBY69" %}</p>
-            </div>
-
-            <div class="settings-grid">
-                <div class="settings-card">
-                    <h4>📖 {% trans "Centro de Ayuda" %}</h4>
-                    <p>{% trans "Consulta nuestra base de conocimientos y preguntas frecuentes" %}</p>
-                    <button class="btn btn-secondary" style="font-size: 12px; padding: 8px 15px; width: 100%;">{% trans "Ir al Centro" %}</button>
-                </div>
-
-                <div class="settings-card">
-                    <h4>💬 {% trans "Contactar Soporte" %}</h4>
-                    <p>{% trans "Habla con nuestro equipo de soporte" %}</p>
-                    <button class="btn btn-secondary" style="font-size: 12px; padding: 8px 15px; width: 100%;">{% trans "Abrir Chat" %}</button>
-                </div>
-
-                <div class="settings-card">
-                    <h4>📄 {% trans "Términos y Condiciones" %}</h4>
-                    <p>{% trans "Lee nuestros términos y políticas" %}</p>
-                    <button class="btn btn-secondary" style="font-size: 12px; padding: 8px 15px; width: 100%;">{% trans "Ver Documento" %}</button>
-                </div>
-
-                <div class="settings-card">
-                    <h4>🔐 {% trans "Política de Privacidad" %}</h4>
-                    <p>{% trans "Cómo protegemos tus datos" %}</p>
-                    <button class="btn btn-secondary" style="font-size: 12px; padding: 8px 15px; width: 100%;">{% trans "Ver Política" %}</button>
-                </div>
-            </div>
-
-            <div class="danger-zone">
-                <div class="danger-zone-title">⚠️ {% trans "Zona de Peligro" %}</div>
-                <div class="danger-zone-text">{% trans "Estas acciones son irreversibles. Por favor, procede con cuidado." %}</div>
-                <button class="btn btn-danger" style="width: 100%;" onclick="deleteAccount()">🗑️ {% trans "Eliminar Cuenta Permanentemente" %}</button>
-            </div>
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="saveSettings()">💾 {% trans "Guardar Cambios" %}</button>
+            <button class="btn btn-secondary" onclick="resetSettings()">↻ {% trans "Descartar" %}</button>
         </div>
     </div>
-{% endblock %}
+
+    <!-- SECCIÓN: PRIVACIDAD -->
+    <div id="privacy" class="settings-section">
+        <div class="section-header">
+            <h2>🔒 {% trans "Privacidad" %}</h2>
+            <p>{% trans "Controla quién puede verte y contactarte" %}</p>
+        </div>
+
+        <div class="toggle-item">
+            <div class="toggle-label">
+                <span class="toggle-label-main">{% trans "Perfil Público" %}</span>
+                <span class="toggle-label-sub">{% trans "Otros pueden ver tu perfil" %}</span>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="toggle-item">
+            <div class="toggle-label">
+                <span class="toggle-label-main">{% trans "Mostrar en Búsquedas" %}</span>
+                <span class="toggle-label-sub">{% trans "Aparecer en búsquedas y recomendaciones" %}</span>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="saveSettings()">💾 {% trans "Guardar" %}</button>
+        </div>
+    </div>
+
+    <!-- SECCIÓN: NOTIFICACIONES -->
+    <div id="notifications" class="settings-section">
+        <div class="section-header">
+            <h2>🔔 {% trans "Notificaciones" %}</h2>
+            <p>{% trans "Elige qué notificaciones deseas recibir" %}</p>
+        </div>
+
+        <h4 style="margin-bottom: 15px; font-weight: 700;">{% trans "Tipos" %}</h4>
+
+        <div class="toggle-item">
+            <div class="toggle-label">
+                <span class="toggle-label-main">{% trans "Me Gustas" %}</span>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="toggle-item">
+            <div class="toggle-label">
+                <span class="toggle-label-main">{% trans "Mensajes" %}</span>
+            </div>
+            <label class="toggle-switch">
+                <input type="checkbox" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="saveSettings()">💾 {% trans "Guardar" %}</button>
+        </div>
+    </div>
+
+    <!-- SECCIÓN: SEGURIDAD -->
+    <div id="security" class="settings-section">
+        <div class="section-header">
+            <h2>🔐 {% trans "Seguridad" %}</h2>
+            <p>{% trans "Protege tu cuenta" %}</p>
+        </div>
+
+        <h4 style="margin-bottom: 15px; font-weight: 700;">{% trans "Cambiar Contraseña" %}</h4>
+
+        <div class="form-group">
+            <label for="current-password">{% trans "Contraseña Actual" %}</label>
+            <input type="password" id="current-password" placeholder="••••••••">
+        </div>
+
+        <div class="form-group">
+            <label for="new-password">{% trans "Nueva Contraseña" %}</label>
+            <input type="password" id="new-password" placeholder="••••••••">
+        </div>
+
+        <button class="btn btn-primary" onclick="changePassword()">{% trans "Cambiar" %}</button>
+    </div>
+
+    <!-- SECCIÓN: PREFERENCIAS -->
+    <div id="preferences" class="settings-section">
+        <div class="section-header">
+            <h2>⭐ {% trans "Preferencias" %}</h2>
+            <p>{% trans "Personaliza tu experiencia" %}</p>
+        </div>
+
+        <div class="form-group">
+            <label for="language">{% trans "Idioma" %}</label>
+            <select id="language">
+                <option value="es" selected>Español</option>
+                <option value="en">English</option>
+            </select>
+        </div>
+
+        <div class="button-group">
+            <button class="btn btn-primary" onclick="saveSettings()">💾 {% trans "Guardar" %}</button>
+        </div>
+    </div>
+
+    <!-- SECCIÓN: BLOQUEADOS -->
+    <div id="blocked" class="settings-section">
+        <div class="section-header">
+            <h2>🚫 {% trans "Usuarios Bloqueados" %}</h2>
+        </div>
+
+        <div class="blocked-user-item">
+            <div class="blocked-user-info">
+                <div class="blocked-user-name">Usuario123</div>
+                <div class="blocked-user-date">{% trans "Bloqueado el 5 de marzo de 2026" %}</div>
+            </div>
+            <button class="btn btn-secondary" onclick="unblockUser('Usuario123')">{% trans "Desbloquear" %}</button>
+        </div>
+    </div>
+
+    <!-- SECCIÓN: AYUDA -->
+    <div id="help" class="settings-section">
+        <div class="section-header">
+            <h2>❓ {% trans "Ayuda y Soporte" %}</h2>
+        </div>
+
+        <button class="btn btn-secondary" style="width: 100%; margin-bottom: 10px;">{% trans "Centro de Ayuda" %}</button>
+        <button class="btn btn-danger" style="width: 100%;">{% trans "Eliminar Cuenta" %}</button>
+    </div>
+</div>
+{% endblock main_content %}
 
 {% block right_sidebar %}
-    <div class="settings-sidebar-right">
-        <div class="sidebar-right-title">ℹ️ {% trans "Información de Cuenta" %}</div>
+<div class="explore-sidebar-right">
+    <h3>ℹ️ {% trans "Información" %}</h3>
 
-        <div class="info-item">
-            <div class="info-label">{% trans "Usuario" %}</div>
-            <div class="info-value">juan_diaz_28</div>
-        </div>
-
-        <div class="info-item">
-            <div class="info-label">{% trans "Estado" %}</div>
-            <div class="info-value">
-                <span class="info-badge">{% trans "Activo" %}</span>
-            </div>
-        </div>
-
-        <div class="info-item">
-            <div class="info-label">{% trans "Miembro desde" %}</div>
-            <div class="info-value">Enero 2025</div>
-        </div>
-
-        <div class="info-item">
-            <div class="info-label">{% trans "Suscripción" %}</div>
-            <div class="info-value">Premium</div>
-        </div>
-
-        <div class="sidebar-section-title">{% trans "Enlaces Rápidos" %}</div>
-        <a href="{% url 'pages:my_profile' %}" class="quick-link">👤 {% trans "Mi Perfil" %}</a>
-        <a href="{% url 'pages:gallery' %}" class="quick-link">🖼️ {% trans "Galería" %}</a>
-        <a href="{% url 'pages:memberships' %}" class="quick-link">👑 {% trans "Membresías" %}</a>
-        <a href="{% url 'pages:notifications' %}" class="quick-link">🔔 {% trans "Notificaciones" %}</a>
-
-        <div class="sidebar-section-title">{% trans "Soporte" %}</div>
-        <a href="#" class="quick-link">📞 {% trans "Centro de Ayuda" %}</a>
-        <a href="#" class="quick-link">💬 {% trans "Contactar Soporte" %}</a>
+    <div class="info-card">
+        <div class="info-card-title">{% trans "Usuario" %}</div>
+        <div class="info-value-small">juan_diaz_28</div>
     </div>
-{% endblock %}
+
+    <div class="info-card">
+        <div class="info-card-title">{% trans "Estado" %}</div>
+        <div class="info-value-small">✅ {% trans "Activo" %}</div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-title">{% trans "Miembro desde" %}</div>
+        <div class="info-value-small">Enero 2025</div>
+    </div>
+
+    <div class="info-card">
+        <div class="info-card-title">{% trans "Suscripción" %}</div>
+        <div class="info-value-small">Premium</div>
+    </div>
+
+    <hr>
+
+    <h3>🔗 {% trans "Enlaces" %}</h3>
+
+    <div class="action-card" onclick="window.location.href='/mi-perfil/'">
+        <div class="action-card-icon">👤</div>
+        <div class="action-card-text">{% trans "Mi Perfil" %}</div>
+    </div>
+
+    <div class="action-card" onclick="window.location.href='/galeria/'">
+        <div class="action-card-icon">🖼️</div>
+        <div class="action-card-text">{% trans "Galería" %}</div>
+    </div>
+
+    <div class="action-card" onclick="window.location.href='/membresias/'">
+        <div class="action-card-icon">👑</div>
+        <div class="action-card-text">{% trans "Membresías" %}</div>
+    </div>
+</div>
+{% endblock right_sidebar %}
+
+{% block extra_js %}
+    <script src="{% static 'js/settings.js' %}"></script>
+{% endblock extra_js %}

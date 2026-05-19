@@ -1,0 +1,444 @@
+/* ============================================
+   RESPONSIVE LAYOUT - 3 COLUMNAS
+   Base para todas las páginas refactorizadas
+   ============================================ */
+
+/* VARIABLES GLOBALES (heredadas de main.css) */
+:root {
+  --primary-color: #4682b4;
+  --primary-dark: #2c5aa0;
+  --accent-color: #ff6b6b;
+  --bg-primary: #1a1a1a;
+  --bg-secondary: #2d2d2d;
+  --card-bg: #3a3a3a;
+  --text-primary: #ffffff;
+  --text-secondary: #b0b0b0;
+  --border-color: #4a4a4a;
+  --success-color: #27ae60;
+  --warning-color: #f39c12;
+  --danger-color: #e74c3c;
+}
+
+/* CONTENEDOR PRINCIPAL 3 COLUMNAS */
+.container-3col {
+  display: grid;
+  grid-template-columns: 280px 1fr 300px;
+  gap: 20px;
+  padding: 20px;
+  max-width: 1600px;
+  margin: 0 auto;
+  height: calc(100vh - 80px); /* Restamos altura del navbar */
+  overflow: hidden;
+}
+
+/* SIDEBARS Y CONTENIDO PRINCIPAL */
+.sidebar-left,
+.sidebar-right {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 20px;
+  overflow-y: auto;
+  height: 100%;
+  position: sticky;
+  top: 80px;
+}
+
+.main-content {
+  background-color: var(--bg-primary);
+  border-radius: 8px;
+  padding: 25px;
+  overflow-y: auto;
+  height: 100%;
+}
+
+/* ESTILOS COMUNES PARA SIDEBARS */
+.sidebar-left h3,
+.sidebar-right h3 {
+  font-size: 14px;
+  font-weight: 700;
+  margin-bottom: 15px;
+  color: var(--primary-color);
+  text-transform: uppercase;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 10px;
+}
+
+/* SCROLLBAR PERSONALIZADA */
+.sidebar-left::-webkit-scrollbar,
+.sidebar-right::-webkit-scrollbar,
+.main-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.sidebar-left::-webkit-scrollbar-track,
+.sidebar-right::-webkit-scrollbar-track,
+.main-content::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+  border-radius: 10px;
+}
+
+.sidebar-left::-webkit-scrollbar-thumb,
+.sidebar-right::-webkit-scrollbar-thumb,
+.main-content::-webkit-scrollbar-thumb {
+  background: var(--primary-color);
+  border-radius: 10px;
+}
+
+.sidebar-left::-webkit-scrollbar-thumb:hover,
+.sidebar-right::-webkit-scrollbar-thumb:hover,
+.main-content::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-dark);
+}
+
+/* ============================================
+   RESPONSIVE - TABLET (1024px - 1199px)
+   ============================================ */
+@media (max-width: 1199px) {
+  .container-3col {
+    grid-template-columns: 250px 1fr 250px;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .sidebar-left,
+  .sidebar-right {
+    padding: 15px;
+  }
+
+  .main-content {
+    padding: 20px;
+  }
+}
+
+/* ============================================
+   RESPONSIVE - TABLET PEQUEÑO (768px - 1023px)
+   ============================================ */
+@media (max-width: 1023px) {
+  .container-3col {
+    grid-template-columns: 1fr;
+    gap: 15px;
+    padding: 12px;
+    height: auto;
+  }
+
+  .sidebar-left,
+  .sidebar-right {
+    display: none; /* Ocultar sidebars en tablet pequeño */
+    position: sticky;
+    top: 80px;
+    max-height: 400px;
+    z-index: 50;
+  }
+
+  .sidebar-left.active,
+  .sidebar-right.active {
+    display: block;
+  }
+
+  .main-content {
+    padding: 15px;
+    height: auto;
+  }
+
+  /* Botones para mostrar sidebars */
+  .btn-toggle-sidebar {
+    display: inline-block;
+    margin-bottom: 15px;
+    padding: 10px 15px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: all 0.3s;
+  }
+
+  .btn-toggle-sidebar:hover {
+    background-color: var(--primary-dark);
+  }
+}
+
+/* ============================================
+   RESPONSIVE - MÓVIL (< 768px)
+   ============================================ */
+@media (max-width: 767px) {
+  .container-3col {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 10px;
+    height: auto;
+  }
+
+  .sidebar-left,
+  .sidebar-right {
+    display: none;
+    max-height: 300px;
+  }
+
+  .sidebar-left.active,
+  .sidebar-right.active {
+    display: block;
+  }
+
+  .main-content {
+    padding: 12px;
+  }
+
+  .btn-toggle-sidebar {
+    display: inline-block;
+    width: auto;
+    padding: 8px 12px;
+    font-size: 12px;
+  }
+}
+
+/* ============================================
+   RESPONSIVE - MÓVIL PEQUEÑO (< 480px)
+   ============================================ */
+@media (max-width: 479px) {
+  .container-3col {
+    padding: 8px;
+    gap: 8px;
+  }
+
+  .main-content {
+    padding: 10px;
+  }
+
+  .sidebar-left,
+  .sidebar-right {
+    max-height: 250px;
+    padding: 12px;
+  }
+
+  .sidebar-left h3,
+  .sidebar-right h3 {
+    font-size: 13px;
+    margin-bottom: 10px;
+  }
+}
+
+/* ============================================
+   COMPONENTES COMUNES
+   ============================================ */
+
+/* Filtros */
+.filter-group {
+  margin-bottom: 15px;
+}
+
+.filter-group label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+.filter-group input,
+.filter-group select {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-size: 13px;
+  font-family: inherit;
+  transition: all 0.3s;
+}
+
+.filter-group input:focus,
+.filter-group select:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(70, 130, 180, 0.1);
+}
+
+/* Botones */
+.btn {
+  padding: 10px 16px;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-block;
+  text-decoration: none;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: white;
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-color);
+}
+
+.btn-secondary:hover {
+  background-color: var(--card-bg);
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.btn-danger:hover {
+  background-color: #c0392b;
+}
+
+.btn-small {
+  padding: 8px 12px;
+  font-size: 12px;
+}
+
+/* Grillas */
+.grid {
+  display: grid;
+  gap: 15px;
+}
+
+.grid-2 {
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+}
+
+.grid-3 {
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+.grid-4 {
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+}
+
+@media (max-width: 767px) {
+  .grid-2,
+  .grid-3,
+  .grid-4 {
+    grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+  }
+}
+
+/* Tarjetas */
+.card {
+  background-color: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  padding: 15px;
+  transition: all 0.3s;
+}
+
+.card:hover {
+  border-color: var(--primary-color);
+  box-shadow: 0 4px 12px rgba(70, 130, 180, 0.2);
+}
+
+/* Toggle Switch */
+.toggle-switch {
+  position: relative;
+  display: inline-block;
+  width: 50px;
+  height: 28px;
+}
+
+.toggle-switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: var(--border-color);
+  transition: 0.4s;
+  border-radius: 28px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 22px;
+  width: 22px;
+  left: 3px;
+  bottom: 3px;
+  background-color: white;
+  transition: 0.4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+  transform: translateX(22px);
+}
+
+/* Alertas */
+.alert {
+  padding: 15px;
+  border-radius: 6px;
+  margin-bottom: 15px;
+  font-size: 13px;
+}
+
+.alert-info {
+  background-color: rgba(70, 130, 180, 0.1);
+  border: 1px solid var(--primary-color);
+  color: var(--primary-color);
+}
+
+.alert-success {
+  background-color: rgba(39, 174, 96, 0.1);
+  border: 1px solid var(--success-color);
+  color: var(--success-color);
+}
+
+.alert-warning {
+  background-color: rgba(243, 156, 18, 0.1);
+  border: 1px solid var(--warning-color);
+  color: var(--warning-color);
+}
+
+.alert-danger {
+  background-color: rgba(231, 76, 60, 0.1);
+  border: 1px solid var(--danger-color);
+  color: var(--danger-color);
+}
+
+/* ============================================
+   TEMAS (DARK/LIGHT)
+   ============================================ */
+html.light-mode {
+  --primary-color: #2c5aa0;
+  --bg-primary: #f5f5f5;
+  --bg-secondary: #ffffff;
+  --card-bg: #f9f9f9;
+  --text-primary: #1a1a1a;
+  --text-secondary: #666666;
+  --border-color: #e0e0e0;
+}
+
+html.light-mode .sidebar-left,
+html.light-mode .sidebar-right,
+html.light-mode .main-content {
+  background-color: var(--bg-primary);
+}
