@@ -1,71 +1,70 @@
-﻿document.addEventListener("DOMContentLoaded", function() {
-    console.log("✅ gallery.js cargado");
+﻿/**
+ * gallery.js - Funcionalidades mejoradas de Galería
+ * Usa los endpoints API reales
+ */
+
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("✅ gallery.js v2 cargado");
     
-    // Click en foto para modal
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('gallery-photo')) {
             openPhotoModal(e.target);
         }
-    });
-    
-    // Like foto
-    document.addEventListener('click', function(e) {
         if (e.target.classList.contains('photo-like-btn')) {
-            likePhoto(e.target);
+            likePhotoAPI(e.target);
         }
-    });
-    
-    // Delete foto
-    document.addEventListener('click', function(e) {
         if (e.target.classList.contains('photo-delete-btn')) {
-            deletePhoto(e.target);
+            deletePhotoAPI(e.target);
         }
     });
 });
 
-function openPhotoModal(photoEl) {
-    const photoId = photoEl.getAttribute('data-photo-id');
-    const photoSrc = photoEl.src;
-    const photoTitle = photoEl.getAttribute('data-title');
-    
-    showModal(photoTitle || 'Foto', `
-        <img src="${photoSrc}" style="width: 100%; border-radius: 8px; margin-bottom: 16px;">
-        <div style="display: flex; gap: 10px; justify-content: center;">
-            <button onclick="likePhotoFromModal('${photoId}')" style="padding: 10px 20px; background: #e74c3c; color: white; border: none; border-radius: 6px; cursor: pointer;">❤️ Like</button>
-            <button onclick="sharePhoto('${photoId}')" style="padding: 10px 20px; background: #3498db; color: white; border: none; border-radius: 6px; cursor: pointer;">📤 Compartir</button>
-        </div>
-    `, [{ text: 'Cerrar', action: 'close' }]);
-}
-
-function likePhoto(btn) {
+function likePhotoAPI(btn) {
     const photoId = btn.getAttribute('data-photo-id');
-    fetch(`/galeria/like/${photoId}/`, {
+    
+    fetch(`/api/photo/${photoId}/like/`, {
         method: 'POST',
         headers: { 'X-CSRFToken': getCookie('csrftoken') }
     })
     .then(r => r.json())
     .then(data => {
-        btn.textContent = data.liked ? '❤️' : '🤍';
-        showAlert(data.message, 'success');
+        if (data.success) {
+            btn.textContent = data.liked ? '❤️' : '🤍';
+            if (data.likes_count) {
+                const counter = btn.closest('.photo-actions').querySelector('.likes-count');
+                if (counter) counter.textContent = data.likes_count;
+            }
+            showAlert(data.message, 'success');
+        } else {
+            showAlert(data.message || 'Error', 'error');
+        }
     })
     .catch(err => showAlert('Error: ' + err, 'error'));
 }
 
-function deletePhoto(btn) {
-    if (confirm('¿Eliminar esta foto?')) {
-        const photoId = btn.getAttribute('data-photo-id');
-        fetch(`/galeria/delete/${photoId}/`, {
-            method: 'POST',
-            headers: { 'X-CSRFToken': getCookie('csrftoken') }
-        })
-        .then(r => r.json())
-        .then(data => {
-            if (data.success) {
-                btn.closest('.gallery-item').remove();
-                showAlert('✅ Foto eliminada', 'success');
-            }
-        });
-    }
+function deletePhotoAPI(btn) {
+    const photoId = btn.getAttribute('data-photo-id');
+    
+    if (!confirm('¿Eliminar esta foto?')) return;
+    
+    fetch(`/api/photo/${photoId}/delete/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCookie('csrftoken') }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            btn.closest('.gallery-item').remove();
+            showAlert(data.message, 'success');
+        } else {
+            showAlert(data.message || 'Error', 'error');
+        }
+    })
+    .catch(err => showAlert('Error: ' + err, 'error'));
+}
+
+function openPhotoModal(photoEl) {
+    showModal('Foto', `<img src="${photoEl.src}" style="width:100%; border-radius: 8px;">`);
 }
 
 function getCookie(name) {

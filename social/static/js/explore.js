@@ -1,37 +1,39 @@
-﻿document.addEventListener("DOMContentLoaded", function() {
-    console.log("✅ explore.js cargado");
+﻿/**
+ * explore.js - Funcionalidades mejoradas de Explorar
+ * Usa los endpoints API reales
+ */
+
+document.addEventListener("DOMContentLoaded", function() {
+    console.log("✅ explore.js v2 cargado");
     
-    // Búsqueda de perfiles
-    setupSearch('#searchInput', '.profile-item', ['profile-name', 'profile-city']);
-    
-    // Filtros
-    setupFilter('.filter-btn', '.profile-item', 'data-filter');
+    setupSearch('#searchInput', '.profile-card', ['data-profile-nick']);
+    setupFilter('.filter-btn', '.profile-card', 'data-filter');
     
     // Like profile
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('like-btn')) {
             const profileId = e.target.getAttribute('data-profile-id');
-            likeProfile(profileId, e.target);
+            likeProfileAPI(profileId, e.target);
         }
     });
     
     // Add friend
     document.addEventListener('click', function(e) {
         if (e.target.classList.contains('add-friend-btn')) {
-            const profileId = e.target.getAttribute('data-profile-id');
-            addFriend(profileId, e.target);
+            const nickname = e.target.getAttribute('data-nickname');
+            addFriendAPI(nickname, e.target);
         }
     });
 });
 
-function likeProfile(profileId, btn) {
-    fetch(`/explorar/like/${profileId}/`, {
+function likeProfileAPI(profileId, btn) {
+    fetch(`/api/profile/${profileId}/like/`, {
         method: 'POST',
         headers: {
             'X-CSRFToken': getCookie('csrftoken'),
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ action: 'like' })
+        body: JSON.stringify({})
     })
     .then(r => r.json())
     .then(data => {
@@ -39,13 +41,15 @@ function likeProfile(profileId, btn) {
             btn.textContent = data.liked ? '❤️' : '🤍';
             btn.style.color = data.liked ? '#e74c3c' : '#999';
             showAlert(data.message, 'success');
+        } else {
+            showAlert(data.message || 'Error', 'error');
         }
     })
     .catch(err => showAlert('Error: ' + err, 'error'));
 }
 
-function addFriend(profileId, btn) {
-    fetch(`/explorar/add-friend/${profileId}/`, {
+function addFriendAPI(nickname, btn) {
+    fetch(`/api/friend/${nickname}/add/`, {
         method: 'POST',
         headers: { 'X-CSRFToken': getCookie('csrftoken') }
     })
@@ -54,7 +58,9 @@ function addFriend(profileId, btn) {
         if (data.success) {
             btn.textContent = '✓ Agregado';
             btn.disabled = true;
-            showAlert('✅ Solicitud enviada', 'success');
+            showAlert(data.message, 'success');
+        } else {
+            showAlert(data.message || 'Error', 'error');
         }
     })
     .catch(err => showAlert('Error: ' + err, 'error'));
