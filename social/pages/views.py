@@ -1,4 +1,4 @@
-"""
+﻿"""
 Django views for Social Pages App (CLUB LOBBY69)
 """
 
@@ -32,7 +32,7 @@ User = get_user_model()
 
 @require_http_methods(["GET", "POST"])
 def invitation_request_view(request):
-    """Crear solicitud de invitación"""
+    """Crear solicitud de invitaciÃ³n"""
     if request.method == "POST":
         name = request.POST.get('name', '').strip()
         email = request.POST.get('email', '').strip()
@@ -101,13 +101,13 @@ def invitation_request_view(request):
 
 @require_http_methods(["GET"])
 def invitation_confirmation_view(request):
-    """Página de confirmación después de enviar solicitud"""
+    """PÃ¡gina de confirmaciÃ³n despuÃ©s de enviar solicitud"""
     return render(request, 'pages/confirmacion_solicitud.html')
 
 
 @require_http_methods(["GET", "POST"])
 def activate_account_view(request, token):
-    """Activar cuenta con token de invitación"""
+    """Activar cuenta con token de invitaciÃ³n"""
     if request.method == "POST":
         username = request.POST.get('username', '').strip()
         password = request.POST.get('password', '').strip()
@@ -118,11 +118,11 @@ def activate_account_view(request, token):
             return render(request, 'pages/activar_cuenta.html', {'token': token})
 
         if password != password_confirm:
-            messages.error(request, 'Las contraseñas no coinciden.')
+            messages.error(request, 'Las contraseÃ±as no coinciden.')
             return render(request, 'pages/activar_cuenta.html', {'token': token})
 
         if len(password) < 8:
-            messages.error(request, 'La contraseña debe tener al menos 8 caracteres.')
+            messages.error(request, 'La contraseÃ±a debe tener al menos 8 caracteres.')
             return render(request, 'pages/activar_cuenta.html', {'token': token})
 
         try:
@@ -156,15 +156,15 @@ def activate_account_view(request, token):
                     'activated_at': timezone.now().isoformat(),
                     'status': 'approved'
                 }).eq('activation_token', token).execute()
-                print(f"[DEBUG] Invitación actualizada en Supabase")
+                print(f"[DEBUG] InvitaciÃ³n actualizada en Supabase")
             except Exception as e:
                 print(f"[ERROR] Error al actualizar Supabase: {e}")
 
-            messages.success(request, 'Cuenta creada exitosamente. Por favor inicia sesión.')
+            messages.success(request, 'Cuenta creada exitosamente. Por favor inicia sesiÃ³n.')
             return redirect('pages:login')
 
         except InvitationRequest.DoesNotExist:
-            messages.error(request, 'Token inválido o expirado.')
+            messages.error(request, 'Token invÃ¡lido o expirado.')
             return redirect('pages:landing')
         except Exception as e:
             print(f"[ERROR] Error activando cuenta: {e}")
@@ -179,13 +179,13 @@ def activate_account_view(request, token):
             return redirect('pages:login')
         return render(request, 'pages/activar_cuenta.html', {'token': token, 'email': invitation.email})
     except InvitationRequest.DoesNotExist:
-        messages.error(request, 'Token inválido o expirado.')
+        messages.error(request, 'Token invÃ¡lido o expirado.')
         return redirect('pages:landing')
 
 
 @require_http_methods(["GET", "POST"])
 def login_view(request):
-    """Login view – accepts username or email"""
+    """Login view â€“ accepts username or email"""
     if request.user.is_authenticated:
         return redirect('pages:dashboard')
 
@@ -208,10 +208,10 @@ def login_view(request):
 
         if user is not None:
             auth_login(request, user)
-            messages.success(request, f'¡Bienvenido {user.username}!')
+            messages.success(request, f'Â¡Bienvenido {user.username}!')
             return redirect('pages:dashboard')
         else:
-            messages.error(request, 'Usuario/Email o contraseña incorrectos')
+            messages.error(request, 'Usuario/Email o contraseÃ±a incorrectos')
             return render(request, 'pages/login.html')
 
     return render(request, 'pages/login.html')
@@ -221,7 +221,7 @@ def login_view(request):
 def logout_view(request):
     """Logout view"""
     auth_logout(request)
-    messages.success(request, 'Has cerrado sesión correctamente')
+    messages.success(request, 'Has cerrado sesiÃ³n correctamente')
     return redirect('pages:landing')
 
 
@@ -241,13 +241,13 @@ def dashboard_view(request):
     try:
         supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
-        # 1. Obtener fotos públicas (últimas 20)
+        # 1. Obtener fotos pÃºblicas (Ãºltimas 20)
         photos_resp = supabase.table('gallery').select('*').eq('visibility', 'public').eq('status', 'approved').order('uploaded_at', desc=True).limit(20).execute()
         photos = photos_resp.data if photos_resp.data else []
 
-        print(f"[DEBUG] Fotos públicas cargadas: {len(photos)}")
+        print(f"[DEBUG] Fotos pÃºblicas cargadas: {len(photos)}")
 
-        # 2. Obtener usuarios conectados (últimas 24h activos)
+        # 2. Obtener usuarios conectados (Ãºltimas 24h activos)
         users_resp = supabase.table('profiles').select('id, nick, display_name, city, avatar_url, last_active_at').order('last_active_at', desc=True).limit(10).execute()
         connected_users = users_resp.data if users_resp.data else []
 
@@ -306,7 +306,7 @@ def profile_detail_view(request, nickname):
 
         profile = profile_resp.data[0]
 
-        # 2. Obtener fotos públicas del usuario
+        # 2. Obtener fotos pÃºblicas del usuario
         photos_resp = supabase.table('gallery').select('*').eq('user_nick', nickname).eq('visibility', 'public').eq('status', 'approved').order('uploaded_at', desc=True).execute()
         photos = photos_resp.data if photos_resp.data else []
 
@@ -377,7 +377,7 @@ def my_profile_view(request):
             profile = resp.data[0]
         else:
             profile = {}
-            print(f"[DEBUG] No se encontró perfil para account_id: {user.id}")
+            print(f"[DEBUG] No se encontrÃ³ perfil para account_id: {user.id}")
     except Exception as e:
         print(f"[ERROR] Error cargando perfil: {e}")
         profile = {}
@@ -419,18 +419,18 @@ def edit_profile_view(request):
             try:
                 edad_int = int(edad)
                 if edad_int < 18 or edad_int > 99:
-                    errors.append('La edad debe estar entre 18 y 99 años.')
+                    errors.append('La edad debe estar entre 18 y 99 aÃ±os.')
             except ValueError:
-                errors.append('La edad debe ser un número válido.')
+                errors.append('La edad debe ser un nÃºmero vÃ¡lido.')
 
         if not genero:
-            errors.append('El género es obligatorio.')
+            errors.append('El gÃ©nero es obligatorio.')
         if not estado:
             errors.append('El estado es obligatorio.')
         if len(descripcion) < 50:
-            errors.append(f'La descripción debe tener mínimo 50 caracteres ({len(descripcion)}/50).')
+            errors.append(f'La descripciÃ³n debe tener mÃ­nimo 50 caracteres ({len(descripcion)}/50).')
         if estado.lower() == 'cdmx' and not ciudad:
-            errors.append('La alcaldía es obligatoria para Ciudad de México.')
+            errors.append('La alcaldÃ­a es obligatoria para Ciudad de MÃ©xico.')
 
         if profile_type == 'pareja':
             if not pareja_nombre:
@@ -441,13 +441,13 @@ def edit_profile_view(request):
                 try:
                     pareja_edad_int = int(pareja_edad)
                     if pareja_edad_int < 18 or pareja_edad_int > 99:
-                        errors.append('La edad de la pareja debe estar entre 18 y 99 años.')
+                        errors.append('La edad de la pareja debe estar entre 18 y 99 aÃ±os.')
                 except ValueError:
-                    errors.append('La edad de la pareja debe ser un número válido.')
+                    errors.append('La edad de la pareja debe ser un nÃºmero vÃ¡lido.')
             if not pareja_genero:
-                errors.append('El género de la pareja es obligatorio.')
+                errors.append('El gÃ©nero de la pareja es obligatorio.')
             if len(pareja_descripcion) < 50:
-                errors.append(f'La descripción de la pareja debe tener mínimo 50 caracteres ({len(pareja_descripcion)}/50).')
+                errors.append(f'La descripciÃ³n de la pareja debe tener mÃ­nimo 50 caracteres ({len(pareja_descripcion)}/50).')
 
         if errors:
             for e in errors:
@@ -647,18 +647,18 @@ def add_friend_view(request, nickname):
 
         resp = supabase.table('friendships').insert(friendship_data).execute()
 
-        # Crear notificación para el receptor
+        # Crear notificaciÃ³n para el receptor
         try:
             create_notification(
                 user_id=request.user.id,
                 sender_nick=nickname,
                 notification_type='friend_request',
-                title=f'{request.user.username} te envió una solicitud de amistad',
+                title=f'{request.user.username} te enviÃ³ una solicitud de amistad',
                 message=f'Conecta con {request.user.username} y expande tu red',
                 related_id=None
             )
         except Exception as e:
-            print(f"Error creando notificación: {e}")
+            print(f"Error creando notificaciÃ³n: {e}")
 
         return JsonResponse({'success': True, 'message': 'Solicitud de amistad enviada'})
 
@@ -672,7 +672,7 @@ def add_friend_view(request, nickname):
 @login_required(login_url='pages:login')
 def profile_detail_view(request, nickname):
     """Ver perfil de otro usuario"""
-    print(f"\n[DEBUG] ✅ profile_detail_view EJECUTADA")
+    print(f"\n[DEBUG] âœ… profile_detail_view EJECUTADA")
     print(f"[DEBUG] nickname recibido: {nickname}")
     print(f"[DEBUG] request.path: {request.path}")
 
@@ -687,18 +687,18 @@ def profile_detail_view(request, nickname):
         print(f"[DEBUG] Respuesta de Supabase: {profile_resp.data}")
 
         if not profile_resp.data or len(profile_resp.data) == 0:
-            print(f"[DEBUG] ❌ Perfil no encontrado")
+            print(f"[DEBUG] âŒ Perfil no encontrado")
             messages.error(request, 'Usuario no encontrado')
             return redirect('pages:explore')
 
         profile = profile_resp.data[0]
         account_id = profile['account_id']
-        print(f"[DEBUG] ✅ Perfil encontrado: {nickname}, account_id: {account_id}")
+        print(f"[DEBUG] âœ… Perfil encontrado: {nickname}, account_id: {account_id}")
 
-        # 2. Obtener fotos públicas del usuario
+        # 2. Obtener fotos pÃºblicas del usuario
         photos_resp = supabase.table('gallery').select('*').eq('user_nick', nickname).eq('visibility', 'public').eq('status', 'approved').order('uploaded_at', desc=True).execute()
         photos = photos_resp.data if photos_resp.data else []
-        print(f"[DEBUG] Fotos públicas: {len(photos)}")
+        print(f"[DEBUG] Fotos pÃºblicas: {len(photos)}")
 
         # 3. Obtener amigos del usuario (opcional)
         # Tabla friendships no existe o tiene estructura diferente
@@ -719,11 +719,11 @@ def profile_detail_view(request, nickname):
             'user': request.user,
         }
 
-        print(f"[DEBUG] ✅ Renderizando user_profile.html")
+        print(f"[DEBUG] âœ… Renderizando user_profile.html")
         return render(request, 'pages/user_profile.html', context)
 
     except Exception as e:
-        print(f"[DEBUG] ❌ ERROR: {e}")
+        print(f"[DEBUG] âŒ ERROR: {e}")
         import traceback
         traceback.print_exc()
         messages.error(request, 'Error al cargar perfil')
@@ -763,53 +763,53 @@ def explore_view(request):
         # Filtro por tipo de perfil
         if profile_type:
             filtered_profiles = [p for p in filtered_profiles if p.get('profile_type', '').lower() == profile_type.lower()]
-            print(f"[DEBUG] Después filtro profile_type: {len(filtered_profiles)}")
+            print(f"[DEBUG] DespuÃ©s filtro profile_type: {len(filtered_profiles)}")
 
         # Filtro por estado
         if state:
             filtered_profiles = [p for p in filtered_profiles if p.get('state', '').lower() == state.lower()]
-            print(f"[DEBUG] Después filtro state: {len(filtered_profiles)}")
+            print(f"[DEBUG] DespuÃ©s filtro state: {len(filtered_profiles)}")
 
-        # Filtro por edad mínima
+        # Filtro por edad mÃ­nima
         if age_min:
             try:
                 age_min_int = int(age_min)
                 filtered_profiles = [p for p in filtered_profiles if p.get('age', 0) >= age_min_int]
-                print(f"[DEBUG] Después filtro age_min: {len(filtered_profiles)}")
+                print(f"[DEBUG] DespuÃ©s filtro age_min: {len(filtered_profiles)}")
             except ValueError:
                 pass
 
-        # Filtro por edad máxima
+        # Filtro por edad mÃ¡xima
         if age_max:
             try:
                 age_max_int = int(age_max)
                 filtered_profiles = [p for p in filtered_profiles if p.get('age', 0) <= age_max_int]
-                print(f"[DEBUG] Después filtro age_max: {len(filtered_profiles)}")
+                print(f"[DEBUG] DespuÃ©s filtro age_max: {len(filtered_profiles)}")
             except ValueError:
                 pass
 
-        # Filtro por membresía
+        # Filtro por membresÃ­a
         if membership:
             filtered_profiles = [p for p in filtered_profiles if p.get('membership_type', '').lower() == membership.lower()]
-            print(f"[DEBUG] Después filtro membership: {len(filtered_profiles)}")
+            print(f"[DEBUG] DespuÃ©s filtro membership: {len(filtered_profiles)}")
 
-        # Filtro por calificación
+        # Filtro por calificaciÃ³n
         if rating:
             try:
                 rating_float = float(rating)
                 filtered_profiles = [p for p in filtered_profiles if p.get('rating', 0) >= rating_float]
-                print(f"[DEBUG] Después filtro rating: {len(filtered_profiles)}")
+                print(f"[DEBUG] DespuÃ©s filtro rating: {len(filtered_profiles)}")
             except ValueError:
                 pass
 
-        # Búsqueda por nombre o ciudad
+        # BÃºsqueda por nombre o ciudad
         if search:
             filtered_profiles = [p for p in filtered_profiles
                                if search.lower() in p.get('display_name', '').lower() or
                                   search.lower() in p.get('city', '').lower()]
-            print(f"[DEBUG] Después búsqueda: {len(filtered_profiles)}")
+            print(f"[DEBUG] DespuÃ©s bÃºsqueda: {len(filtered_profiles)}")
 
-        # 3. PAGINAR (20 por página)
+        # 3. PAGINAR (20 por pÃ¡gina)
         paginator = Paginator(filtered_profiles, 20)
         page_number = request.GET.get('page', 1)
         profiles_page = paginator.get_page(page_number)
@@ -822,7 +822,7 @@ def explore_view(request):
         suggested_resp = supabase.table('profiles').select('id, nick, display_name, city, avatar_url, bio').limit(5).execute()
         suggested_profiles = suggested_resp.data if suggested_resp.data else []
 
-        # 6. Contar estadísticas
+        # 6. Contar estadÃ­sticas
         profiles_today = len([p for p in all_profiles if p.get('last_active_at')])  # Aproximado
         likes_count = 0  # TODO: Implementar contador de likes reales
 
@@ -855,7 +855,7 @@ def explore_view(request):
 @login_required(login_url='pages:login')
 @require_http_methods(["POST"])
 def toggle_visibility_view(request, photo_id):
-    """Cambiar visibilidad de foto (público/privado)"""
+    """Cambiar visibilidad de foto (pÃºblico/privado)"""
     import json
     from supabase import create_client
 
@@ -865,7 +865,7 @@ def toggle_visibility_view(request, photo_id):
         new_visibility = data.get('visibility', 'public')
 
         if new_visibility not in ['public', 'private']:
-            return JsonResponse({'error': 'Visibilidad inválida'}, status=400)
+            return JsonResponse({'error': 'Visibilidad invÃ¡lida'}, status=400)
 
         # Actualizar en Supabase
         supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
@@ -878,7 +878,7 @@ def toggle_visibility_view(request, photo_id):
         if resp.data:
             return JsonResponse({'success': True, 'message': f'Visibilidad cambiada a {new_visibility}'})
         else:
-            return JsonResponse({'error': 'No se encontró la foto'}, status=404)
+            return JsonResponse({'error': 'No se encontrÃ³ la foto'}, status=404)
 
     except Exception as e:
         print(f"[ERROR] {e}")
@@ -912,7 +912,7 @@ def like_profile_view(request, profile_id):
             supabase.table('profile_likes').delete().eq('profile_id', str(profile_id)).eq('user_id', user_id).execute()
             return JsonResponse({'success': True, 'action': 'unlike'})
         elif action:
-            # Añadir like
+            # AÃ±adir like
             supabase.table('profile_likes').insert({
                 'profile_id': str(profile_id),
                 'user_id': user_id
@@ -929,14 +929,14 @@ def like_profile_view(request, profile_id):
 @login_required(login_url='pages:login')
 @require_http_methods(["POST"])
 def delete_media_view(request, media_id):
-    """Eliminar foto de galería"""
+    """Eliminar foto de galerÃ­a"""
     try:
         from supabase import create_client
         supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
         print(f"[DEBUG] Eliminando foto: {media_id}")
 
-        # Eliminar directamente sin verificación (por ahora)
+        # Eliminar directamente sin verificaciÃ³n (por ahora)
         resp = supabase.table('gallery').delete().eq('id', str(media_id)).execute()
         print(f"[DEBUG] Respuesta eliminar: {resp}")
 
@@ -951,7 +951,7 @@ def delete_media_view(request, media_id):
 @login_required(login_url='pages:login')
 @require_http_methods(["POST"])
 def comment_photo_view(request, photo_id):
-    """Añadir comentario a una foto"""
+    """AÃ±adir comentario a una foto"""
     try:
         from social.utils.validators import validate_comment
         from supabase import create_client
@@ -960,7 +960,7 @@ def comment_photo_view(request, photo_id):
         comment_text = request.POST.get('comment', '').strip()
 
         if not comment_text:
-            return JsonResponse({'error': 'Comentario vacío'}, status=400)
+            return JsonResponse({'error': 'Comentario vacÃ­o'}, status=400)
 
         # Validar comentario
         try:
@@ -981,7 +981,7 @@ def comment_photo_view(request, photo_id):
 
         supabase.table('gallery').update({'comments_count': comments_count}).eq('id', str(photo_id)).execute()
 
-        return JsonResponse({'success': True, 'message': 'Comentario añadido', 'comments_count': comments_count})
+        return JsonResponse({'success': True, 'message': 'Comentario aÃ±adido', 'comments_count': comments_count})
     except Exception as e:
         print(f"[ERROR] Error en comentario: {e}")
         import traceback; traceback.print_exc()
@@ -1093,14 +1093,14 @@ def dynamic_pages_view(request, template_name):
     """Render dynamic template pages"""
     safe_templates = ['about', 'contact', 'terms', 'privacy', 'faq', 'dashboard']
     if template_name not in safe_templates:
-        messages.error(request, 'Página no encontrada')
+        messages.error(request, 'PÃ¡gina no encontrada')
         return redirect('pages:dashboard')
     return render(request, 'pages/{}.html'.format(template_name), {'user': request.user})
 
 @login_required(login_url='pages:login')
 @require_http_methods(["GET"])
 def photo_detail_view(request, photo_id):
-    """Página de detalle de una foto"""
+    """PÃ¡gina de detalle de una foto"""
     from supabase import create_client
 
     try:
@@ -1148,7 +1148,7 @@ def like_photo_view(request, photo_id):
 
         user_id = str(request.user.id)  # "7" como string
 
-        # Obtener la foto para verificar quién es el dueño
+        # Obtener la foto para verificar quiÃ©n es el dueÃ±o
         photo_resp = supabase.table('gallery').select('account_id').eq('id', str(photo_id)).execute()
 
         if not photo_resp.data:
@@ -1156,7 +1156,7 @@ def like_photo_view(request, photo_id):
 
         photo_owner = str(photo_resp.data[0]['account_id'])
 
-        # Verificar que NO sea el dueño
+        # Verificar que NO sea el dueÃ±o
         if photo_owner == user_id:
             return JsonResponse({'error': 'No puedes dar like a tu propia foto'}, status=403)
 
@@ -1168,7 +1168,7 @@ def like_photo_view(request, photo_id):
             supabase.table('photo_likes').delete().eq('photo_id', str(photo_id)).eq('user_id', user_id).execute()
             action = 'unlike'
         else:
-            # Añadir like
+            # AÃ±adir like
             supabase.table('photo_likes').insert({
                 'photo_id': str(photo_id),
                 'user_id': user_id
@@ -1267,7 +1267,7 @@ def save_post_view(request, photo_id):
     user_id = request.user.id
 
     try:
-        # Verificar si ya está guardada
+        # Verificar si ya estÃ¡ guardada
         existing = supabase.table('photo_saves').select('*').eq('photo_id', str(photo_id)).eq('user_id', user_id).execute()
 
         if existing.data:
@@ -1337,7 +1337,7 @@ def friend_requests_view(request):
             f"(user_id_1='{current_user_id}' OR user_id_2='{current_user_id}') AND status='accepted'"
         ).execute()
 
-        # Obtener información de los que enviaron solicitudes
+        # Obtener informaciÃ³n de los que enviaron solicitudes
         pending_requests = []
         if pending.data:
             for req in pending.data:
@@ -1350,7 +1350,7 @@ def friend_requests_view(request):
                         'sent_at': req['created_at']
                     })
 
-        # Obtener información de amigos
+        # Obtener informaciÃ³n de amigos
         friends = []
         if accepted.data:
             for friendship in accepted.data:
@@ -1442,7 +1442,7 @@ def notifications_view(request):
 
 @login_required(login_url='pages:login')
 def mark_notification_as_read_view(request, notification_id):
-    """Marcar notificación como leída"""
+    """Marcar notificaciÃ³n como leÃ­da"""
     from supabase import create_client
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
@@ -1467,7 +1467,7 @@ def clear_notifications_view(request):
         return redirect('pages:notifications')
 
 def create_notification(user_id, sender_nick, notification_type, title, message, related_id=None):
-    """Función auxiliar para crear notificaciones"""
+    """FunciÃ³n auxiliar para crear notificaciones"""
     from supabase import create_client
     supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
@@ -1483,7 +1483,7 @@ def create_notification(user_id, sender_nick, notification_type, title, message,
         }
         supabase.table('notifications').insert(notif_data).execute()
     except Exception as e:
-        print(f"Error creando notificación: {e}")
+        print(f"Error creando notificaciÃ³n: {e}")
 
 @login_required
 def gallery_view(request):
@@ -1495,4 +1495,6 @@ def gallery_view(request):
         'photos': [],
     }
     return render(request, 'pages/gallery.html', context)
+
+
 
