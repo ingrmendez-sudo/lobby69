@@ -30,43 +30,41 @@
 
    <!-- NAVBAR -->
 <nav>
-    <div class="navbar-left">
-        <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()" type="button">â˜°</button>
-
-        <a href="{% url 'pages:dashboard' %}" class="logo">
-            <img src="{% static 'images/Logo-Lobby69.jpg' %}" alt="LOBBY69">
-        </a>
-
-        <ul class="nav-menu">
-            <li><a href="{% url 'pages:dashboard' %}">ðŸ“° {% trans "Inicio" %}</a></li>
-            <li><a href="{% url 'pages:explore' %}">ðŸ” {% trans "Explorar" %}</a></li>
-            <li><a href="{% url 'pages:conversations' %}">ðŸ’¬ {% trans "Mensajes" %}</a></li>
-            <li><a href="{% url 'pages:my_profile' %}">ðŸ‘¤ {% trans "Mi Perfil" %}</a></li>
-            <li><a href="{% url 'pages:gallery' %}">ðŸ–¼ï¸ {% trans "GalerÃ­a" %}</a></li>
-            <li><a href="{% url 'pages:memberships' %}">ðŸ’Ž {% trans "MembresÃ­as" %}</a></li>
-            <li style="position: relative;">
-                <button class="menu-icon" onclick="toggleNotificationMenu(event)" style="background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-primary); font-weight: 500; padding: 8px 12px; border-radius: 4px; transition: all 0.3s;" type="button">
-                    ðŸ”” {% trans "Notificaciones" %}
-                </button>
-                <div id="notificationMenu" class="dropdown-menu">
-                    <a href="{% url 'pages:friend_requests' %}">ðŸ‘¥ {% trans "Solicitudes de Amistad" %}</a>
-                    <a href="{% url 'pages:notifications' %}">ðŸ”” {% trans "Mis Notificaciones" %}</a>
-                </div>
-            </li>
-            <li><a href="{% url 'pages:settings' %}">âš™ï¸ {% trans "ConfiguraciÃ³n" %}</a></li>
-        </ul>
-    </div>
-
-    <div class="navbar-right">
-        <button class="theme-toggle" onclick="toggleTheme()" title="{% trans 'Cambiar tema' %}" aria-label="{% trans 'Cambiar tema' %}" type="button">
-            <span id="theme-icon">ðŸŒ™</span>
-        </button>
-        <div class="user-menu">
-            <div class="user-avatar" title="{{ user.username }}">{{ user.username|first|upper }}</div>
+       <nav class="navbar">
+        <div class="navbar-left">
+            <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()" type="button">☰</button>
+            <a href="{% url 'pages:dashboard' %}" class="logo">
+                <img src="{% static 'images/Logo-Lobby69.jpg' %}" alt="LOBBY69">
+            </a>
+            <ul class="nav-menu">
+                <li><a href="{% url 'pages:dashboard' %}">📐 {% trans "Inicio" %}</a></li>
+                <li><a href="{% url 'pages:explore' %}">🔍 {% trans "Explorar" %}</a></li>
+                <li><a href="{% url 'pages:conversations' %}">💬 {% trans "Mensajes" %}</a></li>
+                <li><a href="{% url 'pages:my_profile' %}">👤 {% trans "Mi Perfil" %}</a></li>
+                <li><a href="{% url 'pages:gallery' %}">🖼️ {% trans "Galería" %}</a></li>
+                <li><a href="{% url 'pages:memberships' %}">💎 {% trans "Membresías" %}</a></li>
+                <li style="position: relative;">
+                    <button class="menu-icon" onclick="toggleNotificationMenu(event)" style="background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-primary); font-weight: 500; padding: 8px 12px; border-radius: 4px; transition: all 0.3s;" type="button">
+                        🔔 {% trans "Notificaciones" %}
+                    </button>
+                    <div id="notificationMenu" class="dropdown-menu">
+                        <a href="{% url 'pages:friend_requests' %}">👥 {% trans "Solicitudes de Amistad" %}</a>
+                        <a href="{% url 'pages:notifications' %}">🔔 {% trans "Mis Notificaciones" %}</a>
+                    </div>
+                </li>
+                <li><a href="{% url 'pages:settings' %}">⚙️ {% trans "Configuración" %}</a></li>
+            </ul>
         </div>
-        <a href="{% url 'pages:logout' %}" class="logout-btn">{% trans "Cerrar SesiÃ³n" %}</a>
-    </div>
-</nav>
+        <div class="navbar-right">
+            <button class="theme-toggle" onclick="toggleTheme()" title="{% trans 'Cambiar tema' %}" aria-label="{% trans 'Cambiar tema' %}" type="button">
+                <span id="theme-icon">🌙</span>
+            </button>
+            <div class="user-menu">
+                <div class="user-avatar" title="{{ user.username }}">{{ user.username|first|upper }}</div>
+            </div>
+            <a href="{% url 'pages:logout' %}" class="logout-btn">{% trans "Cerrar Sesión" %}</a>
+        </div>
+    </nav>
 
       <!-- MAIN CONTAINER - 3 COLUMNAS -->
     <div class="container">
