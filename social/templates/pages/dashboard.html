@@ -1,4 +1,4 @@
-
+﻿
 {% extends 'base_authenticated.html' %}
 {% load static %}
 
@@ -60,7 +60,7 @@
 
             {% if photo.image_url %}
                 <div style="position: relative;">
-                    <img src="{{ photo.image_url }}" alt="Foto" class="post-image" data-image="{{ photo.image_url }}" data-caption="{{ photo.caption|default:''|escapejs }}" data-id="{{ photo.id }}" onclick="openPhotoModal(event)" style="cursor: pointer;">
+                    <img src="{{ photo.image_url }}" alt="Foto" class="post-image" data-image="{{ photo.image_url }}" data-caption="{{ photo.caption|default:''|escapejs }}" data-data-photo-data-photo- onclick="openPhotoModal(event)" style="cursor: pointer;">
                 </div>
             {% endif %}
 
@@ -69,9 +69,9 @@
             {% endif %}
 
             <div class="post-actions">
-                <button class="action-btn" onclick="toggleLike('{{ photo.id }}')">👍 <span id="likes-{{ photo.id }}">{{ photo.likes_count|default:0 }} Me gusta</span></button>
-                <button class="action-btn" onclick="savePost('{{ photo.id }}')">❤️ Me encanta<span id="saves-{{ photo.id }}"></span></button>
-                <button class="action-btn" onclick="openPhotoModal(event)" data-image="{{ photo.image_url }}" data-caption="{{ photo.caption|default:''|escapejs }}" data-id="{{ photo.id }}" style="cursor: pointer;">💬 <span id="comments-{{ photo.id }}">{{ photo.comments_count|default:0 }}</span></button>
+                <button class="action-btn" onclick="toggleLike('{{ photo.id }}')">👍 <span class="likes-count" data-photo-data-photo->{{ photo.likes_count|default:0 }} Me gusta</span></button>
+                <button class="action-btn" onclick="savePost('{{ photo.id }}')">❤️ Me encanta<span class="saves-count" data-photo-data-photo-></span></button>
+                <button class="action-btn" onclick="openPhotoModal(event)" data-image="{{ photo.image_url }}" data-caption="{{ photo.caption|default:''|escapejs }}" data-data-photo-data-photo- style="cursor: pointer;">💬 <span class="comments-count" data-photo-data-photo->{{ photo.comments_count|default:0 }}</span></button>
             </div>
         </div>
         {% endfor %}
@@ -426,41 +426,7 @@ document.addEventListener('DOMContentLoaded', loadSavesCounts);
      </script>
 
 <!-- MODAL DE FOTO CON COMENTARIOS -->
-<div id="photoModal" class="photo-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 9999; justify-content: center; align-items: center; padding: 20px; overflow-y: auto;">
-    <div class="photo-modal-content" style="position: relative; max-width: 1200px; width: 100%; display: flex; gap: 20px; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; max-height: 90vh;">
 
-        <!-- Botón cerrar -->
-        <button onclick="closePhotoModal()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 28px; cursor: pointer; z-index: 10000;">✕</button>
-
-        <!-- SECCIÓN IZQUIERDA: FOTO -->
-        <div style="flex: 1; display: flex; align-items: center; justify-content: center; background: #000; padding: 20px;">
-            <img id="modalImage" src="" alt="Foto grande" style="max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px;">
-        </div>
-
-        <!-- SECCIÓN DERECHA: COMENTARIOS -->
-        <div style="flex: 0 0 400px; display: flex; flex-direction: column; padding: 20px; background: var(--bg-primary); overflow-y: auto;">
-
-            <!-- Info de foto -->
-            <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
-                <p id="modalCaption" style="font-size: 14px; margin: 0 0 10px 0; color: var(--text-primary); line-height: 1.5;"></p>
-                <div style="display: flex; gap: 10px; align-items: center;">
-                    <button onclick="toggleLike(currentPhotoId)" class="btn-action" style="flex: 1; padding: 8px; background: #e74c3c; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">❤️ Me encanta</button>
-                    <span id="commentCount" style="font-size: 13px; color: var(--text-secondary); background: var(--bg-secondary); padding: 8px 12px; border-radius: 4px;">💬 0</span>
-                </div>
-            </div>
-
-
-            <!-- Formulario comentario -->
-            <div style="margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px;">
-                <textarea id="commentText" placeholder="Escribe un comentario..." maxlength="500" rows="3" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-family: Arial, sans-serif; resize: none;"></textarea>
-                <button onclick="submitComment()" style="padding: 10px; background: #4682b4; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">Comentar</button>
-                <small id="charCount" style="font-size: 12px; color: var(--text-secondary);">0/500</small>
-            </div>
-
-            <!-- Lista comentarios -->
-            <div id="commentsList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
-                <p style="text-align: center; color: var(--text-secondary);">Cargando comentarios...</p>
-            </div>
         </div>
     </div>
 </div>
@@ -504,4 +470,12 @@ document.addEventListener('DOMContentLoaded', loadSavesCounts);
     font-size: 13px;
 } */
 </style>
+
+
+
+
+
+
+
+
 
