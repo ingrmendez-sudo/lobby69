@@ -49,6 +49,7 @@ urlpatterns = [
     path('galeria/foto/<uuid:photo_id>/', views.photo_detail_view, name='photo_detail'),
     path('galeria/eliminar/<uuid:media_id>/', views.delete_media_view, name='delete_media'),
     path('galeria/like/<uuid:photo_id>/', views.like_photo_view, name='like_photo'),
+    path('galeria/encantar/<uuid:photo_id>/', views.enchantment_photo_view, name='enchant_photo'),
     path('galeria/comentar/<uuid:photo_id>/', views.comment_photo_view, name='comment_photo'),
     path('galeria/foto/<uuid:photo_id>/comentarios/', views.get_photo_comments_view, name='get_photo_comments'),
     path('galeria/cambiar-visibilidad/<uuid:photo_id>/', views.toggle_visibility_view, name='toggle_visibility'),

@@ -1,0 +1,25 @@
+[33mcommit f5b0b1e4b0b34005c6f349b7be49a49b9d3dfd22[m
+Author: Tu Nombre <tu@email.com>
+Date:   Tue May 19 22:32:45 2026 -0600
+
+    feat: refactorizar APIs y centralizar lógica de acciones
+    
+    ✅ Implementado:
+    - api_utils.py: funciones centralizadas (like, friend, block, comment)
+    - views_api.py: vistas refactorizadas con manejo de errores
+    - explore.js: conectado a APIs reales
+    - gallery.js: conectado a APIs reales
+    - Logging mejorado en todas las acciones
+    - Respuestas JSON estándar
+    - Validaciones en todas las vistas
+    
+    ⚠️ Por revisar:
+    - 12 errores en consola (verificar cuáles son)
+    - Endpoints de URLs (confirmar rutas API)
+    - Integración con Supabase real
+
+ social/pages/api_utils.py   | 241 [32m++++++++++++++++++++++++++++++++++++++++++++[m
+ social/pages/views_api.py   | 189 [32m++++++++++++++++++++++++++++++++++[m
+ social/static/js/explore.js |  38 [32m++++[m[31m---[m
+ social/static/js/gallery.js |  85 [32m++++++++[m[31m--------[m
+ 4 files changed, 494 insertions(+), 59 deletions(-)

@@ -265,6 +265,10 @@ def dashboard_view(request):
             'connected_users': connected_users,
             'suggested_profiles': suggested_profiles,
         }
+        print(f"[DEBUG RENDER] Context photos: {context['photos']}")
+        print(f"[DEBUG RENDER] Número de fotos: {len(context['photos'])}")
+        if context['photos']:
+            print(f"[DEBUG RENDER] Primera foto: {context['photos'][0]}")
 
         return render(request, 'pages/dashboard.html', context)
 
@@ -1144,19 +1148,24 @@ def like_photo_view(request, photo_id):
     """Dar/quitar like a una foto"""
     try:
         from supabase import create_client
+        import uuid
+
         supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
-        user_id = str(request.user.id)  # "7" como string
+        # Generar UUID consistente para el usuario
+        user_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f'user-{request.user.id}'))
+        print(f"[DEBUG] user_id (UUID): {user_id}")
 
-        # Obtener la foto para verificar quiÃ©n es el dueÃ±o
+        # Obtener la foto para verificar quién es el dueño
         photo_resp = supabase.table('gallery').select('account_id').eq('id', str(photo_id)).execute()
 
         if not photo_resp.data:
             return JsonResponse({'error': 'Foto no encontrada'}, status=404)
 
         photo_owner = str(photo_resp.data[0]['account_id'])
+        print(f"[DEBUG] photo_owner: {photo_owner}, user_id: {user_id}")
 
-        # Verificar que NO sea el dueÃ±o
+        # Verificar que NO sea el dueño
         if photo_owner == user_id:
             return JsonResponse({'error': 'No puedes dar like a tu propia foto'}, status=403)
 
@@ -1168,7 +1177,7 @@ def like_photo_view(request, photo_id):
             supabase.table('photo_likes').delete().eq('photo_id', str(photo_id)).eq('user_id', user_id).execute()
             action = 'unlike'
         else:
-            # AÃ±adir like
+            # Añadir like
             supabase.table('photo_likes').insert({
                 'photo_id': str(photo_id),
                 'user_id': user_id
@@ -1184,10 +1193,56 @@ def like_photo_view(request, photo_id):
         return JsonResponse({'success': True, 'action': action, 'likes_count': likes_count})
     except Exception as e:
         print(f"[ERROR] Error en like: {e}")
+        import traceback
+        traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)
 
-from django.http import JsonResponse
-import uuid
+@require_http_methods(["POST"])
+def enchantment_photo_view(request, photo_id):
+    """Dar/quitar 'Me encanta' a una foto"""
+    try:
+        from supabase import create_client
+        import uuid
+
+        supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+
+        # Generar UUID consistente para el usuario
+        user_id = str(uuid.uuid5(uuid.NAMESPACE_DNS, f'user-{request.user.id}'))
+        print(f"[DEBUG ENCHANTMENT] user_id (UUID): {user_id}")
+
+        # Obtener la foto
+        photo_resp = supabase.table('gallery').select('id').eq('id', str(photo_id)).execute()
+
+        if not photo_resp.data:
+            return JsonResponse({'error': 'Foto no encontrada'}, status=404)
+
+        # Verificar si ya existe el enchantment
+        existing = supabase.table('photo_enchantments').select('*').eq('photo_id', str(photo_id)).eq('user_id', user_id).execute()
+
+        if existing.data and len(existing.data) > 0:
+            # Eliminar enchantment
+            supabase.table('photo_enchantments').delete().eq('photo_id', str(photo_id)).eq('user_id', user_id).execute()
+            action = 'unenchant'
+        else:
+            # Añadir enchantment
+            supabase.table('photo_enchantments').insert({
+                'photo_id': str(photo_id),
+                'user_id': user_id
+            }).execute()
+            action = 'enchant'
+
+        # Actualizar contador
+        enchantments_resp = supabase.table('photo_enchantments').select('*', count='exact').eq('photo_id', str(photo_id)).execute()
+        enchantment_count = enchantments_resp.count
+
+        supabase.table('gallery').update({'enchantment_count': enchantment_count}).eq('id', str(photo_id)).execute()
+
+        return JsonResponse({'success': True, 'action': action, 'enchantment_count': enchantment_count})
+    except Exception as e:
+        print(f"[ERROR] Error en enchantment: {e}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'error': str(e)}, status=500)
 
 @login_required(login_url='pages:login')
 @require_http_methods(["POST"])

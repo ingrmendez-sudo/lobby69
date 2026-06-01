@@ -137,7 +137,7 @@ function initializeLikes() {
     });
 }
 
-function toggleLike(event) {
+function profileToggleLike(event) {
     event.preventDefault();
     event.stopPropagation();
 
@@ -151,6 +151,7 @@ function toggleLike(event) {
 
     showAlert('❤️ ¡Te gusta este perfil!', 'success');
 }
+
 
 // ============ NAVEGACIÓN A PERFIL ============
 function initializeProfileLinks() {

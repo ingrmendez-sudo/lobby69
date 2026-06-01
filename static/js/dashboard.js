@@ -21,19 +21,32 @@ function toggleLike(photoId) {
 }
 
 // Abrir modal de foto
-function openPhotoModal(event) {
-    const element = event.currentTarget;
-    const image = element.dataset.image;
-    const caption = element.dataset.caption;
-    const photoId = element.dataset.id;
+function openPhotoModal_comments(photoId) {
+    if (!photoId || photoId === 'undefined') {
+        console.error('❌ photoId is undefined');
+        return;
+    }
+
+    console.log('Abriendo modal para foto:', photoId);
     currentPhotoId = photoId;
     const modal = document.getElementById('photoModal');
-    document.getElementById('modalImage').src = image;
-    document.getElementById('modalCaption').textContent = caption || 'Sin título';
-    modal.classList.add('active');
+
+    // Obtener imagen y caption del DOM
+    const photoElement = document.querySelector(`[data-photo-id="${photoId}"]`);
+    if (photoElement) {
+        const img = photoElement.querySelector('.post-image');
+        if (img) {
+            document.getElementById('modalImage').src = img.src;
+            document.getElementById('modalCaption').textContent = img.dataset.caption || 'Sin título';
+        }
+    }
+
+    modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
     loadComments(photoId);
 }
+
+
 
 // Cerrar modal de foto
 function closePhotoModal() {

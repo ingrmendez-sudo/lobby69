@@ -69,8 +69,8 @@
             {% endif %}
 
             <div class="post-actions">
-                <button class="action-btn" onclick="toggleLike('{{ photo.id }}')">👍 <span class="likes-count" data-photo-data-photo->{{ photo.likes_count|default:0 }} Me gusta</span></button>
-                <button class="action-btn" onclick="savePost('{{ photo.id }}')">❤️ Me encanta<span class="saves-count" data-photo-data-photo-></span></button>
+                <button class="action-btn" onclick="toggleLike('{{ photo.id }}', this)"">👍 <span class="likes-count" data-photo-data-photo->{{ photo.likes_count|default:0 }} Me gusta</span></button>
+                <button class="action-btn" onclick="toggleEnchantment('{{ photo.id }}', this)">🤍 {{ photo.enchantment_count|default:0 }}</button>
                 <button class="action-btn" onclick="openPhotoModal(event)" data-image="{{ photo.image_url }}" data-caption="{{ photo.caption|default:''|escapejs }}" data-data-photo-data-photo- style="cursor: pointer;">💬 <span class="comments-count" data-photo-data-photo->{{ photo.comments_count|default:0 }}</span></button>
             </div>
         </div>
@@ -101,7 +101,7 @@
                 <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
                     <p id="modalCaption" style="font-size: 14px; margin: 0 0 10px 0; color: var(--text-primary); line-height: 1.5;"></p>
                     <div style="display: flex; gap: 10px; align-items: center;">
-                        <button onclick="toggleLike(currentPhotoId)" class="btn-action" style="flex: 1; padding: 8px; background: var(--danger-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">❤️ Me encanta</button>
+                        <button class="action-btn" onclick="toggleEnchantment('{{ photo.id }}', this)">❤️ <span class="enchantment-count" data-photo-data-photo->{{ photo.enchantment_count|default:0 }} Me encanta</span></button>
                         <span id="commentCount" style="font-size: 13px; color: var(--text-secondary); background: var(--bg-secondary); padding: 8px 12px; border-radius: 4px;">💬 0</span>
                     </div>
                 </div>
@@ -470,6 +470,7 @@ document.addEventListener('DOMContentLoaded', loadSavesCounts);
     font-size: 13px;
 } */
 </style>
+
 
 
 

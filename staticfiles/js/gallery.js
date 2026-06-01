@@ -207,7 +207,7 @@ function initializeGalleryActions() {
             console.log('Acción:', action, 'Foto ID:', photoId);
 
             if (action === 'like') {
-                toggleLike(photoId, this);
+                galleryoggleLike(photoId, this);
             } else if (action === 'comment') {
                 viewPhoto(photoId);
             }
@@ -227,8 +227,29 @@ function initializeGalleryActions() {
     });
 }
 
-function toggleLike(photoId, button) {
-    const csrfToken = getCookie('csrftoken');
+function getCsrfToken() {
+    // Opción 1: Desde el input hidden en el formulario
+    const token = document.querySelector('[name=csrfmiddlewaretoken]')?.value;
+    if (token) return token;
+
+    // Opción 2: Desde la cookie (si existe)
+    const name = 'csrftoken';
+    const cookies = document.cookie.split(';');
+    for (let cookie of cookies) {
+        const [key, value] = cookie.trim().split('=');
+        if (key === name) return decodeURIComponent(value);
+    }
+    return '';
+}
+
+function photoToggleLike(photoId, button) {
+    if (!photoId) {
+        console.error('photoId is undefined');
+        return;
+    }
+
+    const csrfToken = getCsrfToken();
+    console.log(`[DEBUG] Enviando like para foto: ${photoId}, CSRF: ${csrfToken.substring(0, 10)}...`);
 
     fetch(`/galeria/like/${photoId}/`, {
         method: 'POST',
@@ -236,19 +257,29 @@ function toggleLike(photoId, button) {
             'Content-Type': 'application/json',
             'X-CSRFToken': csrfToken,
         },
-        body: JSON.stringify({ photo_id: photoId })
+        body: JSON.stringify({})
     })
-    .then(response => response.json())
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.error || `HTTP ${response.status}`);
+            });
+        }
+        return response.json();
+    })
     .then(data => {
         if (data.success) {
-            console.log('Like actualizado:', data);
-            const isLiked = data.action === 'like';
-            button.textContent = isLiked ? '❤️ ' + data.likes_count : '🤍 ' + data.likes_count;
+            console.log('✅ Like actualizado:', data);
+            const span = button.querySelector('.likes-count');
+            if (span) {
+                span.textContent = data.likes_count + ' Me gusta';
+            }
             button.classList.toggle('liked');
         }
     })
-    .catch(error => console.error('Error:', error));
+    .catch(error => console.error('❌ Error en like:', error));
 }
+
 
 function viewPhoto(photoId) {
     console.log('Ver foto:', photoId);
@@ -398,3 +429,42 @@ function showAlert(message, type = 'info') {
 }
 
 console.log('✅ gallery.js: Cargado exitosamente');
+
+function toggleEnchantment(photoId, button) {
+    if (!photoId) {
+        console.error('photoId is undefined');
+        return;
+    }
+
+    const csrfToken = getCsrfToken();
+    console.log(`[DEBUG] Enviando enchantment para foto: ${photoId}`);
+
+    fetch(`/galeria/encantar/${photoId}/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': csrfToken,
+        },
+        body: JSON.stringify({})
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.json().then(data => {
+                throw new Error(data.error || `HTTP ${response.status}`);
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        if (data.success) {
+            console.log('✅ Enchantment actualizado:', data);
+            const isEnchanted = data.action === 'enchant';
+            const span = button.querySelector('.enchantment-count');
+            if (span) {
+                span.textContent = data.enchantment_count;
+            }
+            button.classList.toggle('enchanted');
+        }
+    })
+    .catch(error => console.error('❌ Error en enchantment:', error));
+}
