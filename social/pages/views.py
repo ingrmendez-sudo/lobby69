@@ -940,7 +940,7 @@ def delete_media_view(request, media_id):
 
         print(f"[DEBUG] Eliminando foto: {media_id}")
 
-        # Eliminar directamente sin verificaciÃ³n (por ahora)
+        # Eliminar directamente sin verificación (por ahora)
         resp = supabase.table('gallery').delete().eq('id', str(media_id)).execute()
         print(f"[DEBUG] Respuesta eliminar: {resp}")
 
@@ -949,46 +949,6 @@ def delete_media_view(request, media_id):
         print(f"[ERROR] Error eliminando: {e}")
         import traceback
         traceback.print_exc()
-        return JsonResponse({'error': str(e)}, status=500)
-
-
-@login_required(login_url='pages:login')
-@require_http_methods(["POST"])
-def comment_photo_view(request, photo_id):
-    """AÃ±adir comentario a una foto"""
-    try:
-        from social.utils.validators import validate_comment
-        from supabase import create_client
-        supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
-
-        comment_text = request.POST.get('comment', '').strip()
-
-        if not comment_text:
-            return JsonResponse({'error': 'Comentario vacÃ­o'}, status=400)
-
-        # Validar comentario
-        try:
-            validate_comment(comment_text)
-        except Exception as e:
-            return JsonResponse({'error': str(e)}, status=400)
-
-        # Guardar comentario
-        supabase.table('photo_comments').insert({
-            'photo_id': str(photo_id),
-            'user_id': str(request.user.id),
-            'comment_text': comment_text
-        }).execute()
-
-        # Actualizar contador
-        comments_resp = supabase.table('photo_comments').select('*', count='exact').eq('photo_id', str(photo_id)).execute()
-        comments_count = comments_resp.count
-
-        supabase.table('gallery').update({'comments_count': comments_count}).eq('id', str(photo_id)).execute()
-
-        return JsonResponse({'success': True, 'message': 'Comentario aÃ±adido', 'comments_count': comments_count})
-    except Exception as e:
-        print(f"[ERROR] Error en comentario: {e}")
-        import traceback; traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)
 
 
@@ -1084,7 +1044,7 @@ def admin_dashboard_view(request):
 def admin_moderate_post_view(request, post_id):
     """Moderate a post (admin only)"""
     if not request.user.is_staff:
-        return JsonResponse({'error': 'Permission denied'}, status=403)
+        return JsonResponse({'error': 'Permiso Denegado'}, status=403)
     if request.method == "POST":
         action = request.POST.get('action')
         return JsonResponse({'success': True, 'message': f'Post {action}ed'})
@@ -1097,7 +1057,7 @@ def dynamic_pages_view(request, template_name):
     """Render dynamic template pages"""
     safe_templates = ['about', 'contact', 'terms', 'privacy', 'faq', 'dashboard']
     if template_name not in safe_templates:
-        messages.error(request, 'PÃ¡gina no encontrada')
+        messages.error(request, 'Página no encontrada')
         return redirect('pages:dashboard')
     return render(request, 'pages/{}.html'.format(template_name), {'user': request.user})
 
@@ -1249,7 +1209,14 @@ def enchantment_photo_view(request, photo_id):
 def comment_photo_view(request, photo_id):
     """Crear comentario en una foto"""
     try:
-        comment_text = request.POST.get('comment_text', '').strip()
+        import json
+        import uuid as uuid_module
+        from django.utils import timezone
+        from supabase import create_client
+
+        # Leer JSON del request
+        data = json.loads(request.body)
+        comment_text = data.get('comment_text', '').strip()
 
         if not comment_text or len(comment_text) < 2:
             return JsonResponse({'error': 'El comentario debe tener al menos 2 caracteres'}, status=400)
@@ -1257,20 +1224,24 @@ def comment_photo_view(request, photo_id):
         if len(comment_text) > 500:
             return JsonResponse({'error': 'El comentario no puede exceder 500 caracteres'}, status=400)
 
-        from supabase import create_client
         supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+
+        # Generar UUID determinista basado en Django user ID
+        user_uuid = str(uuid_module.uuid5(uuid_module.NAMESPACE_DNS, f'user-{request.user.id}'))
 
         # Crear comentario en Supabase
         comment_data = {
-            'id': str(uuid.uuid4()),
+            'id': str(uuid_module.uuid4()),
             'photo_id': str(photo_id),
-            'user_id': str(request.user.id),
+            'user_id': user_uuid,
             'user_nick': request.user.username,
             'comment_text': comment_text,
             'created_at': timezone.now().isoformat()
         }
 
+        print(f"[DEBUG] Insertando comentario: {comment_data}")
         resp = supabase.table('photo_comments').insert(comment_data).execute()
+        print(f"[DEBUG] Respuesta: {resp}")
 
         if resp.data:
             return JsonResponse({
@@ -1288,6 +1259,15 @@ def comment_photo_view(request, photo_id):
 
     except Exception as e:
         print(f"[ERROR] {e}")
+        import traceback
+        traceback.print_exc()
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+    except Exception as e:
+        print(f"[ERROR] {e}")
+        import traceback
+        traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)
 
 
