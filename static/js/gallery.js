@@ -242,44 +242,6 @@ function getCsrfToken() {
     return '';
 }
 
-function photoToggleLike(photoId, button) {
-    if (!photoId) {
-        console.error('photoId is undefined');
-        return;
-    }
-
-    const csrfToken = getCsrfToken();
-    console.log(`[DEBUG] Enviando like para foto: ${photoId}, CSRF: ${csrfToken.substring(0, 10)}...`);
-
-    fetch(`/galeria/like/${photoId}/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken,
-        },
-        body: JSON.stringify({})
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(data => {
-                throw new Error(data.error || `HTTP ${response.status}`);
-            });
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            console.log('✅ Like actualizado:', data);
-            const span = button.querySelector('.likes-count');
-            if (span) {
-                span.textContent = data.likes_count + ' Me gusta';
-            }
-            button.classList.toggle('liked');
-        }
-    })
-    .catch(error => console.error('❌ Error en like:', error));
-}
-
 
 function viewPhoto(photoId) {
     console.log('Ver foto:', photoId);
@@ -430,41 +392,3 @@ function showAlert(message, type = 'info') {
 
 console.log('✅ gallery.js: Cargado exitosamente');
 
-function toggleEnchantment(photoId, button) {
-    if (!photoId) {
-        console.error('photoId is undefined');
-        return;
-    }
-
-    const csrfToken = getCsrfToken();
-    console.log(`[DEBUG] Enviando enchantment para foto: ${photoId}`);
-
-    fetch(`/galeria/encantar/${photoId}/`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': csrfToken,
-        },
-        body: JSON.stringify({})
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.json().then(data => {
-                throw new Error(data.error || `HTTP ${response.status}`);
-            });
-        }
-        return response.json();
-    })
-    .then(data => {
-        if (data.success) {
-            console.log('✅ Enchantment actualizado:', data);
-            const isEnchanted = data.action === 'enchant';
-            const span = button.querySelector('.enchantment-count');
-            if (span) {
-                span.textContent = data.enchantment_count;
-            }
-            button.classList.toggle('enchanted');
-        }
-    })
-    .catch(error => console.error('❌ Error en enchantment:', error));
-}

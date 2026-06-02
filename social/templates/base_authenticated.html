@@ -24,8 +24,190 @@
     <link rel="stylesheet" href="{% static 'css/settings.css' %}">
     <link rel="stylesheet" href="{% static 'css/user_profile.css' %}">
 
-    <script src="{% static 'js/modal.js' %}"></script>
+    <script>
+    // ===== FUNCIONES GLOBALES - CARGADAS PRIMERO =====
+    function getCsrfToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
+               document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
+    }
 
+    function toggleLike(photoId) {
+        console.log('👍 Click en like para foto:', photoId);
+        fetch(`/galeria/like/${photoId}/`, {
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCsrfToken() }
+        })
+        .then(r => r.json())
+        .then(data => {
+            console.log('📊 Respuesta like:', data);
+            if (data.success) {
+                const counter = document.querySelector(`.likes-count[data-photo-id="${photoId}"]`);
+                if (counter) {
+                    counter.textContent = data.likes_count;
+                    console.log('✅ Likes actualizado a:', data.likes_count);
+                }
+            }
+        })
+        .catch(e => console.error('❌ Error en like:', e));
+    }
+
+    function toggleEnchantment(photoId) {
+        console.log('❤️ Click en me encanta para foto:', photoId);
+        fetch(`/galeria/encantar/${photoId}/`, {  // ← CAMBIO: enchant → encantar
+            method: 'POST',
+            headers: { 'X-CSRFToken': getCsrfToken() }
+        })
+        .then(r => r.json())
+        .then(data => {
+            console.log('📊 Respuesta enchantment:', data);
+            if (data.success) {
+                const counter = document.querySelector(`.enchantment-count[data-photo-id="${photoId}"]`);
+                if (counter) {
+                    counter.textContent = data.enchantment_count;
+                    console.log('✅ Me encanta actualizado a:', data.enchantment_count);
+                }
+            }
+        })
+        .catch(e => console.error('❌ Error en enchantment:', e));
+    }
+
+    function openPhotoModal(photoId, event) {
+        if (event) event.preventDefault();
+        photoId = String(photoId).trim();
+        if (!photoId || photoId === 'undefined') {
+            console.error('❌ photoId inválido:', photoId);
+            return;
+        }
+        console.log('📸 Abriendo modal para foto:', photoId);
+        window.currentPhotoId = photoId;
+
+        const modal = document.getElementById('photoModal');
+        const modalImg = document.getElementById('modalImage');
+
+        const postImg = document.querySelector(`img[data-id="${photoId}"]`);
+        if (postImg) {
+            modalImg.src = postImg.src;
+            const caption = postImg.dataset.caption || 'Sin título';
+            document.getElementById('modalCaption').textContent = caption;
+            console.log('✅ Imagen cargada');
+        }
+
+        if (modal) {
+            modal.classList.add('active');
+            document.body.style.overflow = 'hidden';
+            if (typeof loadComments === 'function') {
+                loadComments(photoId);
+            }
+        }
+    }
+
+    function closePhotoModal() {
+        const modal = document.getElementById('photoModal');
+        if (modal) {
+            modal.classList.remove('active');
+            document.body.style.overflow = 'auto';
+        }
+        const textarea = document.getElementById('commentText');
+        if (textarea) textarea.value = '';
+        const count = document.getElementById('charCount');
+        if (count) count.textContent = '0/500';
+    }
+    function submitComment() {
+        console.log('📝 submitComment llamada. currentPhotoId:', window.currentPhotoId);
+
+        const textarea = document.getElementById('commentText');
+        const txt = textarea.value.trim();
+
+        if (txt.length < 2) {
+            alert('El comentario debe tener al menos 2 caracteres');
+            return;
+        }
+        if (!window.currentPhotoId) {
+            alert('❌ Error: No hay foto seleccionada');
+            console.error('currentPhotoId es null');
+            return;
+        }
+
+        const token = getCsrfToken();
+        if (!token) {
+            alert('Error: Token CSRF no encontrado');
+            return;
+        }
+
+        console.log('📤 Enviando comentario para foto:', window.currentPhotoId);
+        console.log('📤 Texto:', txt);
+
+        fetch(`/galeria/comentar/${window.currentPhotoId}/`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': token
+            },
+            body: JSON.stringify({ comment_text: txt })
+        })
+        .then(r => {
+            console.log('📊 Respuesta status:', r.status);
+            if (!r.ok) {
+                return r.json().then(d => {
+                    throw new Error(d.error || `HTTP ${r.status}`);
+                });
+            }
+            return r.json();
+        })
+        .then(d => {
+            console.log('✅ Respuesta del servidor:', d);
+            if (d.success) {
+                textarea.value = '';
+                document.getElementById('charCount').textContent = '0/500';
+
+                // Actualizar contador en la página
+                const counter = document.querySelector(`.comments-count[data-photo-id="${window.currentPhotoId}"]`);
+                if (counter) {
+                    let count = parseInt(counter.textContent) || 0;
+                    counter.textContent = count + 1;
+                    console.log('📊 Contador actualizado a:', count + 1);
+                }
+
+                if (typeof loadComments === 'function') {
+                    loadComments(window.currentPhotoId);
+                }
+                alert('✅ Comentario publicado');
+            }
+        })
+        .catch(e => {
+            console.error('❌ Error:', e);
+            alert('❌ Error: ' + e.message);
+        });
+    }
+
+    function toggleTheme() {
+        const body = document.body;
+        const icon = document.getElementById('theme-icon');
+        body.classList.toggle('dark-mode');
+        if (body.classList.contains('dark-mode')) {
+            localStorage.setItem('theme', 'dark');
+            icon.textContent = '☀️';
+        } else {
+            localStorage.setItem('theme', 'light');
+            icon.textContent = '🌙';
+        }
+    }
+
+    function viewProfile(userId) {
+        window.location.href = `/usuario/${userId}/`;
+    }
+
+    window.addEventListener('DOMContentLoaded', function() {
+        const theme = localStorage.getItem('theme') || 'light';
+        const icon = document.getElementById('theme-icon');
+        if (theme === 'dark') {
+            document.body.classList.add('dark-mode');
+            icon.textContent = '☀️';
+        } else {
+            icon.textContent = '🌙';
+        }
+    });
+    </script>
 </head>
 
 <body>

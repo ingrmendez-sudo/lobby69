@@ -1214,7 +1214,6 @@ def comment_photo_view(request, photo_id):
         from django.utils import timezone
         from supabase import create_client
 
-        # Leer JSON del request
         data = json.loads(request.body)
         comment_text = data.get('comment_text', '').strip()
 
@@ -1226,10 +1225,8 @@ def comment_photo_view(request, photo_id):
 
         supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
 
-        # Generar UUID determinista basado en Django user ID
         user_uuid = str(uuid_module.uuid5(uuid_module.NAMESPACE_DNS, f'user-{request.user.id}'))
 
-        # Crear comentario en Supabase
         comment_data = {
             'id': str(uuid_module.uuid4()),
             'photo_id': str(photo_id),
@@ -1240,36 +1237,30 @@ def comment_photo_view(request, photo_id):
         }
 
         print(f"[DEBUG] Insertando comentario: {comment_data}")
-        resp = supabase.table('photo_comments').insert(comment_data).execute()
-        print(f"[DEBUG] Respuesta: {resp}")
+        supabase.table('photo_comments').insert(comment_data).execute()
 
-        if resp.data:
-            return JsonResponse({
-                'success': True,
-                'message': 'Comentario publicado',
-                'comment': {
-                    'id': comment_data['id'],
-                    'user_nick': comment_data['user_nick'],
-                    'comment_text': comment_text,
-                    'created_at': comment_data['created_at']
-                }
-            })
-        else:
-            return JsonResponse({'error': 'Error al guardar comentario'}, status=500)
+        # ⭐ ACTUALIZAR CONTADOR DE COMENTARIOS
+        comments_count_resp = supabase.table('photo_comments').select('*', count='exact').eq('photo_id', str(photo_id)).execute()
+        comments_count = comments_count_resp.count if comments_count_resp.count else 0
+        supabase.table('gallery').update({'comments_count': comments_count}).eq('id', str(photo_id)).execute()
+        print(f"[DEBUG] Contador comentarios actualizado: {comments_count}")
 
-    except Exception as e:
-        print(f"[ERROR] {e}")
-        import traceback
-        traceback.print_exc()
-        return JsonResponse({'error': str(e)}, status=500)
-
+        return JsonResponse({
+            'success': True,
+            'message': 'Comentario publicado',
+            'comment': {
+                'id': comment_data['id'],
+                'user_nick': comment_data['user_nick'],
+                'comment_text': comment_text,
+                'created_at': comment_data['created_at']
+            }
+        })
 
     except Exception as e:
         print(f"[ERROR] {e}")
         import traceback
         traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)
-
 
 @login_required(login_url='pages:login')
 @require_http_methods(["GET"])
