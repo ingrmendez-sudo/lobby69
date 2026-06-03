@@ -86,3 +86,32 @@ urlpatterns = [
 
     path('<str:template_name>/', views.dynamic_pages_view, name='dynamic_pages'),
 ]
+
+# ============================================================================
+# RUTAS DE PAGOS Y REFERENCIA
+# ============================================================================
+
+from .payment_views import (
+    get_membership_plans_view,
+    checkout_view,
+    conekta_webhook_view,
+    claim_referral_reward_view
+)
+from .referral_views import (
+    get_referral_code_view,
+    list_referrals_view,
+    get_referral_stats_view
+)
+
+urlpatterns += [
+    # PAGOS
+    path('api/membership-plans/', get_membership_plans_view, name='membership_plans'),
+    path('api/checkout/', checkout_view, name='checkout'),
+    path('webhook/conekta/', conekta_webhook_view, name='conekta_webhook'),
+    path('api/claim-reward/<uuid:reward_id>/', claim_referral_reward_view, name='claim_reward'),
+
+    # REFERENCIA
+    path('api/referral-code/', get_referral_code_view, name='referral_code'),
+    path('api/referrals/', list_referrals_view, name='list_referrals'),
+    path('api/referral-stats/', get_referral_stats_view, name='referral_stats'),
+]
