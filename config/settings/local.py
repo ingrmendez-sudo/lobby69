@@ -67,3 +67,37 @@ STATICFILES_DIRS = [
     PROJECT_DIR / 'static',
 ]
 STATIC_ROOT = PROJECT_DIR / 'staticfiles'
+
+# ============================================================================
+# CELERY CONFIGURATION
+# ============================================================================
+
+CELERY_BROKER_URL = 'redis://localhost:6379/0'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379/0'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'
+
+# Celery Beat Schedule
+from celery.schedules import crontab
+
+CELERY_BEAT_SCHEDULE = {
+    'check-subscriptions-expiring': {
+        'task': 'check_subscriptions_expiring',
+        'schedule': crontab(minute='*/60'),  # Cada hora
+    },
+    'retry-failed-payments': {
+        'task': 'retry_failed_payments',
+        'schedule': crontab(hour=8, minute=0),  # Cada día a las 8 AM
+    },
+    'generate-monthly-report': {
+        'task': 'generate_monthly_report',
+        'schedule': crontab(day_of_month=1, hour=0, minute=0),  # Día 1 de cada mes
+    },
+}
+
+INSTALLED_APPS += [
+    'django_celery_beat',
+    'django_celery_results',
+]
