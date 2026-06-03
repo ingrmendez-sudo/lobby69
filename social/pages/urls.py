@@ -115,3 +115,26 @@ urlpatterns += [
     path('api/referrals/', list_referrals_view, name='list_referrals'),
     path('api/referral-stats/', get_referral_stats_view, name='referral_stats'),
 ]
+
+from .admin_views import (
+    admin_dashboard_view,
+    list_campaigns_view,
+    create_campaign_view,
+    update_campaign_view,
+    toggle_campaign_view,
+    delete_campaign_view,
+    app_settings_view,
+    campaign_presets_view
+)
+
+urlpatterns += [
+    # ADMIN DASHBOARD
+    path('admin/dashboard/', admin_dashboard_view, name='admin_dashboard'),
+    path('admin/campaigns/', list_campaigns_view, name='admin_campaigns'),
+    path('admin/campaigns/create/', create_campaign_view, name='create_campaign'),
+    path('admin/campaigns/<uuid:campaign_id>/update/', update_campaign_view, name='update_campaign'),
+    path('admin/campaigns/<uuid:campaign_id>/toggle/', toggle_campaign_view, name='toggle_campaign'),
+    path('admin/campaigns/<uuid:campaign_id>/delete/', delete_campaign_view, name='delete_campaign'),
+    path('admin/settings/', app_settings_view, name='app_settings'),
+    path('admin/campaigns/presets/', campaign_presets_view, name='campaign_presets'),
+]

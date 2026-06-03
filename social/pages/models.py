@@ -204,3 +204,19 @@ class FeatureAccessLog(models.Model):
 
     def __str__(self):
         return f"{self.account_id} - {self.feature_key} - {self.status}"
+
+class AppSetting(models.Model):
+    """Tabla: app_settings - Configuración global de la aplicación"""
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    key = models.CharField(max_length=255, unique=True)
+    value = models.TextField()
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'app_settings'
+        verbose_name = 'Configuración de App'
+        verbose_name_plural = 'Configuraciones de App'
+
+    def __str__(self):
+        return f"{self.key}: {self.value[:50]}"
