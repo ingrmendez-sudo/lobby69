@@ -1,212 +1,122 @@
-/**
- * MEMBERSHIPS.JS - Memberships/Subscription management
- */
-
 console.log('👑 memberships.js initializing...');
 
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('✅ memberships.js loaded - DOMContentLoaded');
+let allPlans = [];
 
-    initializePlansNavigation();
-    initializeTabNavigation();
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('✅ memberships.js loaded');
+    loadMembershipPlans();
 });
 
 /**
- * Initialize plans sidebar navigation
+ * Cargar planes desde la API
  */
-function initializePlansNavigation() {
-    console.log('🔧 Initializing plans navigation...');
+function loadMembershipPlans() {
+    console.log('🔄 Cargando planes...');
 
-    const planItems = document.querySelectorAll('.plan-nav-item');
-    console.log(`Found ${planItems.length} plan navigation items`);
+    fetch('/api/membership-plans/')
+        .then(r => r.json())
+        .then(data => {
+            console.log('✅ Planes recibidos:', data);
+            allPlans = data.plans || [];
+            renderAllPlans(allPlans);
+        })
+        .catch(e => {
+            console.error('❌ Error:', e);
+            const container = document.getElementById('plans-grid');
+            if (container) {
+                container.innerHTML = '<p style="color:red;">Error cargando planes</p>';
+            }
+        });
+}
 
-    planItems.forEach(item => {
-        item.addEventListener('click', function(e) {
+/**
+ * Renderizar todos los planes en tarjetas
+ */
+function renderAllPlans(plans) {
+    const container = document.getElementById('plans-grid');
+    if (!container) {
+        console.error('❌ Container plans-grid no encontrado');
+        return;
+    }
+
+    container.innerHTML = `
+        <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; padding: 20px; grid-column: 1/-1;">
+            ${plans.map(plan => `
+                <div style="border: 2px solid #ddd; border-radius: 8px; padding: 20px; text-align: center; background: white;">
+                    <h3 style="margin: 0 0 10px; color: #333;">${plan.name}</h3>
+                    <p style="margin: 0 0 10px; font-size: 12px; color: #666;">${plan.duration_days} días</p>
+
+                    ${plan.discount_percent ? `
+                        <p style="margin: 0; text-decoration: line-through; color: #999;">$${plan.original_price.toFixed(2)} MXN</p>
+                        <p style="margin: 5px 0; background: #ff6b6b; color: white; padding: 5px; border-radius: 4px; font-size: 12px; font-weight: bold;">
+                            -${plan.discount_percent}%
+                        </p>
+                    ` : ''}
+
+                    <h2 style="margin: 10px 0; color: #4682b4;">$${plan.price.toFixed(2)} MXN</h2>
+
+                    <button onclick="goToCheckout('${plan.id}', '${plan.name}', ${plan.price})"
+                            style="width: 100%; padding: 10px; background: #4682b4; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px;">
+                        Contratar
+                    </button>
+                </div>
+            `).join('')}
+        </div>
+    `;
+
+    console.log('✅ Planes renderizados');
+}
+
+/**
+ * Ir a checkout
+ */
+function goToCheckout(planId, planName, price) {
+    console.log(`💳 Checkout: ${planName} - $${price} MXN`);
+    alert(`Plan: ${planName}\nPrecio: $${price.toFixed(2)} MXN\n\nCheckout con Conekta (próximamente)`);
+    // TODO: Abrir modal de Conekta
+}
+
+console.log('✅ memberships.js fully loaded');
+
+/**
+ * Cambiar entre tabs
+ */
+function initializeTabNavigation() {
+    const tabButtons = document.querySelectorAll('[data-tab-button]');
+
+    tabButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
             e.preventDefault();
-
-            // Remove active class from all
-            planItems.forEach(i => i.classList.remove('active'));
-
-            // Add active class to clicked
-            this.classList.add('active');
-
-            const plan = this.textContent.trim().toLowerCase();
-            console.log(`📌 Selected plan: ${plan}`);
+            const tabName = this.getAttribute('data-tab-button');
+            switchTab(tabName);
         });
     });
 }
 
-/**
- * Switch between tabs
- */
-function switchMembershipTab(tabName, event) {
-    if (event) {
-        event.preventDefault();
-    }
+function switchTab(tabName) {
+    console.log(`📑 Switch tab: ${tabName}`);
 
-    console.log(`📋 Switching to tab: ${tabName}`);
+    // Ocultar todos los tabs
+    document.querySelectorAll('[data-tab-content]').forEach(tab => {
+        tab.style.display = 'none';
+    });
 
-    // Hide all tabs
-    const tabs = document.querySelectorAll('.tab-content');
-    tabs.forEach(tab => tab.classList.remove('active'));
+    // Desactivar todos los botones
+    document.querySelectorAll('[data-tab-button]').forEach(btn => {
+        btn.classList.remove('active');
+    });
 
-    // Remove active class from all buttons
-    const buttons = document.querySelectorAll('.tab-btn');
-    buttons.forEach(btn => btn.classList.remove('active'));
-
-    // Show selected tab
-    const selectedTab = document.getElementById(`${tabName}-tab`);
+    // Mostrar tab seleccionado
+    const selectedTab = document.querySelector(`[data-tab-content="${tabName}"]`);
     if (selectedTab) {
-        selectedTab.classList.add('active');
-        console.log(`✅ Tab ${tabName} activated`);
+        selectedTab.style.display = 'block';
     }
 
-    // Set active button
-    event?.target?.classList.add('active');
-}
-
-/**
- * Initialize tab navigation
- */
-function initializeTabNavigation() {
-    console.log('🔧 Initializing tab navigation...');
-
-    const tabButtons = document.querySelectorAll('.tab-btn');
-    console.log(`Found ${tabButtons.length} tab buttons`);
-
-    // First tab is active by default
-    if (tabButtons.length > 0) {
-        tabButtons[0].classList.add('active');
+    // Activar botón seleccionado
+    const selectedButton = document.querySelector(`[data-tab-button="${tabName}"]`);
+    if (selectedButton) {
+        selectedButton.classList.add('active');
     }
 }
-
-/**
- * Select a plan
- */
-function selectPlan(planName, price) {
-    console.log(`👑 Selected plan: ${planName} - $${price}`);
-
-    showAlert(`✅ Plan ${planName} seleccionado. Procede al pago.`, 'success');
-
-    // TODO: Redirect to checkout
-    // window.location.href = `/checkout/${planId}/`;
-}
-
-/**
- * Change current plan
- */
-function changePlan() {
-    console.log('🔄 Change plan clicked');
-
-    switchMembershipTab('plans');
-    showAlert('👑 Selecciona un nuevo plan', 'info');
-}
-
-/**
- * Manage billing
- */
-function manageBilling() {
-    console.log('💳 Manage billing clicked');
-
-    switchMembershipTab('billing');
-    showAlert('💳 Sección de facturación abierta', 'info');
-}
-
-/**
- * Cancel subscription
- */
-function cancelSubscription() {
-    const confirmed = confirm('⚠️ ¿Estás seguro de que deseas cancelar tu suscripción? Esta acción es irreversible.');
-
-    if (confirmed) {
-        console.log('❌ Subscription cancelled');
-        showAlert('❌ Tu suscripción ha sido cancelada', 'error');
-
-        // TODO: Send cancel request to server
-    } else {
-        console.log('❌ Cancellation aborted');
-    }
-}
-
-/**
- * Upgrade plan
- */
-function upgradePlan() {
-    console.log('🚀 Upgrade to VIP clicked');
-
-    showAlert('🚀 Procede con la mejora a VIP', 'success');
-
-    // TODO: Redirect to checkout for VIP
-    // window.location.href = '/checkout/vip/';
-}
-
-/**
- * View receipt
- */
-function viewReceipt(receiptId) {
-    console.log(`📄 Viewing receipt: ${receiptId}`);
-
-    showAlert(`📄 Cargando recibo #${receiptId}`, 'info');
-
-    // TODO: Open receipt modal or download
-}
-
-/**
- * Show alert
- */
-function showAlert(message, type = 'info') {
-    const colors = {
-        success: '#27ae60',
-        error: '#e74c3c',
-        warning: '#f39c12',
-        info: '#3498db'
-    };
-
-    const alertDiv = document.createElement('div');
-    alertDiv.className = `alert alert-${type}`;
-    alertDiv.textContent = message;
-    alertDiv.style.cssText = `
-        position: fixed;
-        top: 100px;
-        right: 20px;
-        padding: 12px 18px;
-        background: ${colors[type] || colors.info};
-        color: white;
-        border-radius: 8px;
-        font-size: 14px;
-        font-weight: 600;
-        z-index: 1000;
-        animation: slideIn 0.3s ease;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-    `;
-
-    document.body.appendChild(alertDiv);
-    console.log(`📢 Alert: ${message}`);
-
-    setTimeout(() => {
-        alertDiv.style.animation = 'slideOut 0.3s ease';
-        setTimeout(() => alertDiv.remove(), 300);
-    }, 3000);
-}
-
-/**
- * Add CSS animations
- */
-// Crear estilos de animaciones sin conflictos
-(function() {
-    const animationStyle = document.createElement('style');
-    animationStyle.textContent = `
-        @keyframes slideIn {
-            from { transform: translateX(-50%) translateY(-100%); opacity: 0; }
-            to { transform: translateX(-50%) translateY(0); opacity: 1; }
-        }
-        @keyframes slideOut {
-            from { transform: translateX(-50%) translateY(0); opacity: 1; }
-            to { transform: translateX(-50%) translateY(-100%); opacity: 0; }
-        }
-    `;
-    document.head.appendChild(animationStyle);
-})();
-
 
 console.log('✅ memberships.js fully loaded');

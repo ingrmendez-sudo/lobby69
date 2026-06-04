@@ -87,37 +87,6 @@ function loadComments(photoId) {
         });
 }
 
-// Enviar comentario
-function submitComment() {
-    const text = document.getElementById('commentText').value.trim();
-    if (!text) { alert('Escribe un comentario'); return; }
-
-    const csrftoken = document.querySelector('[name=csrfmiddlewaretoken]').value;
-    const formData = new FormData();
-    formData.append('comment_text', text);
-
-    fetch(`/galeria/comentar/${currentPhotoId}/`, {
-        method: 'POST',
-        headers: {'X-CSRFToken': csrftoken},
-        body: formData
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            document.getElementById('commentText').value = '';
-            document.getElementById('charCount').textContent = '0/500';
-            loadComments(currentPhotoId);
-            const msg = document.createElement('div');
-            msg.textContent = '✓ Comentario publicado';
-            msg.style.cssText = 'padding: 10px; background: #27ae60; color: white; border-radius: 4px; margin-bottom: 10px; text-align: center;';
-            document.getElementById('commentsList').parentElement.insertBefore(msg, document.getElementById('commentsList'));
-            setTimeout(() => msg.remove(), 3000);
-        } else {
-            alert('Error: ' + data.error);
-        }
-    })
-    .catch(e => { console.error(e); alert('Error: ' + e); });
-}
 
 // Guardar post
 function savePost(photoId) {

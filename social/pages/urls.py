@@ -95,8 +95,10 @@ from .payment_views import (
     get_membership_plans_view,
     checkout_view,
     conekta_webhook_view,
-    claim_referral_reward_view
+    claim_referral_reward_view,
+    payment_transactions_list_view
 )
+
 from .referral_views import (
     get_referral_code_view,
     list_referrals_view,
@@ -137,4 +139,6 @@ urlpatterns += [
     path('admin/campaigns/<uuid:campaign_id>/delete/', delete_campaign_view, name='delete_campaign'),
     path('admin/settings/', app_settings_view, name='app_settings'),
     path('admin/campaigns/presets/', campaign_presets_view, name='campaign_presets'),
+# PAYMENT HISTORY
+    path('api/payment-transactions/', payment_transactions_list_view, name='payment_transactions'),
 ]

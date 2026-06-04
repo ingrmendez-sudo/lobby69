@@ -95,15 +95,22 @@ def get_membership_plans_view(request):
     try:
         # Obtener planes de Supabase
         plans_response = supabase.table('membership_types').select('*').execute()
-        plans = plans_response.data
+        plans = plans_response.data if plans_response.data else []
+        print(f"[DEBUG] Planes cargados: {len(plans)}")
 
-        # Obtener campaña activa
-        active_campaign = CampaignConfig.objects.filter(active=True).first()
+        # Obtener campaña activa desde Supabase - SINTAXIS CORRECTA
+        campaigns_response = supabase.table('campaign_configs')\
+            .select('*')\
+            .eq('active', True)\
+            .execute()
+
+        active_campaign = campaigns_response.data[0] if campaigns_response.data else None
+        print(f"[DEBUG] Campaña activa: {active_campaign['name'] if active_campaign else 'Ninguna'}")
 
         plans_with_pricing = []
         for plan in plans:
             plan_data = {
-                'id': plan['id'],
+                'id': str(plan['id']),
                 'name': plan['name'],
                 'price': float(plan['price']) if plan['price'] else 0,
                 'duration_days': plan['duration_days'],
@@ -112,23 +119,26 @@ def get_membership_plans_view(request):
             }
 
             # Aplicar descuento de campaña si existe
-            if active_campaign and active_campaign.discount_percent:
+            if active_campaign and active_campaign.get('discount_percent'):
                 plan_data['original_price'] = plan_data['price']
-                plan_data['price'] = plan_data['price'] * (1 - active_campaign.discount_percent / 100)
-                plan_data['discount_percent'] = active_campaign.discount_percent
-                plan_data['campaign_name'] = active_campaign.name
+                plan_data['price'] = plan_data['price'] * (1 - active_campaign['discount_percent'] / 100)
+                plan_data['discount_percent'] = active_campaign['discount_percent']
+                plan_data['campaign_name'] = active_campaign['name']
 
             plans_with_pricing.append(plan_data)
 
         return JsonResponse({
             'success': True,
             'plans': plans_with_pricing,
-            'active_campaign': active_campaign.name if active_campaign else None
+            'active_campaign': active_campaign['name'] if active_campaign else None
         })
 
     except Exception as e:
         print(f"[ERROR] get_membership_plans_view: {e}")
+        import traceback
+        traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)
+
 
 
 @login_required(login_url='pages:login')
@@ -309,4 +319,44 @@ def claim_referral_reward_view(request):
 
     except Exception as e:
         print(f"[ERROR] claim_referral_reward_view: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required(login_url='pages:login')
+@require_http_methods(["GET"])
+def payment_transactions_list_view(request):
+    """Obtener historial de transacciones del usuario desde Supabase"""
+    try:
+        # Obtener el account_id (UUID) del perfil del usuario desde Supabase
+        profile_response = supabase.table('profiles')\
+            .select('id')\
+            .eq('account_id', str(request.user.id))\
+            .execute()
+
+        if not profile_response.data:
+            print(f"[DEBUG] No se encontró perfil para account_id: {request.user.id}")
+            return JsonResponse({'success': True, 'transactions': []})
+
+        account_uuid = profile_response.data[0]['id']
+        print(f"[DEBUG] account_uuid encontrado: {account_uuid}")
+
+        # Ahora sí, buscar transacciones con el UUID correcto
+        transactions_response = supabase.table('payment_transactions')\
+            .select('*')\
+            .eq('account_id', account_uuid)\
+            .order('created_at', desc=True)\
+            .limit(10)\
+            .execute()
+
+        transactions = transactions_response.data if transactions_response.data else []
+        print(f"[DEBUG] Transacciones encontradas: {len(transactions)}")
+
+        return JsonResponse({
+            'success': True,
+            'transactions': transactions
+        })
+    except Exception as e:
+        print(f"[ERROR] payment_transactions_list_view: {e}")
+        import traceback
+        traceback.print_exc()
         return JsonResponse({'error': str(e)}, status=500)

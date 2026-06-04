@@ -2,289 +2,290 @@
 {% load i18n %}
 {% load static %}
 
-{% block page_title %}{% trans "Membresías" %} - LOBBY69{% endblock %}
+{% block page_title %}{% trans "Membresías" %}{% endblock %}
 
 {% block left_sidebar %}
-    <div class="memberships-sidebar-left">
-        <!-- NAVEGACIÓN DE PLANES -->
-        <div class="plans-nav-section">
-            <h3 class="section-title">👑 {% trans "Planes" %}</h3>
-
-            <a href="#" class="plan-nav-item active" onclick="switchPlan('all', event)">
-                <span class="plan-icon">👁️</span>
-                <span>{% trans "Todos" %}</span>
-            </a>
-            <a href="#" class="plan-nav-item" onclick="switchPlan('free', event)">
-                <span class="plan-icon">🆓</span>
-                <span>{% trans "Gratuita" %}</span>
-            </a>
-            <a href="#" class="plan-nav-item" onclick="switchPlan('explorer', event)">
-                <span class="plan-icon">🔍</span>
-                <span>{% trans "Explorador" %}</span>
-            </a>
-            <a href="#" class="plan-nav-item" onclick="switchPlan('adventurer', event)">
-                <span class="plan-icon">⭐</span>
-                <span>{% trans "Aventurero" %}</span>
-            </a>
-            <a href="#" class="plan-nav-item" onclick="switchPlan('vip', event)">
-                <span class="plan-icon">💎</span>
-                <span>VIP</span>
-            </a>
-        </div>
-
-        <hr class="sidebar-divider">
-
-        <!-- SECCIÓN AYUDA -->
-        <div class="help-section">
-            <h3 class="section-title">❓ {% trans "Ayuda" %}</h3>
-
-            <a href="#" class="help-link">
-                <span>❓ {% trans "Preguntas Frecuentes" %}</span>
-            </a>
-            <a href="#" class="help-link">
-                <span>📞 {% trans "Contactar Soporte" %}</span>
-            </a>
-            <a href="#" class="help-link">
-                <span>📄 {% trans "Términos y Condiciones" %}</span>
-            </a>
+<div class="sidebar-left">
+    <div class="sidebar-section">
+        <h3 style="display: flex; align-items: center; gap: 8px; margin: 0 0 15px;">
+            <span>📋</span> {% trans "PLANES" %}
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <button onclick="filterPlans('all')" class="plan-filter active" style="text-align: left; padding: 10px 15px; border: 2px solid #4682b4; border-radius: 6px; background: #e3f2fd; cursor: pointer; font-weight: 600; color: #4682b4;">
+                👁️ Todos los Planes
+            </button>
+            <button onclick="filterPlans('explorer')" class="plan-filter" style="text-align: left; padding: 10px 15px; border: 2px solid transparent; border-radius: 6px; cursor: pointer; font-weight: 600; color: #1976d2;">
+                🚀 EXPLORER
+            </button>
+            <button onclick="filterPlans('connectors')" class="plan-filter" style="text-align: left; padding: 10px 15px; border: 2px solid transparent; border-radius: 6px; cursor: pointer; font-weight: 600; color: #757575;">
+                🤝 CONNECTORS
+            </button>
+            <button onclick="filterPlans('influencer')" class="plan-filter" style="text-align: left; padding: 10px 15px; border: 2px solid transparent; border-radius: 6px; cursor: pointer; font-weight: 600; color: #fbc02d;">
+                ⭐ INFLUENCER
+            </button>
+            <button onclick="filterPlans('vip')" class="plan-filter" style="text-align: left; padding: 10px 15px; border: 2px solid transparent; border-radius: 6px; cursor: pointer; font-weight: 600; color: #7b1fa2;">
+                💎 VIP ELITE
+            </button>
         </div>
     </div>
+
+    <hr style="margin: 20px 0;">
+
+    <div class="sidebar-section">
+        <h3 style="display: flex; align-items: center; gap: 8px; margin: 0 0 15px;">
+            <span>📑</span> TABS
+        </h3>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <button onclick="switchTab('plans', event)" class="tab-filter active" style="text-align: left; padding: 10px 15px; border: 2px solid #4682b4; border-radius: 6px; background: #e3f2fd; cursor: pointer; font-weight: 600; color: #4682b4;">
+                🎯 Todos los Planes
+            </button>
+            <button onclick="switchTab('billing', event)" class="tab-filter" style="text-align: left; padding: 10px 15px; border: 2px solid transparent; border-radius: 6px; cursor: pointer; font-weight: 600; color: #666;">
+                💳 Historial
+            </button>
+            <button onclick="switchTab('upgrade', event)" class="tab-filter" style="text-align: left; padding: 10px 15px; border: 2px solid transparent; border-radius: 6px; cursor: pointer; font-weight: 600; color: #666;">
+                🚀 Mejorar Plan
+            </button>
+        </div>
+    </div>
+</div>
 {% endblock left_sidebar %}
 
 {% block main_content %}
-    <div class="memberships-main">
-        <!-- HEADER -->
-        <div class="memberships-header">
-            <h2>👑 {% trans "Planes de Membresía" %}</h2>
-            <p>{% trans "Elige el plan que mejor se adapte a tus necesidades y disfruta de beneficios exclusivos." %}</p>
-        </div>
+<div class="main-content-memberships">
 
-        <!-- MEMBRESÍA ACTUAL -->
-        <div class="current-membership-card">
-            <h3>👑 {% trans "Tu Membresía Actual: VIP" %}</h3>
-            <div class="membership-info-grid">
-                <div class="membership-info-item">
-                    <div class="membership-info-label">{% trans "Estado" %}</div>
-                    <div class="membership-info-value">✅ {% trans "Activa" %}</div>
-                </div>
-                <div class="membership-info-item">
-                    <div class="membership-info-label">{% trans "Válida hasta" %}</div>
-                    <div class="membership-info-value">15/04/2026</div>
-                </div>
-                <div class="membership-info-item">
-                    <div class="membership-info-label">{% trans "Días restantes" %}</div>
-                    <div class="membership-info-value">30</div>
-                </div>
-                <div class="membership-info-item">
-                    <div class="membership-info-label">{% trans "Renovación automática" %}</div>
-                    <div class="membership-info-value">✓ {% trans "Habilitada" %}</div>
-                </div>
-            </div>
-        </div>
+    <!-- HEADER -->
+    <div style="text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 12px;">
+        <h1 style="margin: 0 0 10px; color: #1976d2; font-size: 32px; font-weight: 900;">
+            👑 {% trans "ELIGE TU NIVEL DE EXCLUSIVIDAD" %}
+        </h1>
+        <p style="margin: 0; color: #555; font-size: 16px; font-weight: 600;">
+            {% trans "Conecta, Influye, Sé Parte de la Élite" %}
+        </p>
+    </div>
 
-        <!-- TABS -->
-        <div class="membership-tabs">
-            <button class="tab-btn active" onclick="switchMembershipTab('plans', event)">👁️ {% trans "Todos los Planes" %}</button>
-            <button class="tab-btn" onclick="switchMembershipTab('billing', event)">💳 {% trans "Historial de Facturación" %}</button>
-            <button class="tab-btn" onclick="switchMembershipTab('upgrade', event)">🚀 {% trans "Mejorar Plan" %}</button>
-        </div>
+    <!-- TAB: PLANES -->
+<div id="plans-tab" class="tab-content active">
+    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow-x: auto;">
+        <table id="plans-comparison" style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+                <tr style="background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); color: white;">
+                    <th style="padding: 15px; text-align: left; font-weight: 900; border-bottom: 3px solid #1565c0;">📋 CARACTERÍSTICA</th>
+                    <th style="padding: 15px; text-align: center; font-weight: 900; border-bottom: 3px solid #1565c0; background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);">
+                        <div style="font-size: 16px;">🚀</div>
+                        <div style="font-size: 14px;">EXPLORER</div>
+                        <div style="font-size: 12px; color: #90caf9;">$180</div>
+                    </th>
+                    <th style="padding: 15px; text-align: center; font-weight: 900; border-bottom: 3px solid #1565c0; background: linear-gradient(135deg, #757575 0%, #616161 100%); color: white;">
+                        <div style="font-size: 16px;">🤝</div>
+                        <div style="font-size: 14px;">CONNECTORS</div>
+                        <div style="font-size: 12px; color: #bdbdbd;">$299.99</div>
+                    </th>
+                    <th style="padding: 15px; text-align: center; font-weight: 900; border-bottom: 3px solid #1565c0; background: linear-gradient(135deg, #fbc02d 0%, #f57f17 100%); color: white;">
+                        <div style="font-size: 16px;">⭐</div>
+                        <div style="font-size: 14px;">INFLUENCER</div>
+                        <div style="font-size: 12px; color: #fff59d;">$600 ⭐REC</div>
+                    </th>
+                    <th style="padding: 15px; text-align: center; font-weight: 900; border-bottom: 3px solid #1565c0; background: linear-gradient(135deg, #7b1fa2 0%, #6a1b9a 100%); color: white;">
+                        <div style="font-size: 16px;">💎</div>
+                        <div style="font-size: 14px;">VIP ELITE</div>
+                        <div style="font-size: 12px; color: #e1bee7;">$1,200 💎ÉLITE</div>
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 15px; font-weight: 600; color: #333;">✓ Acceso Completo</td>
+                    <td style="padding: 15px; text-align: center; color: #1976d2; font-weight: 900;">✓</td>
+                    <td style="padding: 15px; text-align: center; color: #757575; font-weight: 900;">✓</td>
+                    <td style="padding: 15px; text-align: center; color: #f57f17; font-weight: 900;">✓</td>
+                    <td style="padding: 15px; text-align: center; color: #6a1b9a; font-weight: 900;">✓</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee; background: #f9f9f9;">
+                    <td style="padding: 15px; font-weight: 600; color: #333;">✓ Perfiles Ilimitados</td>
+                    <td style="padding: 15px; text-align: center; color: #1976d2; font-weight: 900;">✓</td>
+                    <td style="padding: 15px; text-align: center; color: #757575; font-weight: 900;">✓</td>
+                    <td style="padding: 15px; text-align: center; color: #f57f17; font-weight: 900;">✓</td>
+                    <td style="padding: 15px; text-align: center; color: #6a1b9a; font-weight: 900;">✓</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 15px; font-weight: 600; color: #333;">✓ Galerías Privadas</td>
+                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
+                    <td style="padding: 15px; text-align: center; color: #757575; font-weight: 900;">✓</td>
+                    <td style="padding: 15px; text-align: center; color: #f57f17; font-weight: 900;">✓</td>
+                    <td style="padding: 15px; text-align: center; color: #6a1b9a; font-weight: 900;">✓</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee; background: #f9f9f9;">
+                    <td style="padding: 15px; font-weight: 600; color: #333;">✓ Soporte Prioritario</td>
+                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
+                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
+                    <td style="padding: 15px; text-align: center; color: #f57f17; font-weight: 900;">✓</td>
+                    <td style="padding: 15px; text-align: center; color: #6a1b9a; font-weight: 900;">✓</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 15px; font-weight: 600; color: #333;">✓ Referidos Exclusivos</td>
+                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
+                    <td style="padding: 15px; text-align: center; color: #757575; font-weight: 900;">✓</td>
+                    <td style="padding: 15px; text-align: center; color: #f57f17; font-weight: 900;">✓</td>
+                    <td style="padding: 15px; text-align: center; color: #6a1b9a; font-weight: 900;">✓</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee; background: #f9f9f9;">
+                    <td style="padding: 15px; font-weight: 600; color: #333;">✓ Badge en Perfil</td>
+                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
+                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
+                    <td style="padding: 15px; text-align: center; color: #f57f17; font-weight: 900;">✓</td>
+                    <td style="padding: 15px; text-align: center; color: #6a1b9a; font-weight: 900;">✓</td>
+                </tr>
+                <tr style="border-bottom: 1px solid #eee;">
+                    <td style="padding: 15px; font-weight: 600; color: #333;">✓ Acceso a Eventos</td>
+                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
+                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
+                    <td style="padding: 15px; text-align: center; color: #f57f17; font-weight: 900;">✓</td>
+                    <td style="padding: 15px; text-align: center; color: #6a1b9a; font-weight: 900;">✓</td>
+                </tr>
+                <tr style="background: linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%);">
+                    <td style="padding: 15px; font-weight: 900; color: #333;">🎯 CONTRATAR</td>
+                    <td style="padding: 15px; text-align: center;">
+                        <button onclick="goToCheckout('explorer', '$180')" style="padding: 10px 15px; background: #1976d2; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 12px;">CONTRATAR</button>
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        <button onclick="goToCheckout('connectors', '$299.99')" style="padding: 10px 15px; background: #757575; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 12px;">CONTRATAR</button>
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        <button onclick="goToCheckout('influencer', '$600')" style="padding: 10px 15px; background: #f57f17; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 12px;">CONTRATAR</button>
+                    </td>
+                    <td style="padding: 15px; text-align: center;">
+                        <button onclick="goToCheckout('vip', '$1200')" style="padding: 10px 15px; background: #6a1b9a; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 12px;">CONTRATAR</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-        <!-- TAB: PLANES -->
-        <div id="plans-tab" class="tab-content active">
-            <div class="plans-grid">
-                <!-- PLAN 1: GRATUITO -->
-                <div class="plan-card">
-                    <div class="plan-header">
-                        <div class="plan-icon">🆓</div>
-                        <h3 class="plan-name">{% trans "Gratuita" %}</h3>
-                    </div>
-                    <div class="plan-price">$0</div>
-                    <div class="plan-period">{% trans "Siempre gratis" %}</div>
-
-                    <ul class="plan-features">
-                        <li class="feature-included">✓ {% trans "Perfil básico" %}</li>
-                        <li class="feature-included">✓ {% trans "Ver 10 perfiles/día" %}</li>
-                        <li class="feature-included">✓ {% trans "5 mensajes/día" %}</li>
-                        <li class="feature-excluded">✕ {% trans "Sin filtros avanzados" %}</li>
-                        <li class="feature-excluded">✕ {% trans "Sin galería ilimitada" %}</li>
-                    </ul>
-
-                    <button class="btn btn-plan btn-plan-current" disabled>✓ {% trans "Plan Actual" %}</button>
-                </div>
-
-                <!-- PLAN 2: EXPLORADOR -->
-                <div class="plan-card">
-                    <div class="plan-header">
-                        <div class="plan-icon">🔍</div>
-                        <h3 class="plan-name">{% trans "Explorador" %}</h3>
-                    </div>
-                    <div class="plan-price">$9.99</div>
-                    <div class="plan-period">{% trans "por mes" %}</div>
-
-                    <ul class="plan-features">
-                        <li class="feature-included">✓ {% trans "Perfil destacado" %}</li>
-                        <li class="feature-included">✓ {% trans "Ver 50 perfiles/día" %}</li>
-                        <li class="feature-included">✓ {% trans "30 mensajes/día" %}</li>
-                        <li class="feature-included">✓ {% trans "Filtros básicos" %}</li>
-                        <li class="feature-excluded">✕ {% trans "Sin galería premium" %}</li>
-                    </ul>
-
-                    <button class="btn btn-plan btn-plan-select" onclick="selectPlan('Explorador', 9.99)">{% trans "Seleccionar" %}</button>
-                </div>
-
-                <!-- PLAN 3: AVENTURERO (DESTACADO) -->
-                <div class="plan-card plan-card-featured">
-                    <div class="plan-badge">⭐ {% trans "RECOMENDADO" %}</div>
-                    <div class="plan-header">
-                        <div class="plan-icon">⭐</div>
-                        <h3 class="plan-name">{% trans "Aventurero" %}</h3>
-                    </div>
-                    <div class="plan-price">$24.99</div>
-                    <div class="plan-period">{% trans "por mes" %}</div>
-
-                    <ul class="plan-features">
-                        <li class="feature-included">✓ {% trans "Perfil super destacado" %}</li>
-                        <li class="feature-included">✓ {% trans "Perfiles ilimitados" %}</li>
-                        <li class="feature-included">✓ {% trans "Mensajes ilimitados" %}</li>
-                        <li class="feature-included">✓ {% trans "Filtros avanzados" %}</li>
-                        <li class="feature-included">✓ {% trans "Galería de fotos (50 GB)" %}</li>
-                    </ul>
-
-                    <button class="btn btn-plan btn-plan-select" onclick="selectPlan('Aventurero', 24.99)">{% trans "Seleccionar" %}</button>
-                </div>
-
-                <!-- PLAN 4: VIP -->
-                <div class="plan-card">
-                    <div class="plan-header">
-                        <div class="plan-icon">💎</div>
-                        <h3 class="plan-name">VIP</h3>
-                    </div>
-                    <div class="plan-price">$49.99</div>
-                    <div class="plan-period">{% trans "por mes" %}</div>
-
-                    <ul class="plan-features">
-                        <li class="feature-included">✓ {% trans "Todo de Aventurero +" %}</li>
-                        <li class="feature-included">✓ {% trans "Soporte prioritario 24/7" %}</li>
-                        <li class="feature-included">✓ {% trans "Galería ilimitada (500 GB)" %}</li>
-                        <li class="feature-included">✓ {% trans "Video llamadas en HD" %}</li>
-                        <li class="feature-included">✓ {% trans "Verificación especial" %}</li>
-                    </ul>
-
-                    <button class="btn btn-plan btn-plan-select" onclick="selectPlan('VIP', 49.99)">{% trans "Mejorar a VIP" %}</button>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB: FACTURACIÓN -->
-        <div id="billing-tab" class="tab-content">
-            <div class="billing-section">
-                <h3>📋 {% trans "Historial de Pagos" %}</h3>
-                <table class="billing-table">
-                    <thead>
-                        <tr>
-                            <th>{% trans "Fecha" %}</th>
-                            <th>{% trans "Plan" %}</th>
-                            <th>{% trans "Monto" %}</th>
-                            <th>{% trans "Estado" %}</th>
-                            <th>{% trans "Acción" %}</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>15/03/2026</td>
-                            <td>VIP</td>
-                            <td>$49.99</td>
-                            <td><span class="status-badge status-paid">✓ {% trans "Pagado" %}</span></td>
-                            <td><a href="#" class="link-view-receipt">{% trans "Ver Recibo" %}</a></td>
-                        </tr>
-                        <tr>
-                            <td>15/02/2026</td>
-                            <td>VIP</td>
-                            <td>$49.99</td>
-                            <td><span class="status-badge status-paid">✓ {% trans "Pagado" %}</span></td>
-                            <td><a href="#" class="link-view-receipt">{% trans "Ver Recibo" %}</a></td>
-                        </tr>
-                        <tr>
-                            <td>15/01/2026</td>
-                            <td>VIP</td>
-                            <td>$49.99</td>
-                            <td><span class="status-badge status-paid">✓ {% trans "Pagado" %}</span></td>
-                            <td><a href="#" class="link-view-receipt">{% trans "Ver Recibo" %}</a></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="payment-methods-section">
-                <h3>💳 {% trans "Métodos de Pago" %}</h3>
-                <div class="payment-card">
-                    <div class="payment-card-title">💳 {% trans "Tarjeta de Crédito" %}</div>
-                    <div class="payment-card-info">Visa ●●●● ●●●● ●●●● 4242</div>
-                    <div class="payment-card-expiry">{% trans "Vence:" %} 12/2027</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- TAB: MEJORAR PLAN -->
-        <div id="upgrade-tab" class="tab-content">
-            <div class="upgrade-section">
-                <h3>🚀 {% trans "Mejorar a VIP" %}</h3>
-                <p>{% trans "Tu membresía actual de Gratuita será cancelada y pagarás la diferencia prorrateada." %}</p>
-                <button class="btn btn-primary btn-upgrade" onclick="upgradePlan()">{% trans "Continuar con Mejora" %}</button>
-            </div>
+    <!-- TAB: MEJORAR PLAN -->
+    <div id="upgrade-tab" class="tab-content" style="display: none;">
+        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
+            <h3 style="margin: 0 0 20px; color: #333;">🚀 {% trans "Cambiar Plan" %}</h3>
+            <p style="color: #666; margin: 0 0 20px;">{% trans "Selecciona un nuevo plan de arriba" %}</p>
+            <button onclick="changePlan()" style="padding: 12px 24px; background: #4682b4; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
+                {% trans "Ver Planes" %}
+            </button>
         </div>
     </div>
+
+</div>
 {% endblock main_content %}
 
 {% block right_sidebar %}
-    <div class="memberships-sidebar-right">
-        <!-- SUSCRIPCIÓN ACTUAL -->
-        <div class="subscription-info-section">
-            <h3 class="section-title">👑 {% trans "Tu Suscripción" %}</h3>
+<div class="sidebar-right">
 
-            <div class="subscription-item">
-                <div class="subscription-label">{% trans "Plan Actual" %}</div>
-                <div class="subscription-value">👑 VIP</div>
-            </div>
+    <!-- MI MEMBRESÍA ACTUAL -->
+    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <h3 style="margin: 0 0 15px; color: #333; display: flex; align-items: center; gap: 8px;">
+            <span>👑</span> {% trans "Tu Membresía Actual" %}
+        </h3>
 
-            <div class="subscription-item">
-                <div class="subscription-label">{% trans "Próxima Renovación" %}</div>
-                <div class="subscription-value">15/04/2026</div>
-            </div>
+        <div id="membership-info" style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
+            <p style="margin: 0 0 10px; font-size: 14px; color: #666; font-weight: 600;">ESTADO</p>
+            <p style="margin: 0 0 15px; font-size: 18px; color: #4caf50; font-weight: 900;">✓ {% trans "Activa" %}</p>
 
-            <div class="subscription-item">
-                <div class="subscription-label">{% trans "Monto" %}</div>
-                <div class="subscription-value">$49.99/mes</div>
-            </div>
+            <p style="margin: 0 0 10px; font-size: 14px; color: #666; font-weight: 600;">PLAN</p>
+            <p style="margin: 0 0 15px; font-size: 18px; color: #1976d2; font-weight: 900;">VIP ELITE</p>
 
-            <div class="subscription-item">
-                <div class="subscription-label">{% trans "Renovación" %}</div>
-                <div class="subscription-value">✓ {% trans "Automática" %}</div>
-            </div>
+            <p style="margin: 0 0 10px; font-size: 14px; color: #666; font-weight: 600;">VÁLIDA HASTA</p>
+            <p style="margin: 0 0 15px; font-size: 16px; color: #333; font-weight: 600;">--</p>
 
-            <div class="subscription-actions">
-                <button class="btn btn-primary" onclick="changePlan()">{% trans "Cambiar Plan" %}</button>
-                <button class="btn btn-secondary" onclick="manageBilling()">{% trans "Gestionar Facturación" %}</button>
-                <button class="btn btn-secondary btn-danger" onclick="cancelSubscription()">{% trans "Cancelar Suscripción" %}</button>
-            </div>
+            <p style="margin: 0 0 10px; font-size: 14px; color: #666; font-weight: 600;">DÍAS RESTANTES</p>
+            <p style="margin: 0 0 15px; font-size: 24px; color: #ff9800; font-weight: 900;">--</p>
+
+            <p style="margin: 0 0 10px; font-size: 14px; color: #666; font-weight: 600;">🔄 {% trans "AUTO-RENOVACIÓN" %}</p>
+            <p style="margin: 0; font-size: 16px; color: #4caf50; font-weight: 900;">✓ {% trans "Habilitada" %}</p>
         </div>
 
-        <hr class="sidebar-divider">
-
-        <!-- BENEFICIOS VIP -->
-        <div class="benefits-section">
-            <h3 class="section-title">✨ {% trans "Beneficios VIP" %}</h3>
-            <ul class="benefits-list">
-                <li>✓ {% trans "Perfil destacado" %}</li>
-                <li>✓ {% trans "Mensajes ilimitados" %}</li>
-                <li>✓ {% trans "Galería premium" %}</li>
-                <li>✓ {% trans "Soporte prioritario" %}</li>
-                <li>✓ {% trans "Video llamadas HD" %}</li>
-            </ul>
+        <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+            <button onclick="changePlan()" style="padding: 12px; background: #4682b4; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.3s;" onmouseover="this.style.background='#36648b'" onmouseout="this.style.background='#4682b4'">
+                💳 {% trans "Cambiar Plan" %}
+            </button>
+            <button onclick="manageBilling()" style="padding: 12px; background: #757575; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.3s;" onmouseover="this.style.background='#616161'" onmouseout="this.style.background='#757575'">
+                📋 {% trans "Gestionar Facturación" %}
+            </button>
+            <button onclick="cancelSubscription()" style="padding: 12px; background: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.3s;" onmouseover="this.style.background='#d32f2f'" onmouseout="this.style.background='#f44336'">
+                ❌ {% trans "Cancelar Suscripción" %}
+            </button>
         </div>
     </div>
+
+    <!-- ESTADÍSTICAS DE REFERIDOS -->
+    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
+        <h3 style="margin: 0 0 15px; color: #333; display: flex; align-items: center; gap: 8px;">
+            <span>📊</span> {% trans "Mis Referidos" %}
+        </h3>
+
+        <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+            <p style="margin: 0 0 5px; font-size: 13px; color: #666;">{% trans "Total Invitados" %}</p>
+            <p style="margin: 0; font-size: 24px; color: #1976d2; font-weight: 900;">--</p>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%); padding: 15px; border-radius: 8px; margin-bottom: 10px;">
+            <p style="margin: 0 0 5px; font-size: 13px; color: #666;">{% trans "Con Membresía Pagada" %}</p>
+            <p style="margin: 0; font-size: 24px; color: #2e7d32; font-weight: 900;">--</p>
+        </div>
+
+        <div style="background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%); padding: 15px; border-radius: 8px;">
+            <p style="margin: 0 0 5px; font-size: 13px; color: #666;">{% trans "Recompensas Disponibles" %}</p>
+            <p style="margin: 0; font-size: 24px; color: #fbc02d; font-weight: 900;">--</p>
+        </div>
+
+        <button onclick="viewReferrals()" style="width: 100%; margin-top: 15px; padding: 12px; background: #4682b4; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">
+            🔗 {% trans "Ver Referidos" %}
+        </button>
+    </div>
+
+</div>
 {% endblock right_sidebar %}
 
 {% block extra_js %}
-    <script src="{% static 'js/memberships.js' %}"></script>
+<script src="{% static 'js/memberships.js' %}"></script>
+<script>
+// Funciones de navegación
+function switchTab(tab, e) {
+    if (e) e.preventDefault();
+
+    document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.tab-filter').forEach(el => el.style.border = '2px solid transparent');
+
+    document.getElementById(tab + '-tab').style.display = 'block';
+    event.target.style.border = '2px solid #4682b4';
+    event.target.style.background = '#e3f2fd';
+}
+
+function filterPlans(filter) {
+    console.log('Filtro:', filter);
+    document.querySelectorAll('.plan-filter').forEach(el => {
+        el.style.border = '2px solid transparent';
+        el.style.background = 'transparent';
+    });
+    event.target.style.border = '2px solid #4682b4';
+    event.target.style.background = '#e3f2fd';
+}
+
+function changePlan() {
+    switchTab('plans', {target: document.querySelector('.tab-filter:first-child'), preventDefault: () => {}});
+    document.querySelector('.tab-filter:first-child').click();
+}
+
+function manageBilling() {
+    switchTab('billing', {target: document.querySelectorAll('.tab-filter')[1], preventDefault: () => {}});
+}
+
+function cancelSubscription() {
+    if (confirm('¿Estás seguro de que deseas cancelar tu suscripción?')) {
+        alert('Función de cancelación en desarrollo');
+    }
+}
+
+function viewReferrals() {
+    alert('Panel de referidos próximamente');
+}
+</script>
 {% endblock extra_js %}
