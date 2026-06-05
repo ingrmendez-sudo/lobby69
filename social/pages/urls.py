@@ -139,6 +139,17 @@ urlpatterns += [
     path('admin/campaigns/<uuid:campaign_id>/delete/', delete_campaign_view, name='delete_campaign'),
     path('admin/settings/', app_settings_view, name='app_settings'),
     path('admin/campaigns/presets/', campaign_presets_view, name='campaign_presets'),
+
+    # ADMIN - MEMBRESÍAS
+    path('admin/memberships/', views.admin_memberships_view, name='admin_memberships'),
+    path('api/admin/membership-price/', views.update_membership_price_view, name='update_membership_price'),
+    path('api/admin/membership-privilege/', views.update_membership_privilege_view, name='update_membership_privilege'),
+
+    # ADMIN - MODERACIÓN
+    path('admin/moderation/', views.admin_moderation_queue_view, name='admin_moderation'),
+    path('api/admin/moderate-content/', views.moderate_content_view, name='moderate_content'),
+    path('api/admin/stats/', views.admin_stats_view, name='admin_stats'),
+
     # PAYMENT HISTORY
     path('api/payment-transactions/', payment_transactions_list_view, name='payment_transactions'),
     # VERIFICACIÓN
