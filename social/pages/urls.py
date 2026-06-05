@@ -3,10 +3,42 @@ URL Configuration for Social Pages App
 """
 from django.urls import path
 from . import views
+from .payment_views import (
+    get_membership_plans_view,
+    checkout_view,
+    conekta_webhook_view,
+    claim_referral_reward_view,
+    payment_transactions_list_view
+)
+from .referral_views import (
+    get_referral_code_view,
+    list_referrals_view,
+    get_referral_stats_view
+)
+from .admin_views import (
+    admin_dashboard_view,
+    list_campaigns_view,
+    create_campaign_view,
+    update_campaign_view,
+    toggle_campaign_view,
+    delete_campaign_view,
+    app_settings_view,
+    campaign_presets_view
+)
 
 app_name = 'pages'
 
 urlpatterns = [
+    # ============================================================================
+    # ADMIN URLS (PRIORITY)
+    # ============================================================================
+    path('dashboard/memberships/', views.admin_memberships_view, name='admin_memberships'),
+    path('dashboard/moderation/', views.admin_moderation_queue_view, name='admin_moderation'),
+    path('api/dashboard/membership-price/', views.update_membership_price_view, name='update_membership_price'),
+    path('api/dashboard/membership-privilege/', views.update_membership_privilege_view, name='update_membership_privilege'),
+    path('api/dashboard/moderate-content/', views.moderate_content_view, name='moderate_content'),
+    path('api/dashboard/stats/', views.admin_stats_view, name='admin_stats'),
+
     # ============================================================================
     # AUTHENTICATION URLS
     # ============================================================================
@@ -44,7 +76,6 @@ urlpatterns = [
     path('explorar/', views.explore_view, name='explore'),
     path('mensajes/', views.conversations_view, name='conversations'),
     path('galeria/', views.gallery_view, name='gallery'),
-    # path('galeria/foto/<uuid:photo_id>/comentarios/', views.get_photo_comments_view, name='get_photo_comments'),
     path('api/upload-photo/', views.gallery_view, name='upload_photo'),
     path('galeria/foto/<uuid:photo_id>/', views.photo_detail_view, name='photo_detail'),
     path('galeria/eliminar/<uuid:media_id>/', views.delete_media_view, name='delete_media'),
@@ -56,7 +87,6 @@ urlpatterns = [
     path('galeria/guardar/<uuid:photo_id>/', views.save_post_view, name='save_post'),
     path('galeria/guardar/<uuid:photo_id>/contador/', views.get_saves_count_view, name='get_saves_count'),
     path('membresias/', views.memberships_view, name='memberships'),
-    path('notificaciones/', views.notifications_view, name='notifications'),
     path('configuracion/', views.settings_view, name='settings'),
 
     # ============================================================================
@@ -68,70 +98,30 @@ urlpatterns = [
     # ============================================================================
     # MEMBERSHIP & PAYMENT URLS
     # ============================================================================
-    path('checkout/<int:plan_id>/', views.checkout_view, name='checkout'),
-    path('verificacion/', views.verification_view, name='verification'),
-    path('plan-diario/', views.daily_plan_view, name='daily_plan'),
-
-    # ============================================================================
-    # MODERATION & REPORTING URLS
-    # ============================================================================
-    path('reportar/', views.report_content_view, name='report_content'),
-    path('admin/dashboard/', views.admin_dashboard_view, name='admin_dashboard'),
-    path('admin/moderar/<int:post_id>/', views.admin_moderate_post_view, name='admin_moderate_post'),
-
-    # ============================================================================
-    # DYNAMIC PAGES
-    # ============================================================================
-    path('usuario/<str:nickname>/agregar-amigo/', views.add_friend_view, name='add_friend'),
-
-    path('<str:template_name>/', views.dynamic_pages_view, name='dynamic_pages'),
-]
-
-# ============================================================================
-# RUTAS DE PAGOS Y REFERENCIA
-# ============================================================================
-
-from .payment_views import (
-    get_membership_plans_view,
-    checkout_view,
-    conekta_webhook_view,
-    claim_referral_reward_view,
-    payment_transactions_list_view
-)
-
-from .referral_views import (
-    get_referral_code_view,
-    list_referrals_view,
-    get_referral_stats_view
-)
-
-urlpatterns += [
-    # PAGOS
     path('api/membership-plans/', get_membership_plans_view, name='membership_plans'),
     path('api/checkout/', checkout_view, name='checkout'),
     path('webhook/conekta/', conekta_webhook_view, name='conekta_webhook'),
     path('api/claim-reward/<uuid:reward_id>/', claim_referral_reward_view, name='claim_reward'),
+    path('api/payment-transactions/', payment_transactions_list_view, name='payment_transactions'),
 
-    # REFERENCIA
+    # ============================================================================
+    # VERIFICATION URLS
+    # ============================================================================
+    path('verificacion/', views.verification_page_view, name='verification'),
+    path('api/verification-status/', views.verification_status_view, name='verification_status'),
+    path('api/upload-verification/', views.upload_verification_view, name='upload_verification'),
+
+    # ============================================================================
+    # REFERRAL URLS
+    # ============================================================================
     path('api/referral-code/', get_referral_code_view, name='referral_code'),
     path('api/referrals/', list_referrals_view, name='list_referrals'),
     path('api/referral-stats/', get_referral_stats_view, name='referral_stats'),
-]
 
-from .admin_views import (
-    admin_dashboard_view,
-    list_campaigns_view,
-    create_campaign_view,
-    update_campaign_view,
-    toggle_campaign_view,
-    delete_campaign_view,
-    app_settings_view,
-    campaign_presets_view
-)
-
-urlpatterns += [
-    # ADMIN DASHBOARD
-    path('admin/dashboard/', admin_dashboard_view, name='admin_dashboard'),
+    # ============================================================================
+    # CAMPAIGN ADMIN URLS
+    # ============================================================================
+    path('admin/dashboard/', admin_dashboard_view, name='admin_dashboard_old'),
     path('admin/campaigns/', list_campaigns_view, name='admin_campaigns'),
     path('admin/campaigns/create/', create_campaign_view, name='create_campaign'),
     path('admin/campaigns/<uuid:campaign_id>/update/', update_campaign_view, name='update_campaign'),
@@ -140,20 +130,14 @@ urlpatterns += [
     path('admin/settings/', app_settings_view, name='app_settings'),
     path('admin/campaigns/presets/', campaign_presets_view, name='campaign_presets'),
 
-    # ADMIN - MEMBRESÍAS
-    path('admin/memberships/', views.admin_memberships_view, name='admin_memberships'),
-    path('api/admin/membership-price/', views.update_membership_price_view, name='update_membership_price'),
-    path('api/admin/membership-privilege/', views.update_membership_privilege_view, name='update_membership_privilege'),
+    # ============================================================================
+    # MODERATION & REPORTING URLS
+    # ============================================================================
+    path('reportar/', views.report_content_view, name='report_content'),
 
-    # ADMIN - MODERACIÓN
-    path('admin/moderation/', views.admin_moderation_queue_view, name='admin_moderation'),
-    path('api/admin/moderate-content/', views.moderate_content_view, name='moderate_content'),
-    path('api/admin/stats/', views.admin_stats_view, name='admin_stats'),
-
-    # PAYMENT HISTORY
-    path('api/payment-transactions/', payment_transactions_list_view, name='payment_transactions'),
-    # VERIFICACIÓN
-    path('verificacion/', views.verification_page_view, name='verification'),
-    path('api/verification-status/', views.verification_status_view, name='verification_status'),
-    path('api/upload-verification/', views.upload_verification_view, name='upload_verification'),
-    ]
+    # ============================================================================
+    # DYNAMIC PAGES
+    # ============================================================================
+    path('usuario/<str:nickname>/agregar-amigo/', views.add_friend_view, name='add_friend'),
+    path('<str:template_name>/', views.dynamic_pages_view, name='dynamic_pages'),
+]

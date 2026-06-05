@@ -1691,25 +1691,20 @@ def verification_page_view(request):
 # SPRINT 3: ADMIN DASHBOARD - MEMBRESÍAS Y MODERACIÓN
 # ============================================================================
 
-@login_required(login_url='pages:login')
+from django.contrib.admin.views.decorators import staff_member_required
+
+@staff_member_required(login_url='pages:login')
 @require_http_methods(["GET"])
 def admin_memberships_view(request):
-    """Panel de administración de membresías"""
-    if not request.user.is_staff:
-        return JsonResponse({'error': 'No autorizado'}, status=403)
-
+    """Solo accesible para staff/admin"""
     try:
-        # Obtener membresías de Supabase
         memberships = supabase.table('membership_types').select('*').execute()
-
-        context = {
-            'memberships': memberships.data or [],
-            'page': 'memberships'
-        }
+        context = {'memberships': memberships.data or [], 'page': 'memberships'}
         return render(request, 'admin/memberships_dashboard.html', context)
     except Exception as e:
         print(f"[ERROR] admin_memberships_view: {e}")
         return render(request, 'admin/memberships_dashboard.html', {'error': str(e)})
+
 
 
 @login_required(login_url='pages:login')
@@ -1784,25 +1779,83 @@ def update_membership_privilege_view(request):
 # MODERACIÓN DE CONTENIDO
 # ============================================================================
 
-@login_required(login_url='pages:login')
+@staff_member_required(login_url='pages:login')
 @require_http_methods(["GET"])
 def admin_moderation_queue_view(request):
-    """Cola de moderación de fotos y videos"""
-    if not request.user.is_staff:
-        return JsonResponse({'error': 'No autorizado'}, status=403)
-
+    """Solo accesible para staff/admin"""
     try:
-        # Obtener contenido pendiente (fotos con status = 'pending')
-        pending_content = supabase.table('photos').select('*').eq('status', 'pending').order('created_at', desc=True).execute()
-
-        context = {
-            'pending_content': pending_content.data or [],
-            'page': 'moderation'
-        }
+        pending_content = supabase.table('photos').select('*').eq('status', 'pending')\
+            .order('created_at', desc=True).execute()
+        context = {'pending_content': pending_content.data or [], 'page': 'moderation'}
         return render(request, 'admin/moderation_queue.html', context)
     except Exception as e:
-        print(f"[ERROR] admin_moderation_queue_view: {e}")
         return render(request, 'admin/moderation_queue.html', {'error': str(e)})
+
+@staff_member_required(login_url='pages:login')
+@require_http_methods(["POST"])
+def update_membership_price_view(request):
+    """Solo accesible para staff/admin"""
+    try:
+        data = json.loads(request.body)
+        membership_id = data.get('membership_id')
+        price_promotion = data.get('price_promotion')
+        price_normal = data.get('price_normal')
+        if not all([membership_id, price_promotion, price_normal]):
+            return JsonResponse({'error': 'Datos incompletos'}, status=400)
+        supabase.table('membership_types').update({
+            'price_promotion': float(price_promotion),
+            'price_normal': float(price_normal)
+        }).eq('id', membership_id).execute()
+        return JsonResponse({'success': True, 'message': 'Precio actualizado'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@staff_member_required(login_url='pages:login')
+@require_http_methods(["POST"])
+def moderate_content_view(request):
+    """Solo accesible para staff/admin"""
+    try:
+        data = json.loads(request.body)
+        photo_id = data.get('photo_id')
+        action = data.get('action')
+        reason = data.get('reason', '')
+        if action not in ['approve', 'reject']:
+            return JsonResponse({'error': 'Acción inválida'}, status=400)
+        update_data = {
+            'status': 'approved' if action == 'approve' else 'rejected',
+            'moderated_by_admin': str(request.user.id),
+            'moderated_at': timezone.now().isoformat()
+        }
+        if action == 'reject':
+            update_data['rejection_reason'] = reason
+        supabase.table('photos').update(update_data).eq('id', photo_id).execute()
+        return JsonResponse({'success': True, 'message': f'Contenido {action}do'})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+@staff_member_required(login_url='pages:login')
+@require_http_methods(["GET"])
+def admin_stats_view(request):
+    """Solo accesible para staff/admin"""
+    try:
+        users = supabase.table('profiles').select('id', count='exact').execute()
+        total_users = len(users.data) if users.data else 0
+        subscriptions = supabase.table('payment_transactions').select('id', count='exact')\
+            .eq('status', 'completed').execute()
+        total_subscriptions = len(subscriptions.data) if subscriptions.data else 0
+        pending = supabase.table('photos').select('id', count='exact').eq('status', 'pending').execute()
+        pending_count = len(pending.data) if pending.data else 0
+        tickets = supabase.table('support_tickets').select('id', count='exact').eq('status', 'open').execute()
+        open_tickets = len(tickets.data) if tickets.data else 0
+        return JsonResponse({'success': True, 'stats': {
+            'total_users': total_users,
+            'total_subscriptions': total_subscriptions,
+            'pending_moderation': pending_count,
+            'open_support_tickets': open_tickets
+        }})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
 
 
 @login_required(login_url='pages:login')

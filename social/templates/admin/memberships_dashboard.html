@@ -1,0 +1,148 @@
+{% extends 'base_authenticated.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block page_title %}Admin - Membresías{% endblock %}
+
+{% block left_sidebar %}
+<div class="sidebar-left">
+    <div class="sidebar-section">
+        <h3 style="margin: 0 0 15px; font-size: 14px; font-weight: 600;">⚙️ ADMIN PANEL</h3>
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+            <a href="{% url 'pages:admin_memberships' %}" style="padding: 10px 15px; background: #e3f2fd; border: 2px solid #1976d2; border-radius: 6px; color: #1976d2; text-decoration: none; font-weight: 600; font-size: 13px;">
+                💳 Membresías
+            </a>
+            <a href="{% url 'pages:admin_moderation' %}" style="padding: 10px 15px; background: white; border: 2px solid #ddd; border-radius: 6px; color: #666; text-decoration: none; font-weight: 600; font-size: 13px;">
+                🔍 Moderación
+            </a>
+        </div>
+    </div>
+</div>
+{% endblock left_sidebar %}
+
+{% block main_content %}
+{% csrf_token %}
+
+<div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <h1 style="margin: 0 0 20px; color: #333; font-size: 24px;">💳 Gestión de Membresías</h1>
+
+    {% if error %}
+    <div style="background: #ffcdd2; padding: 15px; border-radius: 8px; color: #c62828; margin-bottom: 20px;">
+        Error: {{ error }}
+    </div>
+    {% endif %}
+
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse; font-size: 13px;">
+            <thead>
+                <tr style="background: #333; color: white;">
+                    <th style="padding: 12px; text-align: left; font-weight: 900;">PLAN</th>
+                    <th style="padding: 12px; text-align: center; font-weight: 900;">PRECIO PROMO</th>
+                    <th style="padding: 12px; text-align: center; font-weight: 900;">PRECIO NORMAL</th>
+                    <th style="padding: 12px; text-align: center; font-weight: 900;">DURACIÓN</th>
+                    <th style="padding: 12px; text-align: center; font-weight: 900;">ACTIVO</th>
+                    <th style="padding: 12px; text-align: center; font-weight: 900;">ACCIONES</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for membership in memberships %}
+                <tr style="border-bottom: 1px solid #eee; background: {% cycle 'white' '#f9f9f9' %};">
+                    <td style="padding: 12px; font-weight: 600; color: #333;">{{ membership.name }}</td>
+                    <td style="padding: 12px; text-align: center;">
+                        <input type="number" class="price-promo" data-id="{{ membership.id }}" value="{{ membership.price_promotion }}" step="0.01" style="width: 100px; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <input type="number" class="price-normal" data-id="{{ membership.id }}" value="{{ membership.price_normal }}" step="0.01" style="width: 100px; padding: 6px; border: 1px solid #ddd; border-radius: 4px;">
+                    </td>
+                    <td style="padding: 12px; text-align: center; color: #666;">
+                        {% if membership.duration_days %}
+                            {{ membership.duration_days }} días
+                        {% else %}
+                            ∞ Ilimitado
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <input type="checkbox" class="is-active" data-id="{{ membership.id }}" {% if membership.is_active %}checked{% endif %}>
+                    </td>
+                    <td style="padding: 12px; text-align: center;">
+                        <button onclick="saveMembership('{{ membership.id }}')" style="padding: 6px 12px; background: #4caf50; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600; font-size: 11px;">Guardar</button>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+function saveMembership(membershipId) {
+    const pricePromo = document.querySelector('.price-promo[data-id="' + membershipId + '"]').value;
+    const priceNormal = document.querySelector('.price-normal[data-id="' + membershipId + '"]').value;
+
+    if (!pricePromo || !priceNormal) {
+        alert('Completa todos los campos');
+        return;
+    }
+
+    fetch('{% url "pages:update_membership_price" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            membership_id: membershipId,
+            price_promotion: parseFloat(pricePromo),
+            price_normal: parseFloat(priceNormal)
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ Membresía actualizada');
+        } else {fetch('{% url "pages:admin_stats" %}')
+            alert('❌ Error: ' + data.error);
+        }
+    })
+    .catch(e => alert('Error: ' + e));
+}
+</script>
+
+{% endblock main_content %}
+
+{% block right_sidebar %}
+<div class="sidebar-right">
+    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <h3 style="margin: 0 0 15px; color: #333; font-size: 14px; font-weight: 600;">📊 Estadísticas</h3>
+        <div id="admin-stats" style="font-size: 12px; color: #666; line-height: 1.8;">
+            Cargando...
+        </div>
+    </div>
+</div>
+
+<script>
+// Cargar estadísticas
+fetch('{% url "pages:admin_stats" %}')
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            const stats = data.stats;
+            document.getElementById('admin-stats').innerHTML = `
+                <div style="margin-bottom: 10px;">
+                    <strong>Usuarios totales:</strong> ${stats.total_users}
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Suscripciones:</strong> ${stats.total_subscriptions}
+                </div>
+                <div style="margin-bottom: 10px;">
+                    <strong>Pendiente moderación:</strong> ${stats.pending_moderation}
+                </div>
+                <div>
+                    <strong>Tickets abiertos:</strong> ${stats.open_support_tickets}
+                </div>
+            `;
+        }
+    })
+    .catch(e => console.error('Error cargando stats:', e));
+</script>
+{% endblock right_sidebar %}
