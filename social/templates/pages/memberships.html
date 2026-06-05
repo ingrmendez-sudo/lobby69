@@ -7,43 +7,15 @@
 {% block left_sidebar %}
 <div class="sidebar-left">
     <div class="sidebar-section">
-        <h3 style="display: flex; align-items: center; gap: 8px; margin: 0 0 15px;">
-            <span>📋</span> {% trans "PLANES" %}
-        </h3>
-        <div style="display: flex; flex-direction: column; gap: 10px;">
-            <button onclick="filterPlans('all')" class="plan-filter active" style="text-align: left; padding: 10px 15px; border: 2px solid #4682b4; border-radius: 6px; background: #e3f2fd; cursor: pointer; font-weight: 600; color: #4682b4;">
-                👁️ Todos los Planes
-            </button>
-            <button onclick="filterPlans('explorer')" class="plan-filter" style="text-align: left; padding: 10px 15px; border: 2px solid transparent; border-radius: 6px; cursor: pointer; font-weight: 600; color: #1976d2;">
-                🚀 EXPLORER
-            </button>
-            <button onclick="filterPlans('connectors')" class="plan-filter" style="text-align: left; padding: 10px 15px; border: 2px solid transparent; border-radius: 6px; cursor: pointer; font-weight: 600; color: #757575;">
-                🤝 CONNECTORS
-            </button>
-            <button onclick="filterPlans('influencer')" class="plan-filter" style="text-align: left; padding: 10px 15px; border: 2px solid transparent; border-radius: 6px; cursor: pointer; font-weight: 600; color: #fbc02d;">
-                ⭐ INFLUENCER
-            </button>
-            <button onclick="filterPlans('vip')" class="plan-filter" style="text-align: left; padding: 10px 15px; border: 2px solid transparent; border-radius: 6px; cursor: pointer; font-weight: 600; color: #7b1fa2;">
-                💎 VIP ELITE
-            </button>
-        </div>
-    </div>
-
-    <hr style="margin: 20px 0;">
-
-    <div class="sidebar-section">
-        <h3 style="display: flex; align-items: center; gap: 8px; margin: 0 0 15px;">
-            <span>📑</span> TABS
+        <h3 style="display: flex; align-items: center; gap: 8px; margin: 0 0 15px; font-size: 14px; font-weight: 600;">
+            <span>📑</span> {% trans "NAVEGACIÓN" %}
         </h3>
         <div style="display: flex; flex-direction: column; gap: 8px;">
-            <button onclick="switchTab('plans', event)" class="tab-filter active" style="text-align: left; padding: 10px 15px; border: 2px solid #4682b4; border-radius: 6px; background: #e3f2fd; cursor: pointer; font-weight: 600; color: #4682b4;">
-                🎯 Todos los Planes
+            <button onclick="switchTab('plans')" class="tab-filter active" style="text-align: left; padding: 10px 15px; border: 2px solid #4682b4; border-radius: 6px; background: #e3f2fd; cursor: pointer; font-weight: 600; color: #4682b4; font-size: 13px;">
+                🎯 {% trans "Planes" %}
             </button>
-            <button onclick="switchTab('billing', event)" class="tab-filter" style="text-align: left; padding: 10px 15px; border: 2px solid transparent; border-radius: 6px; cursor: pointer; font-weight: 600; color: #666;">
-                💳 Historial
-            </button>
-            <button onclick="switchTab('upgrade', event)" class="tab-filter" style="text-align: left; padding: 10px 15px; border: 2px solid transparent; border-radius: 6px; cursor: pointer; font-weight: 600; color: #666;">
-                🚀 Mejorar Plan
+            <button onclick="switchTab('billing')" class="tab-filter" style="text-align: left; padding: 10px 15px; border: 2px solid transparent; border-radius: 6px; cursor: pointer; font-weight: 600; color: #666; font-size: 13px;">
+                💳 {% trans "Facturación" %}
             </button>
         </div>
     </div>
@@ -54,123 +26,28 @@
 <div class="main-content-memberships">
 
     <!-- HEADER -->
-    <div style="text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 12px;">
-        <h1 style="margin: 0 0 10px; color: #1976d2; font-size: 32px; font-weight: 900;">
+    <div style="text-align: center; margin-bottom: 30px; padding: 20px; background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); border-radius: 12px; border-left: 5px solid #1976d2;">
+        <h1 style="margin: 0 0 5px; color: #1976d2; font-size: 24px; font-weight: 900;">
             👑 {% trans "ELIGE TU NIVEL DE EXCLUSIVIDAD" %}
         </h1>
-        <p style="margin: 0; color: #555; font-size: 16px; font-weight: 600;">
+        <p style="margin: 0; color: #555; font-size: 13px; font-weight: 500;">
             {% trans "Conecta, Influye, Sé Parte de la Élite" %}
         </p>
     </div>
 
     <!-- TAB: PLANES -->
-<div id="plans-tab" class="tab-content active">
-    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow-x: auto;">
-        <table id="plans-comparison" style="width: 100%; border-collapse: collapse; font-size: 13px;">
-            <thead>
-                <tr style="background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%); color: white;">
-                    <th style="padding: 15px; text-align: left; font-weight: 900; border-bottom: 3px solid #1565c0;">📋 CARACTERÍSTICA</th>
-                    <th style="padding: 15px; text-align: center; font-weight: 900; border-bottom: 3px solid #1565c0; background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);">
-                        <div style="font-size: 16px;">🚀</div>
-                        <div style="font-size: 14px;">EXPLORER</div>
-                        <div style="font-size: 12px; color: #90caf9;">$180</div>
-                    </th>
-                    <th style="padding: 15px; text-align: center; font-weight: 900; border-bottom: 3px solid #1565c0; background: linear-gradient(135deg, #757575 0%, #616161 100%); color: white;">
-                        <div style="font-size: 16px;">🤝</div>
-                        <div style="font-size: 14px;">CONNECTORS</div>
-                        <div style="font-size: 12px; color: #bdbdbd;">$299.99</div>
-                    </th>
-                    <th style="padding: 15px; text-align: center; font-weight: 900; border-bottom: 3px solid #1565c0; background: linear-gradient(135deg, #fbc02d 0%, #f57f17 100%); color: white;">
-                        <div style="font-size: 16px;">⭐</div>
-                        <div style="font-size: 14px;">INFLUENCER</div>
-                        <div style="font-size: 12px; color: #fff59d;">$600 ⭐REC</div>
-                    </th>
-                    <th style="padding: 15px; text-align: center; font-weight: 900; border-bottom: 3px solid #1565c0; background: linear-gradient(135deg, #7b1fa2 0%, #6a1b9a 100%); color: white;">
-                        <div style="font-size: 16px;">💎</div>
-                        <div style="font-size: 14px;">VIP ELITE</div>
-                        <div style="font-size: 12px; color: #e1bee7;">$1,200 💎ÉLITE</div>
-                    </th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 15px; font-weight: 600; color: #333;">✓ Acceso Completo</td>
-                    <td style="padding: 15px; text-align: center; color: #1976d2; font-weight: 900;">✓</td>
-                    <td style="padding: 15px; text-align: center; color: #757575; font-weight: 900;">✓</td>
-                    <td style="padding: 15px; text-align: center; color: #f57f17; font-weight: 900;">✓</td>
-                    <td style="padding: 15px; text-align: center; color: #6a1b9a; font-weight: 900;">✓</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #eee; background: #f9f9f9;">
-                    <td style="padding: 15px; font-weight: 600; color: #333;">✓ Perfiles Ilimitados</td>
-                    <td style="padding: 15px; text-align: center; color: #1976d2; font-weight: 900;">✓</td>
-                    <td style="padding: 15px; text-align: center; color: #757575; font-weight: 900;">✓</td>
-                    <td style="padding: 15px; text-align: center; color: #f57f17; font-weight: 900;">✓</td>
-                    <td style="padding: 15px; text-align: center; color: #6a1b9a; font-weight: 900;">✓</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 15px; font-weight: 600; color: #333;">✓ Galerías Privadas</td>
-                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
-                    <td style="padding: 15px; text-align: center; color: #757575; font-weight: 900;">✓</td>
-                    <td style="padding: 15px; text-align: center; color: #f57f17; font-weight: 900;">✓</td>
-                    <td style="padding: 15px; text-align: center; color: #6a1b9a; font-weight: 900;">✓</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #eee; background: #f9f9f9;">
-                    <td style="padding: 15px; font-weight: 600; color: #333;">✓ Soporte Prioritario</td>
-                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
-                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
-                    <td style="padding: 15px; text-align: center; color: #f57f17; font-weight: 900;">✓</td>
-                    <td style="padding: 15px; text-align: center; color: #6a1b9a; font-weight: 900;">✓</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 15px; font-weight: 600; color: #333;">✓ Referidos Exclusivos</td>
-                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
-                    <td style="padding: 15px; text-align: center; color: #757575; font-weight: 900;">✓</td>
-                    <td style="padding: 15px; text-align: center; color: #f57f17; font-weight: 900;">✓</td>
-                    <td style="padding: 15px; text-align: center; color: #6a1b9a; font-weight: 900;">✓</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #eee; background: #f9f9f9;">
-                    <td style="padding: 15px; font-weight: 600; color: #333;">✓ Badge en Perfil</td>
-                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
-                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
-                    <td style="padding: 15px; text-align: center; color: #f57f17; font-weight: 900;">✓</td>
-                    <td style="padding: 15px; text-align: center; color: #6a1b9a; font-weight: 900;">✓</td>
-                </tr>
-                <tr style="border-bottom: 1px solid #eee;">
-                    <td style="padding: 15px; font-weight: 600; color: #333;">✓ Acceso a Eventos</td>
-                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
-                    <td style="padding: 15px; text-align: center; color: #999;">✗</td>
-                    <td style="padding: 15px; text-align: center; color: #f57f17; font-weight: 900;">✓</td>
-                    <td style="padding: 15px; text-align: center; color: #6a1b9a; font-weight: 900;">✓</td>
-                </tr>
-                <tr style="background: linear-gradient(135deg, #f5f5f5 0%, #eeeeee 100%);">
-                    <td style="padding: 15px; font-weight: 900; color: #333;">🎯 CONTRATAR</td>
-                    <td style="padding: 15px; text-align: center;">
-                        <button onclick="goToCheckout('explorer', '$180')" style="padding: 10px 15px; background: #1976d2; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 12px;">CONTRATAR</button>
-                    </td>
-                    <td style="padding: 15px; text-align: center;">
-                        <button onclick="goToCheckout('connectors', '$299.99')" style="padding: 10px 15px; background: #757575; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 12px;">CONTRATAR</button>
-                    </td>
-                    <td style="padding: 15px; text-align: center;">
-                        <button onclick="goToCheckout('influencer', '$600')" style="padding: 10px 15px; background: #f57f17; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 12px;">CONTRATAR</button>
-                    </td>
-                    <td style="padding: 15px; text-align: center;">
-                        <button onclick="goToCheckout('vip', '$1200')" style="padding: 10px 15px; background: #6a1b9a; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 900; font-size: 12px;">CONTRATAR</button>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
-
-    <!-- TAB: MEJORAR PLAN -->
-    <div id="upgrade-tab" class="tab-content" style="display: none;">
-        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); text-align: center;">
-            <h3 style="margin: 0 0 20px; color: #333;">🚀 {% trans "Cambiar Plan" %}</h3>
-            <p style="color: #666; margin: 0 0 20px;">{% trans "Selecciona un nuevo plan de arriba" %}</p>
-            <button onclick="changePlan()" style="padding: 12px 24px; background: #4682b4; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 14px;">
-                {% trans "Ver Planes" %}
-            </button>
+    <div id="plans-tab" class="tab-content active">
+        <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow-x: auto;">
+            <table id="plans-comparison" style="width: 100%; border-collapse: collapse; font-size: 12px;">
+                <!-- JS rellena esta tabla -->
+            </table>
         </div>
+    </div>
+
+    <!-- TAB: BILLING -->
+    <div id="billing-tab" class="tab-content" style="display: none; background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <h3 style="margin: 0 0 20px; color: #333; font-size: 16px;">💳 {% trans "Historial de Facturación" %}</h3>
+        <p style="color: #999; text-align: center; padding: 40px 20px; font-size: 13px;">{% trans "Tu historial de pagos aparecerá aquí" %}</p>
     </div>
 
 </div>
@@ -181,111 +58,70 @@
 
     <!-- MI MEMBRESÍA ACTUAL -->
     <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
-        <h3 style="margin: 0 0 15px; color: #333; display: flex; align-items: center; gap: 8px;">
-            <span>👑</span> {% trans "Tu Membresía Actual" %}
+        <h3 style="margin: 0 0 15px; color: #333; display: flex; align-items: center; gap: 8px; font-size: 14px;">
+            <span>👑</span> {% trans "Tu Membresía" %}
         </h3>
 
-        <div id="membership-info" style="background: #f5f5f5; padding: 15px; border-radius: 8px; margin-bottom: 15px;">
-            <p style="margin: 0 0 10px; font-size: 14px; color: #666; font-weight: 600;">ESTADO</p>
-            <p style="margin: 0 0 15px; font-size: 18px; color: #4caf50; font-weight: 900;">✓ {% trans "Activa" %}</p>
-
-            <p style="margin: 0 0 10px; font-size: 14px; color: #666; font-weight: 600;">PLAN</p>
-            <p style="margin: 0 0 15px; font-size: 18px; color: #1976d2; font-weight: 900;">VIP ELITE</p>
-
-            <p style="margin: 0 0 10px; font-size: 14px; color: #666; font-weight: 600;">VÁLIDA HASTA</p>
-            <p style="margin: 0 0 15px; font-size: 16px; color: #333; font-weight: 600;">--</p>
-
-            <p style="margin: 0 0 10px; font-size: 14px; color: #666; font-weight: 600;">DÍAS RESTANTES</p>
-            <p style="margin: 0 0 15px; font-size: 24px; color: #ff9800; font-weight: 900;">--</p>
-
-            <p style="margin: 0 0 10px; font-size: 14px; color: #666; font-weight: 600;">🔄 {% trans "AUTO-RENOVACIÓN" %}</p>
-            <p style="margin: 0; font-size: 16px; color: #4caf50; font-weight: 900;">✓ {% trans "Habilitada" %}</p>
+        <div id="membership-info" style="background: #f5f5f5; padding: 12px; border-radius: 8px; margin-bottom: 12px; font-size: 12px;">
+            <div style="margin-bottom: 10px;">
+                <p style="margin: 0 0 3px; color: #666; font-weight: 600;">ESTADO</p>
+                <p style="margin: 0; font-size: 14px; color: #4caf50; font-weight: 900;">✓ {% trans "Activa" %}</p>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <p style="margin: 0 0 3px; color: #666; font-weight: 600;">PLAN</p>
+                <p style="margin: 0; font-size: 14px; color: #1976d2; font-weight: 900;">VIP ELITE</p>
+            </div>
+            <div style="margin-bottom: 10px;">
+                <p style="margin: 0 0 3px; color: #666; font-weight: 600;">VÁLIDA HASTA</p>
+                <p style="margin: 0; font-size: 13px; color: #333; font-weight: 600;">--</p>
+            </div>
+            <div>
+                <p style="margin: 0 0 3px; color: #666; font-weight: 600;">DÍAS RESTANTES</p>
+                <p style="margin: 0; font-size: 16px; color: #ff9800; font-weight: 900;">--</p>
+            </div>
         </div>
 
-        <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
-            <button onclick="changePlan()" style="padding: 12px; background: #4682b4; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.3s;" onmouseover="this.style.background='#36648b'" onmouseout="this.style.background='#4682b4'">
+        <div style="display: grid; grid-template-columns: 1fr; gap: 8px;">
+            <button onclick="changePlan()" style="padding: 10px; background: #4682b4; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.3s;" onmouseover="this.style.background='#36648b'" onmouseout="this.style.background='#4682b4'">
                 💳 {% trans "Cambiar Plan" %}
             </button>
-            <button onclick="manageBilling()" style="padding: 12px; background: #757575; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.3s;" onmouseover="this.style.background='#616161'" onmouseout="this.style.background='#757575'">
-                📋 {% trans "Gestionar Facturación" %}
-            </button>
-            <button onclick="cancelSubscription()" style="padding: 12px; background: #f44336; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px; transition: all 0.3s;" onmouseover="this.style.background='#d32f2f'" onmouseout="this.style.background='#f44336'">
-                ❌ {% trans "Cancelar Suscripción" %}
+            <button onclick="cancelSubscription()" style="padding: 10px; background: #f44336; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 12px; transition: all 0.3s;" onmouseover="this.style.background='#d32f2f'" onmouseout="this.style.background='#f44336'">
+                ❌ {% trans "Cancelar" %}
             </button>
         </div>
     </div>
 
-    <!-- ESTADÍSTICAS DE REFERIDOS -->
-    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); margin-bottom: 20px;">
-        <h3 style="margin: 0 0 15px; color: #333; display: flex; align-items: center; gap: 8px;">
-            <span>📊</span> {% trans "Mis Referidos" %}
+    <!-- REFERIDOS -->
+    <div style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+        <h3 style="margin: 0 0 15px; color: #333; display: flex; align-items: center; gap: 8px; font-size: 14px;">
+            <span>📊</span> {% trans "Referidos" %}
         </h3>
 
-        <div style="background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%); padding: 15px; border-radius: 8px; margin-bottom: 10px;">
-            <p style="margin: 0 0 5px; font-size: 13px; color: #666;">{% trans "Total Invitados" %}</p>
-            <p style="margin: 0; font-size: 24px; color: #1976d2; font-weight: 900;">--</p>
+        <div style="background: #e3f2fd; padding: 12px; border-radius: 8px; margin-bottom: 8px; font-size: 12px; text-align: center;">
+            <p style="margin: 0 0 3px; color: #666;">{% trans "Total" %}</p>
+            <p style="margin: 0; font-size: 18px; color: #1976d2; font-weight: 900;">--</p>
         </div>
 
-        <div style="background: linear-gradient(135deg, #c8e6c9 0%, #a5d6a7 100%); padding: 15px; border-radius: 8px; margin-bottom: 10px;">
-            <p style="margin: 0 0 5px; font-size: 13px; color: #666;">{% trans "Con Membresía Pagada" %}</p>
-            <p style="margin: 0; font-size: 24px; color: #2e7d32; font-weight: 900;">--</p>
+        <div style="background: #c8e6c9; padding: 12px; border-radius: 8px; font-size: 12px; text-align: center;">
+            <p style="margin: 0 0 3px; color: #666;">{% trans "Activos" %}</p>
+            <p style="margin: 0; font-size: 18px; color: #2e7d32; font-weight: 900;">--</p>
         </div>
-
-        <div style="background: linear-gradient(135deg, #fff9c4 0%, #fff59d 100%); padding: 15px; border-radius: 8px;">
-            <p style="margin: 0 0 5px; font-size: 13px; color: #666;">{% trans "Recompensas Disponibles" %}</p>
-            <p style="margin: 0; font-size: 24px; color: #fbc02d; font-weight: 900;">--</p>
-        </div>
-
-        <button onclick="viewReferrals()" style="width: 100%; margin-top: 15px; padding: 12px; background: #4682b4; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; font-size: 13px;">
-            🔗 {% trans "Ver Referidos" %}
-        </button>
     </div>
 
 </div>
 {% endblock right_sidebar %}
 
 {% block extra_js %}
-<script src="{% static 'js/memberships.js' %}"></script>
 <script>
-// Funciones de navegación
-function switchTab(tab, e) {
-    if (e) e.preventDefault();
-
-    document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
-    document.querySelectorAll('.tab-filter').forEach(el => el.style.border = '2px solid transparent');
-
-    document.getElementById(tab + '-tab').style.display = 'block';
-    event.target.style.border = '2px solid #4682b4';
-    event.target.style.background = '#e3f2fd';
-}
-
-function filterPlans(filter) {
-    console.log('Filtro:', filter);
-    document.querySelectorAll('.plan-filter').forEach(el => {
-        el.style.border = '2px solid transparent';
-        el.style.background = 'transparent';
-    });
-    event.target.style.border = '2px solid #4682b4';
-    event.target.style.background = '#e3f2fd';
-}
-
-function changePlan() {
-    switchTab('plans', {target: document.querySelector('.tab-filter:first-child'), preventDefault: () => {}});
-    document.querySelector('.tab-filter:first-child').click();
-}
-
-function manageBilling() {
-    switchTab('billing', {target: document.querySelectorAll('.tab-filter')[1], preventDefault: () => {}});
-}
-
-function cancelSubscription() {
-    if (confirm('¿Estás seguro de que deseas cancelar tu suscripción?')) {
-        alert('Función de cancelación en desarrollo');
-    }
-}
-
-function viewReferrals() {
-    alert('Panel de referidos próximamente');
+// Prevenir carga duplicada
+if (typeof allPlans === 'undefined') {
+    var script = document.createElement('script');
+    script.src = '/static/js/memberships.js?' + Date.now();
+    document.body.appendChild(script);
 }
 </script>
 {% endblock extra_js %}
+
+"@ | Set-Content "social\templates\pages\memberships.html" -Encoding UTF8
+
+echo "✅ Template actualizado"
