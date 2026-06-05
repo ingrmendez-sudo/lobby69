@@ -208,7 +208,7 @@ class InvitationRequestAdmin(admin.ModelAdmin):
             print(f"Error enviando email a {solicitud.email}: {str(e)}")
 
 #from social.users.models import GalleryAdmin  # Asegúrate de que exista este modelo
-from .models import (
+from social.pages.models import (
     MembershipPrivilege, UserVerification, UserReview,
     Event, News, SupportTicket
 )

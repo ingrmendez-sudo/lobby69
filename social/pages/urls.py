@@ -139,6 +139,10 @@ urlpatterns += [
     path('admin/campaigns/<uuid:campaign_id>/delete/', delete_campaign_view, name='delete_campaign'),
     path('admin/settings/', app_settings_view, name='app_settings'),
     path('admin/campaigns/presets/', campaign_presets_view, name='campaign_presets'),
-# PAYMENT HISTORY
+    # PAYMENT HISTORY
     path('api/payment-transactions/', payment_transactions_list_view, name='payment_transactions'),
-]
+    # VERIFICACIÓN
+    path('verificacion/', views.verification_page_view, name='verification'),
+    path('api/verification-status/', views.verification_status_view, name='verification_status'),
+    path('api/upload-verification/', views.upload_verification_view, name='upload_verification'),
+    ]

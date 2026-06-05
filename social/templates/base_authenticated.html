@@ -237,6 +237,9 @@
                     </div>
                 </li>
                 <li><a href="{% url 'pages:settings' %}">⚙️ {% trans "Configuración" %}</a></li>
+                    <a href="{% url 'pages:verification' %}" style="display: flex; align-items: center; gap: 6px; padding: 8px 15px; border-radius: 6px; text-decoration: none; color: #666; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">
+                        ✓ {% trans "Verificación" %}
+                    </a>
             </ul>
         </div>
         <div class="navbar-right">

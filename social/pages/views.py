@@ -1,6 +1,8 @@
 ﻿"""
 Django views for Social Pages App (CLUB LOBBY69)
 """
+import time
+from django.shortcuts import render
 
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
@@ -1522,5 +1524,176 @@ def gallery_view(request):
     }
     return render(request, 'pages/gallery.html', context)
 
+import json
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
+from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
+from .models import UserVerification
+from supabase import create_client
+from django.conf import settings
+
+supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+
+# ============================================================================
+# VISTAS SPRINT 2: VERIFICACIÓN DE IDENTIDAD
+# ============================================================================
+
+@login_required(login_url='pages:login')
+@require_http_methods(["GET"])
+def verification_status_view(request):
+    """Obtener estado de verificación actual del usuario"""
+    try:
+        user_id = str(request.user.id)
+        print(f"[DEBUG] Verificación status para user: {user_id}")
+
+        # Consultar Supabase
+        verification_response = supabase.table('user_verifications')\
+            .select('*')\
+            .eq('user_id', user_id)\
+            .execute()
+
+        verification = verification_response.data[0] if verification_response.data else None
+
+        if not verification:
+            return JsonResponse({
+                'success': True,
+                'status': 'not_started',
+                'verified': False,
+                'message': 'No has iniciado el proceso de verificación'
+            })
+
+        return JsonResponse({
+            'success': True,
+            'status': verification['status'],
+            'verified': verification['status'] == 'approved',
+            'attempt_count': verification['attempt_count'],
+            'rejection_reason': verification['rejection_reason'],
+            'verified_at': verification['verified_at'],
+            'message': f"Estado: {verification['status']}"
+        })
+
+    except Exception as e:
+        print(f"[ERROR] verification_status_view: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required(login_url='pages:login')
+@require_http_methods(["POST"])
+def upload_verification_view(request):
+    """Subir selfie + documento para verificación"""
+    try:
+        user_id = str(request.user.id)
+        print(f"[DEBUG] Upload verification para user: {user_id}")
+
+        # Obtener archivos
+        selfie = request.FILES.get('selfie')
+        document = request.FILES.get('document')
+        document_type = request.POST.get('document_type', 'dni')
+
+        if not selfie or not document:
+            return JsonResponse({
+                'success': False,
+                'error': 'Se requiere selfie y documento'
+            }, status=400)
+
+        # Validar tipos de archivo
+        allowed_formats = ['image/jpeg', 'image/png', 'image/webp']
+        if selfie.content_type not in allowed_formats or document.content_type not in allowed_formats:
+            return JsonResponse({
+                'success': False,
+                'error': 'Solo se permiten JPG, PNG o WebP'
+            }, status=400)
+
+        # Validar tamaño (máx 5MB)
+        if selfie.size > 5 * 1024 * 1024 or document.size > 5 * 1024 * 1024:
+            return JsonResponse({
+                'success': False,
+                'error': 'El tamaño máximo es 5MB por archivo'
+            }, status=400)
+
+        # Subir a Supabase Storage
+        selfie_path = f"verifications/{user_id}/selfie_{int(time.time())}.jpg"
+        document_path = f"verifications/{user_id}/document_{int(time.time())}.jpg"
+
+        try:
+            selfie_response = supabase.storage.from_('verifications')\
+                .upload(selfie_path, selfie.read(), {'content-type': selfie.content_type})
+
+            document_response = supabase.storage.from_('verifications')\
+                .upload(document_path, document.read(), {'content-type': document.content_type})
+
+            print(f"[DEBUG] Archivos subidos a Supabase")
+        except Exception as e:
+            print(f"[ERROR] Upload a Supabase: {e}")
+            return JsonResponse({'success': False, 'error': 'Error subiendo archivos'}, status=500)
+
+        # Crear o actualizar registro de verificación
+        verification_data = {
+            'user_id': user_id,
+            'selfie_url': selfie_path,
+            'document_url': document_path,
+            'document_type': document_type,
+            'status': 'pending',
+            'attempt_count': 1
+        }
+
+        # Verificar si ya existe
+        existing = supabase.table('user_verifications')\
+            .select('id')\
+            .eq('user_id', user_id)\
+            .execute()
+
+        if existing.data:
+            # Actualizar
+            supabase.table('user_verifications')\
+                .update(verification_data)\
+                .eq('user_id', user_id)\
+                .execute()
+            print(f"[DEBUG] Verificación actualizada")
+        else:
+            # Crear
+            supabase.table('user_verifications')\
+                .insert(verification_data)\
+                .execute()
+            print(f"[DEBUG] Verificación creada")
+
+        return JsonResponse({
+            'success': True,
+            'message': 'Archivos subidos exitosamente. En revisión...',
+            'status': 'pending'
+        })
+
+    except Exception as e:
+        print(f"[ERROR] upload_verification_view: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+@login_required(login_url='pages:login')
+@require_http_methods(["GET"])
+def verification_page_view(request):
+    """Página de verificación"""
+    try:
+        user_id = str(request.user.id)
+
+        # Obtener estado actual
+        verification_response = supabase.table('user_verifications')\
+            .select('*')\
+            .eq('user_id', user_id)\
+            .execute()
+
+        verification = verification_response.data[0] if verification_response.data else None
+
+        context = {
+            'verification': verification,
+            'verified': verification and verification['status'] == 'approved',
+            'status': verification['status'] if verification else 'not_started'
+        }
+
+        return render(request, 'pages/verification.html', context)
+
+    except Exception as e:
+        print(f"[ERROR] verification_page_view: {e}")
+        return render(request, 'pages/verification.html', {'error': str(e)})
 
 
