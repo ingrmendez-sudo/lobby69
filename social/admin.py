@@ -208,4 +208,48 @@ class InvitationRequestAdmin(admin.ModelAdmin):
             print(f"Error enviando email a {solicitud.email}: {str(e)}")
 
 #from social.users.models import GalleryAdmin  # Asegúrate de que exista este modelo
+from .models import (
+    MembershipPrivilege, UserVerification, UserReview,
+    Event, News, SupportTicket
+)
+
+@admin.register(MembershipPrivilege)
+class MembershipPrivilegeAdmin(admin.ModelAdmin):
+    list_display = ['membership_type_id', 'privilege_key', 'privilege_value', 'created_at']
+    search_fields = ['privilege_key']
+    readonly_fields = ['id', 'created_at', 'updated_at']
+
+@admin.register(UserVerification)
+class UserVerificationAdmin(admin.ModelAdmin):
+    list_display = ['user_id', 'status', 'attempt_count', 'verified_at']
+    list_filter = ['status', 'created_at']
+    search_fields = ['user_id']
+    readonly_fields = ['id', 'created_at', 'updated_at']
+
+@admin.register(UserReview)
+class UserReviewAdmin(admin.ModelAdmin):
+    list_display = ['reviewer_id', 'reviewed_user_id', 'rating', 'verified', 'created_at']
+    list_filter = ['rating', 'verified', 'created_at']
+    readonly_fields = ['id', 'created_at', 'updated_at']
+
+@admin.register(Event)
+class EventAdmin(admin.ModelAdmin):
+    list_display = ['title', 'date_time', 'status', 'price', 'created_at']
+    list_filter = ['status', 'date_time']
+    search_fields = ['title', 'location']
+    readonly_fields = ['id', 'created_at', 'updated_at']
+
+@admin.register(News)
+class NewsAdmin(admin.ModelAdmin):
+    list_display = ['title', 'published', 'category', 'published_at', 'created_at']
+    list_filter = ['published', 'category', 'created_at']
+    search_fields = ['title', 'content']
+    readonly_fields = ['id', 'created_at', 'updated_at']
+
+@admin.register(SupportTicket)
+class SupportTicketAdmin(admin.ModelAdmin):
+    list_display = ['subject', 'type', 'status', 'priority', 'user_id', 'created_at']
+    list_filter = ['type', 'status', 'priority', 'created_at']
+    search_fields = ['subject', 'message', 'user_id']
+    readonly_fields = ['id', 'created_at', 'updated_at', 'resolved_at']
 

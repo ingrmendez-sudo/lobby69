@@ -220,3 +220,178 @@ class AppSetting(models.Model):
 
     def __str__(self):
         return f"{self.key}: {self.value[:50]}"
+
+from django.db import models
+from django.core.validators import MinValueValidator, MaxValueValidator
+import uuid
+
+# ============================================================================
+# MODELOS SPRINT 1: MEMBRESÍAS, VERIFICACIÓN Y ADMINISTRACIÓN
+# ============================================================================
+
+class MembershipPrivilege(models.Model):
+    """Privilegios asociados a cada tipo de membresía"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    membership_type_id = models.UUIDField()  # FK a membership_types (Supabase)
+    privilege_key = models.CharField(max_length=100)
+    privilege_value = models.JSONField(default=dict)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'membership_privileges'
+        verbose_name = 'Privilegio de Membresía'
+        verbose_name_plural = 'Privilegios de Membresía'
+        unique_together = ('membership_type_id', 'privilege_key')
+
+    def __str__(self):
+        return f"{self.privilege_key} - {self.privilege_value}"
+
+
+class UserVerification(models.Model):
+    """Verificación de identidad de usuarios (selfie + documento)"""
+    STATUS_CHOICES = [
+        ('pending', 'Pendiente'),
+        ('approved', 'Aprobado'),
+        ('rejected', 'Rechazado'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user_id = models.UUIDField(unique=True)  # FK a profiles (Supabase)
+    selfie_url = models.TextField(null=True, blank=True)
+    document_url = models.TextField(null=True, blank=True)
+    document_type = models.CharField(max_length=50, null=True, blank=True)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
+    rejection_reason = models.TextField(null=True, blank=True)
+    attempt_count = models.IntegerField(default=0)
+    verified_by_admin = models.UUIDField(null=True, blank=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'user_verifications'
+        verbose_name = 'Verificación de Usuario'
+        verbose_name_plural = 'Verificaciones de Usuario'
+
+    def __str__(self):
+        return f"Verificación {self.user_id} - {self.status}"
+
+
+class UserReview(models.Model):
+    """Reseñas y reputación de usuarios"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    reviewer_id = models.UUIDField()  # FK a profiles
+    reviewed_user_id = models.UUIDField()  # FK a profiles
+    rating = models.IntegerField(validators=[MinValueValidator(1), MaxValueValidator(5)])
+    comment = models.TextField(null=True, blank=True)
+    verified = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'user_reviews'
+        verbose_name = 'Reseña de Usuario'
+        verbose_name_plural = 'Reseñas de Usuario'
+        unique_together = ('reviewer_id', 'reviewed_user_id')
+
+    def __str__(self):
+        return f"{self.reviewer_id} → {self.reviewed_user_id}: {self.rating}⭐"
+
+
+class Event(models.Model):
+    """Eventos de la comunidad"""
+    STATUS_CHOICES = [
+        ('draft', 'Borrador'),
+        ('published', 'Publicado'),
+        ('cancelled', 'Cancelado'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=255)
+    description = models.TextField(null=True, blank=True)
+    date_time = models.DateTimeField()
+    location = models.CharField(max_length=255, null=True, blank=True)
+    image_url = models.TextField(null=True, blank=True)
+    max_attendees = models.IntegerField(null=True, blank=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2, default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='draft')
+    created_by_admin = models.UUIDField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'events'
+        verbose_name = 'Evento'
+        verbose_name_plural = 'Eventos'
+        ordering = ['-date_time']
+
+    def __str__(self):
+        return f"{self.title} - {self.date_time}"
+
+
+class News(models.Model):
+    """Noticias y actualizaciones de la comunidad"""
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    title = models.CharField(max_length=255)
+    content = models.TextField()
+    image_url = models.TextField(null=True, blank=True)
+    category = models.CharField(max_length=100, null=True, blank=True)
+    published = models.BooleanField(default=False)
+    published_at = models.DateTimeField(null=True, blank=True)
+    created_by_admin = models.UUIDField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = 'news'
+        verbose_name = 'Noticia'
+        verbose_name_plural = 'Noticias'
+        ordering = ['-published_at', '-created_at']
+
+    def __str__(self):
+        return self.title
+
+
+class SupportTicket(models.Model):
+    """Tickets de soporte y quejas/sugerencias"""
+    TYPE_CHOICES = [
+        ('complaint', 'Queja'),
+        ('suggestion', 'Sugerencia'),
+        ('bug', 'Reporte de Bug'),
+        ('appeal', 'Apelación'),
+    ]
+    STATUS_CHOICES = [
+        ('open', 'Abierto'),
+        ('in_progress', 'En Progreso'),
+        ('resolved', 'Resuelto'),
+        ('closed', 'Cerrado'),
+    ]
+    PRIORITY_CHOICES = [
+        ('low', 'Baja'),
+        ('medium', 'Media'),
+        ('high', 'Alta'),
+        ('urgent', 'Urgente'),
+    ]
+
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    user_id = models.UUIDField()  # FK a profiles
+    type = models.CharField(max_length=20, choices=TYPE_CHOICES, default='suggestion')
+    subject = models.CharField(max_length=255)
+    message = models.TextField()
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='open')
+    priority = models.CharField(max_length=20, choices=PRIORITY_CHOICES, default='medium')
+    admin_response = models.TextField(null=True, blank=True)
+    resolved_by_admin = models.UUIDField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    resolved_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        db_table = 'support_tickets'
+        verbose_name = 'Ticket de Soporte'
+        verbose_name_plural = 'Tickets de Soporte'
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"[{self.type.upper()}] {self.subject} - {self.status}"
