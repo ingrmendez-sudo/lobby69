@@ -259,8 +259,6 @@ class UserVerification(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user_id = models.UUIDField(unique=True)  # FK a profiles (Supabase)
     selfie_url = models.TextField(null=True, blank=True)
-    document_url = models.TextField(null=True, blank=True)
-    document_type = models.CharField(max_length=50, null=True, blank=True)
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='pending')
     rejection_reason = models.TextField(null=True, blank=True)
     attempt_count = models.IntegerField(default=0)

@@ -1581,59 +1581,50 @@ def verification_status_view(request):
 @login_required(login_url='pages:login')
 @require_http_methods(["POST"])
 def upload_verification_view(request):
-    """Subir selfie + documento para verificación"""
+    """Subir selfie para verificación"""
     try:
         user_id = str(request.user.id)
         print(f"[DEBUG] Upload verification para user: {user_id}")
 
-        # Obtener archivos
+        # Obtener archivo
         selfie = request.FILES.get('selfie')
-        document = request.FILES.get('document')
-        document_type = request.POST.get('document_type', 'dni')
 
-        if not selfie or not document:
+        if not selfie:
             return JsonResponse({
                 'success': False,
-                'error': 'Se requiere selfie y documento'
+                'error': 'Se requiere una selfie'
             }, status=400)
 
-        # Validar tipos de archivo
+        # Validar tipo de archivo
         allowed_formats = ['image/jpeg', 'image/png', 'image/webp']
-        if selfie.content_type not in allowed_formats or document.content_type not in allowed_formats:
+        if selfie.content_type not in allowed_formats:
             return JsonResponse({
                 'success': False,
                 'error': 'Solo se permiten JPG, PNG o WebP'
             }, status=400)
 
         # Validar tamaño (máx 5MB)
-        if selfie.size > 5 * 1024 * 1024 or document.size > 5 * 1024 * 1024:
+        if selfie.size > 5 * 1024 * 1024:
             return JsonResponse({
                 'success': False,
-                'error': 'El tamaño máximo es 5MB por archivo'
+                'error': 'El tamaño máximo es 5MB'
             }, status=400)
 
         # Subir a Supabase Storage
         selfie_path = f"verifications/{user_id}/selfie_{int(time.time())}.jpg"
-        document_path = f"verifications/{user_id}/document_{int(time.time())}.jpg"
 
         try:
-            selfie_response = supabase.storage.from_('verifications')\
+            supabase.storage.from_('verifications')\
                 .upload(selfie_path, selfie.read(), {'content-type': selfie.content_type})
-
-            document_response = supabase.storage.from_('verifications')\
-                .upload(document_path, document.read(), {'content-type': document.content_type})
-
-            print(f"[DEBUG] Archivos subidos a Supabase")
+            print(f"[DEBUG] Selfie subida a Supabase")
         except Exception as e:
             print(f"[ERROR] Upload a Supabase: {e}")
-            return JsonResponse({'success': False, 'error': 'Error subiendo archivos'}, status=500)
+            return JsonResponse({'success': False, 'error': 'Error subiendo archivo'}, status=500)
 
         # Crear o actualizar registro de verificación
         verification_data = {
             'user_id': user_id,
             'selfie_url': selfie_path,
-            'document_url': document_path,
-            'document_type': document_type,
             'status': 'pending',
             'attempt_count': 1
         }
@@ -1660,7 +1651,7 @@ def upload_verification_view(request):
 
         return JsonResponse({
             'success': True,
-            'message': 'Archivos subidos exitosamente. En revisión...',
+            'message': 'Selfie subida exitosamente. En revisión...',
             'status': 'pending'
         })
 
