@@ -2424,3 +2424,217 @@ def admin_moderation_action_view(request):
     except Exception as e:
         print(f"[ERROR] admin_moderation_action_view: {e}")
         return JsonResponse({'error': str(e)}, status=500)
+
+# ============ REVIEWS MODULE ============
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_reviews_view(request):
+    """Admin reviews management"""
+    page = int(request.GET.get('page', 1))
+    status_filter = request.GET.get('status', '')
+    
+    try:
+        reviews = supabase.table('reviews').select('*').execute().data
+        if status_filter:
+            reviews = [r for r in reviews if r.get('status') == status_filter]
+        
+        total = len(reviews)
+        per_page = 20
+        total_pages = (total + per_page - 1) // per_page
+        start = (page - 1) * per_page
+        reviews = reviews[start:start + per_page]
+        
+        context = {
+            'page': 'reviews',
+            'reviews': reviews,
+            'total': total,
+            'current_page': page,
+            'total_pages': total_pages,
+            'status_filter': status_filter
+        }
+        return render(request, 'admin/reviews_list.html', context)
+    except Exception as e:
+        print(f"[ERROR] admin_reviews_view: {e}")
+        return render(request, 'admin/reviews_list.html', {'error': str(e), 'page': 'reviews'})
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_review_detail_view(request, review_id):
+    """Admin review detail"""
+    try:
+        review = supabase.table('reviews').select('*').eq('id', review_id).single().execute().data
+        context = {'page': 'reviews', 'review': review}
+        return render(request, 'admin/review_detail.html', context)
+    except Exception as e:
+        print(f"[ERROR] admin_review_detail_view: {e}")
+        return render(request, 'admin/review_detail.html', {'error': str(e), 'page': 'reviews'})
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["POST"])
+def admin_review_action_view(request):
+    """Admin review actions"""
+    import json
+    try:
+        data = json.loads(request.body)
+        review_id = data.get('review_id')
+        action = data.get('action')
+        
+        if action == 'approve':
+            supabase.table('reviews').update({'status': 'approved'}).eq('id', review_id).execute()
+            return JsonResponse({'success': True, 'message': 'Resena aprobada'})
+        elif action == 'reject':
+            supabase.table('reviews').update({'status': 'rejected'}).eq('id', review_id).execute()
+            return JsonResponse({'success': True, 'message': 'Resena rechazada'})
+        elif action == 'remove':
+            supabase.table('reviews').delete().eq('id', review_id).execute()
+            return JsonResponse({'success': True, 'message': 'Resena removida'})
+    except Exception as e:
+        print(f"[ERROR] admin_review_action_view: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+# ============ EVENTS MODULE ============
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_events_view(request):
+    """Admin events management"""
+    page = int(request.GET.get('page', 1))
+    search_query = request.GET.get('search', '').strip()
+    
+    try:
+        events = supabase.table('events').select('*').execute().data
+        if search_query:
+            events = [e for e in events if search_query.lower() in e.get('nombre', '').lower()]
+        
+        total = len(events)
+        per_page = 20
+        total_pages = (total + per_page - 1) // per_page
+        start = (page - 1) * per_page
+        events = events[start:start + per_page]
+        
+        context = {
+            'page': 'events',
+            'events': events,
+            'total': total,
+            'current_page': page,
+            'total_pages': total_pages,
+            'search_query': search_query
+        }
+        return render(request, 'admin/events_list.html', context)
+    except Exception as e:
+        print(f"[ERROR] admin_events_view: {e}")
+        return render(request, 'admin/events_list.html', {'error': str(e), 'page': 'events'})
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_event_detail_view(request, event_id):
+    """Admin event detail"""
+    try:
+        event = supabase.table('events').select('*').eq('id', event_id).single().execute().data
+        context = {'page': 'events', 'event': event}
+        return render(request, 'admin/event_detail.html', context)
+    except Exception as e:
+        print(f"[ERROR] admin_event_detail_view: {e}")
+        return render(request, 'admin/event_detail.html', {'error': str(e), 'page': 'events'})
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["POST"])
+def admin_event_action_view(request):
+    """Admin event actions"""
+    import json
+    try:
+        data = json.loads(request.body)
+        event_id = data.get('event_id')
+        action = data.get('action')
+        
+        if action == 'publish':
+            supabase.table('events').update({'status': 'published'}).eq('id', event_id).execute()
+            return JsonResponse({'success': True, 'message': 'Evento publicado'})
+        elif action == 'archive':
+            supabase.table('events').update({'status': 'archived'}).eq('id', event_id).execute()
+            return JsonResponse({'success': True, 'message': 'Evento archivado'})
+        elif action == 'delete':
+            supabase.table('events').delete().eq('id', event_id).execute()
+            return JsonResponse({'success': True, 'message': 'Evento eliminado'})
+    except Exception as e:
+        print(f"[ERROR] admin_event_action_view: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+# ============ NEWS MODULE ============
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_news_view(request):
+    """Admin news management"""
+    page = int(request.GET.get('page', 1))
+    search_query = request.GET.get('search', '').strip()
+    status_filter = request.GET.get('status', '')
+    
+    try:
+        news = supabase.table('news').select('*').execute().data
+        if search_query:
+            news = [n for n in news if search_query.lower() in n.get('titulo', '').lower()]
+        if status_filter:
+            news = [n for n in news if n.get('status') == status_filter]
+        
+        total = len(news)
+        per_page = 20
+        total_pages = (total + per_page - 1) // per_page
+        start = (page - 1) * per_page
+        news = news[start:start + per_page]
+        
+        context = {
+            'page': 'news',
+            'news': news,
+            'total': total,
+            'current_page': page,
+            'total_pages': total_pages,
+            'search_query': search_query,
+            'status_filter': status_filter
+        }
+        return render(request, 'admin/news_list.html', context)
+    except Exception as e:
+        print(f"[ERROR] admin_news_view: {e}")
+        return render(request, 'admin/news_list.html', {'error': str(e), 'page': 'news'})
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_news_detail_view(request, news_id):
+    """Admin news detail"""
+    try:
+        article = supabase.table('news').select('*').eq('id', news_id).single().execute().data
+        context = {'page': 'news', 'article': article}
+        return render(request, 'admin/news_detail.html', context)
+    except Exception as e:
+        print(f"[ERROR] admin_news_detail_view: {e}")
+        return render(request, 'admin/news_detail.html', {'error': str(e), 'page': 'news'})
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["POST"])
+def admin_news_action_view(request):
+    """Admin news actions"""
+    import json
+    try:
+        data = json.loads(request.body)
+        news_id = data.get('news_id')
+        action = data.get('action')
+        
+        if action == 'publish':
+            supabase.table('news').update({'status': 'published'}).eq('id', news_id).execute()
+            return JsonResponse({'success': True, 'message': 'Noticia publicada'})
+        elif action == 'draft':
+            supabase.table('news').update({'status': 'draft'}).eq('id', news_id).execute()
+            return JsonResponse({'success': True, 'message': 'Noticia guardada como borrador'})
+        elif action == 'delete':
+            supabase.table('news').delete().eq('id', news_id).execute()
+            return JsonResponse({'success': True, 'message': 'Noticia eliminada'})
+    except Exception as e:
+        print(f"[ERROR] admin_news_action_view: {e}")
+        return JsonResponse({'error': str(e)}, status=500)

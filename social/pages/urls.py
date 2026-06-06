@@ -51,6 +51,15 @@ urlpatterns = [
     path('admin/moderation/', views.admin_moderation_view, name='admin_moderation'),
     path('admin/moderation/<uuid:content_id>/', views.admin_moderation_detail_view, name='admin_moderation_detail'),
     path('api/admin/moderation/action/', views.admin_moderation_action_view, name='admin_moderation_action'),
+    path('admin/reviews/', views.admin_reviews_view, name='admin_reviews'),
+    path('admin/reviews/<uuid:review_id>/', views.admin_review_detail_view, name='admin_review_detail'),
+    path('api/admin/reviews/action/', views.admin_review_action_view, name='admin_review_action'),
+    path('admin/events/', views.admin_events_view, name='admin_events'),
+    path('admin/events/<uuid:event_id>/', views.admin_event_detail_view, name='admin_event_detail'),
+    path('api/admin/events/action/', views.admin_event_action_view, name='admin_event_action'),
+    path('admin/news/', views.admin_news_view, name='admin_news'),
+    path('admin/news/<uuid:news_id>/', views.admin_news_detail_view, name='admin_news_detail'),
+    path('api/admin/news/action/', views.admin_news_action_view, name='admin_news_action'),
     path('api/admin/users/action/', views.admin_user_action_view, name='admin_user_action'),
 
     # ============================================================================
@@ -155,6 +164,7 @@ urlpatterns = [
     path('usuario/<str:nickname>/agregar-amigo/', views.add_friend_view, name='add_friend'),
     path('<str:template_name>/', views.dynamic_pages_view, name='dynamic_pages'),
 ]
+
 
 
 
