@@ -41,6 +41,10 @@ urlpatterns = [
     path('api/admin/moderate-content/', views.moderate_content_view, name='moderate_content'),
     path('api/admin/stats/', views.admin_stats_view, name='admin_stats'),
 
+        path('admin/users/', views.admin_users_view, name='admin_users'),
+    path('admin/users/<uuid:user_id>/', views.admin_user_detail_view, name='admin_user_detail'),
+    path('api/admin/users/action/', views.admin_user_action_view, name='admin_user_action'),
+
     # ============================================================================
     # AUTHENTICATION URLS
     # ============================================================================
@@ -143,4 +147,5 @@ urlpatterns = [
     path('usuario/<str:nickname>/agregar-amigo/', views.add_friend_view, name='add_friend'),
     path('<str:template_name>/', views.dynamic_pages_view, name='dynamic_pages'),
 ]
+
 

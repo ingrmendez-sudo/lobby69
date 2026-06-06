@@ -1948,3 +1948,247 @@ def admin_hub_view(request):
 
 
 
+
+# ============================================================================
+# ADMIN: USERS MANAGEMENT
+# ============================================================================
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_users_view(request):
+    """Gestión de usuarios - lista, búsqueda y filtros"""
+    from social.users.models import User
+    
+    try:
+        # Parámetros de búsqueda y filtrado
+        search_query = request.GET.get('search', '').strip()
+        status_filter = request.GET.get('status', '')  # active, inactive, suspended
+        page = int(request.GET.get('page', 1))
+        
+        # Query base
+        users = User.objects.all().order_by('-date_joined')
+        
+        # Búsqueda por username, email o nombre
+        if search_query:
+            from django.db.models import Q
+            users = users.filter(
+                Q(username__icontains=search_query) |
+                Q(email__icontains=search_query) |
+                Q(first_name__icontains=search_query)
+            )
+        
+        # Filtro por estado
+        if status_filter == 'active':
+            users = users.filter(is_active=True)
+        elif status_filter == 'inactive':
+            users = users.filter(is_active=False)
+        
+        # Paginación (20 por página)
+        total_users = users.count()
+        items_per_page = 20
+        start_idx = (page - 1) * items_per_page
+        end_idx = start_idx + items_per_page
+        paginated_users = users[start_idx:end_idx]
+        total_pages = (total_users + items_per_page - 1) // items_per_page
+        
+        context = {
+            'page': 'users',
+            'users': paginated_users,
+            'total_users': total_users,
+            'current_page': page,
+            'total_pages': total_pages,
+            'search_query': search_query,
+            'status_filter': status_filter,
+        }
+        
+        return render(request, 'admin/users_list.html', context)
+    
+    except Exception as e:
+        print(f"[ERROR] admin_users_view: {e}")
+        import traceback; traceback.print_exc()
+        return render(request, 'admin/users_list.html', {'error': str(e)})
+
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_user_detail_view(request, user_id):
+    """Detalle de usuario - información y acciones"""
+    from social.users.models import User
+    
+    try:
+        user = User.objects.get(id=user_id)
+        
+        context = {
+            'page': 'users',
+            'user': user,
+            'is_staff': user.is_staff,
+            'is_active': user.is_active,
+            'created_at': user.date_joined,
+            'last_login': user.last_login,
+        }
+        
+        return render(request, 'admin/user_detail.html', context)
+    
+    except User.DoesNotExist:
+        return render(request, 'admin/user_detail.html', {'error': 'Usuario no encontrado'}, status=404)
+    except Exception as e:
+        print(f"[ERROR] admin_user_detail_view: {e}")
+        return render(request, 'admin/user_detail.html', {'error': str(e)})
+
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["POST"])
+def admin_user_action_view(request):
+    """Acciones sobre usuarios: activar, desactivar, suspender"""
+    from social.users.models import User
+    from django.http import JsonResponse
+    import json
+    
+    try:
+        data = json.loads(request.body)
+        user_id = data.get('user_id')
+        action = data.get('action')  # activate, deactivate, make_staff, remove_staff
+        
+        user = User.objects.get(id=user_id)
+        
+        if action == 'activate':
+            user.is_active = True
+            message = f'Usuario {user.username} activado'
+        elif action == 'deactivate':
+            user.is_active = False
+            message = f'Usuario {user.username} desactivado'
+        elif action == 'make_staff':
+            user.is_staff = True
+            message = f'Usuario {user.username} promovido a staff'
+        elif action == 'remove_staff':
+            user.is_staff = False
+            message = f'Usuario {user.username} removido de staff'
+        else:
+            return JsonResponse({'error': 'Acción no válida'}, status=400)
+        
+        user.save()
+        return JsonResponse({'success': True, 'message': message})
+    
+    except User.DoesNotExist:
+        return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
+    except Exception as e:
+        print(f"[ERROR] admin_user_action_view: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# ============================================================================
+# ADMIN: USERS MANAGEMENT
+# ============================================================================
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_users_view(request):
+    """Gestión de usuarios - lista, búsqueda y filtros"""
+    from social.users.models import User
+    
+    try:
+        search_query = request.GET.get('search', '').strip()
+        status_filter = request.GET.get('status', '')
+        page = int(request.GET.get('page', 1))
+        
+        users = User.objects.all().order_by('-date_joined')
+        
+        if search_query:
+            from django.db.models import Q
+            users = users.filter(
+                Q(username__icontains=search_query) |
+                Q(email__icontains=search_query) |
+                Q(first_name__icontains=search_query)
+            )
+        
+        if status_filter == 'active':
+            users = users.filter(is_active=True)
+        elif status_filter == 'inactive':
+            users = users.filter(is_active=False)
+        
+        total_users = users.count()
+        items_per_page = 20
+        start_idx = (page - 1) * items_per_page
+        paginated_users = users[start_idx:start_idx + items_per_page]
+        total_pages = (total_users + items_per_page - 1) // items_per_page
+        
+        context = {
+            'page': 'users',
+            'users': paginated_users,
+            'total_users': total_users,
+            'current_page': page,
+            'total_pages': total_pages,
+            'search_query': search_query,
+            'status_filter': status_filter,
+        }
+        
+        return render(request, 'admin/users_list.html', context)
+    
+    except Exception as e:
+        print(f"[ERROR] admin_users_view: {e}")
+        return render(request, 'admin/users_list.html', {'error': str(e)})
+
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_user_detail_view(request, user_id):
+    """Detalle de usuario"""
+    from social.users.models import User
+    
+    try:
+        user = User.objects.get(id=user_id)
+        context = {
+            'page': 'users',
+            'user': user,
+            'is_staff': user.is_staff,
+            'is_active': user.is_active,
+        }
+        return render(request, 'admin/user_detail.html', context)
+    except User.DoesNotExist:
+        return render(request, 'admin/user_detail.html', {'error': 'Usuario no encontrado'}, status=404)
+    except Exception as e:
+        return render(request, 'admin/user_detail.html', {'error': str(e)})
+
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["POST"])
+def admin_user_action_view(request):
+    """Acciones sobre usuarios"""
+    from social.users.models import User
+    from django.http import JsonResponse
+    import json
+    
+    try:
+        data = json.loads(request.body)
+        user_id = data.get('user_id')
+        action = data.get('action')
+        
+        user = User.objects.get(id=user_id)
+        
+        if action == 'activate':
+            user.is_active = True
+            message = f'Usuario {user.username} activado'
+        elif action == 'deactivate':
+            user.is_active = False
+            message = f'Usuario {user.username} desactivado'
+        elif action == 'make_staff':
+            user.is_staff = True
+            message = f'Usuario {user.username} promovido a staff'
+        elif action == 'remove_staff':
+            user.is_staff = False
+            message = f'Usuario {user.username} removido de staff'
+        else:
+            return JsonResponse({'error': 'Acción no válida'}, status=400)
+        
+        user.save()
+        return JsonResponse({'success': True, 'message': message})
+    
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+

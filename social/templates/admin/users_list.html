@@ -1,0 +1,173 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Usuarios - Admin LOBBY69</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #f5f7fa; }
+        .admin-wrapper { display: flex; height: 100vh; }
+        .admin-navbar { background: linear-gradient(135deg, #1a5f7a 0%, #2a8fa8 100%); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; position: fixed; top: 0; left: 0; right: 0; z-index: 1000; height: 60px; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+        .admin-navbar h1 { font-size: 1.5em; font-weight: 600; }
+        .admin-navbar-right { display: flex; gap: 15px; align-items: center; }
+        .logout-btn { background: #d32f2f; color: white; padding: 8px 15px; border-radius: 5px; text-decoration: none; transition: background 0.3s; }
+        .logout-btn:hover { background: #b71c1c; }
+        .admin-sidebar { background: #2c3e50; color: white; width: 250px; padding: 20px; margin-top: 60px; height: calc(100vh - 60px); overflow-y: auto; box-shadow: 2px 0 8px rgba(0,0,0,0.1); }
+        .admin-sidebar h3 { margin-top: 20px; margin-bottom: 10px; font-size: 0.9em; text-transform: uppercase; color: #95a5a6; letter-spacing: 1px; }
+        .admin-sidebar a { display: block; padding: 12px 15px; color: #ecf0f1; text-decoration: none; border-radius: 5px; margin-bottom: 5px; transition: all 0.3s; }
+        .admin-sidebar a:hover, .admin-sidebar a.active { background: #1a5f7a; color: white; font-weight: 600; }
+        .admin-content { flex: 1; margin-left: 250px; margin-top: 60px; padding: 30px; overflow-y: auto; }
+        .page-header { background: white; padding: 20px; border-radius: 10px; margin-bottom: 30px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); display: flex; justify-content: space-between; align-items: center; }
+        .page-header h2 { color: #1a5f7a; font-size: 1.8em; }
+        .search-filters { background: white; padding: 20px; border-radius: 10px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        .search-filters form { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+        .search-filters input, .search-filters select { padding: 10px 15px; border: 1px solid #ddd; border-radius: 5px; font-size: 0.95em; }
+        .search-filters button { background: #1a5f7a; color: white; padding: 10px 20px; border: none; border-radius: 5px; cursor: pointer; transition: background 0.3s; }
+        .search-filters button:hover { background: #0f3d52; }
+        .users-table { background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+        table { width: 100%; border-collapse: collapse; }
+        th { background: #f8f9fa; padding: 15px; text-align: left; font-weight: 600; color: #1a5f7a; border-bottom: 2px solid #e9ecef; }
+        td { padding: 15px; border-bottom: 1px solid #e9ecef; }
+        tr:hover { background: #f8f9fa; }
+        .status-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 600; }
+        .status-active { background: #c8e6c9; color: #2e7d32; }
+        .status-inactive { background: #ffccbc; color: #d84315; }
+        .role-badge { display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 0.85em; font-weight: 600; background: #bbdefb; color: #1565c0; }
+        .actions { display: flex; gap: 8px; }
+        .btn-small { padding: 6px 12px; border: none; border-radius: 5px; cursor: pointer; font-size: 0.85em; text-decoration: none; display: inline-block; transition: all 0.3s; }
+        .btn-view { background: #1a5f7a; color: white; }
+        .btn-view:hover { background: #0f3d52; }
+        .btn-deactivate { background: #ff9800; color: white; }
+        .btn-deactivate:hover { background: #f57c00; }
+        .pagination { margin-top: 20px; display: flex; justify-content: center; gap: 5px; }
+        .pagination a, .pagination span { padding: 8px 12px; border: 1px solid #ddd; border-radius: 5px; text-decoration: none; color: #1a5f7a; }
+        .pagination a:hover { background: #1a5f7a; color: white; }
+        .pagination .active { background: #1a5f7a; color: white; border-color: #1a5f7a; }
+    </style>
+</head>
+<body>
+    <div class="admin-wrapper">
+        <div class="admin-navbar">
+            <h1>📊 LOBBY69 Admin</h1>
+            <div class="admin-navbar-right">
+                <span>{{ request.user.username }}</span>
+                <a href="{% url 'pages:logout' %}" class="logout-btn">Cerrar Sesión</a>
+            </div>
+        </div>
+        
+        <div class="admin-sidebar">
+            <h3>🏠 General</h3>
+            <a href="{% url 'pages:admin_hub' %}">Dashboard</a>
+            <h3>👥 Usuarios</h3>
+            <a href="{% url 'pages:admin_users' %}" class="active">Gestionar Usuarios</a>
+            <h3>📨 Invitaciones</h3>
+            <a href="#">Solicitudes Pendientes</a>
+            <h3>🎟️ Soporte</h3>
+            <a href="#">Tickets Abiertos</a>
+            <h3>💳 Membresías</h3>
+            <a href="{% url 'pages:admin_memberships' %}">Planes y Precios</a>
+            <h3>🛡️ Moderación</h3>
+            <a href="{% url 'pages:admin_moderation' %}">Cola de Contenido</a>
+        </div>
+        
+        <div class="admin-content">
+            <div class="page-header">
+                <h2>👥 Gestión de Usuarios</h2>
+                <div>Total: <strong>{{ total_users }}</strong></div>
+            </div>
+            
+            <div class="search-filters">
+                <form method="GET" action="{% url 'pages:admin_users' %}">
+                    <input type="text" name="search" placeholder="Buscar por usuario, email o nombre..." value="{{ search_query }}">
+                    <select name="status">
+                        <option value="">Todos los estados</option>
+                        <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Activos</option>
+                        <option value="inactive" {% if status_filter == 'inactive' %}selected{% endif %}>Inactivos</option>
+                    </select>
+                    <button type="submit">🔍 Buscar</button>
+                </form>
+            </div>
+            
+            {% if users %}
+            <div class="users-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Usuario</th>
+                            <th>Email</th>
+                            <th>Estado</th>
+                            <th>Rol</th>
+                            <th>Fecha Registro</th>
+                            <th>Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for user in users %}
+                        <tr>
+                            <td><strong>{{ user.username }}</strong></td>
+                            <td>{{ user.email }}</td>
+                            <td>
+                                {% if user.is_active %}
+                                    <span class="status-badge status-active">✅ Activo</span>
+                                {% else %}
+                                    <span class="status-badge status-inactive">❌ Inactivo</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {% if user.is_staff %}
+                                    <span class="role-badge">👤 Staff</span>
+                                {% else %}
+                                    <span style="color: #999;">Usuario</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ user.date_joined|date:"d/m/Y" }}</td>
+                            <td>
+                                <div class="actions">
+                                    <a href="{% url 'pages:admin_user_detail' user.id %}" class="btn-small btn-view">Ver</a>
+                                    {% if user.is_active %}
+                                        <button class="btn-small btn-deactivate" onclick="deactivateUser('{{ user.id }}', '{{ user.username }}')">Desactivar</button>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            {% else %}
+            <div style="background: white; padding: 40px; text-align: center; border-radius: 10px;">
+                <p style="color: #999; font-size: 1.1em;">No se encontraron usuarios</p>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+    
+    <script>
+        function deactivateUser(userId, username) {
+            if (confirm(`¿Desactivar usuario ${username}?`)) {
+                fetch('{% url "pages:admin_user_action" %}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': '{{ csrf_token }}'
+                    },
+                    body: JSON.stringify({
+                        user_id: userId,
+                        action: 'deactivate'
+                    })
+                })
+                .then(r => r.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        location.reload();
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                });
+            }
+        }
+    </script>
+</body>
+</html>
