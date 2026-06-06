@@ -2192,3 +2192,235 @@ def admin_user_action_view(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+
+# ============================================================================
+# ADMIN: INVITATIONS MANAGEMENT
+# ============================================================================
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_invitations_view(request):
+    """Gestión de solicitudes de invitación"""
+    from social.invitations.models import InvitationRequest
+    from django.db.models import Q
+    
+    try:
+        search_query = request.GET.get('search', '').strip()
+        status_filter = request.GET.get('status', '')
+        page = int(request.GET.get('page', 1))
+        
+        invitations = InvitationRequest.objects.all().order_by('-created_at')
+        
+        if search_query:
+            invitations = invitations.filter(
+                Q(nombre_completo__icontains=search_query) |
+                Q(email__icontains=search_query)
+            )
+        
+        if status_filter:
+            invitations = invitations.filter(status=status_filter)
+        
+        total = invitations.count()
+        items_per_page = 20
+        start_idx = (page - 1) * items_per_page
+        paginated = invitations[start_idx:start_idx + items_per_page]
+        total_pages = (total + items_per_page - 1) // items_per_page
+        
+        context = {
+            'page': 'invitations',
+            'invitations': paginated,
+            'total': total,
+            'current_page': page,
+            'total_pages': total_pages,
+            'search_query': search_query,
+            'status_filter': status_filter,
+        }
+        
+        return render(request, 'admin/invitations_list.html', context)
+    except Exception as e:
+        return render(request, 'admin/invitations_list.html', {'error': str(e)})
+
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_invitation_detail_view(request, invitation_id):
+    """Detalle de invitación"""
+    from social.invitations.models import InvitationRequest
+    try:
+        invitation = InvitationRequest.objects.get(id=invitation_id)
+        return render(request, 'admin/invitation_detail.html', {'page': 'invitations', 'invitation': invitation})
+    except InvitationRequest.DoesNotExist:
+        return render(request, 'admin/invitation_detail.html', {'error': 'No encontrada'}, status=404)
+    except Exception as e:
+        return render(request, 'admin/invitation_detail.html', {'error': str(e)})
+
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["POST"])
+def admin_invitation_action_view(request):
+    """Acciones: aprobar, rechazar"""
+    from social.invitations.models import InvitationRequest
+    from django.http import JsonResponse
+    import json
+    try:
+        data = json.loads(request.body)
+        invitation = InvitationRequest.objects.get(id=data.get('invitation_id'))
+        
+        if data.get('action') == 'approve':
+            invitation.status = 'approved'
+            msg = f'Invitación de {invitation.nombre_completo} aprobada'
+        elif data.get('action') == 'reject':
+            invitation.status = 'rejected'
+            invitation.rejection_reason = data.get('reason', '')
+            msg = f'Invitación rechazada'
+        else:
+            return JsonResponse({'error': 'Acción no válida'}, status=400)
+        
+        invitation.save()
+        return JsonResponse({'success': True, 'message': msg})
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+
+
+# ============ SUPPORT MODULE ============
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_support_view(request):
+    """Admin support tickets list"""
+    page = int(request.GET.get('page', 1))
+    search_query = request.GET.get('search', '').strip()
+    status_filter = request.GET.get('status', '')
+    
+    try:
+        tickets = supabase.table('support_tickets').select('*').execute().data
+        if search_query:
+            tickets = [t for t in tickets if search_query.lower() in t.get('titulo', '').lower() or search_query.lower() in t.get('email', '').lower()]
+        if status_filter:
+            tickets = [t for t in tickets if t.get('status') == status_filter]
+        
+        total = len(tickets)
+        per_page = 20
+        total_pages = (total + per_page - 1) // per_page
+        start = (page - 1) * per_page
+        tickets = tickets[start:start + per_page]
+        
+        context = {
+            'page': 'support',
+            'tickets': tickets,
+            'total': total,
+            'current_page': page,
+            'total_pages': total_pages,
+            'search_query': search_query,
+            'status_filter': status_filter
+        }
+        return render(request, 'admin/support_list.html', context)
+    except Exception as e:
+        print(f"[ERROR] admin_support_view: {e}")
+        return render(request, 'admin/support_list.html', {'error': str(e), 'page': 'support'})
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_support_detail_view(request, ticket_id):
+    """Admin support ticket detail"""
+    try:
+        ticket = supabase.table('support_tickets').select('*').eq('id', ticket_id).single().execute().data
+        context = {'page': 'support', 'ticket': ticket}
+        return render(request, 'admin/support_detail.html', context)
+    except Exception as e:
+        print(f"[ERROR] admin_support_detail_view: {e}")
+        return render(request, 'admin/support_detail.html', {'error': str(e), 'page': 'support'})
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["POST"])
+def admin_support_action_view(request):
+    """Admin support ticket actions"""
+    import json
+    try:
+        data = json.loads(request.body)
+        ticket_id = data.get('ticket_id')
+        action = data.get('action')
+        response_text = data.get('response', '')
+        
+        if action == 'close':
+            supabase.table('support_tickets').update({'status': 'closed', 'response': response_text}).eq('id', ticket_id).execute()
+            return JsonResponse({'success': True, 'message': 'Ticket cerrado'})
+        elif action == 'respond':
+            supabase.table('support_tickets').update({'response': response_text, 'status': 'responded'}).eq('id', ticket_id).execute()
+            return JsonResponse({'success': True, 'message': 'Respuesta enviada'})
+    except Exception as e:
+        print(f"[ERROR] admin_support_action_view: {e}")
+        return JsonResponse({'error': str(e)}, status=500)
+
+# ============ MODERATION MODULE ============
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_moderation_view(request):
+    """Admin moderation queue"""
+    page = int(request.GET.get('page', 1))
+    status_filter = request.GET.get('status', 'pending')
+    
+    try:
+        content = supabase.table('moderation_queue').select('*').eq('status', status_filter).execute().data
+        total = len(content)
+        per_page = 20
+        total_pages = (total + per_page - 1) // per_page
+        start = (page - 1) * per_page
+        content = content[start:start + per_page]
+        
+        context = {
+            'page': 'moderation',
+            'content': content,
+            'total': total,
+            'current_page': page,
+            'total_pages': total_pages,
+            'status_filter': status_filter
+        }
+        return render(request, 'admin/moderation_list.html', context)
+    except Exception as e:
+        print(f"[ERROR] admin_moderation_view: {e}")
+        return render(request, 'admin/moderation_list.html', {'error': str(e), 'page': 'moderation'})
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_moderation_detail_view(request, content_id):
+    """Admin moderation item detail"""
+    try:
+        item = supabase.table('moderation_queue').select('*').eq('id', content_id).single().execute().data
+        context = {'page': 'moderation', 'item': item}
+        return render(request, 'admin/moderation_detail.html', context)
+    except Exception as e:
+        print(f"[ERROR] admin_moderation_detail_view: {e}")
+        return render(request, 'admin/moderation_detail.html', {'error': str(e), 'page': 'moderation'})
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["POST"])
+def admin_moderation_action_view(request):
+    """Admin moderation actions"""
+    import json
+    try:
+        data = json.loads(request.body)
+        item_id = data.get('item_id')
+        action = data.get('action')
+        reason = data.get('reason', '')
+        
+        if action == 'approve':
+            supabase.table('moderation_queue').update({'status': 'approved'}).eq('id', item_id).execute()
+            return JsonResponse({'success': True, 'message': 'Contenido aprobado'})
+        elif action == 'reject':
+            supabase.table('moderation_queue').update({'status': 'rejected', 'reason': reason}).eq('id', item_id).execute()
+            return JsonResponse({'success': True, 'message': 'Contenido rechazado'})
+        elif action == 'remove':
+            supabase.table('moderation_queue').update({'status': 'removed'}).eq('id', item_id).execute()
+            return JsonResponse({'success': True, 'message': 'Contenido removido'})
+    except Exception as e:
+        print(f"[ERROR] admin_moderation_action_view: {e}")
+        return JsonResponse({'error': str(e)}, status=500)

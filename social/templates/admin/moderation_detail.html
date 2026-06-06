@@ -1,0 +1,200 @@
+﻿{% extends "base_authenticated.html" %}
+
+{% block content %}
+<div class="admin-container">
+  <nav class="admin-navbar">
+    <div class="navbar-brand">Detalle de Contenido</div>
+    <div class="navbar-user">{{ request.user.username }} <a href="{% url 'pages:logout' %}">Logout</a></div>
+  </nav>
+
+  <div class="admin-layout">
+    <aside class="admin-sidebar">
+      <div class="sidebar-menu">
+        <a href="{% url 'pages:admin_hub' %}" class="menu-item">Dashboard</a>
+        <a href="{% url 'pages:admin_users' %}" class="menu-item">Usuarios</a>
+        <a href="{% url 'pages:admin_invitations' %}" class="menu-item">Invitaciones</a>
+        <a href="{% url 'pages:admin_support' %}" class="menu-item">Soporte</a>
+        <a href="{% url 'pages:admin_moderation' %}" class="menu-item active">Moderacion</a>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <div class="content-header">
+        <h1>Detalle de Contenido</h1>
+        <a href="{% url 'pages:admin_moderation' %}" class="btn btn-secondary">Volver</a>
+      </div>
+
+      {% if error %}
+        <div class="alert alert-danger">{{ error }}</div>
+      {% endif %}
+
+      <div class="detail-card">
+        <div class="detail-section">
+          <h3>Informacion del Contenido</h3>
+          <div class="detail-row">
+            <label>Tipo:</label>
+            <span>{{ item.content_type }}</span>
+          </div>
+          <div class="detail-row">
+            <label>Usuario ID:</label>
+            <span>{{ item.user_id }}</span>
+          </div>
+          <div class="detail-row">
+            <label>Estado:</label>
+            <span class="badge badge-{{ item.status }}">
+              {% if item.status == 'pending' %}PENDIENTE
+              {% elif item.status == 'approved' %}APROBADO
+              {% elif item.status == 'rejected' %}RECHAZADO
+              {% else %}REMOVIDO{% endif %}
+            </span>
+          </div>
+          <div class="detail-row">
+            <label>Fecha:</label>
+            <span>{{ item.created_at|date:"d/m/Y H:i" }}</span>
+          </div>
+        </div>
+
+        <div class="detail-section">
+          <h3>Contenido</h3>
+          <div class="content-box">
+            {{ item.description }}
+          </div>
+        </div>
+
+        {% if item.reason %}
+        <div class="detail-section">
+          <h3>Razon del Rechazo</h3>
+          <div class="content-box reason-box">
+            {{ item.reason }}
+          </div>
+        </div>
+        {% endif %}
+
+        {% if item.status == 'pending' %}
+        <div class="detail-section">
+          <h3>Acciones de Moderacion</h3>
+          <div class="action-buttons">
+            <button onclick="moderationAction('approve')" class="btn btn-success btn-lg">APROBAR</button>
+            <button onclick="showRejectForm()" class="btn btn-warning btn-lg">RECHAZAR</button>
+            <button onclick="moderationAction('remove')" class="btn btn-danger btn-lg">REMOVER</button>
+          </div>
+        </div>
+
+        <div id="rejectForm" class="detail-section" style="display: none;">
+          <h3>Rechazar Contenido</h3>
+          <textarea id="rejectReason" placeholder="Ingresa el motivo del rechazo..." class="form-control" rows="4"></textarea>
+          <div style="margin-top: 10px;">
+            <button onclick="submitReject()" class="btn btn-warning">Confirmar Rechazo</button>
+            <button onclick="cancelReject()" class="btn btn-secondary">Cancelar</button>
+          </div>
+        </div>
+        {% endif %}
+      </div>
+    </main>
+  </div>
+</div>
+
+<style>
+  .admin-container { display: flex; flex-direction: column; min-height: 100vh; background: #1a1a2e; }
+  .admin-navbar { background: linear-gradient(135deg, #001f3f 0%, #003d82 100%); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
+  .navbar-brand { font-size: 18px; font-weight: bold; }
+  .navbar-user { font-size: 14px; }
+  .navbar-user a { color: #00d4ff; text-decoration: none; margin-left: 10px; }
+  .admin-layout { display: flex; flex: 1; }
+  .admin-sidebar { width: 200px; background: #0f3460; padding: 20px; border-right: 1px solid #003d82; }
+  .sidebar-menu { display: flex; flex-direction: column; gap: 10px; }
+  .menu-item { color: #a0c4ff; text-decoration: none; padding: 10px; border-radius: 4px; transition: all 0.3s; }
+  .menu-item:hover, .menu-item.active { background: #003d82; color: #00d4ff; }
+  .admin-main { flex: 1; padding: 30px; }
+  .content-header { margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; }
+  .content-header h1 { color: #00d4ff; margin: 0; }
+  .detail-card { background: #0f3460; padding: 20px; border-radius: 6px; margin-bottom: 20px; }
+  .detail-section { margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid #003d82; }
+  .detail-section:last-child { border-bottom: none; }
+  .detail-section h3 { color: #00d4ff; margin: 0 0 15px 0; font-size: 16px; }
+  .detail-row { display: flex; margin-bottom: 12px; }
+  .detail-row label { width: 120px; color: #a0c4ff; font-weight: bold; }
+  .detail-row span { color: #fff; flex: 1; }
+  .content-box { background: #1a1a2e; padding: 15px; border-radius: 4px; border-left: 3px solid #00d4ff; color: #fff; line-height: 1.6; word-wrap: break-word; }
+  .reason-box { border-left-color: #dc3545; }
+  .badge { display: inline-block; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; }
+  .badge-pending { background: #ffc107; color: #333; }
+  .badge-approved { background: #28a745; color: white; }
+  .badge-rejected { background: #dc3545; color: white; }
+  .badge-removed { background: #6c757d; color: white; }
+  .btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
+  .btn-secondary { background: #6c757d; color: white; }
+  .btn-secondary:hover { background: #5a6268; }
+  .btn-success { background: #28a745; color: white; }
+  .btn-success:hover { background: #218838; }
+  .btn-warning { background: #ffc107; color: #333; }
+  .btn-warning:hover { background: #e0a800; }
+  .btn-danger { background: #dc3545; color: white; }
+  .btn-danger:hover { background: #c82333; }
+  .btn-lg { padding: 10px 20px; font-size: 14px; }
+  .action-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+  .form-control { padding: 8px 12px; border: 1px solid #003d82; border-radius: 4px; background: #1a1a2e; color: #fff; width: 100%; }
+  .form-control:focus { outline: none; border-color: #00d4ff; }
+  .alert { padding: 12px; margin-bottom: 15px; border-radius: 4px; }
+  .alert-danger { background: #dc3545; color: white; }
+</style>
+
+<script>
+function moderationAction(action) {
+  fetch('{% url "pages:admin_moderation_action" %}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify({
+      item_id: '{{ item.id }}',
+      action: action,
+      reason: ''
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
+    alert(d.message || d.error);
+    location.reload();
+  })
+  .catch(e => alert('Error: ' + e));
+}
+
+function showRejectForm() {
+  document.getElementById('rejectForm').style.display = 'block';
+}
+
+function cancelReject() {
+  document.getElementById('rejectForm').style.display = 'none';
+  document.getElementById('rejectReason').value = '';
+}
+
+function submitReject() {
+  const reason = document.getElementById('rejectReason').value;
+  if (!reason.trim()) {
+    alert('Por favor ingresa una razon del rechazo');
+    return;
+  }
+  
+  fetch('{% url "pages:admin_moderation_action" %}', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRFToken': '{{ csrf_token }}'
+    },
+    body: JSON.stringify({
+      item_id: '{{ item.id }}',
+      action: 'reject',
+      reason: reason
+    })
+  })
+  .then(r => r.json())
+  .then(d => {
+    alert(d.message || d.error);
+    location.reload();
+  })
+  .catch(e => alert('Error: ' + e));
+}
+</script>
+{% endblock %}

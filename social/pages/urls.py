@@ -35,7 +35,6 @@ urlpatterns = [
     # Admin Hub (Main Entry Point)
     path('admin/', views.admin_hub_view, name='admin_hub'),
     path('admin/memberships/', views.admin_memberships_view, name='admin_memberships'),
-    path('admin/moderation/', views.admin_moderation_queue_view, name='admin_moderation'),
     path('api/admin/membership-price/', views.update_membership_price_view, name='update_membership_price'),
     path('api/admin/membership-privilege/', views.update_membership_privilege_view, name='update_membership_privilege'),
     path('api/admin/moderate-content/', views.moderate_content_view, name='moderate_content'),
@@ -43,6 +42,15 @@ urlpatterns = [
 
         path('admin/users/', views.admin_users_view, name='admin_users'),
     path('admin/users/<uuid:user_id>/', views.admin_user_detail_view, name='admin_user_detail'),
+    path('admin/invitations/', views.admin_invitations_view, name='admin_invitations'),
+    path('admin/invitations/<uuid:invitation_id>/', views.admin_invitation_detail_view, name='admin_invitation_detail'),
+    path('api/admin/invitations/action/', views.admin_invitation_action_view, name='admin_invitation_action'),
+    path('admin/support/', views.admin_support_view, name='admin_support'),
+    path('admin/support/<uuid:ticket_id>/', views.admin_support_detail_view, name='admin_support_detail'),
+    path('api/admin/support/action/', views.admin_support_action_view, name='admin_support_action'),
+    path('admin/moderation/', views.admin_moderation_view, name='admin_moderation'),
+    path('admin/moderation/<uuid:content_id>/', views.admin_moderation_detail_view, name='admin_moderation_detail'),
+    path('api/admin/moderation/action/', views.admin_moderation_action_view, name='admin_moderation_action'),
     path('api/admin/users/action/', views.admin_user_action_view, name='admin_user_action'),
 
     # ============================================================================
@@ -147,5 +155,7 @@ urlpatterns = [
     path('usuario/<str:nickname>/agregar-amigo/', views.add_friend_view, name='add_friend'),
     path('<str:template_name>/', views.dynamic_pages_view, name='dynamic_pages'),
 ]
+
+
 
 
