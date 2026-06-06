@@ -1,4 +1,4 @@
-"""
+﻿"""
 URL Configuration for Social Pages App
 """
 from django.urls import path
@@ -32,12 +32,14 @@ urlpatterns = [
     # ============================================================================
     # ADMIN URLS (PRIORITY)
     # ============================================================================
-    path('dashboard/memberships/', views.admin_memberships_view, name='admin_memberships'),
-    path('dashboard/moderation/', views.admin_moderation_queue_view, name='admin_moderation'),
-    path('api/dashboard/membership-price/', views.update_membership_price_view, name='update_membership_price'),
-    path('api/dashboard/membership-privilege/', views.update_membership_privilege_view, name='update_membership_privilege'),
-    path('api/dashboard/moderate-content/', views.moderate_content_view, name='moderate_content'),
-    path('api/dashboard/stats/', views.admin_stats_view, name='admin_stats'),
+    # Admin Hub (Main Entry Point)
+    path('admin/', views.admin_hub_view, name='admin_hub'),
+    path('admin/memberships/', views.admin_memberships_view, name='admin_memberships'),
+    path('admin/moderation/', views.admin_moderation_queue_view, name='admin_moderation'),
+    path('api/admin/membership-price/', views.update_membership_price_view, name='update_membership_price'),
+    path('api/admin/membership-privilege/', views.update_membership_privilege_view, name='update_membership_privilege'),
+    path('api/admin/moderate-content/', views.moderate_content_view, name='moderate_content'),
+    path('api/admin/stats/', views.admin_stats_view, name='admin_stats'),
 
     # ============================================================================
     # AUTHENTICATION URLS
@@ -52,7 +54,7 @@ urlpatterns = [
     # DASHBOARD & MAIN URLS
     # ============================================================================
     path('', views.landing_view, name='landing'),
-    path('dashboard/', views.dashboard_view, name='dashboard'),
+    path('mi-dashboard/', views.dashboard_view, name='dashboard'),
     path('feed/', views.home_feed_view, name='home_feed'),
     path('age-gate/', views.age_gate_view, name='age_gate'),
 
@@ -141,3 +143,4 @@ urlpatterns = [
     path('usuario/<str:nickname>/agregar-amigo/', views.add_friend_view, name='add_friend'),
     path('<str:template_name>/', views.dynamic_pages_view, name='dynamic_pages'),
 ]
+

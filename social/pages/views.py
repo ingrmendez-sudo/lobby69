@@ -191,7 +191,10 @@ def activate_account_view(request, token):
 def login_view(request):
     """Login view â€“ accepts username or email"""
     if request.user.is_authenticated:
-        return redirect('pages:dashboard')
+        if request.user.is_staff:
+            return redirect('pages:admin_hub')
+        else:
+            return redirect('pages:dashboard')
 
     if request.method == "POST":
         login_input = request.POST.get('login_input', '').strip()
@@ -213,7 +216,10 @@ def login_view(request):
         if user is not None:
             auth_login(request, user)
             messages.success(request, f'Â¡Bienvenido {user.username}!')
-            return redirect('pages:dashboard')
+            if user.is_staff:
+                return redirect('pages:admin_hub')
+            else:
+                return redirect('pages:dashboard')
         else:
             messages.error(request, 'Usuario/Email o contraseÃ±a incorrectos')
             return render(request, 'pages/login.html')
