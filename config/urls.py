@@ -4,7 +4,7 @@ from django.conf import settings
 from django.conf.urls.static import static
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
+    path('django-admin/', admin.site.urls),  # Django admin nativo - usar /admin/ para nuevo admin
     path('', include(('social.pages.urls', 'pages'), namespace='pages')),
     path('', include(('social.social_feed.urls', 'social_feed'), namespace='social_feed')),
 ]
