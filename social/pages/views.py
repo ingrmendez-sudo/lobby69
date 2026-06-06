@@ -1,7 +1,8 @@
-﻿from social.decorators import admin_required
-"""
+﻿"""
 Django views for Social Pages App (CLUB LOBBY69)
 """
+from social.decorators import admin_required
+
 import time
 from django.shortcuts import render
 
@@ -1694,7 +1695,8 @@ def verification_page_view(request):
 
 from django.contrib.admin.views.decorators import staff_member_required
 
-@admin_required`n@require_http_methods(["GET"])
+@admin_required
+@require_http_methods(["GET"])
 def admin_memberships_view(request):
     """Solo accesible para staff/admin"""
     try:
@@ -1779,7 +1781,8 @@ def update_membership_privilege_view(request):
 # MODERACIÓN DE CONTENIDO
 # ============================================================================
 
-@admin_required`n@require_http_methods(["GET"])
+@admin_required
+@require_http_methods(["GET"])
 def admin_moderation_queue_view(request):
     """Solo accesible para staff/admin"""
     try:
@@ -1790,7 +1793,8 @@ def admin_moderation_queue_view(request):
     except Exception as e:
         return render(request, 'admin/moderation_queue.html', {'error': str(e)})
 
-@admin_required`n@require_http_methods(["POST"])
+@admin_required
+@require_http_methods(["POST"])
 def update_membership_price_view(request):
     """Solo accesible para staff/admin"""
     try:
@@ -1808,7 +1812,8 @@ def update_membership_price_view(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-@admin_required`n@require_http_methods(["POST"])
+@admin_required
+@require_http_methods(["POST"])
 def moderate_content_view(request):
     """Solo accesible para staff/admin"""
     try:
@@ -1830,7 +1835,8 @@ def moderate_content_view(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
-@admin_required`n@require_http_methods(["GET"])
+@admin_required
+@require_http_methods(["GET"])
 def admin_stats_view(request):
     """Solo accesible para staff/admin"""
     try:
@@ -1925,6 +1931,13 @@ def admin_stats_view(request):
     except Exception as e:
         print(f"[ERROR] admin_stats_view: {e}")
         return JsonResponse({'error': str(e)}, status=500)
+
+@admin_required
+@require_http_methods(["GET"])
+def admin_hub_view(request):
+    """Admin Dashboard Hub - Página principal del administrador"""
+    context = {'page': 'dashboard'}
+    return render(request, 'admin/dashboard_hub.html', context)
 
 
 
