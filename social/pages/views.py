@@ -2638,3 +2638,106 @@ def admin_news_action_view(request):
     except Exception as e:
         print(f"[ERROR] admin_news_action_view: {e}")
         return JsonResponse({'error': str(e)}, status=500)
+
+# ============ ANALYTICS MODULE ============
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_analytics_view(request):
+    """Admin analytics dashboard"""
+    period = request.GET.get('period', 'daily')
+    
+    try:
+        # Simulamos datos de trafico desde Supabase
+        traffic_data = supabase.table('traffic_logs').select('*').execute().data
+        
+        # Procesamos por periodo
+        daily_stats = {}
+        weekly_stats = {}
+        monthly_stats = {}
+        yearly_stats = {}
+        
+        for log in traffic_data:
+            date = log.get('date', '')
+            views = log.get('views', 0)
+            
+            # Daily
+            if date not in daily_stats:
+                daily_stats[date] = 0
+            daily_stats[date] += views
+            
+            # Weekly
+            week_key = date[:7]  # YYYY-MM
+            if week_key not in weekly_stats:
+                weekly_stats[week_key] = 0
+            weekly_stats[week_key] += views
+            
+            # Monthly
+            month_key = date[:7]
+            if month_key not in monthly_stats:
+                monthly_stats[month_key] = 0
+            monthly_stats[month_key] += views
+            
+            # Yearly
+            year_key = date[:4]
+            if year_key not in yearly_stats:
+                yearly_stats[year_key] = 0
+            yearly_stats[year_key] += views
+        
+        # Seleccionar datos segun periodo
+        if period == 'daily':
+            stats = daily_stats
+            labels = sorted(stats.keys())[-30:]  # Ultimos 30 dias
+        elif period == 'weekly':
+            stats = weekly_stats
+            labels = sorted(stats.keys())[-12:]  # Ultimas 12 semanas
+        elif period == 'monthly':
+            stats = monthly_stats
+            labels = sorted(stats.keys())[-12:]  # Ultimos 12 meses
+        else:  # yearly
+            stats = yearly_stats
+            labels = sorted(stats.keys())
+        
+        data_values = [stats.get(label, 0) for label in labels]
+        total_views = sum(data_values)
+        avg_views = total_views // len(data_values) if data_values else 0
+        
+        context = {
+            'page': 'analytics',
+            'period': period,
+            'labels': labels,
+            'data': data_values,
+            'total_views': total_views,
+            'avg_views': avg_views,
+            'peak_views': max(data_values) if data_values else 0
+        }
+        return render(request, 'admin/analytics.html', context)
+    except Exception as e:
+        print(f"[ERROR] admin_analytics_view: {e}")
+        return render(request, 'admin/analytics.html', {'error': str(e), 'page': 'analytics'})
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_analytics_export_view(request):
+    """Export analytics as CSV"""
+    import csv
+    from django.http import HttpResponse
+    
+    try:
+        period = request.GET.get('period', 'daily')
+        traffic_data = supabase.table('traffic_logs').select('*').execute().data
+        
+        response = HttpResponse(content_type='text/csv')
+        response['Content-Disposition'] = f'attachment; filename="analytics_{period}.csv"'
+        
+        writer = csv.writer(response)
+        writer.writerow(['Fecha', 'Vistas'])
+        
+        for log in traffic_data:
+            writer.writerow([log.get('date'), log.get('views', 0)])
+        
+        return response
+    except Exception as e:
+        print(f"[ERROR] admin_analytics_export_view: {e}")
+        return JsonResponse({'error': str(e)}, status=500)

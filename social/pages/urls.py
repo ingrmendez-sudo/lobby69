@@ -60,6 +60,8 @@ urlpatterns = [
     path('admin/news/', views.admin_news_view, name='admin_news'),
     path('admin/news/<uuid:news_id>/', views.admin_news_detail_view, name='admin_news_detail'),
     path('api/admin/news/action/', views.admin_news_action_view, name='admin_news_action'),
+    path('admin/analytics/', views.admin_analytics_view, name='admin_analytics'),
+    path('api/admin/analytics/export/', views.admin_analytics_export_view, name='admin_analytics_export'),
     path('api/admin/users/action/', views.admin_user_action_view, name='admin_user_action'),
 
     # ============================================================================
@@ -164,6 +166,7 @@ urlpatterns = [
     path('usuario/<str:nickname>/agregar-amigo/', views.add_friend_view, name='add_friend'),
     path('<str:template_name>/', views.dynamic_pages_view, name='dynamic_pages'),
 ]
+
 
 
 
