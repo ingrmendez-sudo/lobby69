@@ -1,151 +1,154 @@
 ﻿{% extends "admin/base.html" %}
 
-{% block title %}{% if article %}Editar{% else %}Crear{% endif %} Noticia - Admin{% endblock %}
+{% block title %}{% if is_edit %}Editar{% else %}Crear{% endif %} Noticia{% endblock %}
 
 {% block content %}
-<div style="margin-bottom: 20px;">
-    <a href="{% url 'pages:admin_news' %}" style="color: #007bff; text-decoration: none;">← Volver a Noticias</a>
-    <h2 style="display: inline; margin-left: 10px;">{% if article %}✏️ Editar Noticia{% else %}➕ Crear Nueva Noticia{% endif %}</h2>
+<div style="margin-bottom: 30px;">
+    <a href="{% url 'pages:admin_news' %}" style="color: #007bff; text-decoration: none; font-size: 0.95em;">
+        ← Volver a Noticias
+    </a>
 </div>
 
-<div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 900px;">
-    <form id="newsForm">
+<div style="background: white; padding: 40px; border-radius: 12px; box-shadow: 0 4px 16px rgba(0,0,0,0.08); max-width: 950px;">
+    <!-- Header -->
+    <div style="margin-bottom: 30px; padding-bottom: 20px; border-bottom: 2px solid #f0f0f0;">
+        <h1 style="margin: 0; color: #1a5f7a; font-size: 28px;">
+            {% if is_edit %}✏️ Editar Noticia{% else %}➕ Crear Nueva Noticia{% endif %}
+        </h1>
+        <p style="margin: 5px 0 0 0; color: #666; font-size: 0.95em;">
+            {% if is_edit %}Modifica los detalles del artículo{% else %}Publica un nuevo artículo en la comunidad{% endif %}
+        </p>
+    </div>
+    
+    <!-- Errores -->
+    {% if form.non_field_errors %}
+    <div style="background: #f8d7da; color: #721c24; padding: 15px; margin-bottom: 20px; border-radius: 6px; border-left: 4px solid #dc3545;">
+        <strong>❌ Error:</strong>
+        {% for error in form.non_field_errors %}
+        <div>{{ error }}</div>
+        {% endfor %}
+    </div>
+    {% endif %}
+    
+    <!-- Formulario -->
+    <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
         
-        {% if article %}
-        <input type="hidden" id="news_id" value="{{ article.id }}">
-        {% endif %}
-        
         <!-- Título -->
-        <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 600;">📝 Título *</label>
-            <input type="text" id="title" value="{{ article.title|default:'' }}" required 
-                   style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em;">
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 0.95em;">
+                📝 {{ form.title.label }} <span style="color: #dc3545;">*</span>
+            </label>
+            {{ form.title }}
+            {% if form.title.errors %}
+            <small style="color: #dc3545; display: block; margin-top: 5px;">
+                {% for error in form.title.errors %}{{ error }}{% endfor %}
+            </small>
+            {% endif %}
         </div>
         
         <!-- Categoría -->
-        <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 600;">🏷️ Categoría</label>
-            <input type="text" id="category" value="{{ article.category|default:'' }}" 
-                   style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em;">
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 0.95em;">
+                🏷️ {{ form.category.label }}
+            </label>
+            {{ form.category }}
+            {% if form.category.errors %}
+            <small style="color: #dc3545; display: block; margin-top: 5px;">
+                {% for error in form.category.errors %}{{ error }}{% endfor %}
+            </small>
+            {% endif %}
         </div>
         
         <!-- Contenido -->
-        <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 600;">📄 Contenido *</label>
-            <textarea id="content" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em; min-height: 300px; font-family: monospace;">{{ article.content|default:'' }}</textarea>
-            <small style="color: #666;">Puedes usar Markdown: **negrita**, *itálica*, # Encabezado, - Lista</small>
-        </div>
-        
-        <!-- Imagen -->
-        <div style="margin-bottom: 20px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 600;">🖼️ Imagen</label>
-            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                <input type="file" id="imageFile" accept="image/*" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                <button type="button" onclick="uploadImage()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">⬆️ Subir</button>
-            </div>
-            <input type="hidden" id="image_url" value="{{ article.image_url|default:'' }}">
-            <div id="uploadStatus" style="color: #666; font-size: 0.9em; margin-bottom: 10px;"></div>
-            {% if article.image_url %}
-            <div style="margin-bottom: 10px;">
-                <img src="{{ article.image_url }}" alt="Preview" style="max-width: 300px; border-radius: 4px;">
-            </div>
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 0.95em;">
+                📄 {{ form.content.label }} <span style="color: #dc3545;">*</span>
+            </label>
+            {{ form.content }}
+            {% if form.content.errors %}
+            <small style="color: #dc3545; display: block; margin-top: 5px;">
+                {% for error in form.content.errors %}{{ error }}{% endfor %}
+            </small>
             {% endif %}
-            <div id="imagePreview"></div>
         </div>
         
-        <!-- Estado -->
-        <div style="margin-bottom: 20px;">
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
-                <input type="checkbox" id="published" {% if article.published %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;">
-                <span style="font-weight: 600;">✅ Publicar inmediatamente</span>
+        <!-- Imagen URL -->
+        <div style="margin-bottom: 25px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 0.95em;">
+                🖼️ {{ form.image_url.label }}
+            </label>
+            {{ form.image_url }}
+            {% if form.image_url.errors %}
+            <small style="color: #dc3545; display: block; margin-top: 5px;">
+                {% for error in form.image_url.errors %}{{ error }}{% endfor %}
+            </small>
+            {% endif %}
+            <small style="color: #666; display: block; margin-top: 5px;">Pega la URL de una imagen (ej: https://ejemplo.com/imagen.jpg)</small>
+        </div>
+        
+        <!-- Preview Imagen -->
+        {% if article.image_url %}
+        <div style="margin-bottom: 25px; padding: 15px; background: #f8f9fa; border-radius: 6px;">
+            <p style="margin: 0 0 10px 0; font-weight: 600; color: #333;">Vista previa de imagen:</p>
+            <img src="{{ article.image_url }}" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: 6px;">
+        </div>
+        {% endif %}
+        
+        <!-- Publicar -->
+        <div style="margin-bottom: 30px; padding: 15px; background: #f0f8ff; border-radius: 6px; border-left: 4px solid #007bff;">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin: 0;">
+                {{ form.published }}
+                <span style="font-weight: 600; color: #333;">✅ Publicar inmediatamente</span>
+                <span style="color: #666; font-size: 0.9em;">(Si no marcas, se guardará como borrador)</span>
             </label>
         </div>
         
         <!-- Botones -->
-        <div style="display: flex; gap: 10px; margin-top: 30px;">
-            <button type="button" onclick="saveNews()" style="flex: 1; padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 1em;">
-                💾 {% if article %}Actualizar{% else %}Crear{% endif %} Noticia
+        <div style="display: flex; gap: 12px; margin-top: 35px; padding-top: 25px; border-top: 2px solid #f0f0f0;">
+            <button type="submit" style="flex: 1; padding: 14px 20px; background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 1em; box-shadow: 0 2px 8px rgba(40,167,69,0.2); transition: all 0.3s;">
+                💾 {% if is_edit %}Actualizar Noticia{% else %}Crear Noticia{% endif %}
             </button>
-            <button type="button" onclick="window.location.href='{% url 'pages:admin_news' %}'" style="flex: 1; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 1em;">
+            <a href="{% url 'pages:admin_news' %}" style="flex: 1; padding: 14px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 1em; text-align: center; text-decoration: none; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.3s;">
                 ❌ Cancelar
-            </button>
+            </a>
         </div>
     </form>
 </div>
 
-<script>
-function uploadImage() {
-    const file = document.getElementById('imageFile').files[0];
-    if (!file) { alert('Selecciona una imagen'); return; }
-    
-    const fd = new FormData();
-    fd.append('file', file);
-    
-    document.getElementById('uploadStatus').textContent = '⏳ Subiendo...';
-    
-    fetch('{% url "pages:admin_upload_image" %}', {
-        method: 'POST',
-        body: fd,
-        headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
-    })
-    .then(r => r.json())
-    .then(d => {
-        if (d.success) {
-            document.getElementById('image_url').value = d.url;
-            document.getElementById('uploadStatus').textContent = '✅ Imagen subida';
-            document.getElementById('imagePreview').innerHTML = `<img src="${d.url}" alt="Preview" style="max-width: 300px; border-radius: 4px; margin-top: 10px;">`;
-        } else {
-            document.getElementById('uploadStatus').textContent = '❌ ' + d.error;
-        }
-    })
-    .catch(e => document.getElementById('uploadStatus').textContent = '❌ ' + e);
+<style>
+.form-control {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    font-size: 0.95em;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
+    transition: border-color 0.3s, box-shadow 0.3s;
 }
+.form-control:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+}
+textarea.form-control {
+    font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+    resize: vertical;
+    min-height: 200px;
+}
+input[type="checkbox"].form-check-input {
+    width: 20px;
+    height: 20px;
+    cursor: pointer;
+}
+</style>
 
-function saveNews() {
-    const title = document.getElementById('title').value.trim();
-    const content = document.getElementById('content').value.trim();
-    
-    if (!title || !content) {
-        alert('Título y Contenido son requeridos');
-        return;
+<script>
+// Preview de imagen cuando se cambia la URL
+document.getElementById('id_image_url').addEventListener('change', function() {
+    if (this.value) {
+        console.log('✅ URL de imagen: ' + this.value);
     }
-    
-    const newsData = {
-        id: document.getElementById('news_id')?.value || null,
-        title: title,
-        content: content,
-        category: document.getElementById('category').value.trim(),
-        image_url: document.getElementById('image_url').value.trim(),
-        published: document.getElementById('published').checked
-    };
-    
-    fetch('{% url "pages:admin_news_action" %}', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        },
-        body: JSON.stringify({
-            news_id: newsData.id,
-            action: newsData.id ? 'update' : 'create',
-            title: newsData.title,
-            content: newsData.content,
-            category: newsData.category,
-            image_url: newsData.image_url,
-            published: newsData.published
-        })
-    })
-    .then(r => r.json())
-    .then(data => {
-        if (data.success) {
-            alert('✅ ' + data.message);
-            window.location.href = '{% url "pages:admin_news" %}';
-        } else {
-            alert('❌ Error: ' + data.error);
-        }
-    })
-    .catch(e => alert('❌ Error: ' + e));
-}
+});
 </script>
 {% endblock %}

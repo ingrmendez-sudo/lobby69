@@ -2602,16 +2602,62 @@ def admin_news_view(request):
 
 @login_required(login_url='pages:login')
 @admin_required
-@require_http_methods(["GET"])
-def admin_news_detail_view(request, news_id):
-    """Admin news detail"""
-    try:
-        article = supabase.table('news').select('*').eq('id', news_id).single().execute().data
-        context = {'page': 'news', 'article': article}
-        return render(request, 'admin/news_detail.html', context)
-    except Exception as e:
-        print(f"[ERROR] admin_news_detail_view: {e}")
-        return render(request, 'admin/news_detail.html', {'error': str(e), 'page': 'news'})
+@require_http_methods(["GET", "POST"])
+def admin_news_detail_view(request, news_id=None):
+    """Create or edit news - handles both GET (form) and POST (save)"""
+    from social.pages.forms import NewsForm
+    from datetime import datetime
+
+    article = None
+    if news_id:
+        try:
+            article = supabase.table('news').select('*').eq('id', str(news_id)).single().execute().data
+        except:
+            pass
+
+    if request.method == "POST":
+        form = NewsForm(request.POST)
+        if form.is_valid():
+            news_data = {
+                'title': form.cleaned_data['title'],
+                'content': form.cleaned_data['content'],
+                'category': form.cleaned_data['category'],
+                'image_url': form.cleaned_data['image_url'],
+                'published': form.cleaned_data['published'],
+                'updated_at': datetime.now().isoformat()
+            }
+
+            try:
+                if news_id:
+                    supabase.table('news').update(news_data).eq('id', str(news_id)).execute()
+                    return redirect('pages:admin_news')
+                else:
+                    news_data['autor'] = request.user.username
+                    news_data['created_at'] = datetime.now().isoformat()
+                    supabase.table('news').insert(news_data).execute()
+                    return redirect('pages:admin_news')
+            except Exception as e:
+                form.add_error(None, f'Error: {str(e)}')
+    else:
+        initial_data = {}
+        if article:
+            initial_data = {
+                'title': article.get('title', ''),
+                'category': article.get('category', ''),
+                'content': article.get('content', ''),
+                'image_url': article.get('image_url', ''),
+                'published': article.get('published', False)
+            }
+        form = NewsForm(initial=initial_data)
+
+    context = {
+        'page': 'news',
+        'form': form,
+        'article': article,
+        'is_edit': bool(news_id)
+    }
+    return render(request, 'admin/news_form.html', context)
+
 
 @login_required(login_url='pages:login')
 @admin_required
