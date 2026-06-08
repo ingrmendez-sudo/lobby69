@@ -21,7 +21,6 @@
             height: 100vh;
         }
         
-        /* NAVBAR TOP */
         .admin-navbar {
             background: linear-gradient(135deg, #1a5f7a 0%, #2a8fa8 100%);
             color: white;
@@ -66,7 +65,6 @@
             padding: 8px 15px !important;
         }
         
-        /* SIDEBAR */
         .admin-sidebar {
             background: #2c3e50;
             color: white;
@@ -108,7 +106,6 @@
             font-weight: 600;
         }
         
-        /* MAIN CONTENT */
         .admin-content {
             flex: 1;
             margin-left: 250px;
@@ -136,7 +133,6 @@
             opacity: 0.9;
         }
         
-        /* CARDS GRID */
         .cards-grid {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -184,7 +180,6 @@
             background: #0f3d52;
         }
         
-        /* SCROLLBAR */
         ::-webkit-scrollbar {
             width: 8px;
         }
@@ -243,26 +238,20 @@
             
             <h3>👥 Usuarios</h3>
             <a href="#">Gestionar Usuarios</a>
-            <a href="#">Verificaciones</a>
             
             <h3>📨 Invitaciones</h3>
             <a href="#">Solicitudes Pendientes</a>
-            <a href="#">Historial</a>
             
             <h3>🎟️ Soporte</h3>
             <a href="#">Tickets Abiertos</a>
-            <a href="#">Historial</a>
-            
-            <h3>💳 Membresías</h3>
-            <a href="{% url 'pages:admin_memberships' %}">Planes y Precios</a>
-            <a href="#">Privilegios</a>
             
             <h3>🛡️ Moderación</h3>
             <a href="{% url 'pages:admin_moderation' %}">Cola de Contenido</a>
-            <a href="#">Historial</a>
+            
+            <h3>📰 Noticias</h3>
+            <a href="{% url 'pages:admin_news' %}">Gestionar Noticias</a>
             
             <h3>📈 Estadísticas</h3>
-            <a href="#">Tráfico</a>
             <a href="#">Reportes</a>
         </div>
         
@@ -295,18 +284,18 @@
                     <a href="#">Ir al módulo →</a>
                 </div>
                 
-                <!-- Card: Membresías -->
-                <div class="card">
-                    <h3>💳 Membresías</h3>
-                    <p>Administrar planes, precios y privilegios</p>
-                    <a href="{% url 'pages:admin_memberships' %}">Ir al módulo →</a>
-                </div>
-                
                 <!-- Card: Moderación -->
                 <div class="card">
                     <h3>🛡️ Moderación</h3>
                     <p>Revisar y aprobar contenido pendiente</p>
                     <a href="{% url 'pages:admin_moderation' %}">Ir al módulo →</a>
+                </div>
+                
+                <!-- Card: Noticias -->
+                <div class="card">
+                    <h3>📰 Noticias & Artículos</h3>
+                    <p>Crear, editar y publicar artículos para la comunidad</p>
+                    <a href="{% url 'pages:admin_news' %}">Ir al módulo →</a>
                 </div>
                 
                 <!-- Card: Estadísticas -->

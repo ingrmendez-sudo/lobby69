@@ -1,109 +1,108 @@
-﻿{% extends "base_authenticated.html" %}
+﻿{% extends "admin/base.html" %}
+
+{% block title %}Noticias - Admin LOBBY69{% endblock %}
 
 {% block content %}
-<div class="admin-container">
-  <nav class="admin-navbar">
-    <div class="navbar-brand">Noticias</div>
-    <div class="navbar-user">{{ request.user.username }} <a href="{% url 'pages:logout' %}">Logout</a></div>
-  </nav>
-
-  <div class="admin-layout">
-    <aside class="admin-sidebar">
-      <div class="sidebar-menu">
-        <a href="{% url 'pages:admin_hub' %}" class="menu-item">Dashboard</a>
-        <a href="{% url 'pages:admin_reviews' %}" class="menu-item">Resenas</a>
-        <a href="{% url 'pages:admin_events' %}" class="menu-item">Eventos</a>
-        <a href="{% url 'pages:admin_news' %}" class="menu-item active">Noticias</a>
-      </div>
-    </aside>
-
-    <main class="admin-main">
-      <div class="content-header">
-        <h1>Noticias</h1>
-        <p>Total: <strong>{{ total }}</strong> noticias</p>
-      </div>
-
-      {% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
-
-      <div class="filter-box">
-        <form method="get" class="filter-form">
-          <input type="text" name="search" placeholder="Buscar noticias..." value="{{ search_query }}" class="form-control">
-          <select name="status" class="form-control">
-            <option value="">Todos</option>
-            <option value="draft" {% if status_filter == 'draft' %}selected{% endif %}>Borrador</option>
-            <option value="published" {% if status_filter == 'published' %}selected{% endif %}>Publicada</option>
-          </select>
-          <button type="submit" class="btn btn-primary">Buscar</button>
-        </form>
-      </div>
-
-      <div class="table-responsive">
-        <table class="admin-table">
-          <thead>
-            <tr><th>Titulo</th><th>Autor</th><th>Estado</th><th>Fecha</th><th>Acciones</th></tr>
-          </thead>
-          <tbody>
-            {% for article in news %}
-            <tr>
-              <td>{{ article.titulo }}</td>
-              <td>{{ article.autor }}</td>
-              <td><span class="badge badge-{{ article.status }}">{% if article.status == 'draft' %}BORRADOR{% else %}PUBLICADA{% endif %}</span></td>
-              <td>{{ article.created_at|date:"d/m/Y" }}</td>
-              <td><a href="{% url 'pages:admin_news_detail' article.id %}" class="btn btn-sm btn-info">Ver</a></td>
-            </tr>
-            {% empty %}<tr><td colspan="5" class="text-center">Sin noticias</td></tr>{% endfor %}
-          </tbody>
-        </table>
-      </div>
-
-      {% if total_pages > 1 %}
-      <div class="pagination">
-        {% for p in total_pages|range %}
-          <a href="?page={{ p|add:1 }}&search={{ search_query }}&status={{ status_filter }}" class="page-link {% if p|add:1 == current_page %}active{% endif %}">{{ p|add:1 }}</a>
-        {% endfor %}
-      </div>
-      {% endif %}
-    </main>
-  </div>
+<div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+    <div>
+        <a href="{% url 'pages:admin_hub' %}" style="color: #007bff; text-decoration: none; margin-right: 15px;">← Volver al Dashboard</a>
+        <h2 style="display: inline; margin: 0;">📰 Noticias & Artículos</h2>
+    </div>
+    <a href="{% url 'pages:admin_news_create' %}" class="btn btn-primary" style="background: #28a745; color: white; padding: 10px 20px; border-radius: 4px; text-decoration: none; display: inline-block;">➕ Crear Nueva Noticia</a>
 </div>
 
-<style>
-  .admin-container { display: flex; flex-direction: column; min-height: 100vh; background: #1a1a2e; }
-  .admin-navbar { background: linear-gradient(135deg, #001f3f 0%, #003d82 100%); color: white; padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 8px rgba(0,0,0,0.3); }
-  .navbar-brand { font-size: 18px; font-weight: bold; }
-  .navbar-user { font-size: 14px; }
-  .navbar-user a { color: #00d4ff; text-decoration: none; margin-left: 10px; }
-  .admin-layout { display: flex; flex: 1; }
-  .admin-sidebar { width: 200px; background: #0f3460; padding: 20px; border-right: 1px solid #003d82; }
-  .sidebar-menu { display: flex; flex-direction: column; gap: 10px; }
-  .menu-item { color: #a0c4ff; text-decoration: none; padding: 10px; border-radius: 4px; transition: all 0.3s; }
-  .menu-item:hover, .menu-item.active { background: #003d82; color: #00d4ff; }
-  .admin-main { flex: 1; padding: 30px; }
-  .content-header { margin-bottom: 20px; }
-  .content-header h1 { color: #00d4ff; margin: 0 0 5px 0; }
-  .content-header p { color: #888; margin: 0; }
-  .filter-box { background: #0f3460; padding: 15px; border-radius: 6px; margin-bottom: 20px; display: flex; gap: 10px; }
-  .filter-form { display: flex; gap: 10px; width: 100%; }
-  .form-control { padding: 8px 12px; border: 1px solid #003d82; border-radius: 4px; background: #1a1a2e; color: #fff; flex: 1; }
-  .form-control:focus { outline: none; border-color: #00d4ff; }
-  .btn { padding: 8px 12px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; transition: all 0.3s; }
-  .btn-primary { background: #00d4ff; color: #001f3f; }
-  .btn-primary:hover { background: #00b8d4; }
-  .btn-sm { padding: 5px 8px; font-size: 12px; }
-  .btn-info { background: #0066cc; color: white; }
-  .admin-table { width: 100%; border-collapse: collapse; background: #0f3460; border-radius: 6px; overflow: hidden; }
-  .admin-table thead { background: #003d82; }
-  .admin-table th, .admin-table td { padding: 12px; text-align: left; color: #fff; border-bottom: 1px solid #003d82; }
-  .admin-table tbody tr:hover { background: #1a3a52; }
-  .badge { display: inline-block; padding: 4px 8px; border-radius: 3px; font-size: 12px; font-weight: bold; }
-  .badge-draft { background: #6c757d; color: white; }
-  .badge-published { background: #28a745; color: white; }
-  .pagination { display: flex; gap: 5px; margin-top: 20px; justify-content: center; }
-  .page-link { padding: 6px 10px; background: #0f3460; color: #00d4ff; text-decoration: none; border-radius: 3px; }
-  .page-link.active { background: #00d4ff; color: #001f3f; }
-  .text-center { text-align: center; color: #888; }
-  .table-responsive { overflow-x: auto; }
-  .alert { padding: 12px; margin-bottom: 15px; border-radius: 4px; }
-  .alert-danger { background: #dc3545; color: white; }
-</style>
+{% if error %}
+<div class="alert alert-danger" style="background: #dc3545; color: white; padding: 12px; margin-bottom: 15px; border-radius: 4px;">{{ error }}</div>
+{% endif %}
+
+<div style="background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+    <!-- Search/Filter -->
+    <div style="margin-bottom: 20px;">
+        <form method="get" style="display: flex; gap: 10px;">
+            <input type="text" name="search" placeholder="Buscar noticias..." value="{{ search_query }}" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+            <button type="submit" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer;">🔍 Buscar</button>
+        </form>
+    </div>
+
+    <!-- Stats -->
+    <div style="margin-bottom: 15px; color: #666; font-size: 0.95em;">
+        <strong>Total:</strong> {{ total }} noticias | <strong>Página:</strong> {{ current_page }} de {{ total_pages }}
+    </div>
+
+    <!-- Table -->
+    <div style="overflow-x: auto;">
+        <table style="width: 100%; border-collapse: collapse;">
+            <thead style="background: #f8f9fa; border-bottom: 2px solid #ddd;">
+                <tr>
+                    <th style="padding: 12px; text-align: left;">Título</th>
+                    <th style="padding: 12px; text-align: left;">Categoría</th>
+                    <th style="padding: 12px; text-align: left;">Estado</th>
+                    <th style="padding: 12px; text-align: left;">Fecha</th>
+                    <th style="padding: 12px; text-align: center;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for article in news_items %}
+                <tr style="border-bottom: 1px solid #ddd;">
+                    <td style="padding: 12px;"><strong>{{ article.title }}</strong></td>
+                    <td style="padding: 12px;">{{ article.category|default:"—" }}</td>
+                    <td style="padding: 12px;">
+                        {% if article.published %}
+                            <span style="background: #28a745; color: white; padding: 4px 8px; border-radius: 3px; font-size: 12px;">✅ Publicado</span>
+                        {% else %}
+                            <span style="background: #6c757d; color: white; padding: 4px 8px; border-radius: 3px; font-size: 12px;">📋 Borrador</span>
+                        {% endif %}
+                    </td>
+                    <td style="padding: 12px; color: #666; font-size: 0.9em;">{{ article.created_at|date:"d/m/Y H:i" }}</td>
+                    <td style="padding: 12px; text-align: center;">
+                        <a href="{% url 'pages:admin_news_detail' article.id %}" style="background: #0066cc; color: white; padding: 6px 12px; border-radius: 3px; text-decoration: none; margin-right: 5px; display: inline-block; font-size: 0.9em;">✏️ Editar</a>
+                        <button onclick="deleteNews('{{ article.id }}')" style="background: #dc3545; color: white; padding: 6px 12px; border-radius: 3px; border: none; cursor: pointer; font-size: 0.9em;">🗑️ Eliminar</button>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" style="padding: 20px; text-align: center; color: #999;">📭 No hay noticias disponibles</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <div style="margin-top: 20px; display: flex; gap: 5px; justify-content: center;">
+        {% for i in "x"|rjust:total_pages %}
+            <a href="?page={{ forloop.counter }}" style="padding: 6px 10px; background: {% if forloop.counter == current_page %}#007bff{% else %}#e9ecef{% endif %}; color: {% if forloop.counter == current_page %}white{% else %}#333{% endif %}; text-decoration: none; border-radius: 3px; border: 1px solid #ddd;">{{ forloop.counter }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+
+<script>
+function deleteNews(newsId) {
+    if (!confirm('¿Estás seguro de que quieres eliminar esta noticia?')) return;
+    
+    fetch('{% url "pages:admin_news_action" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            news_id: newsId,
+            action: 'delete'
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ ' + data.message);
+            location.reload();
+        } else {
+            alert('❌ Error: ' + data.error);
+        }
+    })
+    .catch(e => alert('❌ Error: ' + e));
+}
+</script>
 {% endblock %}

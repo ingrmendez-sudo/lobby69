@@ -1959,16 +1959,16 @@ def admin_hub_view(request):
 def admin_users_view(request):
     """Gestión de usuarios - lista, búsqueda y filtros"""
     from social.users.models import User
-    
+
     try:
         # Parámetros de búsqueda y filtrado
         search_query = request.GET.get('search', '').strip()
         status_filter = request.GET.get('status', '')  # active, inactive, suspended
         page = int(request.GET.get('page', 1))
-        
+
         # Query base
         users = User.objects.all().order_by('-date_joined')
-        
+
         # Búsqueda por username, email o nombre
         if search_query:
             from django.db.models import Q
@@ -1977,13 +1977,13 @@ def admin_users_view(request):
                 Q(email__icontains=search_query) |
                 Q(first_name__icontains=search_query)
             )
-        
+
         # Filtro por estado
         if status_filter == 'active':
             users = users.filter(is_active=True)
         elif status_filter == 'inactive':
             users = users.filter(is_active=False)
-        
+
         # Paginación (20 por página)
         total_users = users.count()
         items_per_page = 20
@@ -1991,7 +1991,7 @@ def admin_users_view(request):
         end_idx = start_idx + items_per_page
         paginated_users = users[start_idx:end_idx]
         total_pages = (total_users + items_per_page - 1) // items_per_page
-        
+
         context = {
             'page': 'users',
             'users': paginated_users,
@@ -2001,9 +2001,9 @@ def admin_users_view(request):
             'search_query': search_query,
             'status_filter': status_filter,
         }
-        
+
         return render(request, 'admin/users_list.html', context)
-    
+
     except Exception as e:
         print(f"[ERROR] admin_users_view: {e}")
         import traceback; traceback.print_exc()
@@ -2016,10 +2016,10 @@ def admin_users_view(request):
 def admin_user_detail_view(request, user_id):
     """Detalle de usuario - información y acciones"""
     from social.users.models import User
-    
+
     try:
         user = User.objects.get(id=user_id)
-        
+
         context = {
             'page': 'users',
             'user': user,
@@ -2028,9 +2028,9 @@ def admin_user_detail_view(request, user_id):
             'created_at': user.date_joined,
             'last_login': user.last_login,
         }
-        
+
         return render(request, 'admin/user_detail.html', context)
-    
+
     except User.DoesNotExist:
         return render(request, 'admin/user_detail.html', {'error': 'Usuario no encontrado'}, status=404)
     except Exception as e:
@@ -2046,14 +2046,14 @@ def admin_user_action_view(request):
     from social.users.models import User
     from django.http import JsonResponse
     import json
-    
+
     try:
         data = json.loads(request.body)
         user_id = data.get('user_id')
         action = data.get('action')  # activate, deactivate, make_staff, remove_staff
-        
+
         user = User.objects.get(id=user_id)
-        
+
         if action == 'activate':
             user.is_active = True
             message = f'Usuario {user.username} activado'
@@ -2068,10 +2068,10 @@ def admin_user_action_view(request):
             message = f'Usuario {user.username} removido de staff'
         else:
             return JsonResponse({'error': 'Acción no válida'}, status=400)
-        
+
         user.save()
         return JsonResponse({'success': True, 'message': message})
-    
+
     except User.DoesNotExist:
         return JsonResponse({'error': 'Usuario no encontrado'}, status=404)
     except Exception as e:
@@ -2089,14 +2089,14 @@ def admin_user_action_view(request):
 def admin_users_view(request):
     """Gestión de usuarios - lista, búsqueda y filtros"""
     from social.users.models import User
-    
+
     try:
         search_query = request.GET.get('search', '').strip()
         status_filter = request.GET.get('status', '')
         page = int(request.GET.get('page', 1))
-        
+
         users = User.objects.all().order_by('-date_joined')
-        
+
         if search_query:
             from django.db.models import Q
             users = users.filter(
@@ -2104,18 +2104,18 @@ def admin_users_view(request):
                 Q(email__icontains=search_query) |
                 Q(first_name__icontains=search_query)
             )
-        
+
         if status_filter == 'active':
             users = users.filter(is_active=True)
         elif status_filter == 'inactive':
             users = users.filter(is_active=False)
-        
+
         total_users = users.count()
         items_per_page = 20
         start_idx = (page - 1) * items_per_page
         paginated_users = users[start_idx:start_idx + items_per_page]
         total_pages = (total_users + items_per_page - 1) // items_per_page
-        
+
         context = {
             'page': 'users',
             'users': paginated_users,
@@ -2125,9 +2125,9 @@ def admin_users_view(request):
             'search_query': search_query,
             'status_filter': status_filter,
         }
-        
+
         return render(request, 'admin/users_list.html', context)
-    
+
     except Exception as e:
         print(f"[ERROR] admin_users_view: {e}")
         return render(request, 'admin/users_list.html', {'error': str(e)})
@@ -2139,7 +2139,7 @@ def admin_users_view(request):
 def admin_user_detail_view(request, user_id):
     """Detalle de usuario"""
     from social.users.models import User
-    
+
     try:
         user = User.objects.get(id=user_id)
         context = {
@@ -2163,14 +2163,14 @@ def admin_user_action_view(request):
     from social.users.models import User
     from django.http import JsonResponse
     import json
-    
+
     try:
         data = json.loads(request.body)
         user_id = data.get('user_id')
         action = data.get('action')
-        
+
         user = User.objects.get(id=user_id)
-        
+
         if action == 'activate':
             user.is_active = True
             message = f'Usuario {user.username} activado'
@@ -2185,10 +2185,10 @@ def admin_user_action_view(request):
             message = f'Usuario {user.username} removido de staff'
         else:
             return JsonResponse({'error': 'Acción no válida'}, status=400)
-        
+
         user.save()
         return JsonResponse({'success': True, 'message': message})
-    
+
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
@@ -2204,29 +2204,29 @@ def admin_invitations_view(request):
     """Gestión de solicitudes de invitación"""
     from social.invitations.models import InvitationRequest
     from django.db.models import Q
-    
+
     try:
         search_query = request.GET.get('search', '').strip()
         status_filter = request.GET.get('status', '')
         page = int(request.GET.get('page', 1))
-        
+
         invitations = InvitationRequest.objects.all().order_by('-created_at')
-        
+
         if search_query:
             invitations = invitations.filter(
                 Q(nombre_completo__icontains=search_query) |
                 Q(email__icontains=search_query)
             )
-        
+
         if status_filter:
             invitations = invitations.filter(status=status_filter)
-        
+
         total = invitations.count()
         items_per_page = 20
         start_idx = (page - 1) * items_per_page
         paginated = invitations[start_idx:start_idx + items_per_page]
         total_pages = (total + items_per_page - 1) // items_per_page
-        
+
         context = {
             'page': 'invitations',
             'invitations': paginated,
@@ -2236,7 +2236,7 @@ def admin_invitations_view(request):
             'search_query': search_query,
             'status_filter': status_filter,
         }
-        
+
         return render(request, 'admin/invitations_list.html', context)
     except Exception as e:
         return render(request, 'admin/invitations_list.html', {'error': str(e)})
@@ -2268,7 +2268,7 @@ def admin_invitation_action_view(request):
     try:
         data = json.loads(request.body)
         invitation = InvitationRequest.objects.get(id=data.get('invitation_id'))
-        
+
         if data.get('action') == 'approve':
             invitation.status = 'approved'
             msg = f'Invitación de {invitation.nombre_completo} aprobada'
@@ -2278,7 +2278,7 @@ def admin_invitation_action_view(request):
             msg = f'Invitación rechazada'
         else:
             return JsonResponse({'error': 'Acción no válida'}, status=400)
-        
+
         invitation.save()
         return JsonResponse({'success': True, 'message': msg})
     except Exception as e:
@@ -2294,20 +2294,20 @@ def admin_support_view(request):
     page = int(request.GET.get('page', 1))
     search_query = request.GET.get('search', '').strip()
     status_filter = request.GET.get('status', '')
-    
+
     try:
         tickets = supabase.table('support_tickets').select('*').execute().data
         if search_query:
             tickets = [t for t in tickets if search_query.lower() in t.get('titulo', '').lower() or search_query.lower() in t.get('email', '').lower()]
         if status_filter:
             tickets = [t for t in tickets if t.get('status') == status_filter]
-        
+
         total = len(tickets)
         per_page = 20
         total_pages = (total + per_page - 1) // per_page
         start = (page - 1) * per_page
         tickets = tickets[start:start + per_page]
-        
+
         context = {
             'page': 'support',
             'tickets': tickets,
@@ -2346,7 +2346,7 @@ def admin_support_action_view(request):
         ticket_id = data.get('ticket_id')
         action = data.get('action')
         response_text = data.get('response', '')
-        
+
         if action == 'close':
             supabase.table('support_tickets').update({'status': 'closed', 'response': response_text}).eq('id', ticket_id).execute()
             return JsonResponse({'success': True, 'message': 'Ticket cerrado'})
@@ -2365,7 +2365,7 @@ def admin_moderation_view(request):
     """Admin moderation queue"""
     page = int(request.GET.get('page', 1))
     status_filter = request.GET.get('status', 'pending')
-    
+
     try:
         content = supabase.table('moderation_queue').select('*').eq('status', status_filter).execute().data
         total = len(content)
@@ -2373,7 +2373,7 @@ def admin_moderation_view(request):
         total_pages = (total + per_page - 1) // per_page
         start = (page - 1) * per_page
         content = content[start:start + per_page]
-        
+
         context = {
             'page': 'moderation',
             'content': content,
@@ -2411,7 +2411,7 @@ def admin_moderation_action_view(request):
         item_id = data.get('item_id')
         action = data.get('action')
         reason = data.get('reason', '')
-        
+
         if action == 'approve':
             supabase.table('moderation_queue').update({'status': 'approved'}).eq('id', item_id).execute()
             return JsonResponse({'success': True, 'message': 'Contenido aprobado'})
@@ -2433,18 +2433,18 @@ def admin_reviews_view(request):
     """Admin reviews management"""
     page = int(request.GET.get('page', 1))
     status_filter = request.GET.get('status', '')
-    
+
     try:
         reviews = supabase.table('reviews').select('*').execute().data
         if status_filter:
             reviews = [r for r in reviews if r.get('status') == status_filter]
-        
+
         total = len(reviews)
         per_page = 20
         total_pages = (total + per_page - 1) // per_page
         start = (page - 1) * per_page
         reviews = reviews[start:start + per_page]
-        
+
         context = {
             'page': 'reviews',
             'reviews': reviews,
@@ -2481,7 +2481,7 @@ def admin_review_action_view(request):
         data = json.loads(request.body)
         review_id = data.get('review_id')
         action = data.get('action')
-        
+
         if action == 'approve':
             supabase.table('reviews').update({'status': 'approved'}).eq('id', review_id).execute()
             return JsonResponse({'success': True, 'message': 'Resena aprobada'})
@@ -2503,18 +2503,18 @@ def admin_events_view(request):
     """Admin events management"""
     page = int(request.GET.get('page', 1))
     search_query = request.GET.get('search', '').strip()
-    
+
     try:
         events = supabase.table('events').select('*').execute().data
         if search_query:
             events = [e for e in events if search_query.lower() in e.get('nombre', '').lower()]
-        
+
         total = len(events)
         per_page = 20
         total_pages = (total + per_page - 1) // per_page
         start = (page - 1) * per_page
         events = events[start:start + per_page]
-        
+
         context = {
             'page': 'events',
             'events': events,
@@ -2551,7 +2551,7 @@ def admin_event_action_view(request):
         data = json.loads(request.body)
         event_id = data.get('event_id')
         action = data.get('action')
-        
+
         if action == 'publish':
             supabase.table('events').update({'status': 'published'}).eq('id', event_id).execute()
             return JsonResponse({'success': True, 'message': 'Evento publicado'})
@@ -2573,34 +2573,32 @@ def admin_news_view(request):
     """Admin news management"""
     page = int(request.GET.get('page', 1))
     search_query = request.GET.get('search', '').strip()
-    status_filter = request.GET.get('status', '')
-    
+
     try:
-        news = supabase.table('news').select('*').execute().data
+        news = supabase.table('news').select('*').order('created_at', desc=True).execute().data
+
         if search_query:
-            news = [n for n in news if search_query.lower() in n.get('titulo', '').lower()]
-        if status_filter:
-            news = [n for n in news if n.get('status') == status_filter]
-        
+            news = [n for n in news if search_query.lower() in n.get('title', '').lower()]
+
         total = len(news)
         per_page = 20
         total_pages = (total + per_page - 1) // per_page
         start = (page - 1) * per_page
-        news = news[start:start + per_page]
-        
+        news_page = news[start:start + per_page]
+
         context = {
             'page': 'news',
-            'news': news,
+            'news_items': news_page,
             'total': total,
             'current_page': page,
             'total_pages': total_pages,
-            'search_query': search_query,
-            'status_filter': status_filter
+            'search_query': search_query
         }
         return render(request, 'admin/news_list.html', context)
     except Exception as e:
         print(f"[ERROR] admin_news_view: {e}")
-        return render(request, 'admin/news_list.html', {'error': str(e), 'page': 'news'})
+        return render(request, 'admin/news_list.html', {'error': str(e), 'page': 'news', 'news_items': []})
+
 
 @login_required(login_url='pages:login')
 @admin_required
@@ -2625,7 +2623,7 @@ def admin_news_action_view(request):
         data = json.loads(request.body)
         news_id = data.get('news_id')
         action = data.get('action')
-        
+
         if action == 'publish':
             supabase.table('news').update({'status': 'published'}).eq('id', news_id).execute()
             return JsonResponse({'success': True, 'message': 'Noticia publicada'})
@@ -2646,44 +2644,44 @@ def admin_news_action_view(request):
 def admin_analytics_view(request):
     """Admin analytics dashboard"""
     period = request.GET.get('period', 'daily')
-    
+
     try:
         # Simulamos datos de trafico desde Supabase
         traffic_data = supabase.table('traffic_logs').select('*').execute().data
-        
+
         # Procesamos por periodo
         daily_stats = {}
         weekly_stats = {}
         monthly_stats = {}
         yearly_stats = {}
-        
+
         for log in traffic_data:
             date = log.get('date', '')
             views = log.get('views', 0)
-            
+
             # Daily
             if date not in daily_stats:
                 daily_stats[date] = 0
             daily_stats[date] += views
-            
+
             # Weekly
             week_key = date[:7]  # YYYY-MM
             if week_key not in weekly_stats:
                 weekly_stats[week_key] = 0
             weekly_stats[week_key] += views
-            
+
             # Monthly
             month_key = date[:7]
             if month_key not in monthly_stats:
                 monthly_stats[month_key] = 0
             monthly_stats[month_key] += views
-            
+
             # Yearly
             year_key = date[:4]
             if year_key not in yearly_stats:
                 yearly_stats[year_key] = 0
             yearly_stats[year_key] += views
-        
+
         # Seleccionar datos segun periodo
         if period == 'daily':
             stats = daily_stats
@@ -2697,11 +2695,11 @@ def admin_analytics_view(request):
         else:  # yearly
             stats = yearly_stats
             labels = sorted(stats.keys())
-        
+
         data_values = [stats.get(label, 0) for label in labels]
         total_views = sum(data_values)
         avg_views = total_views // len(data_values) if data_values else 0
-        
+
         context = {
             'page': 'analytics',
             'period': period,
@@ -2723,20 +2721,20 @@ def admin_analytics_export_view(request):
     """Export analytics as CSV"""
     import csv
     from django.http import HttpResponse
-    
+
     try:
         period = request.GET.get('period', 'daily')
         traffic_data = supabase.table('traffic_logs').select('*').execute().data
-        
+
         response = HttpResponse(content_type='text/csv')
         response['Content-Disposition'] = f'attachment; filename="analytics_{period}.csv"'
-        
+
         writer = csv.writer(response)
         writer.writerow(['Fecha', 'Vistas'])
-        
+
         for log in traffic_data:
             writer.writerow([log.get('date'), log.get('views', 0)])
-        
+
         return response
     except Exception as e:
         print(f"[ERROR] admin_analytics_export_view: {e}")

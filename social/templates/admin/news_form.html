@@ -1,0 +1,151 @@
+﻿{% extends "admin/base.html" %}
+
+{% block title %}{% if article %}Editar{% else %}Crear{% endif %} Noticia - Admin{% endblock %}
+
+{% block content %}
+<div style="margin-bottom: 20px;">
+    <a href="{% url 'pages:admin_news' %}" style="color: #007bff; text-decoration: none;">← Volver a Noticias</a>
+    <h2 style="display: inline; margin-left: 10px;">{% if article %}✏️ Editar Noticia{% else %}➕ Crear Nueva Noticia{% endif %}</h2>
+</div>
+
+<div style="background: white; padding: 30px; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); max-width: 900px;">
+    <form id="newsForm">
+        {% csrf_token %}
+        
+        {% if article %}
+        <input type="hidden" id="news_id" value="{{ article.id }}">
+        {% endif %}
+        
+        <!-- Título -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">📝 Título *</label>
+            <input type="text" id="title" value="{{ article.title|default:'' }}" required 
+                   style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em;">
+        </div>
+        
+        <!-- Categoría -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">🏷️ Categoría</label>
+            <input type="text" id="category" value="{{ article.category|default:'' }}" 
+                   style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em;">
+        </div>
+        
+        <!-- Contenido -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">📄 Contenido *</label>
+            <textarea id="content" required style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em; min-height: 300px; font-family: monospace;">{{ article.content|default:'' }}</textarea>
+            <small style="color: #666;">Puedes usar Markdown: **negrita**, *itálica*, # Encabezado, - Lista</small>
+        </div>
+        
+        <!-- Imagen -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: block; margin-bottom: 8px; font-weight: 600;">🖼️ Imagen</label>
+            <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                <input type="file" id="imageFile" accept="image/*" style="flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
+                <button type="button" onclick="uploadImage()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;">⬆️ Subir</button>
+            </div>
+            <input type="hidden" id="image_url" value="{{ article.image_url|default:'' }}">
+            <div id="uploadStatus" style="color: #666; font-size: 0.9em; margin-bottom: 10px;"></div>
+            {% if article.image_url %}
+            <div style="margin-bottom: 10px;">
+                <img src="{{ article.image_url }}" alt="Preview" style="max-width: 300px; border-radius: 4px;">
+            </div>
+            {% endif %}
+            <div id="imagePreview"></div>
+        </div>
+        
+        <!-- Estado -->
+        <div style="margin-bottom: 20px;">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer;">
+                <input type="checkbox" id="published" {% if article.published %}checked{% endif %} style="width: 18px; height: 18px; cursor: pointer;">
+                <span style="font-weight: 600;">✅ Publicar inmediatamente</span>
+            </label>
+        </div>
+        
+        <!-- Botones -->
+        <div style="display: flex; gap: 10px; margin-top: 30px;">
+            <button type="button" onclick="saveNews()" style="flex: 1; padding: 12px; background: #28a745; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 1em;">
+                💾 {% if article %}Actualizar{% else %}Crear{% endif %} Noticia
+            </button>
+            <button type="button" onclick="window.location.href='{% url 'pages:admin_news' %}'" style="flex: 1; padding: 12px; background: #6c757d; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 1em;">
+                ❌ Cancelar
+            </button>
+        </div>
+    </form>
+</div>
+
+<script>
+function uploadImage() {
+    const file = document.getElementById('imageFile').files[0];
+    if (!file) { alert('Selecciona una imagen'); return; }
+    
+    const fd = new FormData();
+    fd.append('file', file);
+    
+    document.getElementById('uploadStatus').textContent = '⏳ Subiendo...';
+    
+    fetch('{% url "pages:admin_upload_image" %}', {
+        method: 'POST',
+        body: fd,
+        headers: { 'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value }
+    })
+    .then(r => r.json())
+    .then(d => {
+        if (d.success) {
+            document.getElementById('image_url').value = d.url;
+            document.getElementById('uploadStatus').textContent = '✅ Imagen subida';
+            document.getElementById('imagePreview').innerHTML = `<img src="${d.url}" alt="Preview" style="max-width: 300px; border-radius: 4px; margin-top: 10px;">`;
+        } else {
+            document.getElementById('uploadStatus').textContent = '❌ ' + d.error;
+        }
+    })
+    .catch(e => document.getElementById('uploadStatus').textContent = '❌ ' + e);
+}
+
+function saveNews() {
+    const title = document.getElementById('title').value.trim();
+    const content = document.getElementById('content').value.trim();
+    
+    if (!title || !content) {
+        alert('Título y Contenido son requeridos');
+        return;
+    }
+    
+    const newsData = {
+        id: document.getElementById('news_id')?.value || null,
+        title: title,
+        content: content,
+        category: document.getElementById('category').value.trim(),
+        image_url: document.getElementById('image_url').value.trim(),
+        published: document.getElementById('published').checked
+    };
+    
+    fetch('{% url "pages:admin_news_action" %}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: JSON.stringify({
+            news_id: newsData.id,
+            action: newsData.id ? 'update' : 'create',
+            title: newsData.title,
+            content: newsData.content,
+            category: newsData.category,
+            image_url: newsData.image_url,
+            published: newsData.published
+        })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            alert('✅ ' + data.message);
+            window.location.href = '{% url "pages:admin_news" %}';
+        } else {
+            alert('❌ Error: ' + data.error);
+        }
+    })
+    .catch(e => alert('❌ Error: ' + e));
+}
+</script>
+{% endblock %}
