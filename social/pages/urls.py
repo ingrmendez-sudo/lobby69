@@ -39,8 +39,7 @@ urlpatterns = [
     path('api/admin/membership-privilege/', views.update_membership_privilege_view, name='update_membership_privilege'),
     path('api/admin/moderate-content/', views.moderate_content_view, name='moderate_content'),
     path('api/admin/stats/', views.admin_stats_view, name='admin_stats'),
-
-        path('admin/users/', views.admin_users_view, name='admin_users'),
+    path('admin/users/', views.admin_users_view, name='admin_users'),
     path('admin/users/<uuid:user_id>/', views.admin_user_detail_view, name='admin_user_detail'),
     path('admin/invitations/', views.admin_invitations_view, name='admin_invitations'),
     path('admin/invitations/<uuid:invitation_id>/', views.admin_invitation_detail_view, name='admin_invitation_detail'),
@@ -57,9 +56,10 @@ urlpatterns = [
     path('admin/events/', views.admin_events_view, name='admin_events'),
     path('admin/events/<uuid:event_id>/', views.admin_event_detail_view, name='admin_event_detail'),
     path('api/admin/events/action/', views.admin_event_action_view, name='admin_event_action'),
-        path('admin/news/create/', views.admin_news_detail_view, name='admin_news_create'),
-path('admin/news/', views.admin_news_view, name='admin_news'),
+    path('admin/news/create/', views.admin_news_detail_view, name='admin_news_create'),
+    path('admin/news/', views.admin_news_view, name='admin_news'),
     path('admin/news/<uuid:news_id>/', views.admin_news_detail_view, name='admin_news_detail'),
+    path('api/admin/upload-image/', views.admin_upload_image_view, name='admin_upload_image'),
     path('api/admin/news/action/', views.admin_news_action_view, name='admin_news_action'),
     path('admin/analytics/', views.admin_analytics_view, name='admin_analytics'),
     path('api/admin/analytics/export/', views.admin_analytics_export_view, name='admin_analytics_export'),
@@ -165,7 +165,9 @@ path('admin/news/', views.admin_news_view, name='admin_news'),
     # DYNAMIC PAGES
     # ============================================================================
     path('usuario/<str:nickname>/agregar-amigo/', views.add_friend_view, name='add_friend'),
+    path('noticias/', views.public_news_view, name='public_news'),
     path('<str:template_name>/', views.dynamic_pages_view, name='dynamic_pages'),
+
 ]
 
 

@@ -19,7 +19,7 @@
             {% if is_edit %}Modifica los detalles del artículo{% else %}Publica un nuevo artículo en la comunidad{% endif %}
         </p>
     </div>
-    
+
     <!-- Errores -->
     {% if form.non_field_errors %}
     <div style="background: #f8d7da; color: #721c24; padding: 15px; margin-bottom: 20px; border-radius: 6px; border-left: 4px solid #dc3545;">
@@ -29,14 +29,14 @@
         {% endfor %}
     </div>
     {% endif %}
-    
+
     <!-- Formulario -->
     <form method="POST" enctype="multipart/form-data">
         {% csrf_token %}
-        
+
         <!-- Título -->
         <div style="margin-bottom: 25px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 0.95em;">
+            <label for="id_title" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 0.95em;">
                 📝 {{ form.title.label }} <span style="color: #dc3545;">*</span>
             </label>
             {{ form.title }}
@@ -46,10 +46,10 @@
             </small>
             {% endif %}
         </div>
-        
+
         <!-- Categoría -->
         <div style="margin-bottom: 25px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 0.95em;">
+            <label for="id_category" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 0.95em;">
                 🏷️ {{ form.category.label }}
             </label>
             {{ form.category }}
@@ -59,10 +59,10 @@
             </small>
             {% endif %}
         </div>
-        
+
         <!-- Contenido -->
         <div style="margin-bottom: 25px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 0.95em;">
+            <label for="id_content" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 0.95em;">
                 📄 {{ form.content.label }} <span style="color: #dc3545;">*</span>
             </label>
             {{ form.content }}
@@ -72,10 +72,10 @@
             </small>
             {% endif %}
         </div>
-        
+
         <!-- Imagen URL -->
         <div style="margin-bottom: 25px;">
-            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 0.95em;">
+            <label for="id_image_url" style="display: block; margin-bottom: 8px; font-weight: 600; color: #333; font-size: 0.95em;">
                 🖼️ {{ form.image_url.label }}
             </label>
             {{ form.image_url }}
@@ -86,24 +86,34 @@
             {% endif %}
             <small style="color: #666; display: block; margin-top: 5px;">Pega la URL de una imagen (ej: https://ejemplo.com/imagen.jpg)</small>
         </div>
-        
-        <!-- Preview Imagen -->
-        {% if article.image_url %}
-        <div style="margin-bottom: 25px; padding: 15px; background: #f8f9fa; border-radius: 6px;">
-            <p style="margin: 0 0 10px 0; font-weight: 600; color: #333;">Vista previa de imagen:</p>
-            <img src="{{ article.image_url }}" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: 6px;">
+
+        <!-- Upload de Imagen -->
+        <div style="margin-bottom: 25px; padding: 20px; background: #f8f9fa; border-radius: 6px; border: 2px dashed #007bff;">
+            <label style="display: block; margin-bottom: 12px; font-weight: 600; color: #333; font-size: 0.95em;">
+                📤 O sube una imagen directamente
+            </label>
+            <input type="file" id="imageFile" accept="image/*" style="margin-bottom: 10px; padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 100%;">
+            <button type="button" onclick="uploadImage()" style="padding: 10px 20px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 600;">
+                🚀 Subir Imagen
+            </button>
+            <div id="uploadStatus" style="margin-top: 10px; font-size: 0.9em;"></div>
         </div>
-        {% endif %}
-        
+
+        <!-- Preview Imagen -->
+        <div id="imagePreview" style="{% if not article.image_url %}display: none;{% endif %} margin-bottom: 25px; padding: 15px; background: #f8f9fa; border-radius: 6px;">
+            <p style="margin: 0 0 10px 0; font-weight: 600; color: #333;">📸 Vista previa:</p>
+            <img id="previewImg" src="{{ article.image_url|default:'' }}" alt="Preview" style="max-width: 100%; max-height: 300px; border-radius: 6px;">
+        </div>
+
         <!-- Publicar -->
         <div style="margin-bottom: 30px; padding: 15px; background: #f0f8ff; border-radius: 6px; border-left: 4px solid #007bff;">
-            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin: 0;">
+            <label for="id_published" style="display: flex; align-items: center; gap: 10px; cursor: pointer; margin: 0;">
                 {{ form.published }}
                 <span style="font-weight: 600; color: #333;">✅ Publicar inmediatamente</span>
                 <span style="color: #666; font-size: 0.9em;">(Si no marcas, se guardará como borrador)</span>
             </label>
         </div>
-        
+
         <!-- Botones -->
         <div style="display: flex; gap: 12px; margin-top: 35px; padding-top: 25px; border-top: 2px solid #f0f0f0;">
             <button type="submit" style="flex: 1; padding: 14px 20px; background: linear-gradient(135deg, #28a745 0%, #218838 100%); color: white; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; font-size: 1em; box-shadow: 0 2px 8px rgba(40,167,69,0.2); transition: all 0.3s;">
@@ -116,6 +126,7 @@
     </form>
 </div>
 
+<!-- Estilos -->
 <style>
 .form-control {
     width: 100%;
@@ -125,30 +136,98 @@
     font-size: 0.95em;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif;
     transition: border-color 0.3s, box-shadow 0.3s;
+    box-sizing: border-box;
 }
+
 .form-control:focus {
     outline: none;
     border-color: #007bff;
-    box-shadow: 0 0 0 3px rgba(0,123,255,0.1);
+    box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
 }
+
 textarea.form-control {
     font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
     resize: vertical;
     min-height: 200px;
 }
-input[type="checkbox"].form-check-input {
+
+input[type="checkbox"] {
     width: 20px;
     height: 20px;
     cursor: pointer;
+    margin-right: 8px;
+}
+
+input[type="file"] {
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
 }
 </style>
 
+<!-- Scripts -->
 <script>
-// Preview de imagen cuando se cambia la URL
+function uploadImage() {
+    const fileInput = document.getElementById('imageFile');
+    const file = fileInput.files[0];
+    const statusDiv = document.getElementById('uploadStatus');
+
+    if (!file) {
+        statusDiv.innerHTML = '<span style="color: #dc3545;">❌ Por favor selecciona una imagen</span>';
+        return;
+    }
+
+    // Validar tamaño (máx 5 MB)
+    const maxSize = 5 * 1024 * 1024;
+    if (file.size > maxSize) {
+        statusDiv.innerHTML = '<span style="color: #dc3545;">❌ La imagen es muy grande (máximo 5 MB)</span>';
+        return;
+    }
+
+    // Validar tipo
+    if (!file.type.startsWith('image/')) {
+        statusDiv.innerHTML = '<span style="color: #dc3545;">❌ El archivo debe ser una imagen</span>';
+        return;
+    }
+
+    statusDiv.innerHTML = '<span style="color: #007bff;">⏳ Subiendo imagen...</span>';
+
+    const formData = new FormData();
+    formData.append('file', file);
+
+    fetch('{% url "pages:admin_upload_image" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        },
+        body: formData
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('id_image_url').value = data.url;
+            document.getElementById('previewImg').src = data.url;
+            document.getElementById('imagePreview').style.display = 'block';
+            statusDiv.innerHTML = '<span style="color: #28a745;">✅ Imagen subida correctamente</span>';
+            fileInput.value = '';
+        } else {
+            statusDiv.innerHTML = '<span style="color: #dc3545;">❌ Error: ' + data.error + '</span>';
+        }
+    })
+    .catch(error => {
+        statusDiv.innerHTML = '<span style="color: #dc3545;">❌ Error al subir: ' + error.message + '</span>';
+    });
+}
+
+// Preview cuando se cambia URL manualmente
 document.getElementById('id_image_url').addEventListener('change', function() {
     if (this.value) {
-        console.log('✅ URL de imagen: ' + this.value);
+        document.getElementById('previewImg').src = this.value;
+        document.getElementById('imagePreview').style.display = 'block';
     }
 });
 </script>
+
 {% endblock %}
+

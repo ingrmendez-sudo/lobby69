@@ -2663,25 +2663,20 @@ def admin_news_detail_view(request, news_id=None):
 @admin_required
 @require_http_methods(["POST"])
 def admin_news_action_view(request):
-    """Admin news actions"""
-    import json
+    """Admin news actions - delete"""
     try:
-        data = json.loads(request.body)
-        news_id = data.get('news_id')
-        action = data.get('action')
+        news_id = request.POST.get('news_id')
+        action = request.POST.get('action')
 
-        if action == 'publish':
-            supabase.table('news').update({'status': 'published'}).eq('id', news_id).execute()
-            return JsonResponse({'success': True, 'message': 'Noticia publicada'})
-        elif action == 'draft':
-            supabase.table('news').update({'status': 'draft'}).eq('id', news_id).execute()
-            return JsonResponse({'success': True, 'message': 'Noticia guardada como borrador'})
-        elif action == 'delete':
+        if action == 'delete':
             supabase.table('news').delete().eq('id', news_id).execute()
-            return JsonResponse({'success': True, 'message': 'Noticia eliminada'})
+            return redirect('pages:admin_news')
+
+        return redirect('pages:admin_news')
     except Exception as e:
         print(f"[ERROR] admin_news_action_view: {e}")
-        return JsonResponse({'error': str(e)}, status=500)
+        return redirect('pages:admin_news')
+
 
 # ============ ANALYTICS MODULE ============
 @login_required(login_url='pages:login')
@@ -2785,3 +2780,72 @@ def admin_analytics_export_view(request):
     except Exception as e:
         print(f"[ERROR] admin_analytics_export_view: {e}")
         return JsonResponse({'error': str(e)}, status=500)
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["POST"])
+def admin_upload_image_view(request):
+    """Upload image to Supabase storage"""
+    try:
+        file = request.FILES.get('file')
+        if not file:
+            return JsonResponse({'success': False, 'error': 'No file provided'}, status=400)
+
+        # Validar tamaño (5 MB max)
+        if file.size > 5 * 1024 * 1024:
+            return JsonResponse({'success': False, 'error': 'File too large (max 5 MB)'}, status=400)
+
+        # Validar tipo
+        if not file.content_type.startswith('image/'):
+            return JsonResponse({'success': False, 'error': 'File must be an image'}, status=400)
+
+        import uuid
+        filename = f"news-{uuid.uuid4()}.{file.name.split('.')[-1]}"
+
+        # Subir a Supabase Storage
+        from django.conf import settings
+        from supabase import create_client
+        supabase = create_client(settings.SUPABASE_URL, settings.SUPABASE_KEY)
+
+        try:
+            supabase.storage.from_('news-images').upload(filename, file.read())
+            # Generar URL pública
+            url = f"{settings.SUPABASE_URL}/storage/v1/object/public/news-images/{filename}"
+            return JsonResponse({'success': True, 'url': url})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': f'Upload failed: {str(e)}'}, status=500)
+
+    except Exception as e:
+        print(f"[ERROR] admin_upload_image_view: {e}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@require_http_methods(["GET"])
+def public_news_view(request):
+    """Public news listing page"""
+    try:
+        page = int(request.GET.get('page', 1))
+        search = request.GET.get('search', '').strip()
+
+        # Obtener solo noticias publicadas
+        news = supabase.table('news').select('*').eq('published', True).order('published_at', desc=True).execute().data
+
+        if search:
+            news = [n for n in news if search.lower() in n.get('title', '').lower()]
+
+        total = len(news)
+        per_page = 9
+        total_pages = (total + per_page - 1) // per_page
+        start = (page - 1) * per_page
+        news_page = news[start:start + per_page]
+
+        context = {
+            'news_items': news_page,
+            'total': total,
+            'current_page': page,
+            'total_pages': total_pages,
+            'search': search
+        }
+        return render(request, 'pages/news_public.html', context)
+    except Exception as e:
+        print(f"[ERROR] public_news_view: {e}")
+        return render(request, 'pages/news_public.html', {'error': str(e), 'news_items': []})

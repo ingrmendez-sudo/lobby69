@@ -56,7 +56,12 @@
                     <td style="padding: 12px; color: #666; font-size: 0.9em;">{{ article.created_at|date:"d/m/Y H:i" }}</td>
                     <td style="padding: 12px; text-align: center;">
                         <a href="{% url 'pages:admin_news_detail' article.id %}" style="background: #0066cc; color: white; padding: 6px 12px; border-radius: 3px; text-decoration: none; margin-right: 5px; display: inline-block; font-size: 0.9em;">✏️ Editar</a>
-                        <button onclick="deleteNews('{{ article.id }}')" style="background: #dc3545; color: white; padding: 6px 12px; border-radius: 3px; border: none; cursor: pointer; font-size: 0.9em;">🗑️ Eliminar</button>
+                        <form method="POST" action="{% url 'pages:admin_news_action' %}" style="display: inline;">
+                            {% csrf_token %}
+                            <input type="hidden" name="news_id" value="{{ article.id }}">
+                            <input type="hidden" name="action" value="delete">
+                            <button type="submit" onclick="return confirm('¿Eliminar esta noticia? No se puede deshacer.')" style="background: #dc3545; color: white; padding: 6px 12px; border-radius: 3px; border: none; cursor: pointer; font-size: 0.9em;">🗑️ Eliminar</button>
+                        </form>
                     </td>
                 </tr>
                 {% empty %}
@@ -81,7 +86,7 @@
 <script>
 function deleteNews(newsId) {
     if (!confirm('¿Estás seguro de que quieres eliminar esta noticia?')) return;
-    
+
     fetch('{% url "pages:admin_news_action" %}', {
         method: 'POST',
         headers: {

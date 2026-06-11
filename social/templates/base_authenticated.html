@@ -234,7 +234,7 @@
                     <div id="notificationMenu" class="dropdown-menu">
                         <a href="{% url 'pages:friend_requests' %}">👥 {% trans "Solicitudes de Amistad" %}</a>
                         <a href="{% url 'pages:notifications' %}">🔔 {% trans "Mis Notificaciones" %}</a>
-                    </div>
+                        <a href="{% url 'pages:public_news' %}">📰 Noticias</a>
                 </li>
                 <li><a href="{% url 'pages:settings' %}">⚙️ {% trans "Configuración" %}</a></li>
                     <a href="{% url 'pages:verification' %}" style="display: flex; align-items: center; gap: 6px; padding: 8px 15px; border-radius: 6px; text-decoration: none; color: #666; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">
