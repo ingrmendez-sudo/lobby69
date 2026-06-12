@@ -167,6 +167,7 @@ urlpatterns = [
     path('usuario/<str:nickname>/agregar-amigo/', views.add_friend_view, name='add_friend'),
     path('noticias/', views.public_news_view, name='public_news'),
     path('<str:template_name>/', views.dynamic_pages_view, name='dynamic_pages'),
+    path('noticias/<uuid:news_id>/', views.public_news_detail_view, name='public_news_detail'),
 
 ]
 

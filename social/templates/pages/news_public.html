@@ -1,283 +1,111 @@
-﻿{% load static %}
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>📰 Noticias & Artículos - LOBBY69</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        body {
-            font-family: '"'"'Segoe UI'"'"', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
-            min-height: 100vh;
-            padding: 20px;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .navbar {
-            background: white;
-            padding: 20px;
-            border-radius: 10px;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 30px;
-        }
-        .navbar h1 {
-            color: #1a1a2e;
-            font-size: 24px;
-        }
-        .nav-links {
-            display: flex;
-            gap: 20px;
-        }
-        .nav-links a {
-            text-decoration: none;
-            color: #333;
-            font-weight: 600;
-            padding: 10px 15px;
-            border-radius: 8px;
-            transition: all 0.3s;
-        }
-        .nav-links a:hover {
-            background: #f0f0f0;
-            color: #d946ef;
-        }
-        .back-btn {
-            background: #667eea;
-            color: white !important;
-        }
-        .back-btn:hover {
-            background: #5568d3 !important;
-        }
-        .header-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 50px 40px;
-            border-radius: 15px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
-        }
-        .header-card h2 {
-            font-size: 32px;
-            margin-bottom: 10px;
-        }
-        .header-card p {
-            opacity: 0.95;
-            font-size: 16px;
-        }
-        .search-box {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 30px;
-        }
-        .search-box input {
-            flex: 1;
-            padding: 12px 18px;
-            border: 2px solid #ddd;
-            border-radius: 8px;
-            font-size: 15px;
-        }
-        .search-box button {
-            padding: 12px 25px;
-            background: #667eea;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .search-box button:hover {
-            background: #5568d3;
-        }
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 25px;
-            margin-bottom: 40px;
-        }
-        .card {
-            background: white;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-            transition: transform 0.3s, box-shadow 0.3s;
-            text-decoration: none;
-            color: #333;
-            display: flex;
-            flex-direction: column;
-        }
-        .card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-        }
-        .card-image {
-            width: 100%;
-            height: 200px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 3em;
-            object-fit: cover;
-        }
-        .card-body {
-            padding: 25px;
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-        }
-        .card-meta {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 12px;
-            flex-wrap: wrap;
-        }
-        .badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 600;
-        }
-        .badge-category {
-            background: #e7f3ff;
-            color: #0066cc;
-        }
-        .badge-date {
-            background: #e8f5e9;
-            color: #2e7d32;
-        }
-        .card h3 {
-            color: #1a1a2e;
-            margin-bottom: 12px;
-            font-size: 18px;
-            line-height: 1.4;
-        }
-        .card p {
-            color: #666;
-            font-size: 14px;
-            line-height: 1.6;
-            margin-bottom: 15px;
-            flex: 1;
-            display: -webkit-box;
-            -webkit-line-clamp: 2;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-        }
-        .card-link {
-            color: #667eea;
-            font-weight: 600;
-            text-decoration: none;
-            font-size: 14px;
-        }
-        .card-link:hover {
-            color: #5568d3;
-        }
-        .pagination {
-            display: flex;
-            gap: 8px;
-            justify-content: center;
-            flex-wrap: wrap;
-            margin-top: 40px;
-        }
-        .pagination a {
-            padding: 10px 14px;
-            background: white;
-            border: 2px solid #ddd;
-            color: #333;
-            text-decoration: none;
-            border-radius: 8px;
-            font-weight: 600;
-            transition: all 0.3s;
-        }
-        .pagination a:hover, .pagination a.active {
-            background: #667eea;
-            color: white;
-            border-color: #667eea;
-        }
-        .empty-state {
-            grid-column: 1 / -1;
-            text-align: center;
-            padding: 60px 20px;
-            background: white;
-            border-radius: 15px;
-            color: #999;
-        }
-        .empty-state p {
-            font-size: 18px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-        <!-- Navbar -->
-        <div class="navbar">
-            <h1>📰 NOTICIAS & ARTÍCULOS</h1>
-            <div class="nav-links">
-                <a href="/" class="back-btn">← Volver</a>
-            </div>
-        </div>
+﻿{% extends "base_authenticated.html" %}
+{% load i18n %}
 
-        <!-- Header Card -->
-        <div class="header-card">
-            <h2>📰 Noticias & Artículos</h2>
-            <p>Guías, tutoriales y últimas noticias de la comunidad LOBBY69</p>
-        </div>
+{% block page_title %}📰 Noticias & Artículos - LOBBY69{% endblock page_title %}
 
-        <!-- Search -->
-        <div class="search-box">
-            <form method="GET" style="display: flex; gap: 10px; width: 100%;">
-                <input type="text" name="search" placeholder="Buscar artículos, tutoriales..." value="{{ search }}">
-                <button type="submit">🔍 Buscar</button>
-            </form>
-        </div>
+{% block left_sidebar %}
+<div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+    <h3 style="color: #333; font-size: 16px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px solid #667eea;">🏷️ Categorías</h3>
+    <a href="{% url 'pages:public_news' %}" style="display: block; padding: 12px; background: #f5f5f5; border-radius: 8px; text-decoration: none; color: #333; font-weight: 500; margin-bottom: 10px; transition: all 0.3s; font-size: 14px;">📰 Todas</a>
+    <a href="{% url 'pages:public_news' %}?category=tutorial" style="display: block; padding: 12px; background: #f5f5f5; border-radius: 8px; text-decoration: none; color: #333; font-weight: 500; margin-bottom: 10px; transition: all 0.3s; font-size: 14px;">📚 Tutoriales</a>
+    <a href="{% url 'pages:public_news' %}?category=noticias" style="display: block; padding: 12px; background: #f5f5f5; border-radius: 8px; text-decoration: none; color: #333; font-weight: 500; margin-bottom: 10px; transition: all 0.3s; font-size: 14px;">📢 Noticias</a>
+    <a href="{% url 'pages:public_news' %}?category=eventos" style="display: block; padding: 12px; background: #f5f5f5; border-radius: 8px; text-decoration: none; color: #333; font-weight: 500; margin-bottom: 10px; transition: all 0.3s; font-size: 14px;">🎉 Eventos</a>
 
-        <!-- News Grid -->
-        <div class="grid">
-            {% for article in news_items %}
-            <div class="card">
-                {% if article.image_url %}
-                    <img src="{{ article.image_url }}" alt="{{ article.title }}" class="card-image" style="object-fit: cover;">
-                {% else %}
-                    <div class="card-image">📄</div>
-                {% endif %}
-                <div class="card-body">
-                    <div class="card-meta">
-                        {% if article.category %}
-                        <span class="badge badge-category">{{ article.category }}</span>
-                        {% endif %}
-                        <span class="badge badge-date">📅 {{ article.published_at|date:"d/m/Y" }}</span>
-                    </div>
-                    <h3>{{ article.title }}</h3>
-                    <p>{{ article.content|truncatewords:20 }}</p>
-                    <a href="#" class="card-link">Leer más →</a>
-                </div>
-            </div>
-            {% empty %}
-            <div class="empty-state">
-                <p>📭 No hay artículos disponibles</p>
-            </div>
-            {% endfor %}
-        </div>
-
-        <!-- Pagination -->
-        {% if total_pages > 1 %}
-        <div class="pagination">
-            {% for i in "x"|rjust:total_pages %}
-            <a href="?page={{ forloop.counter }}" {% if forloop.counter == current_page %}class="active"{% endif %}>{{ forloop.counter }}</a>
-            {% endfor %}
-        </div>
-        {% endif %}
+    <h3 style="color: #333; font-size: 16px; margin-top: 25px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 3px solid #667eea;">📊 Estadísticas</h3>
+    <div style="background: #f5f5f5; padding: 15px; border-radius: 8px; font-size: 13px;">
+        <div style="margin-bottom: 10px;"><strong>Total Artículos:</strong> {{ total }}</div>
+        <div><strong>Actualizaciones:</strong> Diarias</div>
     </div>
-</body>
-</html>
+</div>
+{% endblock left_sidebar %}
+
+{% block main_content %}
+<style>
+    .news-card {
+        background: white;
+        border-radius: 15px;
+        overflow: hidden;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        transition: transform 0.3s, box-shadow 0.3s;
+        display: flex;
+        flex-direction: column;
+    }
+    .news-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+    }
+</style>
+
+<div>
+    <!-- Header -->
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 50px 40px; border-radius: 15px; margin-bottom: 30px; box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);">
+        <h2 style="font-size: 32px; margin-bottom: 10px;">📰 Noticias & Artículos</h2>
+        <p style="opacity: 0.95; font-size: 16px;">Guías, tutoriales y últimas noticias de la comunidad LOBBY69</p>
+    </div>
+
+    <!-- Search -->
+    <div style="display: flex; gap: 10px; margin-bottom: 30px;">
+        <form method="GET" style="display: flex; gap: 10px; width: 100%;">
+            <input type="text" name="search" placeholder="Buscar artículos, tutoriales..." value="{{ search }}" style="flex: 1; padding: 12px 18px; border: 2px solid #ddd; border-radius: 8px; font-size: 15px;">
+            <button type="submit" style="padding: 12px 25px; background: #667eea; color: white; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; transition: all 0.3s;">🔍 Buscar</button>
+        </form>
+    </div>
+
+    <!-- News Grid -->
+    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px;">
+        {% for article in news_items %}
+        <div class="news-card">
+            {% if article.image_url %}
+                <img src="{{ article.image_url }}" alt="{{ article.title }}" style="width: 100%; height: 180px; object-fit: cover;">
+            {% else %}
+                <div style="width: 100%; height: 180px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; color: white; font-size: 2.5em;">📄</div>
+            {% endif %}
+            <div style="padding: 20px; flex: 1; display: flex; flex-direction: column;">
+                <div style="display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap;">
+                    {% if article.category %}
+                    <span style="display: inline-block; background: #e7f3ff; color: #0066cc; padding: 4px 10px; border-radius: 15px; font-size: 12px; font-weight: 600;">{{ article.category }}</span>
+                    {% endif %}
+                    <span style="display: inline-block; background: #e8f5e9; color: #2e7d32; padding: 4px 10px; border-radius: 15px; font-size: 12px;">📅 {{ article.published_at|date:"d/m/Y" }}</span>
+                </div>
+                <h3 style="color: #333; margin-bottom: 10px; font-size: 17px; line-height: 1.3; font-weight: 600;">{{ article.title }}</h3>
+                <p style="color: #666; font-size: 13px; line-height: 1.5; margin-bottom: 12px; flex: 1; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">{{ article.content|truncatewords:18 }}</p>
+                <a href="{% url 'pages:public_news_detail' article.id %}" style="color: #667eea; font-weight: 600; text-decoration: none; font-size: 13px;">Leer más →</a>
+
+            </div>
+        </div>
+        {% empty %}
+        <div style="grid-column: 1 / -1; text-align: center; padding: 60px 20px; background: white; border-radius: 15px; color: #999;">
+            <p style="font-size: 18px;">📭 No hay artículos disponibles</p>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Pagination -->
+    {% if total_pages > 1 %}
+    <div style="display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 40px;">
+        {% for i in "x"|rjust:total_pages %}
+        <a href="?page={{ forloop.counter }}" style="padding: 8px 12px; background: {% if forloop.counter == current_page %}#667eea{% else %}white{% endif %}; color: {% if forloop.counter == current_page %}white{% else %}#333{% endif %}; text-decoration: none; border-radius: 8px; font-weight: 600; border: 2px solid #ddd; transition: all 0.3s;">{{ forloop.counter }}</a>
+        {% endfor %}
+    </div>
+    {% endif %}
+</div>
+{% endblock main_content %}
+
+{% block right_sidebar %}
+<div style="background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.08);">
+    <h3 style="color: #333; font-size: 16px; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 3px solid #667eea;">🔥 Trending</h3>
+
+    {% for article in news_items|slice:":3" %}
+    <div style="margin-bottom: 15px; padding-bottom: 12px; border-bottom: 1px solid #eee;">
+        <p style="font-size: 13px; font-weight: 600; color: #333; margin-bottom: 5px;">{{ article.title|truncatewords:6 }}</p>
+        <small style="color: #999; font-size: 12px;">{{ article.published_at|date:"d/m/Y" }}</small>
+    </div>
+    {% endfor %}
+
+    <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px; border-radius: 8px; text-align: center; margin-top: 20px;">
+        <h4 style="font-size: 14px; margin-bottom: 8px;">💬 ¿Ideas?</h4>
+        <p style="font-size: 12px; margin-bottom: 10px;">Comparte tus sugerencias</p>
+        <a href="{% url 'pages:report_content' %}" style="display: inline-block; background: white; color: #667eea; padding: 6px 12px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 12px;">Contactar</a>
+    </div>
+</div>
+{% endblock right_sidebar %}

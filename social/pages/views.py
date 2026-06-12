@@ -2849,3 +2849,17 @@ def public_news_view(request):
     except Exception as e:
         print(f"[ERROR] public_news_view: {e}")
         return render(request, 'pages/news_public.html', {'error': str(e), 'news_items': []})
+
+@require_http_methods(["GET"])
+def public_news_detail_view(request, news_id):
+    """Public news detail page"""
+    try:
+        article = supabase.table('news').select('*').eq('id', str(news_id)).eq('published', True).single().execute().data
+        context = {
+            'article': article,
+            'page': 'news_detail'
+        }
+        return render(request, 'pages/news_detail.html', context)
+    except Exception as e:
+        print(f"[ERROR] public_news_detail_view: {e}")
+        return redirect('pages:public_news')
