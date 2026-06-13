@@ -2863,3 +2863,185 @@ def public_news_detail_view(request, news_id):
     except Exception as e:
         print(f"[ERROR] public_news_detail_view: {e}")
         return redirect('pages:public_news')
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET"])
+def admin_events_list_view(request):
+    """List all events for admin"""
+    try:
+        search = request.GET.get('search', '').strip()
+        page = int(request.GET.get('page', 1))
+        per_page = 10
+
+        # Fetch all events
+        events = supabase.table('events').select('*').order('created_at', desc=True).execute().data
+
+        # Search filter
+        if search:
+            events = [e for e in events if search.lower() in e.get('title', '').lower()]
+
+        # Pagination
+        total = len(events)
+        total_pages = (total + per_page - 1) // per_page
+        start = (page - 1) * per_page
+        events_page = events[start:start + per_page]
+
+        context = {
+            'events': events_page,
+            'total': total,
+            'current_page': page,
+            'total_pages': total_pages,
+            'search': search,
+            'page': 'admin_events'
+        }
+        return render(request, 'admin/events_list.html', context)
+    except Exception as e:
+        print(f"[ERROR] admin_events_list_view: {e}")
+        return render(request, 'admin/events_list.html', {'error': str(e), 'events': []})
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["GET", "POST"])
+def admin_events_detail_view(request, event_id=None):
+    """Create or edit event"""
+    try:
+        is_edit = event_id is not None
+        event = None
+
+        if is_edit:
+            event = supabase.table('events').select('*').eq('id', str(event_id)).single().execute().data
+
+        if request.method == 'POST':
+            title = request.POST.get('title', '').strip()
+            description = request.POST.get('description', '').strip()
+            date_time = request.POST.get('date_time', '').strip()
+            location = request.POST.get('location', '').strip()
+            max_attendees = int(request.POST.get('max_attendees', 0))
+            price = float(request.POST.get('price', 0))
+            image_url = request.POST.get('image_url', '').strip()
+            status = request.POST.get('status', 'draft')
+
+            if not title or not description or not date_time or not location:
+                return render(request, 'admin/events_form.html', {
+                    'error': 'Todos los campos obligatorios son requeridos',
+                    'is_edit': is_edit,
+                    'event': event
+                })
+
+            # Get user UUID from profile
+            try:
+                user_profile = supabase.table('profiles').select('id').eq('user_id', request.user.id).single().execute().data
+                created_by_admin = user_profile.get('id')
+            except:
+                created_by_admin = None
+
+            event_data = {
+                'title': title,
+                'description': description,
+                'date_time': date_time,
+                'location': location,
+                'max_attendees': max_attendees,
+                'price': price,
+                'image_url': image_url,
+                'status': status,
+                'created_by_admin': created_by_admin
+            }
+
+            if is_edit:
+                supabase.table('events').update(event_data).eq('id', str(event_id)).execute()
+                return redirect('pages:admin_events_detail', event_id=event_id)
+            else:
+                result = supabase.table('events').insert(event_data).execute()
+                return redirect('pages:admin_events')
+
+        context = {'event': event, 'is_edit': is_edit, 'page': 'admin_events'}
+        return render(request, 'admin/events_form.html', context)
+    except Exception as e:
+        print(f"[ERROR] admin_events_detail_view: {e}")
+        return render(request, 'admin/events_form.html', {'error': str(e), 'is_edit': is_edit, 'event': event})
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["POST"])
+def admin_events_delete_view(request, event_id):
+    """Delete event"""
+    try:
+        supabase.table('events').delete().eq('id', str(event_id)).execute()
+        return redirect('pages:admin_events')
+    except Exception as e:
+        print(f"[ERROR] admin_events_delete_view: {e}")
+        return redirect('pages:admin_events')
+
+@login_required(login_url='pages:login')
+@admin_required
+@require_http_methods(["POST"])
+def admin_upload_event_image_view(request):
+    """Upload image to Supabase storage for events"""
+    try:
+        file = request.FILES.get('file')
+        if not file:
+            return JsonResponse({'success': False, 'error': 'No file provided'}, status=400)
+        if file.size > 5 * 1024 * 1024:
+            return JsonResponse({'success': False, 'error': 'File too large (max 5 MB)'}, status=400)
+        if not file.content_type.startswith('image/'):
+            return JsonResponse({'success': False, 'error': 'File must be an image'}, status=400)
+
+        import uuid
+        filename = f"event-{uuid.uuid4()}.{file.name.split('.')[-1]}"
+
+        try:
+            supabase.storage.from_('events-images').upload(filename, file.read())
+            from django.conf import settings
+            url = f"{settings.SUPABASE_URL}/storage/v1/object/public/events-images/{filename}"
+            return JsonResponse({'success': True, 'url': url})
+        except Exception as e:
+            return JsonResponse({'success': False, 'error': f'Upload failed: {str(e)}'}, status=500)
+    except Exception as e:
+        print(f"[ERROR] admin_upload_event_image_view: {e}")
+        return JsonResponse({'success': False, 'error': str(e)}, status=500)
+
+@require_http_methods(["GET"])
+def public_events_view(request):
+    """Public events list page"""
+    try:
+        page = int(request.GET.get('page', 1))
+        search = request.GET.get('search', '').strip()
+
+        # Fetch published events
+        events = supabase.table('events').select('*').eq('status', 'published').order('date_time', desc=True).execute().data
+
+        # Search filter
+        if search:
+            events = [e for e in events if search.lower() in e.get('title', '').lower()]
+
+        # Pagination
+        total = len(events)
+        per_page = 9
+        total_pages = (total + per_page - 1) // per_page
+        start = (page - 1) * per_page
+        events_page = events[start:start + per_page]
+
+        context = {
+            'events': events_page,
+            'total': total,
+            'current_page': page,
+            'total_pages': total_pages,
+            'search': search,
+            'page': 'public_events'
+        }
+        return render(request, 'pages/events_public.html', context)
+    except Exception as e:
+        print(f"[ERROR] public_events_view: {e}")
+        return render(request, 'pages/events_public.html', {'error': str(e), 'events': []})
+
+@require_http_methods(["GET"])
+def public_events_detail_view(request, event_id):
+    """Public event detail page"""
+    try:
+        event = supabase.table('events').select('*').eq('id', str(event_id)).eq('status', 'published').single().execute().data
+        context = {'event': event, 'page': 'events_detail'}
+        return render(request, 'pages/events_detail.html', context)
+    except Exception as e:
+        print(f"[ERROR] public_events_detail_view: {e}")
+        return redirect('pages:public_events')

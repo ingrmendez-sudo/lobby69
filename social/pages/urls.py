@@ -53,7 +53,6 @@ urlpatterns = [
     path('admin/reviews/', views.admin_reviews_view, name='admin_reviews'),
     path('admin/reviews/<uuid:review_id>/', views.admin_review_detail_view, name='admin_review_detail'),
     path('api/admin/reviews/action/', views.admin_review_action_view, name='admin_review_action'),
-    path('admin/events/', views.admin_events_view, name='admin_events'),
     path('admin/events/<uuid:event_id>/', views.admin_event_detail_view, name='admin_event_detail'),
     path('api/admin/events/action/', views.admin_event_action_view, name='admin_event_action'),
     path('admin/news/create/', views.admin_news_detail_view, name='admin_news_create'),
@@ -64,6 +63,17 @@ urlpatterns = [
     path('admin/analytics/', views.admin_analytics_view, name='admin_analytics'),
     path('api/admin/analytics/export/', views.admin_analytics_export_view, name='admin_analytics_export'),
     path('api/admin/users/action/', views.admin_user_action_view, name='admin_user_action'),
+    # ADMIN EVENTS
+    path('admin/eventos/', views.admin_events_list_view, name='admin_events'),
+    path('admin/eventos/crear/', views.admin_events_detail_view, name='admin_events_create'),
+    path('admin/eventos/<uuid:event_id>/editar/', views.admin_events_detail_view, name='admin_events_detail'),
+    path('admin/eventos/<uuid:event_id>/eliminar/', views.admin_events_delete_view, name='admin_events_delete'),
+    path('api/admin/upload-event-image/', views.admin_upload_event_image_view, name='admin_upload_event_image'),
+
+    # PUBLIC EVENTS
+    path('eventos/', views.public_events_view, name='public_events'),
+    path('eventos/<uuid:event_id>/', views.public_events_detail_view, name='public_events_detail'),
+
 
     # ============================================================================
     # AUTHENTICATION URLS
@@ -170,6 +180,7 @@ urlpatterns = [
     path('noticias/<uuid:news_id>/', views.public_news_detail_view, name='public_news_detail'),
 
 ]
+
 
 
 

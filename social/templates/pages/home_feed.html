@@ -1,4 +1,4 @@
-{% load static %}
+﻿{% load static %}
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -112,58 +112,58 @@
     <div class="container">
         <!-- Navbar -->
         <div class="navbar">
-            <h1>🎉 CLUB LOBBY69</h1>
+            <h1>ðŸŽ‰ CLUB LOBBY69</h1>
             <div class="nav-links">
-                <a href="{% url 'pages:profile' %}">👤 Mi Perfil</a>
-                <a href="{% url 'pages:explore' %}">🔍 Explorar</a>
-                <a href="{% url 'pages:conversations' %}">💬 Mensajes</a>
-                <a href="{% url 'pages:gallery' %}">📸 Galería</a>
-                <a href="{% url 'pages:memberships' %}">🏆 Membresías</a>
-                <li><a href="{% url 'pages:friend_requests' %}">👥 Solicitudes</a></li>
-                <a href="{% url 'pages:logout' %}" class="logout-btn">🚪 Salir</a>
+                <a href="{% url 'pages:my_profile' %}">ðŸ‘¤ Mi Perfil</a>
+                <a href="{% url 'pages:explore' %}">ðŸ” Explorar</a>
+                <a href="{% url 'pages:conversations' %}">ðŸ’¬ Mensajes</a>
+                <a href="{% url 'pages:gallery' %}">ðŸ“¸ GalerÃ­a</a>
+                <a href="{% url 'pages:memberships' %}">ðŸ† MembresÃ­as</a>
+                <li><a href="{% url 'pages:friend_requests' %}">ðŸ‘¥ Solicitudes</a></li>
+                <a href="{% url 'pages:logout' %}" class="logout-btn">ðŸšª Salir</a>
             </div>
         </div>
 
         <!-- Welcome Card -->
         <div class="welcome-card">
-            <h2>¡Bienvenido, {{ user.username }}! 👋</h2>
+            <h2>Â¡Bienvenido, {{ user.username }}! ðŸ‘‹</h2>
             <p>Estamos felices de verte de nuevo en CLUB LOBBY69</p>
         </div>
 
         <!-- Main Grid -->
         <div class="grid">
-            <a href="{% url 'pages:profile' %}" class="card">
-                <div class="card-icon">👤</div>
+            <a href="{% url 'pages:my_profile' %}" class="card">
+                <div class="card-icon">ðŸ‘¤</div>
                 <h3>Mi Perfil</h3>
-                <p>Ver y editar mi información personal</p>
+                <p>Ver y editar mi informaciÃ³n personal</p>
             </a>
 
             <a href="{% url 'pages:explore' %}" class="card">
-                <div class="card-icon">🔍</div>
+                <div class="card-icon">ðŸ”</div>
                 <h3>Explorar</h3>
                 <p>Descubre perfiles interesantes</p>
             </a>
 
             <a href="{% url 'pages:conversations' %}" class="card">
-                <div class="card-icon">💬</div>
+                <div class="card-icon">ðŸ’¬</div>
                 <h3>Mensajes</h3>
                 <p>Chatea con tus conexiones</p>
             </a>
 
             <a href="{% url 'pages:gallery' %}" class="card">
-                <div class="card-icon">📸</div>
-                <h3>Galería</h3>
+                <div class="card-icon">ðŸ“¸</div>
+                <h3>GalerÃ­a</h3>
                 <p>Gestiona tus fotos y videos</p>
             </a>
 
             <a href="{% url 'pages:memberships' %}" class="card">
-                <div class="card-icon">🏆</div>
-                <h3>Membresías</h3>
+                <div class="card-icon">ðŸ†</div>
+                <h3>MembresÃ­as</h3>
                 <p>Descubre planes premium</p>
             </a>
 
             <a href="{% url 'pages:notifications' %}" class="card">
-                <div class="card-icon">🔔</div>
+                <div class="card-icon">ðŸ””</div>
                 <h3>Notificaciones</h3>
                 <p>Mantente actualizado</p>
             </a>
@@ -171,3 +171,4 @@
     </div>
 </body>
 </html>
+

@@ -1,0 +1,128 @@
+﻿{% extends "admin/base.html" %}
+{% block title %}{% if is_edit %}Editar{% else %}Crear{% endif %} Evento{% endblock %}
+{% block content %}
+<div style="padding: 20px; max-width: 800px;">
+    <a href="{% url 'pages:admin_events' %}" style="color: #667eea; text-decoration: none; margin-bottom: 20px; display: inline-block;">← Volver a Eventos</a>
+    
+    <h1>{% if is_edit %}✏️ Editar Evento{% else %}➕ Crear Evento{% endif %}</h1>
+    
+    {% if error %}
+    <div style="background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 20px;">
+        ❌ {{ error }}
+    </div>
+    {% endif %}
+    
+    <form method="POST" enctype="multipart/form-data" style="background: #f9f9f9; padding: 20px; border-radius: 8px;">
+        {% csrf_token %}
+        
+        <div style="margin-bottom: 15px;">
+            <label for="title" style="display: block; font-weight: 600; margin-bottom: 5px;">📝 Título *</label>
+            <input type="text" id="title" name="title" value="{{ event.title|default:'' }}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="description" style="display: block; font-weight: 600; margin-bottom: 5px;">📄 Descripción *</label>
+            <textarea id="description" name="description" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; height: 120px;">{{ event.description|default:'' }}</textarea>
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="date_time" style="display: block; font-weight: 600; margin-bottom: 5px;">📅 Fecha y Hora *</label>
+            <input type="datetime-local" id="date_time" name="date_time" value="{% if event.date_time %}{{ event.date_time|date:'Y-m-dTH:i' }}{% endif %}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="location" style="display: block; font-weight: 600; margin-bottom: 5px;">📍 Ubicación *</label>
+            <input type="text" id="location" name="location" value="{{ event.location|default:'' }}" required style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="max_attendees" style="display: block; font-weight: 600; margin-bottom: 5px;">👥 Capacidad Máxima</label>
+            <input type="number" id="max_attendees" name="max_attendees" value="{{ event.max_attendees|default:0 }}" min="0" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="price" style="display: block; font-weight: 600; margin-bottom: 5px;">💰 Precio</label>
+            <input type="number" id="price" name="price" value="{{ event.price|default:0 }}" min="0" step="0.01" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="image_url" style="display: block; font-weight: 600; margin-bottom: 5px;">🖼️ URL de Imagen</label>
+            <input type="url" id="image_url" name="image_url" value="{{ event.image_url|default:'' }}" placeholder="https://..." style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+            <small style="display: block; margin-top: 5px;">📤 O sube una imagen directamente</small>
+            <input type="file" id="imageFile" accept="image/*" style="margin-top: 5px;">
+            <button type="button" onclick="uploadEventImage()" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 5px;">🚀 Subir Imagen</button>
+            <div id="uploadStatus" style="margin-top: 5px;"></div>
+            {% if event.image_url %}
+            <div style="margin-top: 10px;">
+                <img id="previewImg" src="{{ event.image_url }}" alt="Preview" style="max-width: 200px; max-height: 150px; border-radius: 5px;">
+            </div>
+            {% endif %}
+        </div>
+        
+        <div style="margin-bottom: 15px;">
+            <label for="status" style="display: block; font-weight: 600; margin-bottom: 5px;">📌 Estado</label>
+            <select id="status" name="status" style="width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box;">
+                <option value="draft" {% if event.status == 'draft' %}selected{% endif %}>Borrador</option>
+                <option value="published" {% if event.status == 'published' %}selected{% endif %}>Publicado</option>
+            </select>
+        </div>
+        
+        <div style="display: flex; gap: 10px; margin-top: 20px;">
+            <button type="submit" style="padding: 12px 24px; background: #8b2e3d; color: white; border: none; border-radius: 5px; font-weight: 600; cursor: pointer;">{% if is_edit %}Actualizar{% else %}Crear{% endif %} Evento</button>
+            <a href="{% url 'pages:admin_events' %}" style="padding: 12px 24px; background: #ccc; color: #333; text-decoration: none; border-radius: 5px; font-weight: 600; display: inline-block;">Cancelar</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function uploadEventImage() {
+    const file = document.getElementById('imageFile').files[0];
+    if (!file) {
+        alert('Selecciona una imagen');
+        return;
+    }
+    
+    const formData = new FormData();
+    formData.append('file', file);
+    
+    document.getElementById('uploadStatus').innerHTML = '<span style="color: blue;">⏳ Subiendo...</span>';
+    
+    fetch('{% url "pages:admin_upload_event_image" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': '{{ csrf_token }}'
+        },
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('image_url').value = data.url;
+            
+            // Crear o actualizar preview
+            let previewImg = document.getElementById('previewImg');
+            if (!previewImg) {
+                const div = document.createElement('div');
+                div.style.marginTop = '10px';
+                previewImg = document.createElement('img');
+                previewImg.id = 'previewImg';
+                previewImg.alt = 'Preview';
+                previewImg.style.maxWidth = '200px';
+                previewImg.style.maxHeight = '150px';
+                previewImg.style.borderRadius = '5px';
+                div.appendChild(previewImg);
+                document.getElementById('image_url').parentNode.appendChild(div);
+            }
+            previewImg.src = data.url;
+            
+            document.getElementById('uploadStatus').innerHTML = '<span style="color: green;">✅ Imagen subida correctamente</span>';
+        } else {
+            document.getElementById('uploadStatus').innerHTML = '<span style="color: red;">❌ Error: ' + data.error + '</span>';
+        }
+    })
+    .catch(e => {
+        document.getElementById('uploadStatus').innerHTML = '<span style="color: red;">❌ Error: ' + e.message + '</span>';
+    });
+}
+</script>
+{% endblock %}
