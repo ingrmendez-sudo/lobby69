@@ -74,6 +74,11 @@ urlpatterns = [
     path('eventos/', views.public_events_view, name='public_events'),
     path('eventos/<uuid:event_id>/', views.public_events_detail_view, name='public_events_detail'),
 
+    # REVIEWS
+    path('api/reviews/crear/', views.create_review_view, name='create_review'),
+    path('api/reviews/<str:resource_type>/<uuid:resource_id>/', views.get_reviews_view, name='get_reviews'),
+    path('api/reviews/<uuid:review_id>/eliminar/', views.delete_review_view, name='delete_review'),
+
 
     # ============================================================================
     # AUTHENTICATION URLS
@@ -172,7 +177,12 @@ urlpatterns = [
     path('reportar/', views.report_content_view, name='report_content'),
 
     # ============================================================================
-    # DYNAMIC PAGES
+    # REVIEWS
+path('api/reviews/crear/', views.create_review_view, name='create_review'),
+path('api/reviews/<str:resource_type>/<uuid:resource_id>/', views.get_reviews_view, name='get_reviews'),
+path('api/reviews/<uuid:review_id>/eliminar/', views.delete_review_view, name='delete_review'),
+
+# DYNAMIC PAGES
     # ============================================================================
     path('usuario/<str:nickname>/agregar-amigo/', views.add_friend_view, name='add_friend'),
     path('noticias/', views.public_news_view, name='public_news'),
@@ -180,6 +190,8 @@ urlpatterns = [
     path('noticias/<uuid:news_id>/', views.public_news_detail_view, name='public_news_detail'),
 
 ]
+
+
 
 
 
