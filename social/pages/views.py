@@ -3134,3 +3134,148 @@ def delete_review_view(request, review_id):
     except Exception as e:
         print(f"[ERROR] delete_review_view: {e}")
         return JsonResponse({'success': False, 'error': str(e)}, status=500)
+@require_http_methods(["GET"])
+def landing_view(request):
+    """Landing page - Public view for non-members"""
+    try:
+        context = {
+            'page': 'landing',
+            'membership_tiers': [
+                {
+                    'name': 'EXPLORER',
+                    'tagline': 'Estoy explorando la plataforma',
+                    'promo_price': 180,
+                    'normal_price': 297,
+                    'duration': '1 MES',
+                    'features': [
+                        'Perfil básico',
+                        'Búsqueda limitada',
+                        'Hasta 5 mensajes/día',
+                        'Galería con 10 fotos'
+                    ],
+                    'color': 'primary',
+                    'icon': '🔍'
+                },
+                {
+                    'name': 'CONNECTORS',
+                    'tagline': 'Estoy conectado con más gente',
+                    'promo_price': 299,
+                    'normal_price': 493.35,
+                    'duration': '3 MESES',
+                    'features': [
+                        'Perfil verificado',
+                        'Búsqueda avanzada',
+                        'Mensajes ilimitados',
+                        'Galería con 50 fotos',
+                        'Filtros premium'
+                    ],
+                    'color': 'secondary',
+                    'icon': '🔗',
+                    'popular': False
+                },
+                {
+                    'name': 'INFLUENCER',
+                    'tagline': 'Tengo influencia en la comunidad',
+                    'promo_price': 599,
+                    'normal_price': 988.35,
+                    'duration': '6 MESES',
+                    'features': [
+                        'Todo de CONNECTORS',
+                        'Acceso a eventos VIP',
+                        'Badge de influencer',
+                        'Galería ilimitada',
+                        'Soporte prioritario'
+                    ],
+                    'color': 'accent',
+                    'icon': '⭐',
+                    'popular': True
+                },
+                {
+                    'name': 'VIP ELITE',
+                    'tagline': 'Soy parte de la élite',
+                    'promo_price': 1199,
+                    'normal_price': 1978.35,
+                    'duration': '1 AÑO',
+                    'features': [
+                        'Todo de INFLUENCER',
+                        'Invitaciones a eventos privados',
+                        'Consultoría personalizada',
+                        'Badge VIP exclusivo',
+                        'Atención 24/7'
+                    ],
+                    'color': 'elite',
+                    'icon': '👑',
+                    'popular': False
+                },
+                {
+                    'name': 'VITALICIO',
+                    'tagline': 'Fundador de la comunidad LOBBY69',
+                    'promo_price': 3500,
+                    'normal_price': 5775,
+                    'duration': 'PERMANENTE',
+                    'features': [
+                        'Acceso ilimitado por siempre',
+                        'Todo de VIP ELITE',
+                        'Badge fundador exclusivo',
+                        'Influencia en decisiones',
+                        'Descuentos en eventos futuros'
+                    ],
+                    'color': 'vitalicio',
+                    'icon': '💎',
+                    'popular': False
+                }
+            ]
+        }
+        return render(request, 'pages/landing.html', context)
+    except Exception as e:
+        print(f"[ERROR] landing_view: {e}")
+        return render(request, 'pages/landing.html', {'error': str(e)})
+
+
+@require_http_methods(["GET"])
+def landing_view(request):
+    """Landing page pública"""
+    context = {
+        'page': 'landing',
+        'memberships': [
+            {
+                'name': 'Explorador',
+                'price': 19,
+                'featured': False,
+                'features': [
+                    'Acceso básico',
+                    'Ver 10 perfiles/día',
+                    '5 mensajes/día',
+                ],
+                'disabled_features': ['Galería privada', 'Filtros avanzados']
+            },
+            {
+                'name': 'Premium',
+                'price': 49,
+                'featured': True,
+                'features': [
+                    'Acceso total',
+                    'Perfiles ilimitados',
+                    'Mensajes ilimitados',
+                    'Galería privada',
+                    'Filtros avanzados',
+                ],
+                'disabled_features': []
+            },
+            {
+                'name': 'VIP',
+                'price': 99,
+                'featured': False,
+                'features': [
+                    'Todo Premium',
+                    'Verificación VIP',
+                    'Prioridad en búsqueda',
+                    'Asistente personal',
+                    'Eventos exclusivos',
+                ],
+                'disabled_features': []
+            }
+        ]
+    }
+    return render(request, 'pages/landing.html', context)
+

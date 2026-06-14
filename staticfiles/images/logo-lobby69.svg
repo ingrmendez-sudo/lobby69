@@ -1,0 +1,21 @@
+﻿<svg viewBox="0 0 400 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid meet">
+  <defs>
+    <style>
+      .logo-diamond { stroke: #d4a373; stroke-width: 2.5; fill: none; }
+      .logo-text { font-family: Georgia, serif; font-size: 36px; font-weight: 700; letter-spacing: 3px; fill: #d4a373; }
+    </style>
+  </defs>
+  
+  <!-- Diamond/Gem shape -->
+  <g class="logo-diamond">
+    <path d="M 30,20 L 50,50 L 30,80 L 10,50 Z" stroke-linecap="round" stroke-linejoin="round"/>
+  </g>
+  
+  <!-- Second geometric element -->
+  <g class="logo-diamond">
+    <circle cx="70" cy="50" r="20"/>
+  </g>
+  
+  <!-- Text LOBBY69 -->
+  <text x="110" y="65" class="logo-text">LOBBY69</text>
+</svg>

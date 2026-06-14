@@ -29,6 +29,8 @@ from .admin_views import (
 app_name = 'pages'
 
 urlpatterns = [
+path('', views.landing_view, name='landing'),
+
     # ============================================================================
     # ADMIN URLS (PRIORITY)
     # ============================================================================
@@ -182,6 +184,7 @@ path('api/reviews/crear/', views.create_review_view, name='create_review'),
 path('api/reviews/<str:resource_type>/<uuid:resource_id>/', views.get_reviews_view, name='get_reviews'),
 path('api/reviews/<uuid:review_id>/eliminar/', views.delete_review_view, name='delete_review'),
 
+path('', views.landing_view, name='landing'),
 # DYNAMIC PAGES
     # ============================================================================
     path('usuario/<str:nickname>/agregar-amigo/', views.add_friend_view, name='add_friend'),
@@ -190,6 +193,8 @@ path('api/reviews/<uuid:review_id>/eliminar/', views.delete_review_view, name='d
     path('noticias/<uuid:news_id>/', views.public_news_detail_view, name='public_news_detail'),
 
 ]
+
+
 
 
 

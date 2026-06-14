@@ -1,0 +1,408 @@
+﻿<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LOBBY69 - Club Privado Premium</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/design-system-complete.css">
+  <style>
+    /* LANDING PAGE ESPECÍFICO */
+    
+    /* NAVBAR */
+    .navbar-landing {
+      background: linear-gradient(to right, var(--accent-navy), var(--accent-navy-dark));
+      padding: var(--spacing-m) var(--spacing-xl);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 1000;
+      box-shadow: var(--shadow-card);
+    }
+    
+    .navbar-landing .logo {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-m);
+      text-decoration: none;
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--secondary-rose-gold);
+    }
+    
+    .navbar-landing .nav-menu {
+      display: flex;
+      gap: var(--spacing-xl);
+      list-style: none;
+      align-items: center;
+    }
+    
+    .navbar-landing .nav-menu a {
+      color: var(--text-on-dark);
+      text-decoration: none;
+      font-weight: 500;
+      transition: var(--transition-default);
+    }
+    
+    .navbar-landing .nav-menu a:hover {
+      color: var(--secondary-rose-gold);
+    }
+    
+    /* HERO SECTION */
+    .hero {
+      background: linear-gradient(135deg, var(--accent-navy) 0%, var(--accent-navy-dark) 100%);
+      color: var(--text-on-dark);
+      padding: var(--spacing-xxxl) var(--spacing-xl);
+      text-align: center;
+      min-height: 600px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      right: -10%;
+      width: 500px;
+      height: 500px;
+      background: radial-gradient(circle, rgba(212, 163, 115, 0.1) 0%, transparent 70%);
+      border-radius: var(--radius-circle);
+    }
+    
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      max-width: 800px;
+    }
+    
+    .hero h1 {
+      color: var(--text-on-dark);
+      margin-bottom: var(--spacing-m);
+      font-size: 56px;
+      line-height: 1.1;
+    }
+    
+    .hero .tagline {
+      font-size: var(--font-size-body-large);
+      color: var(--secondary-rose-gold);
+      margin-bottom: var(--spacing-l);
+      font-weight: 600;
+    }
+    
+    .hero p {
+      font-size: var(--font-size-body-large);
+      margin-bottom: var(--spacing-xl);
+      line-height: 1.8;
+      opacity: 0.9;
+    }
+    
+    .hero-buttons {
+      display: flex;
+      gap: var(--spacing-m);
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+    
+    /* FEATURES SECTION */
+    .features {
+      padding: var(--spacing-xxxl) var(--spacing-xl);
+      background: var(--bg-warm);
+    }
+    
+    .features h2 {
+      text-align: center;
+      margin-bottom: var(--spacing-xxl);
+    }
+    
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--spacing-xl);
+    }
+    
+    .feature-card {
+      text-align: center;
+      padding: var(--spacing-xl);
+      background: var(--bg-white);
+      border-radius: var(--radius-large);
+      box-shadow: var(--shadow-subtle);
+      transition: var(--transition-default);
+    }
+    
+    .feature-card:hover {
+      box-shadow: var(--shadow-card);
+      transform: translateY(-8px);
+    }
+    
+    .feature-card i {
+      font-size: 48px;
+      color: var(--primary-burgundy);
+      margin-bottom: var(--spacing-m);
+    }
+    
+    .feature-card h3 {
+      margin-bottom: var(--spacing-m);
+    }
+    
+    .feature-card p {
+      color: var(--text-secondary);
+      line-height: 1.8;
+    }
+    
+    /* MEMBERSHIPS SECTION */
+    .memberships {
+      padding: var(--spacing-xxxl) var(--spacing-xl);
+      background: var(--bg-white);
+    }
+    
+    .memberships h2 {
+      text-align: center;
+      margin-bottom: var(--spacing-xxl);
+    }
+    
+    .memberships-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--spacing-xl);
+    }
+    
+    .membership-card {
+      border: 2px solid #e0e0e0;
+      border-radius: var(--radius-large);
+      padding: var(--spacing-xl);
+      text-align: center;
+      transition: var(--transition-default);
+      position: relative;
+    }
+    
+    .membership-card.featured {
+      border: 2px solid var(--primary-burgundy);
+      transform: scale(1.05);
+      box-shadow: var(--shadow-elevated);
+    }
+    
+    .membership-card.featured::before {
+      content: 'POPULAR';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: var(--primary-burgundy);
+      color: var(--text-on-dark);
+      padding: 4px 16px;
+      border-radius: var(--radius-xlarge);
+      font-size: var(--font-size-caption);
+      font-weight: 700;
+    }
+    
+    .membership-card:hover {
+      box-shadow: var(--shadow-elevated);
+    }
+    
+    .membership-price {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--primary-burgundy);
+      margin: var(--spacing-m) 0;
+    }
+    
+    .membership-price small {
+      font-size: var(--font-size-body);
+      color: var(--text-secondary);
+      font-weight: 400;
+    }
+    
+    .membership-features {
+      list-style: none;
+      text-align: left;
+      margin: var(--spacing-xl) 0;
+    }
+    
+    .membership-features li {
+      padding: var(--spacing-m) 0;
+      border-bottom: 1px solid #f0f0f0;
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-m);
+    }
+    
+    .membership-features li i {
+      color: var(--secondary-rose-gold);
+      font-size: 18px;
+    }
+    
+    /* CTA SECTION */
+    .cta {
+      background: linear-gradient(135deg, var(--primary-burgundy), var(--accent-purple));
+      padding: var(--spacing-xxxl) var(--spacing-xl);
+      text-align: center;
+      color: var(--text-on-dark);
+    }
+    
+    .cta h2 {
+      color: var(--text-on-dark);
+      margin-bottom: var(--spacing-l);
+      font-size: 48px;
+    }
+    
+    .cta p {
+      font-size: var(--font-size-body-large);
+      margin-bottom: var(--spacing-xl);
+      opacity: 0.95;
+    }
+    
+    /* FOOTER */
+    .footer {
+      background: var(--accent-navy);
+      color: var(--text-on-dark);
+      padding: var(--spacing-xl);
+      text-align: center;
+      border-top: 1px solid rgba(212, 163, 115, 0.2);
+    }
+    
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      .hero h1 { font-size: 40px; }
+      .features-grid,
+      .memberships-grid {
+        grid-template-columns: 1fr;
+      }
+      .membership-card.featured {
+        transform: scale(1);
+      }
+      .hero-buttons {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- NAVBAR -->
+  <nav class="navbar-landing">
+    <a href="/" class="logo">
+      <i class="fas fa-diamond"></i> LOBBY69
+    </a>
+    <ul class="nav-menu">
+      <li><a href="#features">Características</a></li>
+      <li><a href="#memberships">Membresías</a></li>
+      <li><a href="#contact">Contacto</a></li>
+      <li><a href="/login" class="btn btn-medium btn-primary">Iniciar Sesión</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-content">
+      <p class="tagline">🎭 Bienvenido a la comunidad más exclusiva</p>
+      <h1>LOBBY69</h1>
+      <p class="tagline">Discreto. Seguro. Premium.</p>
+      <p>Conecta con personas afines en un ambiente privado, seguro y verificado. Una comunidad para explorar nuevas experiencias sin restricciones.</p>
+      <div class="hero-buttons">
+        <a href="/register" class="btn btn-large btn-primary">
+          <i class="fas fa-user-plus"></i> Solicitar Invitación
+        </a>
+        <a href="#memberships" class="btn btn-large btn-secondary">
+          <i class="fas fa-info-circle"></i> Ver Membresías
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES -->
+  <section class="features" id="features">
+    <div class="container">
+      <h2>¿Por qué LOBBY69?</h2>
+      <div class="features-grid">
+        <div class="feature-card">
+          <i class="fas fa-lock"></i>
+          <h3>100% Privado</h3>
+          <p>Tu privacidad es nuestra prioridad. Todos los datos encriptados y verificados.</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-check-circle"></i>
+          <h3>Verificación Premium</h3>
+          <p>Comunidad verificada para garantizar seguridad y autenticidad.</p>
+        </div>
+        <div class="feature-card">
+          <i class="fas fa-heart"></i>
+          <h3>Conexiones Reales</h3>
+          <p>Conoce gente con intereses similares sin filtros ni tabúes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- MEMBERSHIPS -->
+  <section class="memberships" id="memberships">
+    <div class="container">
+      <h2>Planes de Membresía</h2>
+      <div class="memberships-grid">
+        <!-- PLAN 1 -->
+        <div class="membership-card">
+          <h3>Explorador</h3>
+          <div class="membership-price">$19<small>/mes</small></div>
+          <ul class="membership-features">
+            <li><i class="fas fa-check"></i> Acceso básico</li>
+            <li><i class="fas fa-check"></i> Ver 10 perfiles/día</li>
+            <li><i class="fas fa-check"></i> 5 mensajes/día</li>
+            <li><i class="fas fa-times" style="color: #ccc;"></i> Galería privada</li>
+            <li><i class="fas fa-times" style="color: #ccc;"></i> Filtros avanzados</li>
+          </ul>
+          <button class="btn btn-medium btn-secondary">Elegir Plan</button>
+        </div>
+
+        <!-- PLAN 2 (FEATURED) -->
+        <div class="membership-card featured">
+          <h3>Premium</h3>
+          <div class="membership-price">$49<small>/mes</small></div>
+          <ul class="membership-features">
+            <li><i class="fas fa-check"></i> Acceso total</li>
+            <li><i class="fas fa-check"></i> Perfiles ilimitados</li>
+            <li><i class="fas fa-check"></i> Mensajes ilimitados</li>
+            <li><i class="fas fa-check"></i> Galería privada</li>
+            <li><i class="fas fa-check"></i> Filtros avanzados</li>
+          </ul>
+          <button class="btn btn-medium btn-primary">Elegir Plan</button>
+        </div>
+
+        <!-- PLAN 3 -->
+        <div class="membership-card">
+          <h3>VIP</h3>
+          <div class="membership-price">$99<small>/mes</small></div>
+          <ul class="membership-features">
+            <li><i class="fas fa-check"></i> Todo Premium</li>
+            <li><i class="fas fa-check"></i> Verificación VIP</li>
+            <li><i class="fas fa-check"></i> Prioridad en búsqueda</li>
+            <li><i class="fas fa-check"></i> Asistente personal</li>
+            <li><i class="fas fa-check"></i> Eventos exclusivos</li>
+          </ul>
+          <button class="btn btn-medium btn-secondary">Elegir Plan</button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta" id="contact">
+    <div class="container">
+      <h2>¿Listo para conectar?</h2>
+      <p>Únete a miles de miembros verificados en LOBBY69</p>
+      <a href="/register" class="btn btn-large btn-secondary">
+        <i class="fas fa-user-plus"></i> Solicitar Acceso Ahora
+      </a>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="footer">
+    <p>&copy; 2026 LOBBY69. Todos los derechos reservados. | <a href="/privacy" style="color: inherit;">Privacidad</a> | <a href="/terms" style="color: inherit;">Términos</a></p>
+  </footer>
+</body>
+</html>
