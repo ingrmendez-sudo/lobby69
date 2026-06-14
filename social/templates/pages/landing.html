@@ -552,83 +552,431 @@
         </div>
     </section>
 
-    <!-- FEATURES -->
-    <section class="features" id="features">
-        <div style="max-width: 1440px; margin: 0 auto;">
-            <h2>¿Por qué LOBBY69?</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <i class="fas fa-lock"></i>
-                    <h3>100% Privado</h3>
-                    <p>Tu privacidad es nuestra prioridad. Todos los datos encriptados y verificados.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-check-circle"></i>
-                    <h3>Verificación Premium</h3>
-                    <p>Comunidad verificada para garantizar seguridad y autenticidad.</p>
-                </div>
-                <div class="feature-card">
-                    <i class="fas fa-heart"></i>
-                    <h3>Conexiones Reales</h3>
-                    <p>Conoce gente con intereses similares sin filtros ni tabúes.</p>
+     <!-- FEATURES -->
+        <section class="features" id="features">
+            <div class="container">
+                <h2>¿Por qué LOBBY69?</h2>
+                <div class="features-grid">
+                    <div class="feature-card">
+                        <i class="fas fa-lock"></i>
+                        <h3>Privacidad Máxima</h3>
+                        <p>Tu identidad y datos están completamente protegidos con encriptación de nivel empresarial.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-shield-alt"></i>
+                        <h3>Verificación Completa</h3>
+                        <p>Todos los miembros son verificados para garantizar una comunidad segura y de calidad.</p>
+                    </div>
+                    <div class="feature-card">
+                        <i class="fas fa-star"></i>
+                        <h3>Experiencia Premium</h3>
+                        <p>Acceso exclusivo a eventos, galerías privadas y una comunidad seleccionada.</p>
+                    </div>
                 </div>
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- MEMBERSHIPS -->
-    <section class="memberships" id="memberships">
-        <div style="max-width: 1440px; margin: 0 auto;">
-            <h2>Planes de Membresía</h2>
-            <div class="memberships-grid">
-                {% for membership in memberships %}
-                <div class="membership-card {% if membership.featured %}featured{% endif %}">
-                    <h3>{{ membership.name }}</h3>
-                    <div class="membership-price">${{ membership.price }}<small>/mes</small></div>
-                    <ul class="membership-features">
-                        {% for feature in membership.features %}
-                        <li>
-                            <i class="fas fa-check"></i>
-                            {{ feature }}
-                        </li>
-                        {% endfor %}
-                        {% for feature in membership.disabled_features %}
-                        <li class="disabled">
-                            <i class="fas fa-times"></i>
-                            {{ feature }}
-                        </li>
-                        {% endfor %}
-                    </ul>
-                    <button class="btn btn-medium {% if membership.featured %}btn-primary{% else %}btn-secondary{% endif %}">
-                        Elegir Plan
-                    </button>
+        <!-- MEMBERSHIPS -->
+        <section class="memberships" id="memberships">
+            <div class="container">
+                <h2>Planes de Membresía</h2>
+                <div class="memberships-table">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Característica</th>
+                                <th>Explorer<br><span class="price">$150</span><span class="period">/30 días</span></th>
+                                <th>Connectors<br><span class="price">$300</span><span class="period">/180 días</span></th>
+                                <th class="featured">Influencer<br><span class="price">$480</span><span class="period">/360 días</span><span class="badge">RECOMENDADO</span></th>
+                                <th>VIP Elite<br><span class="price">$780</span><span class="period">/360 días</span><span class="badge vip">VIP</span></th>
+                                <th>Vitalicio<br><span class="price">$2,500</span><span class="period">Permanente</span></th>
+                                <th>Vitalicio+<br><span class="price">$3,500</span><span class="period">Permanente</span></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td class="feature-name">Acceso a Plataforma</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                            </tr>
+                            <tr>
+                                <td class="feature-name">Galerías Privadas</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                            </tr>
+                            <tr>
+                                <td class="feature-name">Videollamadas</td>
+                                <td>-</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                            </tr>
+                            <tr>
+                                <td class="feature-name">Eventos Exclusivos</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                            </tr>
+                            <tr>
+                                <td class="feature-name">Soporte Prioritario</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                            </tr>
+                            <tr>
+                                <td class="feature-name">Badge Verificado</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td class="check">✓</td>
+                                <td class="check">✓</td>
+                                <td>-</td>
+                                <td class="check">✓</td>
+                            </tr>
+                            <tr>
+                                <td class="feature-name">Estadísticas</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td class="check">✓</td>
+                                <td>-</td>
+                                <td class="check">✓</td>
+                            </tr>
+                            <tr class="cta-row">
+                                <td></td>
+                                <td><button class="btn btn-primary">Seleccionar</button></td>
+                                <td><button class="btn btn-primary">Seleccionar</button></td>
+                                <td><button class="btn btn-primary featured-btn">Seleccionar</button></td>
+                                <td><button class="btn btn-primary">Seleccionar</button></td>
+                                <td><button class="btn btn-secondary">Seleccionar</button></td>
+                                <td><button class="btn btn-secondary">Seleccionar</button></td>
+                            </tr>
+                        </tbody>
+                    </table>
                 </div>
-                {% endfor %}
             </div>
-        </div>
-    </section>
+        </section>
 
-    <!-- CTA -->
-    <section class="cta" id="contact">
-        <h2>¿Listo para conectar?</h2>
-        <p>Únete a miles de miembros verificados en LOBBY69</p>
-        {% if user.is_authenticated %}
-            <a href="{% url 'pages:dashboard' %}" class="btn btn-large btn-secondary">
-                <i class="fas fa-arrow-right"></i> Ir al Dashboard
-            </a>
-        {% else %}
-            <a href="{% url 'pages:login' %}" class="btn btn-large btn-secondary">
-                <i class="fas fa-user-plus"></i> Solicitar Acceso Ahora
-            </a>
-        {% endif %}
-    </section>
+        <!-- CTA -->
+        <section class="cta" id="contact">
+            <div class="container">
+                <h2>¿Listo para unirte?</h2>
+                <p>Solicita tu invitación ahora y accede a una comunidad exclusiva</p>
+                <a href="{% url 'pages:login' %}" class="btn btn-large btn-secondary">Solicitar Invitación Ahora</a>
+            </div>
+        </section>
 
-    <!-- FOOTER -->
-    <footer class="footer">
-        <p>&copy; 2026 LOBBY69. Todos los derechos reservados. | <a href="#">Privacidad</a> | <a href="#">Términos</a></p>
-    </footer>
+        <!-- FOOTER -->
+        <footer class="footer">
+            <div class="container">
+                <div class="footer-content">
+                    <div class="footer-section">
+                        <h4>LOBBY69</h4>
+                        <p>La comunidad premium para personas afines.</p>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Enlaces</h4>
+                        <ul>
+                            <li><a href="/#features">Características</a></li>
+                            <li><a href="/#memberships">Membresías</a></li>
+                            <li><a href="{% url 'pages:login' %}">Iniciar Sesión</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Legal</h4>
+                        <ul>
+                            <li><a href="#">Términos de Servicio</a></li>
+                            <li><a href="#">Política de Privacidad</a></li>
+                            <li><a href="#">Contacto</a></li>
+                        </ul>
+                    </div>
+                    <div class="footer-section">
+                        <h4>Redes Sociales</h4>
+                        <div class="social-links">
+                            <a href="#" class="social-icon"><i class="fab fa-facebook"></i></a>
+                            <a href="#" class="social-icon"><i class="fab fa-instagram"></i></a>
+                            <a href="#" class="social-icon"><i class="fab fa-twitter"></i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="footer-bottom">
+                    <p>&copy; 2026 LOBBY69. Todos los derechos reservados.</p>
+                </div>
+            </div>
+        </footer>
+
+        <style>
+            /* FEATURES */
+            .features {
+                padding: 6rem 2rem;
+                background: linear-gradient(135deg, #f5f5f5 0%, #ffffff 100%);
+            }
+
+            .features h2 {
+                text-align: center;
+                font-size: 2.5rem;
+                color: #1a2352;
+                margin-bottom: 3rem;
+            }
+
+            .features-grid {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 2rem;
+            }
+
+            .feature-card {
+                background: white;
+                padding: 2rem;
+                border-radius: 1rem;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+                text-align: center;
+                transition: all 0.3s ease;
+            }
+
+            .feature-card:hover {
+                transform: translateY(-8px);
+                box-shadow: 0 8px 32px rgba(139, 46, 61, 0.2);
+            }
+
+            .feature-card i {
+                font-size: 3rem;
+                color: #d4a373;
+                margin-bottom: 1rem;
+            }
+
+            .feature-card h3 {
+                font-size: 1.5rem;
+                color: #1a2352;
+                margin-bottom: 1rem;
+            }
+
+            .feature-card p {
+                color: #666;
+                line-height: 1.6;
+            }
+
+            /* MEMBERSHIPS */
+            .memberships {
+                padding: 6rem 2rem;
+                background: white;
+            }
+
+            .memberships h2 {
+                text-align: center;
+                font-size: 2.5rem;
+                color: #1a2352;
+                margin-bottom: 3rem;
+            }
+
+            .memberships-table {
+                overflow-x: auto;
+            }
+
+            .memberships-table table {
+                width: 100%;
+                border-collapse: collapse;
+                background: white;
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+                border-radius: 1rem;
+                overflow: hidden;
+            }
+
+            .memberships-table thead {
+                background: linear-gradient(135deg, #1a2352 0%, #2a3a6a 100%);
+                color: white;
+            }
+
+            .memberships-table th {
+                padding: 1.5rem;
+                text-align: center;
+                font-weight: 600;
+                font-size: 0.95rem;
+                border-right: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .memberships-table th.featured {
+                background: linear-gradient(135deg, #8b2e3d 0%, #a03d4d 100%);
+                position: relative;
+            }
+
+            .price {
+                display: block;
+                font-size: 1.8rem;
+                color: #d4a373;
+                margin: 0.5rem 0;
+            }
+
+            .period {
+                display: block;
+                font-size: 0.8rem;
+                opacity: 0.9;
+            }
+
+            .badge {
+                display: inline-block;
+                background: #d4a373;
+                color: #1a2352;
+                padding: 0.25rem 0.75rem;
+                border-radius: 1rem;
+                font-size: 0.7rem;
+                font-weight: 700;
+                margin-top: 0.5rem;
+            }
+
+            .badge.vip {
+                background: #4f9ef8;
+                color: white;
+            }
+
+            .memberships-table td {
+                padding: 1rem;
+                text-align: center;
+                border-bottom: 1px solid #eee;
+                border-right: 1px solid #eee;
+            }
+
+            .memberships-table td.feature-name {
+                text-align: left;
+                font-weight: 600;
+                color: #1a2352;
+                background: #f9f9f9;
+            }
+
+            .memberships-table td.check {
+                color: #0cbc87;
+                font-weight: 700;
+                font-size: 1.3rem;
+            }
+
+            .memberships-table .cta-row td {
+                padding: 1.5rem 1rem;
+                border-bottom: none;
+            }
+
+            .memberships-table button {
+                width: 90%;
+            }
+
+            .memberships-table .featured-btn {
+                background: #8b2e3d !important;
+                border-color: #8b2e3d !important;
+            }
+
+            /* CTA */
+            .cta {
+                padding: 6rem 2rem;
+                background: linear-gradient(135deg, #8b2e3d 0%, #d4a373 100%);
+                text-align: center;
+                color: white;
+            }
+
+            .cta h2 {
+                font-size: 2.5rem;
+                margin-bottom: 1rem;
+            }
+
+            .cta p {
+                font-size: 1.2rem;
+                margin-bottom: 2rem;
+                opacity: 0.95;
+            }
+
+            /* FOOTER */
+            .footer {
+                background: #1a2352;
+                color: #d4a373;
+                padding: 4rem 2rem 2rem;
+            }
+
+            .footer-content {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 2rem;
+                margin-bottom: 2rem;
+            }
+
+            .footer-section h4 {
+                color: #d4a373;
+                margin-bottom: 1rem;
+                font-size: 1.2rem;
+            }
+
+            .footer-section ul {
+                list-style: none;
+                padding: 0;
+            }
+
+            .footer-section ul li {
+                margin-bottom: 0.5rem;
+            }
+
+            .footer-section a {
+                color: #ccc;
+                text-decoration: none;
+                transition: color 0.3s ease;
+            }
+
+            .footer-section a:hover {
+                color: #d4a373;
+            }
+
+            .social-links {
+                display: flex;
+                gap: 1rem;
+            }
+
+            .social-icon {
+                width: 40px;
+                height: 40px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                background: rgba(212, 163, 115, 0.2);
+                border-radius: 50%;
+                transition: all 0.3s ease;
+            }
+
+            .social-icon:hover {
+                background: #d4a373;
+                color: #1a2352;
+            }
+
+            .footer-bottom {
+                text-align: center;
+                padding-top: 2rem;
+                border-top: 1px solid rgba(212, 163, 115, 0.2);
+                opacity: 0.8;
+            }
+
+            /* RESPONSIVE */
+            @media (max-width: 768px) {
+                .features h2, .memberships h2, .cta h2 { font-size: 1.8rem; }
+                .memberships-table { font-size: 0.85rem; }
+                .memberships-table th, .memberships-table td { padding: 0.75rem 0.5rem; }
+                .price { font-size: 1.2rem; }
+                .features-grid { grid-template-columns: 1fr; }
+            }
+        </style>
+
 </body>
 </html>
+
 
 
 
