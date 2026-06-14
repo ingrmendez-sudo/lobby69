@@ -1,0 +1,298 @@
+﻿/* DASHBOARD REDESIGN - Design System Integration */
+
+/* VARIABLES */
+:root {
+  --lobby-primary: #8b2e3d;
+  --lobby-secondary: #d4a373;
+  --lobby-dark: #1a2352;
+  --lobby-light: #f5f5f5;
+  --lobby-white: #ffffff;
+  --lobby-shadow: 0 4px 16px rgba(0,0,0,0.1);
+  --lobby-shadow-lg: 0 8px 32px rgba(0,0,0,0.15);
+  --lobby-radius: 0.75rem;
+  --lobby-transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+
+/* ==================== NAVBAR ==================== */
+.navbar {
+  background: linear-gradient(135deg, #1a2352 0%, #2a3a6a 100%) !important;
+  box-shadow: var(--lobby-shadow-lg);
+  border-bottom: 3px solid var(--lobby-secondary);
+  padding: 0.75rem 1.5rem !important;
+}
+
+.navbar-brand {
+  font-weight: 700;
+  color: var(--lobby-secondary) !important;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.navbar-brand img {
+  height: 50px;
+  width: auto;
+}
+
+.nav-link {
+  color: #fff !important;
+  font-weight: 500;
+  margin: 0 0.5rem;
+  padding: 0.5rem 0.75rem !important;
+  border-radius: var(--lobby-radius);
+  transition: var(--lobby-transition);
+}
+
+.nav-link:hover {
+  background-color: rgba(212, 163, 115, 0.2) !important;
+  color: var(--lobby-secondary) !important;
+}
+
+.nav-link.active {
+  background-color: var(--lobby-secondary) !important;
+  color: var(--lobby-dark) !important;
+}
+
+/* ==================== SIDEBAR ==================== */
+.left-sidebar, .right-sidebar {
+  background: var(--lobby-light);
+  padding: 1.5rem;
+  border-radius: var(--lobby-radius);
+}
+
+.left-sidebar {
+  background: linear-gradient(135deg, var(--lobby-light) 0%, #ffffff 100%);
+}
+
+/* ==================== MAIN CONTENT ==================== */
+.center-column {
+  padding: 1.5rem;
+}
+
+/* ==================== CARDS ==================== */
+.card {
+  border: none !important;
+  border-radius: var(--lobby-radius) !important;
+  box-shadow: var(--lobby-shadow) !important;
+  transition: var(--lobby-transition) !important;
+  overflow: hidden;
+  background: var(--lobby-white) !important;
+}
+
+.card:hover {
+  box-shadow: var(--lobby-shadow-lg) !important;
+  transform: translateY(-4px);
+}
+
+.card-header {
+  background: linear-gradient(135deg, var(--lobby-primary), var(--lobby-secondary)) !important;
+  color: white !important;
+  border: none !important;
+  padding: 1.25rem 1.5rem !important;
+  font-weight: 600;
+}
+
+.card-title {
+  color: var(--lobby-dark) !important;
+  font-weight: 700 !important;
+  margin-bottom: 1rem;
+}
+
+/* ==================== BUTTONS ==================== */
+.btn-primary {
+  background-color: var(--lobby-primary) !important;
+  border-color: var(--lobby-primary) !important;
+  color: white !important;
+  font-weight: 600;
+  border-radius: var(--lobby-radius) !important;
+  padding: 0.5rem 1.25rem !important;
+  transition: var(--lobby-transition) !important;
+  box-shadow: var(--lobby-shadow);
+}
+
+.btn-primary:hover {
+  background-color: #a03d4d !important;
+  border-color: #a03d4d !important;
+  box-shadow: var(--lobby-shadow-lg);
+  transform: translateY(-2px);
+}
+
+.btn-secondary {
+  background-color: var(--lobby-secondary) !important;
+  border-color: var(--lobby-secondary) !important;
+  color: var(--lobby-dark) !important;
+  font-weight: 600;
+  border-radius: var(--lobby-radius) !important;
+}
+
+.btn-secondary:hover {
+  background-color: #c9a835 !important;
+  border-color: #c9a835 !important;
+}
+
+.btn-sm {
+  padding: 0.35rem 0.75rem !important;
+  font-size: 0.85rem !important;
+}
+
+/* ==================== FORMS ==================== */
+.form-control, .form-select {
+  border: 2px solid #e0e0e0 !important;
+  border-radius: var(--lobby-radius) !important;
+  padding: 0.65rem 0.75rem !important;
+  transition: var(--lobby-transition) !important;
+  font-family: inherit;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: var(--lobby-primary) !important;
+  box-shadow: 0 0 0 0.2rem rgba(139, 46, 61, 0.25) !important;
+}
+
+/* ==================== BADGES ==================== */
+.badge {
+  border-radius: var(--lobby-radius) !important;
+  padding: 0.5rem 0.75rem !important;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.badge-primary {
+  background-color: var(--lobby-primary) !important;
+  color: white !important;
+}
+
+.badge-secondary {
+  background-color: var(--lobby-secondary) !important;
+  color: var(--lobby-dark) !important;
+}
+
+.badge-success {
+  background-color: #0cbc87 !important;
+  color: white !important;
+}
+
+/* ==================== ALERTS ==================== */
+.alert {
+  border: none !important;
+  border-radius: var(--lobby-radius) !important;
+  border-left: 4px solid transparent !important;
+}
+
+.alert-primary {
+  background-color: rgba(139, 46, 61, 0.1) !important;
+  color: var(--lobby-primary) !important;
+  border-left-color: var(--lobby-primary) !important;
+}
+
+.alert-success {
+  background-color: rgba(12, 188, 135, 0.1) !important;
+  color: #0cbc87 !important;
+  border-left-color: #0cbc87 !important;
+}
+
+.alert-danger {
+  background-color: rgba(214, 41, 62, 0.1) !important;
+  color: #d6293e !important;
+  border-left-color: #d6293e !important;
+}
+
+/* ==================== LINKS ==================== */
+a {
+  color: var(--lobby-primary) !important;
+  text-decoration: none;
+  transition: var(--lobby-transition);
+}
+
+a:hover {
+  color: var(--lobby-secondary) !important;
+  text-decoration: underline;
+}
+
+/* ==================== HEADINGS ==================== */
+h1, h2, h3, h4, h5, h6 {
+  color: var(--lobby-dark) !important;
+  font-weight: 700;
+}
+
+/* ==================== TABLES ==================== */
+.table {
+  border-radius: var(--lobby-radius);
+  overflow: hidden;
+}
+
+.table thead th {
+  background: linear-gradient(135deg, var(--lobby-primary), var(--lobby-secondary)) !important;
+  color: white !important;
+  border: none !important;
+  font-weight: 600;
+}
+
+.table tbody tr:hover {
+  background-color: rgba(139, 46, 61, 0.05) !important;
+}
+
+.table td {
+  border-color: #eee !important;
+  vertical-align: middle;
+}
+
+/* ==================== DROPDOWN ==================== */
+.dropdown-menu {
+  border: none !important;
+  border-radius: var(--lobby-radius) !important;
+  box-shadow: var(--lobby-shadow-lg) !important;
+}
+
+.dropdown-item {
+  color: var(--lobby-dark) !important;
+  transition: var(--lobby-transition);
+}
+
+.dropdown-item:hover {
+  background-color: rgba(139, 46, 61, 0.1) !important;
+  color: var(--lobby-primary) !important;
+}
+
+.dropdown-item.active {
+  background-color: var(--lobby-primary) !important;
+  color: white !important;
+}
+
+/* ==================== PAGINATION ==================== */
+.pagination {
+  gap: 0.25rem;
+}
+
+.page-link {
+  border-radius: var(--lobby-radius) !important;
+  border-color: #e0e0e0 !important;
+  color: var(--lobby-primary) !important;
+}
+
+.page-link:hover {
+  background-color: rgba(139, 46, 61, 0.1) !important;
+  color: var(--lobby-primary) !important;
+}
+
+.page-item.active .page-link {
+  background-color: var(--lobby-primary) !important;
+  border-color: var(--lobby-primary) !important;
+}
+
+/* ==================== RESPONSIVE ==================== */
+@media (max-width: 768px) {
+  .navbar { padding: 0.5rem 1rem !important; }
+  .navbar-brand { font-size: 1.2rem; }
+  .navbar-brand img { height: 40px; }
+  .nav-link { margin: 0; padding: 0.4rem 0.5rem !important; }
+  .left-sidebar, .right-sidebar { display: none; }
+  .center-column { padding: 1rem; }
+}
+
+@media (max-width: 576px) {
+  .card { margin-bottom: 1rem; }
+  .btn { width: 100% !important; }
+  h1, h2 { font-size: 1.5rem; }
+}

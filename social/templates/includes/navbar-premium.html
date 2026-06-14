@@ -1,0 +1,240 @@
+﻿{% load static %}
+<!-- NAVBAR PREMIUM -->
+<nav class="navbar-premium">
+    <!-- Left: Logo -->
+    <div class="navbar-left">
+        <a href="/" class="navbar-logo">
+            <img src="{% static 'images/logo-lobby69.png' %}" alt="LOBBY69">
+            <span>LOBBY69</span>
+        </a>
+    </div>
+    
+    <!-- Center: Menu -->
+    <div class="navbar-center">
+        <a href="/mi-dashboard/" class="nav-item">
+            <i class="fas fa-home"></i> Dashboard
+        </a>
+        <a href="/explorar/" class="nav-item">
+            <i class="fas fa-compass"></i> Explorar
+        </a>
+        <a href="/mensajes/" class="nav-item">
+            <i class="fas fa-envelope"></i> Mensajes
+        </a>
+        <a href="/galeria/" class="nav-item">
+            <i class="fas fa-images"></i> Galería
+        </a>
+    </div>
+    
+    <!-- Right: User & Settings -->
+    <div class="navbar-right">
+        <button class="nav-icon" id="notifications-btn">
+            <i class="fas fa-bell"></i>
+            <span class="badge">3</span>
+        </button>
+        <button class="nav-icon" id="theme-toggle">
+            <i class="fas fa-moon"></i>
+        </button>
+        <div class="navbar-user-menu">
+            <button class="nav-avatar" id="user-menu-btn">
+                <img src="{% static 'images/logo-lobby69.png' %}" alt="Avatar">
+            </button>
+            <div class="user-dropdown" id="user-dropdown">
+                <a href="/mi-perfil/">Perfil</a>
+                <a href="/configuracion/">Configuración</a>
+                <a href="/verificacion/">Verificación</a>
+                <a href="/logout/">Cerrar Sesión</a>
+            </div>
+        </div>
+    </div>
+</nav>
+
+<style>
+.navbar-premium {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #1a2352 0%, #2d3e7a 100%);
+    padding: 1rem 2rem;
+    box-shadow: 0 4px 12px rgba(212, 163, 115, 0.2);
+    border-bottom: 2px solid #d4a373;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
+
+.navbar-left {
+    display: flex;
+    align-items: center;
+}
+
+.navbar-logo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #d4a373;
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 1.25rem;
+    transition: transform 0.3s ease;
+}
+
+.navbar-logo:hover {
+    transform: scale(1.05);
+}
+
+.navbar-logo img {
+    height: 40px;
+    width: auto;
+}
+
+.navbar-center {
+    display: flex;
+    gap: 2rem;
+}
+
+.nav-item {
+    color: #d4a373;
+    text-decoration: none;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+
+.nav-item:hover {
+    color: #ffffff;
+    transform: translateY(-2px);
+}
+
+.navbar-right {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+}
+
+.nav-icon {
+    background: none;
+    border: none;
+    color: #d4a373;
+    cursor: pointer;
+    font-size: 1.25rem;
+    position: relative;
+    transition: color 0.3s ease;
+}
+
+.nav-icon:hover {
+    color: #ffffff;
+}
+
+.badge {
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    background: #8b2e3d;
+    color: white;
+    border-radius: 50%;
+    width: 20px;
+    height: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.75rem;
+}
+
+.navbar-user-menu {
+    position: relative;
+}
+
+.nav-avatar {
+    background: none;
+    border: 2px solid #d4a373;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    cursor: pointer;
+    padding: 0;
+    overflow: hidden;
+    transition: border-color 0.3s ease;
+}
+
+.nav-avatar:hover {
+    border-color: #ffffff;
+}
+
+.nav-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.user-dropdown {
+    display: none;
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: #2d3e7a;
+    border: 1px solid #d4a373;
+    border-radius: 8px;
+    min-width: 200px;
+    margin-top: 0.5rem;
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.user-dropdown.active {
+    display: block;
+}
+
+.user-dropdown a {
+    display: block;
+    padding: 0.75rem 1rem;
+    color: #d4a373;
+    text-decoration: none;
+    transition: background 0.3s ease, color 0.3s ease;
+    border-bottom: 1px solid rgba(212, 163, 115, 0.2);
+}
+
+.user-dropdown a:last-child {
+    border-bottom: none;
+}
+
+.user-dropdown a:hover {
+    background: #1a2352;
+    color: #ffffff;
+}
+
+@media (max-width: 768px) {
+    .navbar-center {
+        display: none;
+    }
+    
+    .navbar-premium {
+        padding: 0.75rem 1rem;
+    }
+}
+</style>
+
+<script>
+document.getElementById('user-menu-btn').addEventListener('click', function() {
+    document.getElementById('user-dropdown').classList.toggle('active');
+});
+
+document.getElementById('theme-toggle').addEventListener('click', function() {
+    document.body.classList.toggle('dark-mode');
+    const icon = this.querySelector('i');
+    if (document.body.classList.contains('dark-mode')) {
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+    } else {
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+    }
+});
+
+// Cerrar dropdown al hacer click fuera
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.navbar-user-menu')) {
+        document.getElementById('user-dropdown').classList.remove('active');
+    }
+});
+</script>
+

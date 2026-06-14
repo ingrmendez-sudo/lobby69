@@ -8,6 +8,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="{% static 'css/reset.css' %}">
 <link rel="stylesheet" href="{% static 'css/design-system.css' %}">
+    <link rel="stylesheet" href="{% static 'css/dashboard-redesign.css' %}">
     <title>{% block page_title %}LOBBY69{% endblock page_title %}</title>
     {% csrf_token %}
     <!-- CSS GLOBAL Y RESPONSIVE -->
@@ -210,50 +211,531 @@
         }
     });
     </script>
-    </head>
+        <link rel="stylesheet" href="{% static 'css/navbar-premium.css' %}">`n`</head>
 
 <body>
+    {% include 'includes/navbar-premium.html' %}
+
+<!-- NAVBAR MINIMALISTA - ICON-BASED -->
+
+
+<!-- NAVBAR PROFESIONAL REDESIGNADO -->
+
+
+<style>
+    /* ===== NAVBAR PROFESIONAL ===== */
+    .navbar-pro {
+        background: linear-gradient(135deg, #1a2352 0%, #2a3a6a 100%);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        border-bottom: 3px solid #d4a373;
+        padding: 0;
+        position: sticky;
+        top: 0;
+        z-index: 9999;
+    }
+
+    .navbar-pro-container {
+        max-width: 1400px;
+        margin: 0 auto;
+        padding: 1rem 2rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 2rem;
+    }
+
+    /* LOGO */
+    .navbar-pro-logo a {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #d4a373;
+        text-decoration: none;
+        font-weight: 800;
+        font-size: 1.5rem;
+        letter-spacing: 1px;
+        transition: all 0.3s ease;
+    }
+
+    .navbar-pro-logo img {
+        height: 50px;
+        width: auto;
+    }
+
+    .navbar-pro-logo a:hover {
+        color: #fff;
+        transform: scale(1.05);
+    }
+
+    /* MENU */
+    .navbar-pro-menu {
+        display: flex;
+        gap: 0.5rem;
+        flex: 1;
+        margin-left: 2rem;
+    }
+
+    .navbar-pro-link {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        color: #fff !important;
+        text-decoration: none !important;
+        padding: 0.75rem 1.25rem;
+        font-weight: 600;
+        font-size: 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease !important;
+    }
+
+    .navbar-pro-link:hover {
+        background-color: rgba(212, 163, 115, 0.25) !important;
+        color: #d4a373 !important;
+    }
+
+    .navbar-pro-link i {
+        font-size: 1.1rem;
+    }
+
+    /* LADO DERECHO */
+    .navbar-pro-right {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+    }
+
+    /* ICONOS */
+    .navbar-pro-icon {
+        color: #fff;
+        font-size: 1.3rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        position: relative;
+        cursor: pointer;
+    }
+
+    .navbar-pro-icon:hover {
+        color: #d4a373;
+        transform: scale(1.15);
+    }
+
+    .navbar-pro-badge {
+        position: absolute;
+        top: -8px;
+        right: -8px;
+        background: #d6293e;
+        color: white;
+        border-radius: 50%;
+        width: 22px;
+        height: 22px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.7rem;
+        font-weight: 800;
+    }
+
+    /* USUARIO */
+    .navbar-pro-user {
+        position: relative;
+    }
+
+    .navbar-pro-avatar {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 2px solid #d4a373;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+
+    .navbar-pro-avatar:hover {
+        box-shadow: 0 0 0 4px rgba(212, 163, 115, 0.3);
+    }
+
+    .navbar-pro-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        background: white;
+        border-radius: 0.75rem;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+        padding: 0.75rem 0;
+        min-width: 220px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        margin-top: 0.75rem;
+        z-index: 10000;
+    }
+
+    .navbar-pro-user:hover .navbar-pro-dropdown {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .navbar-pro-dropdown a {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        color: #1a2352;
+        text-decoration: none;
+        padding: 0.85rem 1.5rem;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+
+    .navbar-pro-dropdown a:hover {
+        background-color: #f0f0f0;
+        color: #8b2e3d;
+        padding-left: 1.75rem;
+    }
+
+    .navbar-pro-dropdown hr {
+        margin: 0.5rem 0;
+        border: none;
+        border-top: 1px solid #eee;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 1024px) {
+        .navbar-pro-container {
+            padding: 0.75rem 1.5rem;
+            gap: 1rem;
+        }
+
+        .navbar-pro-menu {
+            margin-left: 1rem;
+        }
+
+        .navbar-pro-link {
+            padding: 0.6rem 0.9rem;
+            font-size: 0.9rem;
+        }
+    }
+
+    @media (max-width: 768px) {
+        .navbar-pro-container {
+            padding: 0.75rem 1rem;
+            flex-wrap: wrap;
+        }
+
+        .navbar-pro-menu {
+            flex-basis: 100%;
+            order: 3;
+            margin-left: 0;
+        }
+
+        .navbar-pro-link {
+            flex: 1;
+            justify-content: center;
+            padding: 0.5rem;
+        }
+
+        .navbar-pro-link span {
+            display: none;
+        }
+
+        .navbar-pro-link i {
+            font-size: 1.3rem;
+        }
+    }
+
+    @media (max-width: 576px) {
+        .navbar-pro-logo span {
+            display: none;
+        }
+
+        .navbar-pro-logo img {
+            height: 40px;
+        }
+
+        .navbar-pro-right {
+            gap: 0.75rem;
+        }
+
+        .navbar-pro-icon {
+            font-size: 1.1rem;
+        }
+
+        .navbar-pro-dropdown {
+            min-width: 180px;
+        }
+    }
+</style>
+
 
    <!-- NAVBAR -->
-<nav>
-       <nav class="navbar">
-        <div class="navbar-left">
-            <button class="hamburger-btn" id="hamburgerBtn" onclick="toggleMobileMenu()" type="button">☰</button>
-            <a href="{% url 'pages:dashboard' %}" class="logo">
-                <img src="{% static 'images/Logo-Lobby69.jpg' %}" alt="LOBBY69">
-            </a>
-            <ul class="nav-menu">
-                <li><a href="{% url 'pages:dashboard' %}">📐 {% trans "Inicio" %}</a></li>
-                <li><a href="{% url 'pages:explore' %}">🔍 {% trans "Explorar" %}</a></li>
-                <li><a href="{% url 'pages:conversations' %}">💬 {% trans "Mensajes" %}</a></li>
-                <li><a href="{% url 'pages:my_profile' %}">👤 {% trans "Mi Perfil" %}</a></li>
-                <li><a href="{% url 'pages:gallery' %}">🖼️ {% trans "Galería" %}</a></li>
-                <li><a href="{% url 'pages:memberships' %}">💎 {% trans "Membresías" %}</a></li>
-                <li style="position: relative;">
-                    <button class="menu-icon" onclick="toggleNotificationMenu(event)" style="background: none; border: none; cursor: pointer; font-size: 13px; color: var(--text-primary); font-weight: 500; padding: 8px 12px; border-radius: 4px; transition: all 0.3s;" type="button">
-                        🔔 {% trans "Notificaciones" %}
-                    </button>
-                    <div id="notificationMenu" class="dropdown-menu">
-                        <a href="{% url 'pages:friend_requests' %}">👥 {% trans "Solicitudes de Amistad" %}</a>
-                        <a href="{% url 'pages:notifications' %}">🔔 {% trans "Mis Notificaciones" %}</a>
-                        <a href="{% url 'pages:public_news' %}">📰 Noticias</a>
-                </li>
-                <li><a href="{% url 'pages:settings' %}">⚙️ {% trans "Configuración" %}</a></li>
-                    <a href="{% url 'pages:verification' %}" style="display: flex; align-items: center; gap: 6px; padding: 8px 15px; border-radius: 6px; text-decoration: none; color: #666; font-weight: 600; transition: all 0.3s;" onmouseover="this.style.background='#f0f0f0'" onmouseout="this.style.background='transparent'">
-                        ✓ {% trans "Verificación" %}
-                    </a>
-            </ul>
-        </div>
-        <div class="navbar-right">
-            <button class="theme-toggle" onclick="toggleTheme()" title="{% trans 'Cambiar tema' %}" aria-label="{% trans 'Cambiar tema' %}" type="button">
-                <span id="theme-icon">🌙</span>
-            </button>
-            <div class="user-menu">
-                <div class="user-avatar" title="{{ user.username }}">{{ user.username|first|upper }}</div>
-            </div>
-            <a href="{% url 'pages:logout' %}" class="logout-btn">{% trans "Cerrar Sesión" %}</a>
-        </div>
-    </nav>
+
+
+        <style>
+            /* NAVBAR REDESIGNADO */
+            .navbar-redesigned {
+                background: linear-gradient(135deg, #1a2352 0%, #2a3a6a 100%);
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+                border-bottom: 3px solid #d4a373;
+                padding: 0;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+            }
+
+            .navbar-container {
+                max-width: 1400px;
+                margin: 0 auto;
+                padding: 0.75rem 2rem;
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 2rem;
+            }
+
+            /* LOGO */
+            .navbar-logo a {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                text-decoration: none;
+                color: #d4a373;
+                font-weight: 700;
+                font-size: 1.4rem;
+                transition: all 0.3s ease;
+            }
+
+            .navbar-logo img {
+                height: 45px;
+                width: auto;
+            }
+
+            .navbar-logo a:hover {
+                color: #fff;
+                transform: scale(1.05);
+            }
+
+            /* MENU PRINCIPAL */
+            .navbar-menu {
+                display: flex;
+                list-style: none;
+                padding: 0;
+                margin: 0;
+                gap: 0;
+                flex: 1;
+            }
+
+            .navbar-menu li {
+                margin: 0;
+            }
+
+            .navbar-menu a {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                color: #fff;
+                text-decoration: none;
+                padding: 0.75rem 1rem;
+                transition: all 0.3s ease;
+                border-radius: 0.5rem;
+                font-weight: 500;
+                font-size: 0.95rem;
+            }
+
+            .navbar-menu a:hover {
+                background-color: rgba(212, 163, 115, 0.2);
+                color: #d4a373;
+            }
+
+            .navbar-menu a.active {
+                background-color: #d4a373;
+                color: #1a2352;
+            }
+
+            /* LADO DERECHO */
+            .navbar-right {
+                display: flex;
+                align-items: center;
+                gap: 1.5rem;
+            }
+
+            /* ICONOS */
+            .navbar-icons {
+                display: flex;
+                gap: 1rem;
+                align-items: center;
+            }
+
+            .navbar-icons a {
+                color: #fff;
+                font-size: 1.2rem;
+                transition: all 0.3s ease;
+                position: relative;
+                text-decoration: none;
+            }
+
+            .navbar-icons a:hover {
+                color: #d4a373;
+                transform: scale(1.1);
+            }
+
+            .notification-badge {
+                position: absolute;
+                top: -8px;
+                right: -8px;
+                background: #d6293e;
+                color: white;
+                border-radius: 50%;
+                width: 20px;
+                height: 20px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 0.75rem;
+                font-weight: 700;
+            }
+
+            /* USUARIO */
+            .navbar-user {
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                position: relative;
+            }
+
+            .user-avatar {
+                cursor: pointer;
+                width: 45px;
+                height: 45px;
+                border-radius: 50%;
+                overflow: hidden;
+                border: 2px solid #d4a373;
+                transition: all 0.3s ease;
+            }
+
+            .user-avatar img {
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+            }
+
+            .user-avatar:hover {
+                box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.3);
+            }
+
+            .user-dropdown {
+                position: absolute;
+                top: 100%;
+                right: 0;
+                background: white;
+                border-radius: 0.75rem;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+                padding: 0.75rem 0;
+                min-width: 200px;
+                opacity: 0;
+                visibility: hidden;
+                transform: translateY(-10px);
+                transition: all 0.3s ease;
+                margin-top: 0.5rem;
+            }
+
+            .navbar-user:hover .user-dropdown {
+                opacity: 1;
+                visibility: visible;
+                transform: translateY(0);
+            }
+
+            .user-dropdown a {
+                display: flex;
+                align-items: center;
+                gap: 0.75rem;
+                color: #1a2352;
+                text-decoration: none;
+                padding: 0.75rem 1.25rem;
+                transition: all 0.3s ease;
+                font-weight: 500;
+            }
+
+            .user-dropdown a:hover {
+                background-color: rgba(212, 163, 115, 0.1);
+                color: #8b2e3d;
+                padding-left: 1.5rem;
+            }
+
+            .user-dropdown hr {
+                margin: 0.5rem 0;
+                border: none;
+                border-top: 1px solid #eee;
+            }
+
+            /* RESPONSIVE */
+            @media (max-width: 1024px) {
+                .navbar-container {
+                    padding: 0.75rem 1rem;
+                    gap: 1rem;
+                }
+
+                .navbar-menu a {
+                    padding: 0.5rem 0.75rem;
+                    font-size: 0.85rem;
+                }
+
+                .navbar-icons {
+                    gap: 0.75rem;
+                }
+            }
+
+            @media (max-width: 768px) {
+                .navbar-container {
+                    padding: 0.5rem 1rem;
+                    flex-wrap: wrap;
+                }
+
+                .navbar-menu {
+                    flex-basis: 100%;
+                    order: 3;
+                    gap: 0.25rem;
+                }
+
+                .navbar-menu a {
+                    padding: 0.4rem 0.5rem;
+                    font-size: 0.8rem;
+                }
+
+                .navbar-right {
+                    gap: 1rem;
+                }
+
+                .navbar-icons a {
+                    font-size: 1rem;
+                }
+            }
+
+            @media (max-width: 576px) {
+                .navbar-logo span {
+                    display: none;
+                }
+
+                .navbar-logo img {
+                    height: 35px;
+                }
+
+                .navbar-menu a i {
+                    font-size: 1rem;
+                }
+
+                .navbar-menu a span {
+                    display: none;
+                }
+
+                .navbar-icons {
+                    gap: 0.5rem;
+                }
+
+                .user-dropdown {
+                    min-width: 150px;
+                }
+            }
+        </style>
 
       <!-- MAIN CONTAINER - 3 COLUMNAS -->
     <div class="container">
@@ -287,8 +769,18 @@
 
     {% block extra_js %}{% endblock extra_js %}
 
-</body>
+    <script src="{% static 'js/navbar-premium.js' %}"></script>`n`</body>
 </html>
+
+
+
+
+
+
+
+
+
+
 
 
 
