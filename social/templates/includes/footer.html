@@ -1,0 +1,152 @@
+﻿{% load static %}
+
+<!-- FOOTER -->
+<footer class="footer">
+    <div class="footer-container">
+        <div class="footer-section">
+            <h4>LOBBY69</h4>
+            <p>La plataforma premium de conexiones en México</p>
+            <div class="footer-social">
+                <a href="#" title="Facebook"><i class="fab fa-facebook"></i></a>
+                <a href="#" title="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#" title="Twitter"><i class="fab fa-twitter"></i></a>
+            </div>
+        </div>
+
+        <div class="footer-section">
+            <h5>Navegación</h5>
+            <ul>
+                <li><a href="/mi-dashboard/">Dashboard</a></li>
+                <li><a href="/explorar/">Explorar</a></li>
+                <li><a href="/galeria/">Galería</a></li>
+                <li><a href="/membresias/">Membresías</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h5>Legal</h5>
+            <ul>
+                <li><a href="/terms-conditions/">Términos y Condiciones</a></li>
+                <li><a href="/privacy-policy/">Política de Privacidad</a></li>
+                <li><a href="#">Cookies</a></li>
+                <li><a href="#">Contacto</a></li>
+            </ul>
+        </div>
+
+        <div class="footer-section">
+            <h5>Soporte</h5>
+            <ul>
+                <li><a href="#">Centro de Ayuda</a></li>
+                <li><a href="#">Reportar Problema</a></li>
+                <li><a href="#">Feedback</a></li>
+                <li><a href="#">Estado del Servicio</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <div class="footer-bottom">
+        <p>&copy; 2026 LOBBY69. Todos los derechos reservados.</p>
+    </div>
+</footer>
+
+<style>
+    /* FOOTER STYLES */
+    .footer {
+        background: linear-gradient(135deg, var(--accent-navy) 0%, #1f2d4a 100%);
+        color: white;
+        padding: var(--spacing-xxl) var(--spacing-l);
+        margin-top: var(--spacing-xxxl);
+        border-top: 3px solid var(--secondary-rose-gold);
+    }
+
+    .footer-container {
+        max-width: 1440px;
+        margin: 0 auto;
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: var(--spacing-xxl);
+        margin-bottom: var(--spacing-xxl);
+    }
+
+    .footer-section h4,
+    .footer-section h5 {
+        color: var(--secondary-rose-gold);
+        font-size: var(--font-size-h5);
+        margin-bottom: var(--spacing-m);
+    }
+
+    .footer-section p {
+        font-size: var(--font-size-body-small);
+        color: rgba(255, 255, 255, 0.8);
+        line-height: var(--line-height-relaxed);
+    }
+
+    .footer-section ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .footer-section ul li {
+        margin-bottom: var(--spacing-s);
+    }
+
+    .footer-section a {
+        color: rgba(255, 255, 255, 0.8);
+        text-decoration: none;
+        transition: var(--transition-default);
+        font-size: var(--font-size-body-small);
+    }
+
+    .footer-section a:hover {
+        color: var(--secondary-rose-gold);
+        padding-left: var(--spacing-s);
+    }
+
+    .footer-social {
+        display: flex;
+        gap: var(--spacing-l);
+        margin-top: var(--spacing-l);
+    }
+
+    .footer-social a {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 40px;
+        height: 40px;
+        background: rgba(212, 163, 115, 0.1);
+        border-radius: 50%;
+        font-size: 18px;
+    }
+
+    .footer-social a:hover {
+        background: var(--secondary-rose-gold);
+        color: var(--accent-navy);
+        padding: 0;
+    }
+
+    .footer-bottom {
+        max-width: 1440px;
+        margin: 0 auto;
+        padding-top: var(--spacing-l);
+        border-top: 1px solid rgba(212, 163, 115, 0.2);
+        text-align: center;
+        font-size: var(--font-size-body-small);
+        color: rgba(255, 255, 255, 0.6);
+    }
+
+    @media (max-width: 768px) {
+        .footer {
+            padding: var(--spacing-xl) var(--spacing-m);
+        }
+
+        .footer-container {
+            gap: var(--spacing-xl);
+        }
+
+        .footer-section a:hover {
+            padding-left: 0;
+        }
+    }
+</style>

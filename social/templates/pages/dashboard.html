@@ -1,220 +1,701 @@
-﻿{% extends 'base_authenticated.html' %}
+﻿{% extends "base_authenticated.html" %}
 {% load static %}
 
-{% block page_title %}Dashboard - LOBBY69{% endblock page_title %}
-
-{% block left_sidebar %}
-    <!-- Mi Perfil -->
-    <div class="card profile-card">
-        <div class="profile-avatar">👤</div>
-        <h3 class="profile-name">{{ user.username }}</h3>
-        <p class="profile-location">📍 México</p>
-        <p class="profile-bio">Bienvenido a la comunidad LOBBY69. Completa tu perfil para conectar mejor.</p>
-        <div class="membership-badge">Miembro Activo</div>
-        <a href="{% url 'pages:my_profile' %}" class="btn-edit-profile">Editar Perfil</a>
-    </div>
-
-    <!-- Quiénes te han visitado -->
-    <div class="card">
-        <h4 class="section-title">👁 Te han visitado</h4>
-        {% if visited_by %}
-            {% for visitor in visited_by|slice:":3" %}
-            <div class="visit-item">
-                <div class="visit-avatar">👥</div>
-                <div class="visit-info">
-                    <div class="visit-name">{{ visitor.nick }}</div>
-                    <div class="visit-time">Hace poco</div>
-                </div>
-            </div>
-            {% endfor %}
-        {% else %}
-            <p style="font-size: 13px; color: var(--text-secondary);">Sin visitas aún</p>
-        {% endif %}
-    </div>
-
-    <!-- Historias -->
-    <div class="card">
-        <h4 class="section-title">📸 Historias</h4>
-        <div style="text-align: center; color: var(--text-secondary); font-size: 13px;">
-            <p>Comparte tu historia con la comunidad</p>
-            <button style="width: 100%; padding: 10px; background: var(--primary-color); color: white; border: none; border-radius: 6px; cursor: pointer; margin-top: 10px; font-weight: 600;">
-                + Nueva Historia
-            </button>
-        </div>
-    </div>
-{% endblock left_sidebar %}
+{% block page_title %}Mi Dashboard - LOBBY69{% endblock %}
 
 {% block main_content %}
-    {% csrf_token %}
-    {% if photos %}
-        {% for photo in photos %}
-        <div class="post" data-photo-id="{{ photo.id }}">
-            <!-- HEADER -->
-            <div class="post-header" onclick="window.location.href = `/usuario/{{ photo.user_nick }}/`" style="cursor: pointer;">
-                <div class="post-avatar">👤</div>
-                <div class="post-meta">
-                    <div class="post-author" style="color: var(--primary-color); font-weight: 600;">{{ photo.user_nick }}</div>
-                    <div class="post-time">{{ photo.uploaded_at|date:"d/m/Y H:i" }}</div>
+
+<div class="feed-layout">
+    
+    <!-- LEFT SIDEBAR: PERFIL Y ESTADÍSTICAS -->
+    <aside class="sidebar-left">
+        
+        <!-- PERFIL CARD -->
+        <div class="card profile-card">
+            <div class="profile-header">
+                <img src="{% static 'images/default-avatar.svg' %}" alt="Avatar" class="avatar-large">
+                <div class="online-indicator"></div>
+            </div>
+            
+            <div class="profile-info">
+                <h2 class="profile-name">{{ user.first_name|default:"Usuario" }}, 27</h2>
+                <p class="profile-location">
+                    <i class="fas fa-map-marker-alt"></i> México, CDMX
+                </p>
+                
+                <div class="member-badge premium">
+                    <i class="fas fa-crown"></i> Miembro Premium
                 </div>
             </div>
-
-            <!-- IMAGEN -->
-            {% if photo.image_url %}
-            <img src="{{ photo.image_url }}" alt="Foto" class="post-image" data-id="{{ photo.id }}" data-caption="{{ photo.caption|default:''|escapejs }}" onclick="openPhotoModal('{{ photo.id }}', event)" style="cursor: pointer; width: 100%; border-radius: 8px;">
-            {% endif %}
-
-            <!-- CAPTION -->
-            {% if photo.caption %}
-            <p class="post-content">{{ photo.caption }}</p>
-            {% endif %}
-
-            <!-- CONTADORES CLICKEABLES -->
-            <div style="display: flex; gap: 15px; padding: 10px 0; border-top: 1px solid var(--border-color); border-bottom: 1px solid var(--border-color); justify-content: space-around; font-size: 13px;">
-                <!-- ME GUSTA -->
-                <div onclick="toggleLike('{{ photo.id }}')" style="display: flex; align-items: center; gap: 5px; cursor: pointer; color: var(--text-secondary); transition: all 0.2s; padding: 5px 10px; border-radius: 4px;" onmouseover="this.style.background='var(--bg-secondary)'" onmouseout="this.style.background='transparent'">
-                    <span style="font-size: 16px;">👍</span>
-                    <span class="likes-count" data-photo-id="{{ photo.id }}">{{ photo.likes_count|default:0 }}</span>
-                </div>
-
-                <!-- ME ENCANTA -->
-                <div onclick="toggleEnchantment('{{ photo.id }}')" style="display: flex; align-items: center; gap: 5px; cursor: pointer; color: var(--text-secondary); transition: all 0.2s; padding: 5px 10px; border-radius: 4px;" onmouseover="this.style.background='var(--bg-secondary)'" onmouseout="this.style.background='transparent'">
-                    <span style="font-size: 16px;">❤️</span>
-                    <span class="enchantment-count" data-photo-id="{{ photo.id }}">{{ photo.enchantment_count|default:0 }}</span>
-                </div>
-
-                <!-- COMENTARIOS -->
-                <div onclick="openPhotoModal('{{ photo.id }}', event)" style="display: flex; align-items: center; gap: 5px; cursor: pointer; color: var(--text-secondary); transition: all 0.2s; padding: 5px 10px; border-radius: 4px;" onmouseover="this.style.background='var(--bg-secondary)'" onmouseout="this.style.background='transparent'">
-                    <span style="font-size: 16px;">💬</span>
-                    <span class="comments-count" data-photo-id="{{ photo.id }}">{{ photo.comments_count|default:0 }}</span>
-                </div>
+            
+            <div class="profile-actions">
+                <a href="/mi-perfil/" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-edit"></i> Editar Perfil
+                </a>
+                <a href="/galeria/" class="btn btn-outline btn-sm">
+                    <i class="fas fa-images"></i> Galería
+                </a>
             </div>
         </div>
-        {% endfor %}
-
-    {% else %}
-        <div class="post empty-feed">
-            <p>📸 No hay fotos en el feed aún</p>
-            <p style="font-size: 12px; margin-top: 10px;">Sigue a más usuarios o visita la galería</p>
-        </div>
-    {% endif %}
-
-    <!-- MODAL DE FOTO CON COMENTARIOS - ÚNICO -->
-    <div id="photoModal" class="photo-modal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.95); z-index: 9999; justify-content: center; align-items: center; padding: 20px; overflow-y: auto;">
-        <div class="photo-modal-content" style="position: relative; max-width: 1200px; width: 100%; display: flex; gap: 20px; background: var(--bg-secondary); border-radius: 8px; overflow: hidden; max-height: 90vh;">
-
-            <!-- Botón cerrar -->
-            <button onclick="closePhotoModal()" style="position: absolute; top: 10px; right: 10px; background: none; border: none; color: white; font-size: 28px; cursor: pointer; z-index: 10000;">✕</button>
-
-            <!-- SECCIÓN IZQUIERDA: FOTO -->
-            <div style="flex: 1; display: flex; align-items: center; justify-content: center; background: #000; padding: 20px;">
-                <img id="modalImage" src="" alt="Foto grande" style="max-width: 100%; max-height: 80vh; object-fit: contain; border-radius: 8px;">
-            </div>
-
-            <!-- SECCIÓN DERECHA: COMENTARIOS -->
-            <div style="flex: 0 0 400px; display: flex; flex-direction: column; padding: 20px; background: var(--bg-primary); overflow-y: auto;">
-
-                <!-- Info de foto -->
-                <div style="margin-bottom: 20px; padding-bottom: 20px; border-bottom: 1px solid var(--border-color);">
-                    <p id="modalCaption" style="font-size: 14px; margin: 0 0 10px 0; color: var(--text-primary); line-height: 1.5;"></p>
-                    <div style="display: flex; gap: 10px; align-items: center;">
-                        <span id="commentCount" style="font-size: 13px; color: var(--text-secondary); background: var(--bg-secondary); padding: 8px 12px; border-radius: 4px;">💬 0</span>
+        
+        <!-- ESTADÍSTICAS -->
+        <div class="card stats-card">
+            <h3 class="card-title">Tus Estadísticas</h3>
+            
+            <div class="stats-grid">
+                <div class="stat-item">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #2196f3, #64b5f6);">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-number">342</span>
+                        <span class="stat-label">Visitas</span>
                     </div>
                 </div>
-
-                <!-- Formulario comentario -->
-                <div style="margin-bottom: 15px; display: flex; flex-direction: column; gap: 8px; min-height: 150px;">
-                    <textarea id="commentText" placeholder="Escribe un comentario..." maxlength="500" rows="3" style="padding: 10px; border: 1px solid var(--border-color); border-radius: 4px; background: var(--bg-secondary); color: var(--text-primary); font-family: Arial, sans-serif; resize: none; min-height: 80px;"></textarea>
-                    <button onclick="submitComment()" style="padding: 10px; background: var(--primary-color); color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; font-size: 14px;">Comentar</button>
-                    <small id="charCount" style="font-size: 12px; color: var(--text-secondary);">0/500</small>
+                
+                <div class="stat-item">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #8b2e3d, #d32f2f);">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-number">89</span>
+                        <span class="stat-label">Likes</span>
+                    </div>
                 </div>
-
-                <!-- Lista comentarios -->
-                <div id="commentsList" style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px;">
-                    <p style="text-align: center; color: var(--text-secondary);">Cargando comentarios...</p>
+                
+                <div class="stat-item">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #d4a373, #e8b876);">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-number">15</span>
+                        <span class="stat-label">Mensajes</span>
+                    </div>
+                </div>
+                
+                <div class="stat-item">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #4caf50, #81c784);">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-details">
+                        <span class="stat-number">42</span>
+                        <span class="stat-label">Conexiones</span>
+                    </div>
                 </div>
             </div>
         </div>
-    </div>
-{% endblock main_content %}
-
-{% block right_sidebar %}
-    <!-- Usuarios Conectados -->
-    <div class="card">
-        <h4 class="section-title">🟢 Conectados</h4>
-        {% if connected_users %}
-            {% for user_online in connected_users|slice:":3" %}
-            <div class="profile-card-small" onclick="window.location.href = `/usuario/{{ user_online.nick }}/`">
-                <div class="profile-avatar-small">👥</div>
-                <div class="profile-name-small">{{ user_online.nick }}</div>
-                <div class="profile-location-small">📍 {{ user_online.city|default:"México" }}</div>
-                <button class="btn-add">Ver Perfil</button>
+        
+        <!-- USUARIOS CONECTADOS -->
+        <div class="card online-card">
+            <h3 class="card-title">
+                <span class="online-dot"></span> Conectados Ahora (7)
+            </h3>
+            
+            <div class="user-list">
+                <div class="user-item">
+                    <img src="{% static 'images/default-avatar.svg' %}" alt="Avatar" class="avatar-small">
+                    <div class="user-info">
+                        <h5 class="user-name">Carolina, 26</h5>
+                        <p class="user-location"><i class="fas fa-map-marker-alt"></i> Guadalajara</p>
+                    </div>
+                    <button class="btn-icon btn-sm" title="Enviar mensaje">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+                
+                <div class="user-item">
+                    <img src="{% static 'images/default-avatar.svg' %}" alt="Avatar" class="avatar-small">
+                    <div class="user-info">
+                        <h5 class="user-name">Sofía, 24</h5>
+                        <p class="user-location"><i class="fas fa-map-marker-alt"></i> CDMX</p>
+                    </div>
+                    <button class="btn-icon btn-sm" title="Enviar mensaje">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
+                
+                <div class="user-item">
+                    <img src="{% static 'images/default-avatar.svg' %}" alt="Avatar" class="avatar-small">
+                    <div class="user-info">
+                        <h5 class="user-name">Lupita, 28</h5>
+                        <p class="user-location"><i class="fas fa-map-marker-alt"></i> Monterrey</p>
+                    </div>
+                    <button class="btn-icon btn-sm" title="Enviar mensaje">
+                        <i class="fas fa-heart"></i>
+                    </button>
+                </div>
             </div>
-            {% endfor %}
-        {% else %}
-            <p style="font-size: 12px; color: var(--text-secondary); text-align: center;">Sin usuarios en línea</p>
-        {% endif %}
-    </div>
-
-    <!-- Nuevos Perfiles -->
-    <div class="card">
-        <h4 class="section-title">✨ Nuevos Perfiles</h4>
-        {% if suggested_profiles %}
-            {% for profile in suggested_profiles|slice:":2" %}
-            <div class="profile-card-small" onclick="viewProfile('{{ profile.id }}')">
-                <div class="profile-avatar-small">👥</div>
-                <div class="profile-name-small">{{ profile.nick }}</div>
-                <div class="profile-location-small">📍 {{ profile.city|default:"México" }}</div>
-                <div class="profile-bio-small">{{ profile.bio|default:"Sin descripción"|truncatewords:5 }}</div>
-                <button class="btn-add">+ Agregar</button>
-            </div>
-            {% endfor %}
-        {% else %}
-            <p style="font-size: 12px; color: var(--text-secondary); text-align: center;">Sin perfiles disponibles</p>
-        {% endif %}
-    </div>
-
-    <!-- Anuncios -->
-    <div class="card">
-        <h4 class="section-title">📢 Anuncios</h4>
-        <div class="ad-space">
-            Espacio para anuncios y promociones
         </div>
-    </div>
-{% endblock right_sidebar %}
+        
+    </aside>
+    
+    <!-- CENTER: FEED DE POSTS -->
+    <section class="feed-center">
+        
+        <!-- POST DE BIENVENIDA -->
+        <div class="card post-card">
+            <div class="post-header">
+                <img src="{% static 'images/default-avatar.svg' %}" alt="Avatar" class="avatar-small">
+                <div class="post-info">
+                    <h4 class="post-author">Jessica, 25</h4>
+                    <p class="post-time">hace 2 horas</p>
+                </div>
+            </div>
+            
+            <div class="post-content">
+                <p>¡Hola a todos! Bienvenido a LOBBY69. Este es un espacio para conectar con personas increíbles. 💜</p>
+            </div>
+            
+            <div class="post-footer">
+                <button class="post-action">
+                    <i class="fas fa-heart"></i> <span>145</span>
+                </button>
+                <button class="post-action">
+                    <i class="fas fa-comment"></i> <span>23</span>
+                </button>
+                <button class="post-action">
+                    <i class="fas fa-share"></i> Compartir
+                </button>
+            </div>
+        </div>
+        
+        <!-- POST 2 -->
+        <div class="card post-card">
+            <div class="post-header">
+                <img src="{% static 'images/default-avatar.svg' %}" alt="Avatar" class="avatar-small">
+                <div class="post-info">
+                    <h4 class="post-author">Ana, 28</h4>
+                    <p class="post-time">hace 4 horas</p>
+                </div>
+            </div>
+            
+            <div class="post-content">
+                <p>La comunidad de LOBBY69 es increíble. ¡Conocer nuevas personas nunca fue tan fácil! 🎉</p>
+            </div>
+            
+            <div class="post-footer">
+                <button class="post-action">
+                    <i class="fas fa-heart"></i> <span>89</span>
+                </button>
+                <button class="post-action">
+                    <i class="fas fa-comment"></i> <span>12</span>
+                </button>
+                <button class="post-action">
+                    <i class="fas fa-share"></i> Compartir
+                </button>
+            </div>
+        </div>
+        
+    </section>
+    
+    <!-- RIGHT SIDEBAR: SUGERENCIAS Y MEMBRESÍAS -->
+    <aside class="sidebar-right">
+        
+        <!-- CARD DE SUGERENCIAS -->
+        <div class="card suggestions-card">
+            <h3 class="card-title">
+                <i class="fas fa-lightbulb"></i> Sugerencias para Ti
+            </h3>
+            <p class="card-subtitle">Completa tu perfil para obtener más sugerencias</p>
+            
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: 65%;"></div>
+            </div>
+            <p class="progress-text">65% completado</p>
+            
+            <a href="/mi-perfil/" class="btn btn-primary btn-block">
+                <i class="fas fa-pencil-alt"></i> Completar Perfil
+            </a>
+        </div>
+        
+        <!-- MEMBRESÍAS PREMIUM -->
+        <div class="card membership-card">
+            <div class="membership-header">
+                <i class="fas fa-crown"></i>
+                <h3>Membresías Premium</h3>
+            </div>
+            
+            <p class="membership-subtitle">Accede a funciones exclusivas</p>
+            
+            <div class="membership-features">
+                <div class="feature">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Ver perfiles anónimos</span>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Mensajes ilimitados</span>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Perfil destacado</span>
+                </div>
+                <div class="feature">
+                    <i class="fas fa-check-circle"></i>
+                    <span>Filtros avanzados</span>
+                </div>
+            </div>
+            
+            <a href="/membresias/" class="btn btn-secondary btn-block">
+                <i class="fas fa-star"></i> Ver Planes
+            </a>
+        </div>
+        
+        <!-- NOTIFICACIONES RECIENTES -->
+        <div class="card notifications-card">
+            <h3 class="card-title">
+                <i class="fas fa-bell"></i> Notificaciones
+            </h3>
+            
+            <div class="notification-item">
+                <div class="notification-icon heart">
+                    <i class="fas fa-heart"></i>
+                </div>
+                <div class="notification-content">
+                    <p><strong>Carolina</strong> te envió un like</p>
+                    <span class="time">hace 10 minutos</span>
+                </div>
+            </div>
+            
+            <div class="notification-item">
+                <div class="notification-icon message">
+                    <i class="fas fa-comment"></i>
+                </div>
+                <div class="notification-content">
+                    <p><strong>Sofía</strong> te envió un mensaje</p>
+                    <span class="time">hace 1 hora</span>
+                </div>
+            </div>
+            
+            <div class="notification-item">
+                <div class="notification-icon connection">
+                    <i class="fas fa-user-plus"></i>
+                </div>
+                <div class="notification-content">
+                    <p>Tienes <strong>3 nuevas solicitudes</strong> de amistad</p>
+                    <span class="time">hace 2 horas</span>
+                </div>
+            </div>
+        </div>
+        
+    </aside>
+    
+</div>
 
-<script src="{% static 'js/modal.js' %}"></script>
-
+<!-- CSS ADICIONAL PARA DASHBOARD -->
 <style>
-.photo-modal {
-    display: none !important;
-}
-
-.photo-modal.active {
-    display: flex !important;
-}
-
-.comment-item {
-    padding: 10px;
-    background: var(--bg-secondary);
-    border-radius: 4px;
-    border-left: 3px solid #4682b4;
-}
+    /* GENERAL */
+    .feed-layout {
+        display: grid;
+        grid-template-columns: 300px 1fr 320px;
+        gap: 20px;
+        padding: 20px;
+        max-width: 1400px;
+        margin: 0 auto;
+    }
+    
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .card:hover {
+        box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    }
+    
+    /* SIDEBAR IZQUIERDO */
+    .profile-card {
+        text-align: center;
+        background: linear-gradient(135deg, #f5f5f5, #ffffff);
+    }
+    
+    .profile-header {
+        position: relative;
+        margin-bottom: 15px;
+    }
+    
+    .avatar-large {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        border: 4px solid #d4a373;
+        background: #e0e0e0;
+    }
+    
+    .online-indicator {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        width: 20px;
+        height: 20px;
+        background: #4caf50;
+        border: 3px solid white;
+        border-radius: 50%;
+    }
+    
+    .profile-name {
+        font-size: 22px;
+        font-weight: 700;
+        color: #1a2352;
+        margin: 10px 0;
+    }
+    
+    .profile-location {
+        color: #666;
+        font-size: 14px;
+        margin: 5px 0 15px;
+    }
+    
+    .member-badge {
+        display: inline-block;
+        background: linear-gradient(135deg, #8b2e3d, #a83e52);
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin: 10px 0 15px;
+    }
+    
+    .member-badge.premium {
+        background: linear-gradient(135deg, #d4a373, #e8b876);
+    }
+    
+    .profile-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 15px;
+    }
+    
+    .profile-actions .btn {
+        flex: 1;
+        padding: 8px 12px;
+        font-size: 13px;
+    }
+    
+    /* ESTADÍSTICAS */
+    .stats-card {
+        margin-top: 20px;
+    }
+    
+    .card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1a2352;
+        margin-bottom: 15px;
+    }
+    
+    .stats-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+    }
+    
+    .stat-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    
+    .stat-icon {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 18px;
+    }
+    
+    .stat-number {
+        display: block;
+        font-size: 18px;
+        font-weight: 700;
+        color: #1a2352;
+    }
+    
+    .stat-label {
+        display: block;
+        font-size: 12px;
+        color: #999;
+    }
+    
+    /* USUARIOS CONECTADOS */
+    .user-list {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .user-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 10px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        transition: all 0.3s ease;
+    }
+    
+    .user-item:hover {
+        background: #f0f0f0;
+    }
+    
+    .avatar-small {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        border: 2px solid #d4a373;
+        background: #e0e0e0;
+    }
+    
+    .user-info {
+        flex: 1;
+    }
+    
+    .user-name {
+        font-weight: 600;
+        font-size: 14px;
+        color: #1a2352;
+        margin: 0;
+    }
+    
+    .user-location {
+        font-size: 12px;
+        color: #999;
+        margin: 3px 0 0;
+    }
+    
+    .btn-icon {
+        background: none;
+        border: none;
+        color: #8b2e3d;
+        cursor: pointer;
+        font-size: 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-icon:hover {
+        color: #d4a373;
+        transform: scale(1.2);
+    }
+    
+    /* FEED CENTER */
+    .feed-center {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .post-card {
+        padding: 20px;
+    }
+    
+    .post-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+    
+    .post-info {
+        flex: 1;
+    }
+    
+    .post-author {
+        font-weight: 700;
+        color: #1a2352;
+        margin: 0;
+        font-size: 15px;
+    }
+    
+    .post-time {
+        font-size: 12px;
+        color: #999;
+        margin: 3px 0 0;
+    }
+    
+    .post-content {
+        margin: 15px 0;
+        line-height: 1.6;
+        color: #333;
+    }
+    
+    .post-footer {
+        display: flex;
+        gap: 15px;
+        padding-top: 15px;
+        border-top: 1px solid #f0f0f0;
+    }
+    
+    .post-action {
+        background: none;
+        border: none;
+        color: #999;
+        cursor: pointer;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.3s ease;
+    }
+    
+    .post-action:hover {
+        color: #8b2e3d;
+    }
+    
+    /* SIDEBAR DERECHO */
+    .suggestions-card,
+    .membership-card,
+    .notifications-card {
+        margin-bottom: 20px;
+    }
+    
+    .card-subtitle {
+        font-size: 13px;
+        color: #999;
+        margin: 0 0 10px;
+    }
+    
+    .progress-bar {
+        height: 8px;
+        background: #f0f0f0;
+        border-radius: 4px;
+        overflow: hidden;
+        margin: 10px 0;
+    }
+    
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, #d4a373, #e8b876);
+        transition: width 0.3s ease;
+    }
+    
+    .progress-text {
+        font-size: 12px;
+        color: #999;
+        margin: 5px 0 15px;
+    }
+    
+    .btn-block {
+        width: 100%;
+        margin-top: 10px;
+    }
+    
+    .membership-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 10px;
+    }
+    
+    .membership-header i {
+        color: #d4a373;
+        font-size: 20px;
+    }
+    
+    .membership-header h3 {
+        margin: 0;
+        font-size: 16px;
+        color: #1a2352;
+    }
+    
+    .membership-features {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin: 15px 0;
+    }
+    
+    .feature {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 13px;
+        color: #333;
+    }
+    
+    .feature i {
+        color: #d4a373;
+    }
+    
+    .notification-item {
+        display: flex;
+        gap: 12px;
+        padding: 12px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        margin-bottom: 10px;
+        border-left: 3px solid #d4a373;
+    }
+    
+    .notification-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 16px;
+        flex-shrink: 0;
+    }
+    
+    .notification-icon.heart {
+        background: #8b2e3d;
+    }
+    
+    .notification-icon.message {
+        background: #2196f3;
+    }
+    
+    .notification-icon.connection {
+        background: #d4a373;
+    }
+    
+    .notification-content p {
+        margin: 0;
+        font-size: 13px;
+        color: #333;
+    }
+    
+    .time {
+        display: block;
+        font-size: 11px;
+        color: #999;
+        margin-top: 3px;
+    }
+    
+    /* RESPONSIVE */
+    @media (max-width: 1200px) {
+        .feed-layout {
+            grid-template-columns: 1fr;
+        }
+        
+        .sidebar-left,
+        .sidebar-right {
+            order: -1;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .feed-layout {
+            padding: 10px;
+            gap: 15px;
+        }
+        
+        .stats-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .post-footer {
+            flex-wrap: wrap;
+        }
+    }
 </style>
 
-
-<style>
-.photo-modal {
-    display: none !important;
-}
-
-.photo-modal.active {
-    display: flex !important;
-}
-
-.comment-item {
-    padding: 10px;
-    background: var(--bg-secondary);
-    border-radius: 4px;
-    border-left: 3px solid #4682b4;
-}
-</style>
+{% endblock %}

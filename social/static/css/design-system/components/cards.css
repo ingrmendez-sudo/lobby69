@@ -1,0 +1,48 @@
+﻿.card {
+  background: white;
+  border-radius: var(--radius-large);
+  padding: var(--spacing-l);
+  box-shadow: var(--shadow-card);
+  transition: var(--transition-default);
+}
+
+.card:hover {
+  box-shadow: var(--shadow-elevated);
+  transform: translateY(-4px);
+}
+
+.card-title {
+  font-size: var(--font-size-h4);
+  font-weight: var(--font-weight-bold);
+  color: var(--text-primary);
+  margin: 0 0 var(--spacing-l);
+}
+
+.profile-card { text-align: center; }
+.profile-card .avatar-large { width: 80px; height: 80px; margin: 0 auto var(--spacing-m); }
+.profile-name { font-size: var(--font-size-h4); font-weight: var(--font-weight-bold); margin: 0 0 var(--spacing-s); }
+
+.stats-card {
+  text-align: center;
+  padding: var(--spacing-l);
+  border-radius: var(--radius-large);
+  background: white;
+  box-shadow: var(--shadow-card);
+}
+
+.stats-number { font-size: 32px; font-weight: var(--font-weight-bold); color: var(--text-primary); margin: 0 0 var(--spacing-s); }
+.stats-label { font-size: var(--font-size-body-small); color: var(--text-secondary); margin: 0; }
+
+.post-card {
+  background: white;
+  border-radius: var(--radius-large);
+  overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: var(--transition-default);
+  margin-bottom: var(--spacing-l);
+}
+
+.post-card:hover { box-shadow: var(--shadow-elevated); }
+.post-header { display: flex; align-items: center; justify-content: space-between; padding: var(--spacing-m); border-bottom: 1px solid #f0f0f0; }
+.post-content { padding: var(--spacing-l); }
+.post-interactions { display: flex; gap: var(--spacing-m); padding: 0 var(--spacing-l) var(--spacing-l); }
