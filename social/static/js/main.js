@@ -1,63 +1,83 @@
 ﻿/**
- * main.js - Script principal centralizado
- * Punto de entrada para toda la aplicación
+ * main.js - Script principal limpio y compatible
+ * Compatible con navbar-premium.html
  */
 
-console.log('>> main.js iniciando...');
+console.log('✅ main.js cargado correctamente');
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('✅ DOM completamente cargado');
     
-    // Inicializar componentes globales
-    initializeGlobalListeners();
-    initializeSidebars();
+    // Inicializar navbar dropdown
+    initializeNavbarDropdown();
+    
+    // Inicializar tema oscuro/claro
+    initializeTheme();
 });
 
 /**
- * Inicializar listeners globales
+ * Inicializar dropdown del usuario en navbar
  */
-function initializeGlobalListeners() {
-    // Click fuera de modales
+function initializeNavbarDropdown() {
+    const userMenuBtn = document.getElementById('user-menu-btn');
+    const userDropdown = document.getElementById('user-dropdown');
+    
+    // Verificar que los elementos existan
+    if (!userMenuBtn || !userDropdown) {
+        console.warn('⚠️ Elementos del dropdown no encontrados');
+        return;
+    }
+    
+    // Toggle dropdown al hacer click
+    userMenuBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        userDropdown.classList.toggle('active');
+    });
+    
+    // Cerrar dropdown al hacer click fuera
     document.addEventListener('click', function(e) {
-        if (e.target.classList?.contains('photo-modal')) {
-            closePhotoModal?.();
+        if (!userMenuBtn.contains(e.target) && !userDropdown.contains(e.target)) {
+            userDropdown.classList.remove('active');
         }
     });
     
-    console.log('✅ Global listeners inicializados');
+    console.log('✅ Navbar dropdown inicializado');
 }
 
 /**
- * Inicializar sidebars
+ * Inicializar sistema de tema (oscuro/claro)
  */
-function initializeSidebars() {
-    const hamburger = document.querySelector('.hamburger');
-    const drawer = document.querySelector('.drawer');
+function initializeTheme() {
+    const themeToggle = document.getElementById('theme-toggle');
     
-    if (hamburger && drawer) {
-        hamburger.addEventListener('click', function() {
-            drawer.classList.toggle('open');
-        });
+    if (!themeToggle) {
+        console.warn('⚠️ Botón de tema no encontrado');
+        return;
     }
+    
+    // Cargar tema guardado
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    
+    // Toggle tema
+    themeToggle.addEventListener('click', function() {
+        const currentTheme = document.documentElement.getAttribute('data-theme');
+        const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+        
+        document.documentElement.setAttribute('data-theme', newTheme);
+        localStorage.setItem('theme', newTheme);
+        
+        console.log('🌓 Tema cambiado a:', newTheme);
+    });
+    
+    console.log('✅ Sistema de tema inicializado');
 }
 
-// Funciones globales seguras
-window.getCurrentTime = function() {
-    return new Date().toLocaleTimeString('es-ES', {
-        hour: '2-digit',
-        minute: '2-digit'
-    });
-};
+/**
+ * Obtener CSRF token para peticiones AJAX
+ */
+function getCsrfToken() {
+    return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+}
 
-window.showAlert = function(message, type = 'info', duration = 3000) {
-    console.log(`[${type.toUpperCase()}] ${message}`);
-};
-
-window.getCookie = function(name) {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop().split(';').shift();
-    return '';
-};
-
-console.log('✅ main.js cargado correctamente');
+console.log('✅ main.js listo para usar');

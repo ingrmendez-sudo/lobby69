@@ -1,0 +1,32 @@
+﻿.avatar {
+  border-radius: 50%;
+  object-fit: cover;
+  position: relative;
+  display: block;
+}
+
+.avatar-xl { width: 150px; height: 150px; }
+.avatar-large { width: 80px; height: 80px; }
+.avatar-medium { width: 48px; height: 48px; }
+.avatar-small { width: 32px; height: 32px; }
+.avatar-tiny { width: 24px; height: 24px; }
+
+.avatar.bordered { border: 3px solid var(--secondary-rose-gold); }
+.avatar-container { position: relative; display: inline-block; }
+
+.online-dot {
+  width: 14px;
+  height: 14px;
+  background: #4caf50;
+  border: 3px solid white;
+  border-radius: 50%;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 1; }
+  50% { transform: scale(1.15); opacity: 0.8; }
+}
