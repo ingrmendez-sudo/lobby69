@@ -1,55 +1,490 @@
-﻿{% load static %}
-{% load i18n %}
+﻿<!--
+  FILE: social/templates/base_authenticated.html
+  VERSION: 2.1.0 - Navbar Enhancement
+  DESCRIPCIÓN: Template base para usuarios autenticados con navbar mejorado
+  LAST UPDATED: 2026-06-15
 
+  ESTRUCTURA:
+  - Navbar premium con funcionalidad completa
+  - Meta tags
+  - CSS variables del design system
+  - Scripts necesarios
+  - Footer incluido
+
+  ETIQUETAS:
+  <!-- EDIT-ZONE: [Nombre de sección] -->
+  <!-- END-EDIT-ZONE -->
+-->
+
+{% load static %}
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="LOBBY69 - Plataforma Premium de Conexiones">
-    <title>{% block page_title %}LOBBY69{% endblock %}</title>
-    
-    {% csrf_token %}
+  <!-- EDIT-ZONE: Meta Tags y SEO -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LOBBY69 - Plataforma premium de conexiones para la comunidad swinger mexicana">
+  <meta name="theme-color" content="#8b2e3d">
+  <meta name="color-scheme" content="light dark">
 
-    <!-- GOOGLE FONTS -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Georgia:wght@400;700&display=swap" rel="stylesheet">
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+  <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
 
-    <!-- FONT AWESOME -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <title>{% block title %}LOBBY69 - Conexiones Premium{% endblock %}</title>
+  <!-- END-EDIT-ZONE -->
 
-    <!-- DESIGN SYSTEM CSS -->
-    <link rel="stylesheet" href="{% static 'css/design-system/variables.css' %}">
-    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
-    <link rel="stylesheet" href="{% static 'css/design-system/components/buttons.css' %}">
-    <link rel="stylesheet" href="{% static 'css/design-system/components/forms.css' %}">
-    <link rel="stylesheet" href="{% static 'css/design-system/components/cards.css' %}">
-    <link rel="stylesheet" href="{% static 'css/design-system/components/navbar.css' %}">
-    <link rel="stylesheet" href="{% static 'css/design-system/components/avatars.css' %}">
-    <link rel="stylesheet" href="{% static 'css/design-system/components/badges.css' %}">
-    <link rel="stylesheet" href="{% static 'css/design-system/layouts/feed-layout.css' %}">
+  <!-- EDIT-ZONE: CSS Global -->
+  <!-- Design System Variables -->
+  <link rel="stylesheet" href="{% static 'css/variables.css' %}">
 
-    {% block extra_css %}{% endblock %}
+  <!-- Base Styles -->
+  <link rel="stylesheet" href="{% static 'css/reset.css' %}">
 
-    <style>
-        body { opacity: 1; transition: opacity 0.3s ease; }
-        .loading { opacity: 0.7; pointer-events: none; }
-    </style>
+  <!-- Design System Components -->
+  <link rel="stylesheet" href="{% static 'css/design-system/components/navbar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/design-system/components/buttons.css' %}">
+  <link rel="stylesheet" href="{% static 'css/design-system/components/cards.css' %}">
+  <link rel="stylesheet" href="{% static 'css/design-system/components/forms.css' %}">
+  <link rel="stylesheet" href="{% static 'css/design-system/components/badges.css' %}">
+  <link rel="stylesheet" href="{% static 'css/design-system/components/avatars.css' %}">
+
+  <!-- Layout Styles -->
+  <link rel="stylesheet" href="{% static 'css/design-system/layouts/feed-layout.css' %}">
+
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
+
+  <!-- Block adicional para estilos de página -->
+  {% block extra_css %}{% endblock %}
+  <!-- END-EDIT-ZONE -->
+
+  <!-- EDIT-ZONE: Tema Oscuro/Claro Script (Early load) -->
+  <script>
+    // Prevenir FOUC (Flash of Unstyled Content)
+    (function() {
+      const theme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <!-- END-EDIT-ZONE -->
+
 </head>
 
 <body>
-    {% include 'includes/navbar-premium.html' %}
-    
-    <main class="main-content">
-        {% block main_content %}{% endblock %}
-    </main>
-    
-    {% include 'includes/footer.html' %}
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="{% static 'js/main.js' %}"></script>
-    {% block extra_js %}{% endblock %}
+  <!-- EDIT-ZONE: Navbar -->
+  <nav class="navbar-premium" id="mainNav" role="navigation" aria-label="Navegación principal">
+
+    <!-- Logo Section -->
+    <div class="navbar-logo-container">
+      <a href="{% url 'dashboard' %}" class="navbar-logo" title="Ir al inicio">
+        <img src="{% static 'images/logo-lobby69-white.svg' %}"
+             alt="LOBBY69"
+             class="navbar-logo-img"
+             width="40"
+             height="40">
+        <span class="navbar-logo-text">LOBBY69</span>
+      </a>
+    </div>
+
+    <!-- Main Menu -->
+    <div class="navbar-menu-container">
+      <ul class="navbar-menu" id="navMenu" role="menubar">
+
+        <li class="nav-item" role="none">
+          <a href="{% url 'dashboard' %}"
+             class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+             data-nav="dashboard"
+             title="Ir a Inicio">
+            <i class="fas fa-home nav-icon"></i>
+            <span class="nav-text">Inicio</span>
+          </a>
+        </li>
+
+        <li class="nav-item" role="none">
+          <a href="{% url 'explore' %}"
+             class="nav-link {% if request.resolver_match.url_name == 'explore' %}active{% endif %}"
+             data-nav="explore"
+             title="Explorar perfiles">
+            <i class="fas fa-search nav-icon"></i>
+            <span class="nav-text">Explorar</span>
+          </a>
+        </li>
+
+        <li class="nav-item" role="none">
+          <a href="{% url 'connections' %}"
+             class="nav-link {% if request.resolver_match.url_name == 'connections' %}active{% endif %}"
+             data-nav="connections"
+             title="Ver conexiones">
+            <i class="fas fa-handshake nav-icon"></i>
+            <span class="nav-text">Conexiones</span>
+            {% if pending_connections > 0 %}
+              <span class="nav-badge" data-badge="pending">{{ pending_connections }}</span>
+            {% endif %}
+          </a>
+        </li>
+
+        <li class="nav-item" role="none">
+          <a href="{% url 'messages' %}"
+             class="nav-link {% if request.resolver_match.url_name == 'messages' %}active{% endif %}"
+             data-nav="messages"
+             title="Mensajes privados">
+            <i class="fas fa-comments nav-icon"></i>
+            <span class="nav-text">Mensajes</span>
+            {% if unread_messages > 0 %}
+              <span class="nav-badge alert" data-badge="unread">{{ unread_messages }}</span>
+            {% endif %}
+          </a>
+        </li>
+
+        <li class="nav-item" role="none">
+          <a href="{% url 'gallery' %}"
+             class="nav-link {% if request.resolver_match.url_name == 'gallery' %}active{% endif %}"
+             data-nav="gallery"
+             title="Galería privada">
+            <i class="fas fa-images nav-icon"></i>
+            <span class="nav-text">Galería</span>
+          </a>
+        </li>
+
+      </ul>
+    </div>
+
+    <!-- Right Section: Actions -->
+    <div class="navbar-right">
+
+      <!-- Search Bar -->
+      <div class="navbar-search-wrapper">
+        <div class="search-container">
+          <input type="text"
+                 class="search-input"
+                 id="globalSearch"
+                 placeholder="Buscar usuarios..."
+                 aria-label="Búsqueda global de usuarios"
+                 autocomplete="off">
+          <i class="fas fa-search search-icon"></i>
+          <div class="search-results" id="searchResults" style="display:none;"></div>
+        </div>
+      </div>
+
+      <!-- Notifications Dropdown -->
+      <div class="navbar-item dropdown-wrapper" id="notificationDropdown">
+        <button class="navbar-icon-btn"
+                id="notificationBtn"
+                aria-label="Notificaciones"
+                aria-haspopup="true"
+                aria-expanded="false"
+                data-dropdown="notifications">
+          <i class="fas fa-bell nav-icon"></i>
+          {% if total_notifications > 0 %}
+            <span class="dot-badge">{{ total_notifications }}</span>
+          {% endif %}
+        </button>
+
+        <div class="dropdown-menu notification-menu"
+             id="notificationMenu"
+             role="menu"
+             style="display:none;">
+          <div class="dropdown-header">
+            <h4>Notificaciones</h4>
+            <button class="dropdown-close-btn" onclick="closeDropdown('notifications')"
+                    aria-label="Cerrar">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="notification-list" id="notificationList">
+            <div class="empty-state">
+              <i class="fas fa-bell-slash"></i>
+              <p>No tienes notificaciones</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Privacy Control Dropdown -->
+      <div class="navbar-item dropdown-wrapper" id="privacyDropdown">
+        <button class="navbar-icon-btn"
+                id="privacyBtn"
+                aria-label="Control de privacidad"
+                aria-haspopup="true"
+                aria-expanded="false"
+                data-dropdown="privacy"
+                title="Tu perfil es {{ user.profile.privacy_level }}">
+          <i class="fas fa-{% if user.profile.privacy_level == 'public' %}globe{% elif user.profile.privacy_level == 'friends' %}users{% else %}lock{% endif %} nav-icon"></i>
+        </button>
+
+        <div class="dropdown-menu privacy-menu"
+             id="privacyMenu"
+             role="menu"
+             style="display:none;">
+          <div class="dropdown-header">
+            <h4>Tu Privacidad</h4>
+          </div>
+
+          <div class="privacy-options">
+            <label class="privacy-option">
+              <input type="radio"
+                     name="privacy_level"
+                     value="public"
+                     {% if user.profile.privacy_level == 'public' %}checked{% endif %}
+                     onchange="updatePrivacy(this)">
+              <span class="privacy-label">
+                <i class="fas fa-globe"></i>
+                <strong>Público</strong>
+                <small>Visible para todos</small>
+              </span>
+            </label>
+
+            <label class="privacy-option">
+              <input type="radio"
+                     name="privacy_level"
+                     value="friends"
+                     {% if user.profile.privacy_level == 'friends' %}checked{% endif %}
+                     onchange="updatePrivacy(this)">
+              <span class="privacy-label">
+                <i class="fas fa-users"></i>
+                <strong>Solo conexiones</strong>
+                <small>Solo para tus conexiones</small>
+              </span>
+            </label>
+
+            <label class="privacy-option">
+              <input type="radio"
+                     name="privacy_level"
+                     value="private"
+                     {% if user.profile.privacy_level == 'private' %}checked{% endif %}
+                     onchange="updatePrivacy(this)">
+              <span class="privacy-label">
+                <i class="fas fa-lock"></i>
+                <strong>Privado</strong>
+                <small>Oculto del directorio</small>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Menu Dropdown -->
+      <div class="navbar-item dropdown-wrapper" id="userDropdown">
+        <button class="user-profile-btn"
+                id="userMenuBtn"
+                aria-label="Menú de usuario"
+                aria-haspopup="true"
+                aria-expanded="false"
+                data-dropdown="user">
+
+          <div class="avatar-wrapper">
+            {% if user.profile.avatar %}
+              <img src="{{ user.profile.avatar }}"
+                   alt="{{ user.profile.display_name }}"
+                   class="user-avatar"
+                   loading="lazy">
+            {% else %}
+              <div class="avatar-placeholder">
+                {{ user.profile.display_name|first|upper }}
+              </div>
+            {% endif %}
+
+            {% if user.profile.is_online %}
+              <span class="online-indicator" title="En línea"></span>
+            {% endif %}
+          </div>
+
+          <div class="user-info">
+            <span class="user-name">{{ user.profile.display_name }}</span>
+            {% if user.profile.is_verified %}
+              <span class="verified-badge" title="Perfil verificado">
+                <i class="fas fa-check-circle"></i>
+              </span>
+            {% endif %}
+          </div>
+
+          <i class="fas fa-chevron-down chevron"></i>
+        </button>
+
+        <div class="dropdown-menu user-menu"
+             id="userMenu"
+             role="menu"
+             style="display:none;">
+
+          <div class="user-menu-header">
+            {% if user.profile.avatar %}
+              <img src="{{ user.profile.avatar }}"
+                   alt="{{ user.profile.display_name }}"
+                   class="menu-avatar"
+                   loading="lazy">
+            {% else %}
+              <div class="avatar-placeholder-small">
+                {{ user.profile.display_name|first|upper }}
+              </div>
+            {% endif %}
+            <div class="user-quick-info">
+              <h5>{{ user.profile.display_name }}, {{ user.profile.age }}</h5>
+              <p>{{ user.profile.city }}, {{ user.profile.state }}</p>
+              {% if user.is_premium %}
+                <span class="premium-badge">
+                  <i class="fas fa-crown"></i> Premium
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <hr class="dropdown-divider">
+
+          <a href="{% url 'profile' %}" class="dropdown-item" role="menuitem">
+            <i class="fas fa-user"></i> <span>Mi Perfil</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+
+          <a href="{% url 'edit_profile' %}" class="dropdown-item" role="menuitem">
+            <i class="fas fa-edit"></i> <span>Editar Perfil</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+
+          <a href="{% url 'gallery' %}" class="dropdown-item" role="menuitem">
+            <i class="fas fa-images"></i> <span>Mi Galería</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+
+          <a href="{% url 'memberships' %}" class="dropdown-item" role="menuitem">
+            <i class="fas fa-crown"></i> <span>Planes Premium</span>
+            {% if not user.is_premium %}
+              <span class="new-badge">NEW</span>
+            {% endif %}
+            <i class="fas fa-arrow-right"></i>
+          </a>
+
+          <hr class="dropdown-divider">
+
+          <a href="{% url 'settings' %}" class="dropdown-item" role="menuitem">
+            <i class="fas fa-cog"></i> <span>Configuración</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+
+          <a href="{% url 'security' %}" class="dropdown-item" role="menuitem">
+            <i class="fas fa-shield-alt"></i> <span>Seguridad</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+
+          <a href="{% url 'support' %}" class="dropdown-item" role="menuitem">
+            <i class="fas fa-question-circle"></i> <span>Ayuda & Soporte</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+
+          <hr class="dropdown-divider">
+
+          <form method="POST" action="{% url 'logout' %}" class="logout-form">
+            {% csrf_token %}
+            <button type="submit" class="dropdown-item logout-item" role="menuitem"
+                    onclick="return confirm('¿Estás seguro de cerrar sesión?')">
+              <i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Theme Toggle -->
+      <button class="navbar-icon-btn"
+              id="themeToggle"
+              aria-label="Cambiar tema"
+              title="Cambiar tema">
+        <i class="fas fa-moon theme-icon"></i>
+      </button>
+
+    </div>
+    <!-- END-EDIT-ZONE: Navbar -->
+
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- EDIT-ZONE: Footer -->
+  {% include "includes/footer.html" %}
+  <!-- END-EDIT-ZONE -->
+
+  <!-- EDIT-ZONE: Scripts -->
+  <!-- jQuery (opcional, pero útil) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- Main JS -->
+  <script src="{% static 'js/main.js' %}"></script>
+
+  <!-- Navbar JS -->
+  <script src="{% static 'js/navbar.js' %}"></script>
+
+  <!-- Block adicional para scripts de página -->
+  {% block extra_js %}{% endblock %}
+  <!-- END-EDIT-ZONE -->
+
+  <!-- EDIT-ZONE: Inline Scripts -->
+  <script>
+    /*
+      SECCIÓN: Funciones Globales del Navbar
+      DESCRIPCIÓN: Funciones reutilizables de navbar
+    */
+
+    // Cerrar dropdown
+    function closeDropdown(type) {
+      const menu = document.getElementById(type + 'Menu');
+      if (menu) menu.style.display = 'none';
+    }
+
+    // Actualizar privacidad
+    async function updatePrivacy(radioButton) {
+      try {
+        const response = await fetch('{% url "api_update_privacy" %}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({
+            privacy_level: radioButton.value
+          })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          console.log('Privacidad actualizada');
+          // Actualizar ícono
+          const icon = document.getElementById('privacyBtn').querySelector('i');
+          icon.className = 'fas fa-' + (
+            radioButton.value === 'public' ? 'globe' :
+            radioButton.value === 'friends' ? 'users' : 'lock'
+          ) + ' nav-icon';
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    // Obtener cookie CSRF
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  </script>
+  <!-- END-EDIT-ZONE -->
+
 </body>
 
 </html>
