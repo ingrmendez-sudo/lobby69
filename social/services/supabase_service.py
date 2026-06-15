@@ -1,113 +1,162 @@
-from supabase import create_client, Client
-from django.conf import settings
+"""
+FILE: social/services/supabase_service.py
+VERSION: 1.0.0
+DESCRIPCIÓN: Servicio centralizado para operaciones con Supabase
+LAST UPDATED: 2026-06-15
 
+FUNCIONALIDADES:
+- Lectura de perfiles
+- Actualización de perfiles
+- Caché de perfiles
+- Manejo de errores
+"""
+
+import os
+import logging
+from supabase import create_client, Client
+from django.core.cache import cache
+from typing import Optional, Dict, Any
+
+logger = logging.getLogger(__name__)
 
 class SupabaseService:
-    _instance = None
+    """Servicio centralizado para Supabase"""
 
-    def __new__(cls):
-        if cls._instance is None:
-            cls._instance = super(SupabaseService, cls).__new__(cls)
-            cls._instance.client = create_client(
-                settings.SUPABASE_URL,
-                settings.SUPABASE_KEY
-            )
-        return cls._instance
+    def __init__(self):
+        self.url = os.environ.get('SUPABASE_URL')
+        self.key = os.environ.get('SUPABASE_KEY')
+        self.client: Client = create_client(self.url, self.key)
 
-    def get_client(self) -> Client:
-        return self.client
+    def get_profile(self, user_id: int, use_cache: bool = True) -> Optional[Dict]:
+        """
+        Obtener perfil de usuario con caché opcional
 
-    def get_profile(self, profile_id: str):
-        """Obtener perfil por ID"""
+        Args:
+            user_id: ID del usuario
+            use_cache: Usar caché (por defecto True)
+
+        Returns:
+            Dict con datos del perfil o None
+        """
+        cache_key = f"profile:{user_id}"
+
+        # Intentar obtener del caché
+        if use_cache:
+            cached_profile = cache.get(cache_key)
+            if cached_profile:
+                logger.debug(f"Perfil {user_id} obtenido del caché")
+                return cached_profile
+
         try:
-            response = self.client.table('profiles').select('*').eq('id', profile_id).execute()
-            if response.data and len(response.data) > 0:
-                return response.data[0]
-            return None
+            response = self.client.table('profiles')\
+                .select('*')\
+                .eq('user_id', user_id)\
+                .single()\
+                .execute()
+
+            profile = response.data
+
+            # Guardar en caché por 1 hora
+            cache.set(cache_key, profile, 3600)
+            logger.info(f"Perfil {user_id} obtenido de Supabase")
+
+            return profile
+
         except Exception as e:
-            print(f"Error obteniendo perfil: {e}")
+            logger.error(f"Error obteniendo perfil {user_id}: {str(e)}")
             return None
 
-    def get_profile_by_account(self, account_id: str):
-        """Obtener perfil por account_id (UUID del usuario)"""
+    def update_profile(self, user_id: int, data: Dict) -> bool:
+        """
+        Actualizar perfil de usuario
+
+        Args:
+            user_id: ID del usuario
+            data: Datos a actualizar
+
+        Returns:
+            True si se actualizó exitosamente
+        """
         try:
-            print(f"[DEBUG] Buscando perfil para account_id: {account_id}")
-            response = self.client.table('profiles').select('*').eq('account_id', account_id).execute()
+            # Validar datos antes de actualizar
+            validated_data = self._validate_profile_data(data)
 
-            if response.data and len(response.data) > 0:
-                print(f"[DEBUG] Perfil encontrado: {response.data[0]}")
-                return response.data[0]
+            response = self.client.table('profiles')\
+                .update(validated_data)\
+                .eq('user_id', user_id)\
+                .execute()
 
-            print(f"[DEBUG] No se encontró perfil para account_id: {account_id}")
-            return None
+            # Limpiar caché
+            cache.delete(f"profile:{user_id}")
+
+            logger.info(f"Perfil {user_id} actualizado exitosamente")
+            return True
+
         except Exception as e:
-            print(f"Error obteniendo perfil por account: {e}")
-            import traceback
-            traceback.print_exc()
-            return None
+            logger.error(f"Error actualizando perfil {user_id}: {str(e)}")
+            return False
 
-    def create_profile(self, data: dict):
-        """Crear un nuevo perfil"""
+    def _validate_profile_data(self, data: Dict) -> Dict:
+        """Validar y sanitizar datos del perfil"""
+        allowed_fields = {
+            'display_name', 'bio', 'age', 'gender',
+            'city', 'state', 'country',
+            'interests', 'looking_for', 'privacy_level'
+        }
+
+        # Filtrar solo campos permitidos
+        validated = {k: v for k, v in data.items() if k in allowed_fields}
+
+        # Validaciones específicas
+        if 'age' in validated:
+            age = int(validated['age'])
+            if age < 18 or age > 120:
+                raise ValueError("Edad inválida")
+            validated['age'] = age
+
+        if 'display_name' in validated:
+            name = validated['display_name'].strip()
+            if len(name) < 2 or len(name) > 100:
+                raise ValueError("Nombre inválido")
+            validated['display_name'] = name
+
+        if 'privacy_level' in validated:
+            if validated['privacy_level'] not in ['public', 'friends', 'private']:
+                raise ValueError("Nivel de privacidad inválido")
+
+        return validated
+
+    def get_notifications(self, user_id: int, limit: int = 10) -> list:
+        """Obtener notificaciones recientes"""
         try:
-            print(f"[DEBUG] Creando perfil con datos: {data}")
-            resp = self.client.table('profiles').insert(data).execute()
-            print(f"[DEBUG] Response de Supabase: {resp}")
-            if resp.data:
-                print(f"[DEBUG] Perfil creado exitosamente: {resp.data}")
-                return resp.data[0] if isinstance(resp.data, list) else resp.data
-            print("[DEBUG] Error: respuesta vacía al crear perfil")
-            return None
-        except Exception as e:
-            print(f"[ERROR] Error creando perfil: {e}")
-            import traceback
-            traceback.print_exc()
-            return None
+            response = self.client.table('notifications')\
+                .select('*')\
+                .eq('user_id', user_id)\
+                .order('created_at', desc=True)\
+                .limit(limit)\
+                .execute()
 
-    def update_profile(self, account_id: str, data: dict):
-        """Actualizar perfil existente por account_id"""
-        try:
-            print(f"[DEBUG] Actualizando perfil para account_id: {account_id}")
-            print(f"[DEBUG] Datos a actualizar: {data}")
-            data_to_update = {k: v for k, v in data.items() if k != 'account_id'}
-            resp = self.client.table('profiles').update(data_to_update).eq('account_id', account_id).execute()
-            print(f"[DEBUG] Response de Supabase: {resp}")
-            if resp.data:
-                print(f"[DEBUG] Perfil actualizado exitosamente: {resp.data}")
-                return resp.data[0] if isinstance(resp.data, list) else resp.data
-            print("[DEBUG] Error: respuesta vacía al actualizar perfil")
-            return None
-        except Exception as e:
-            print(f"[ERROR] Error actualizando perfil: {e}")
-            import traceback
-            traceback.print_exc()
-            return None
+            return response.data
 
-    def get_profile_persons(self, profile_id: str):
-        """Obtener personas relacionadas al perfil"""
-        try:
-            response = self.client.table('profile_persons').select('*').eq('profile_id', profile_id).execute()
-            return response.data if response.data else []
         except Exception as e:
-            print(f"Error obteniendo personas del perfil: {e}")
+            logger.error(f"Error obteniendo notificaciones: {str(e)}")
             return []
 
-    def get_media_items(self, profile_id: str, limit: int = 20):
-        """Obtener items de galería"""
+    def search_profiles(self, query: str, limit: int = 20) -> list:
+        """Buscar perfiles por nombre o ciudad"""
         try:
-            response = self.client.table('media_items').select('*').eq('profile_id', profile_id).limit(limit).execute()
-            return response.data if response.data else []
-        except Exception as e:
-            print(f"Error obteniendo galería: {e}")
-            return []
+            response = self.client.table('profiles')\
+                .select('id, display_name, avatar_url, city, age')\
+                .or_(f"display_name.ilike.%{query}%,city.ilike.%{query}%")\
+                .limit(limit)\
+                .execute()
 
-    def get_profile_interests(self, profile_id: str):
-        """Obtener intereses del perfil"""
-        try:
-            response = self.client.table('profile_interest_types').select('*, interest_types(*)').eq('profile_id', profile_id).execute()
-            return response.data if response.data else []
+            return response.data
+
         except Exception as e:
-            print(f"Error obteniendo intereses: {e}")
+            logger.error(f"Error buscando perfiles: {str(e)}")
             return []
 
 
+# Instancia global
 supabase_service = SupabaseService()

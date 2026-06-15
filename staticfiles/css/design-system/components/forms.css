@@ -1,0 +1,36 @@
+﻿.input-text, input[type="text"], input[type="email"], input[type="password"], textarea, select {
+  width: 100%;
+  padding: 12px 16px;
+  font-size: var(--font-size-body);
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: white;
+  border: 2px solid #e0e0e0;
+  border-radius: var(--radius-small);
+  transition: var(--transition-default);
+}
+
+.input-text:focus, input:focus, textarea:focus, select:focus {
+  outline: none;
+  border-color: var(--primary-burgundy);
+  box-shadow: 0 0 0 3px rgba(139, 46, 61, 0.1);
+}
+
+.input-text.error, input.error { border-color: #e74c3c; }
+.input-text:disabled, input:disabled { background: var(--background-tertiary); opacity: 0.6; }
+
+textarea { resize: vertical; min-height: 120px; }
+
+.form-group { margin-bottom: var(--spacing-l); }
+.form-group label { display: block; margin-bottom: var(--spacing-s); font-weight: var(--font-weight-semibold); }
+
+.checkbox, .radio {
+  cursor: pointer;
+  transition: var(--transition-default);
+}
+
+.checkbox { width: 20px; height: 20px; border: 2px solid #e0e0e0; border-radius: 4px; }
+.checkbox:checked { background: var(--primary-burgundy); border-color: var(--primary-burgundy); }
+
+.radio { width: 20px; height: 20px; border: 2px solid #e0e0e0; border-radius: 50%; }
+.radio:checked { border-color: var(--primary-burgundy); background: radial-gradient(circle, var(--primary-burgundy) 40%, transparent 40%); }

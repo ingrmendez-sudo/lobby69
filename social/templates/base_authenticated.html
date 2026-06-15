@@ -1,787 +1,490 @@
-﻿{% load static %}
-{% load i18n %}
+﻿<!--
+  FILE: social/templates/base_authenticated.html
+  VERSION: 2.1.0 - Navbar Enhancement
+  DESCRIPCIÓN: Template base para usuarios autenticados con navbar mejorado
+  LAST UPDATED: 2026-06-15
 
+  ESTRUCTURA:
+  - Navbar premium con funcionalidad completa
+  - Meta tags
+  - CSS variables del design system
+  - Scripts necesarios
+  - Footer incluido
+
+  ETIQUETAS:
+  <!-- EDIT-ZONE: [Nombre de sección] -->
+  <!-- END-EDIT-ZONE -->
+-->
+
+{% load static %}
 <!DOCTYPE html>
-<html lang="es">
+<html lang="es" data-theme="light">
+
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{% static 'css/reset.css' %}">
-<link rel="stylesheet" href="{% static 'css/design-system.css' %}">
-    <link rel="stylesheet" href="{% static 'css/dashboard-redesign.css' %}">
-    <title>{% block page_title %}LOBBY69{% endblock page_title %}</title>
-    {% csrf_token %}
-    <!-- CSS GLOBAL Y RESPONSIVE -->
-    <link rel="stylesheet" href="{% static 'css/main.css' %}">
-    <link rel="stylesheet" href="{% static 'css/responsive-layout.css' %}">
+  <!-- EDIT-ZONE: Meta Tags y SEO -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="LOBBY69 - Plataforma premium de conexiones para la comunidad swinger mexicana">
+  <meta name="theme-color" content="#8b2e3d">
+  <meta name="color-scheme" content="light dark">
 
-    <!-- CSS POR PÁGINA -->
-    <link rel="stylesheet" href="{% static 'css/dashboard.css' %}">
-    <link rel="stylesheet" href="{% static 'css/explore.css' %}">
-    <link rel="stylesheet" href="{% static 'css/conversations.css' %}">
-    <link rel="stylesheet" href="{% static 'css/my_profile.css' %}">
-    <link rel="stylesheet" href="{% static 'css/gallery.css' %}">
-    <link rel="stylesheet" href="{% static 'css/memberships.css' %}">
-    <link rel="stylesheet" href="{% static 'css/notifications.css' %}">
-    <link rel="stylesheet" href="{% static 'css/friend_requests.css' %}">
-    <link rel="stylesheet" href="{% static 'css/settings.css' %}">
-    <link rel="stylesheet" href="{% static 'css/user_profile.css' %}">
+  <!-- Favicon -->
+  <link rel="icon" type="image/svg+xml" href="{% static 'images/favicon.svg' %}">
+  <link rel="apple-touch-icon" href="{% static 'images/apple-touch-icon.png' %}">
 
-    <script>
-    // ===== FUNCIONES GLOBALES - CARGADAS PRIMERO =====
-    function getCsrfToken() {
-        return document.querySelector('[name=csrfmiddlewaretoken]')?.value ||
-               document.cookie.split('; ').find(row => row.startsWith('csrftoken='))?.split('=')[1];
-    }
+  <title>{% block title %}LOBBY69 - Conexiones Premium{% endblock %}</title>
+  <!-- END-EDIT-ZONE -->
 
-    function toggleLike(photoId) {
-        console.log('👍 Click en like para foto:', photoId);
-        fetch(`/galeria/like/${photoId}/`, {
-            method: 'POST',
-            headers: { 'X-CSRFToken': getCsrfToken() }
-        })
-        .then(r => r.json())
-        .then(data => {
-            console.log('📊 Respuesta like:', data);
-            if (data.success) {
-                const counter = document.querySelector(`.likes-count[data-photo-id="${photoId}"]`);
-                if (counter) {
-                    counter.textContent = data.likes_count;
-                    console.log('✅ Likes actualizado a:', data.likes_count);
-                }
-            }
-        })
-        .catch(e => console.error('❌ Error en like:', e));
-    }
+  <!-- EDIT-ZONE: CSS Global -->
+  <!-- Design System Variables -->
+  <link rel="stylesheet" href="{% static 'css/variables.css' %}">
 
-    function toggleEnchantment(photoId) {
-        console.log('❤️ Click en me encanta para foto:', photoId);
-        fetch(`/galeria/encantar/${photoId}/`, {  // ← CAMBIO: enchant → encantar
-            method: 'POST',
-            headers: { 'X-CSRFToken': getCsrfToken() }
-        })
-        .then(r => r.json())
-        .then(data => {
-            console.log('📊 Respuesta enchantment:', data);
-            if (data.success) {
-                const counter = document.querySelector(`.enchantment-count[data-photo-id="${photoId}"]`);
-                if (counter) {
-                    counter.textContent = data.enchantment_count;
-                    console.log('✅ Me encanta actualizado a:', data.enchantment_count);
-                }
-            }
-        })
-        .catch(e => console.error('❌ Error en enchantment:', e));
-    }
+  <!-- Base Styles -->
+  <link rel="stylesheet" href="{% static 'css/reset.css' %}">
 
-    function openPhotoModal(photoId, event) {
-        if (event) event.preventDefault();
-        photoId = String(photoId).trim();
-        if (!photoId || photoId === 'undefined') {
-            console.error('❌ photoId inválido:', photoId);
-            return;
-        }
-        console.log('📸 Abriendo modal para foto:', photoId);
-        window.currentPhotoId = photoId;
+  <!-- Design System Components -->
+  <link rel="stylesheet" href="{% static 'css/design-system/components/navbar.css' %}">
+  <link rel="stylesheet" href="{% static 'css/design-system/components/buttons.css' %}">
+  <link rel="stylesheet" href="{% static 'css/design-system/components/cards.css' %}">
+  <link rel="stylesheet" href="{% static 'css/design-system/components/forms.css' %}">
+  <link rel="stylesheet" href="{% static 'css/design-system/components/badges.css' %}">
+  <link rel="stylesheet" href="{% static 'css/design-system/components/avatars.css' %}">
 
-        const modal = document.getElementById('photoModal');
-        const modalImg = document.getElementById('modalImage');
+  <!-- Layout Styles -->
+  <link rel="stylesheet" href="{% static 'css/design-system/layouts/feed-layout.css' %}">
 
-        const postImg = document.querySelector(`img[data-id="${photoId}"]`);
-        if (postImg) {
-            modalImg.src = postImg.src;
-            const caption = postImg.dataset.caption || 'Sin título';
-            document.getElementById('modalCaption').textContent = caption;
-            console.log('✅ Imagen cargada');
-        }
+  <!-- Font Awesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 
-        if (modal) {
-            modal.classList.add('active');
-            document.body.style.overflow = 'hidden';
-            if (typeof loadComments === 'function') {
-                loadComments(photoId);
-            }
-        }
-    }
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Montserrat:wght@600;700&display=swap" rel="stylesheet">
 
-    function closePhotoModal() {
-        const modal = document.getElementById('photoModal');
-        if (modal) {
-            modal.classList.remove('active');
-            document.body.style.overflow = 'auto';
-        }
-        const textarea = document.getElementById('commentText');
-        if (textarea) textarea.value = '';
-        const count = document.getElementById('charCount');
-        if (count) count.textContent = '0/500';
-    }
-    function submitComment() {
-        console.log('📝 submitComment llamada. currentPhotoId:', window.currentPhotoId);
+  <!-- Block adicional para estilos de página -->
+  {% block extra_css %}{% endblock %}
+  <!-- END-EDIT-ZONE -->
 
-        const textarea = document.getElementById('commentText');
-        const txt = textarea.value.trim();
+  <!-- EDIT-ZONE: Tema Oscuro/Claro Script (Early load) -->
+  <script>
+    // Prevenir FOUC (Flash of Unstyled Content)
+    (function() {
+      const theme = localStorage.getItem('theme') || 'light';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
+  <!-- END-EDIT-ZONE -->
 
-        if (txt.length < 2) {
-            alert('El comentario debe tener al menos 2 caracteres');
-            return;
-        }
-        if (!window.currentPhotoId) {
-            alert('❌ Error: No hay foto seleccionada');
-            console.error('currentPhotoId es null');
-            return;
-        }
-
-        const token = getCsrfToken();
-        if (!token) {
-            alert('Error: Token CSRF no encontrado');
-            return;
-        }
-
-        console.log('📤 Enviando comentario para foto:', window.currentPhotoId);
-        console.log('📤 Texto:', txt);
-
-        fetch(`/galeria/comentar/${window.currentPhotoId}/`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRFToken': token
-            },
-            body: JSON.stringify({ comment_text: txt })
-        })
-        .then(r => {
-            console.log('📊 Respuesta status:', r.status);
-            if (!r.ok) {
-                return r.json().then(d => {
-                    throw new Error(d.error || `HTTP ${r.status}`);
-                });
-            }
-            return r.json();
-        })
-        .then(d => {
-            console.log('✅ Respuesta del servidor:', d);
-            if (d.success) {
-                textarea.value = '';
-                document.getElementById('charCount').textContent = '0/500';
-
-                // Actualizar contador en la página
-                const counter = document.querySelector(`.comments-count[data-photo-id="${window.currentPhotoId}"]`);
-                if (counter) {
-                    let count = parseInt(counter.textContent) || 0;
-                    counter.textContent = count + 1;
-                    console.log('📊 Contador actualizado a:', count + 1);
-                }
-
-                if (typeof loadComments === 'function') {
-                    loadComments(window.currentPhotoId);
-                }
-                alert('✅ Comentario publicado');
-            }
-        })
-        .catch(e => {
-            console.error('❌ Error:', e);
-            alert('❌ Error: ' + e.message);
-        });
-    }
-
-    function toggleTheme() {
-        const body = document.body;
-        const icon = document.getElementById('theme-icon');
-        body.classList.toggle('dark-mode');
-        if (body.classList.contains('dark-mode')) {
-            localStorage.setItem('theme', 'dark');
-            icon.textContent = '☀️';
-        } else {
-            localStorage.setItem('theme', 'light');
-            icon.textContent = '🌙';
-        }
-    }
-
-    function viewProfile(userId) {
-        window.location.href = `/usuario/${userId}/`;
-    }
-
-    window.addEventListener('DOMContentLoaded', function() {
-        const theme = localStorage.getItem('theme') || 'light';
-        const icon = document.getElementById('theme-icon');
-        if (theme === 'dark') {
-            document.body.classList.add('dark-mode');
-            icon.textContent = '☀️';
-        } else {
-            icon.textContent = '🌙';
-        }
-    });
-    </script>
-        <link rel="stylesheet" href="{% static 'css/navbar-premium.css' %}">`n`</head>
+</head>
 
 <body>
-    {% include 'includes/navbar-premium.html' %}
 
-<!-- NAVBAR MINIMALISTA - ICON-BASED -->
-
-
-<!-- NAVBAR PROFESIONAL REDESIGNADO -->
-
-
-<style>
-    /* ===== NAVBAR PROFESIONAL ===== */
-    .navbar-pro {
-        background: linear-gradient(135deg, #1a2352 0%, #2a3a6a 100%);
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-        border-bottom: 3px solid #d4a373;
-        padding: 0;
-        position: sticky;
-        top: 0;
-        z-index: 9999;
-    }
-
-    .navbar-pro-container {
-        max-width: 1400px;
-        margin: 0 auto;
-        padding: 1rem 2rem;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 2rem;
-    }
-
-    /* LOGO */
-    .navbar-pro-logo a {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        color: #d4a373;
-        text-decoration: none;
-        font-weight: 800;
-        font-size: 1.5rem;
-        letter-spacing: 1px;
-        transition: all 0.3s ease;
-    }
-
-    .navbar-pro-logo img {
-        height: 50px;
-        width: auto;
-    }
-
-    .navbar-pro-logo a:hover {
-        color: #fff;
-        transform: scale(1.05);
-    }
-
-    /* MENU */
-    .navbar-pro-menu {
-        display: flex;
-        gap: 0.5rem;
-        flex: 1;
-        margin-left: 2rem;
-    }
-
-    .navbar-pro-link {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        color: #fff !important;
-        text-decoration: none !important;
-        padding: 0.75rem 1.25rem;
-        font-weight: 600;
-        font-size: 1rem;
-        border-radius: 0.5rem;
-        transition: all 0.3s ease !important;
-    }
-
-    .navbar-pro-link:hover {
-        background-color: rgba(212, 163, 115, 0.25) !important;
-        color: #d4a373 !important;
-    }
-
-    .navbar-pro-link i {
-        font-size: 1.1rem;
-    }
-
-    /* LADO DERECHO */
-    .navbar-pro-right {
-        display: flex;
-        align-items: center;
-        gap: 1.5rem;
-    }
-
-    /* ICONOS */
-    .navbar-pro-icon {
-        color: #fff;
-        font-size: 1.3rem;
-        text-decoration: none;
-        transition: all 0.3s ease;
-        position: relative;
-        cursor: pointer;
-    }
-
-    .navbar-pro-icon:hover {
-        color: #d4a373;
-        transform: scale(1.15);
-    }
-
-    .navbar-pro-badge {
-        position: absolute;
-        top: -8px;
-        right: -8px;
-        background: #d6293e;
-        color: white;
-        border-radius: 50%;
-        width: 22px;
-        height: 22px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.7rem;
-        font-weight: 800;
-    }
-
-    /* USUARIO */
-    .navbar-pro-user {
-        position: relative;
-    }
-
-    .navbar-pro-avatar {
-        width: 50px;
-        height: 50px;
-        border-radius: 50%;
-        border: 2px solid #d4a373;
-        cursor: pointer;
-        transition: all 0.3s ease;
-    }
-
-    .navbar-pro-avatar:hover {
-        box-shadow: 0 0 0 4px rgba(212, 163, 115, 0.3);
-    }
-
-    .navbar-pro-dropdown {
-        position: absolute;
-        top: 100%;
-        right: 0;
-        background: white;
-        border-radius: 0.75rem;
-        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-        padding: 0.75rem 0;
-        min-width: 220px;
-        opacity: 0;
-        visibility: hidden;
-        transform: translateY(-10px);
-        transition: all 0.3s ease;
-        margin-top: 0.75rem;
-        z-index: 10000;
-    }
-
-    .navbar-pro-user:hover .navbar-pro-dropdown {
-        opacity: 1;
-        visibility: visible;
-        transform: translateY(0);
-    }
-
-    .navbar-pro-dropdown a {
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-        color: #1a2352;
-        text-decoration: none;
-        padding: 0.85rem 1.5rem;
-        font-weight: 600;
-        transition: all 0.3s ease;
-    }
-
-    .navbar-pro-dropdown a:hover {
-        background-color: #f0f0f0;
-        color: #8b2e3d;
-        padding-left: 1.75rem;
-    }
-
-    .navbar-pro-dropdown hr {
-        margin: 0.5rem 0;
-        border: none;
-        border-top: 1px solid #eee;
-    }
-
-    /* RESPONSIVE */
-    @media (max-width: 1024px) {
-        .navbar-pro-container {
-            padding: 0.75rem 1.5rem;
-            gap: 1rem;
-        }
-
-        .navbar-pro-menu {
-            margin-left: 1rem;
-        }
-
-        .navbar-pro-link {
-            padding: 0.6rem 0.9rem;
-            font-size: 0.9rem;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .navbar-pro-container {
-            padding: 0.75rem 1rem;
-            flex-wrap: wrap;
-        }
-
-        .navbar-pro-menu {
-            flex-basis: 100%;
-            order: 3;
-            margin-left: 0;
-        }
-
-        .navbar-pro-link {
-            flex: 1;
-            justify-content: center;
-            padding: 0.5rem;
-        }
-
-        .navbar-pro-link span {
-            display: none;
-        }
-
-        .navbar-pro-link i {
-            font-size: 1.3rem;
-        }
-    }
-
-    @media (max-width: 576px) {
-        .navbar-pro-logo span {
-            display: none;
-        }
-
-        .navbar-pro-logo img {
-            height: 40px;
-        }
-
-        .navbar-pro-right {
-            gap: 0.75rem;
-        }
-
-        .navbar-pro-icon {
-            font-size: 1.1rem;
-        }
-
-        .navbar-pro-dropdown {
-            min-width: 180px;
-        }
-    }
-</style>
-
-
-   <!-- NAVBAR -->
-
-
-        <style>
-            /* NAVBAR REDESIGNADO */
-            .navbar-redesigned {
-                background: linear-gradient(135deg, #1a2352 0%, #2a3a6a 100%);
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
-                border-bottom: 3px solid #d4a373;
-                padding: 0;
-                position: sticky;
-                top: 0;
-                z-index: 1000;
-            }
-
-            .navbar-container {
-                max-width: 1400px;
-                margin: 0 auto;
-                padding: 0.75rem 2rem;
-                display: flex;
-                align-items: center;
-                justify-content: space-between;
-                gap: 2rem;
-            }
-
-            /* LOGO */
-            .navbar-logo a {
-                display: flex;
-                align-items: center;
-                gap: 0.75rem;
-                text-decoration: none;
-                color: #d4a373;
-                font-weight: 700;
-                font-size: 1.4rem;
-                transition: all 0.3s ease;
-            }
-
-            .navbar-logo img {
-                height: 45px;
-                width: auto;
-            }
-
-            .navbar-logo a:hover {
-                color: #fff;
-                transform: scale(1.05);
-            }
-
-            /* MENU PRINCIPAL */
-            .navbar-menu {
-                display: flex;
-                list-style: none;
-                padding: 0;
-                margin: 0;
-                gap: 0;
-                flex: 1;
-            }
-
-            .navbar-menu li {
-                margin: 0;
-            }
-
-            .navbar-menu a {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                color: #fff;
-                text-decoration: none;
-                padding: 0.75rem 1rem;
-                transition: all 0.3s ease;
-                border-radius: 0.5rem;
-                font-weight: 500;
-                font-size: 0.95rem;
-            }
-
-            .navbar-menu a:hover {
-                background-color: rgba(212, 163, 115, 0.2);
-                color: #d4a373;
-            }
-
-            .navbar-menu a.active {
-                background-color: #d4a373;
-                color: #1a2352;
-            }
-
-            /* LADO DERECHO */
-            .navbar-right {
-                display: flex;
-                align-items: center;
-                gap: 1.5rem;
-            }
-
-            /* ICONOS */
-            .navbar-icons {
-                display: flex;
-                gap: 1rem;
-                align-items: center;
-            }
-
-            .navbar-icons a {
-                color: #fff;
-                font-size: 1.2rem;
-                transition: all 0.3s ease;
-                position: relative;
-                text-decoration: none;
-            }
-
-            .navbar-icons a:hover {
-                color: #d4a373;
-                transform: scale(1.1);
-            }
-
-            .notification-badge {
-                position: absolute;
-                top: -8px;
-                right: -8px;
-                background: #d6293e;
-                color: white;
-                border-radius: 50%;
-                width: 20px;
-                height: 20px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                font-size: 0.75rem;
-                font-weight: 700;
-            }
-
-            /* USUARIO */
-            .navbar-user {
-                display: flex;
-                align-items: center;
-                gap: 1rem;
-                position: relative;
-            }
-
-            .user-avatar {
-                cursor: pointer;
-                width: 45px;
-                height: 45px;
-                border-radius: 50%;
-                overflow: hidden;
-                border: 2px solid #d4a373;
-                transition: all 0.3s ease;
-            }
-
-            .user-avatar img {
-                width: 100%;
-                height: 100%;
-                object-fit: cover;
-            }
-
-            .user-avatar:hover {
-                box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.3);
-            }
-
-            .user-dropdown {
-                position: absolute;
-                top: 100%;
-                right: 0;
-                background: white;
-                border-radius: 0.75rem;
-                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
-                padding: 0.75rem 0;
-                min-width: 200px;
-                opacity: 0;
-                visibility: hidden;
-                transform: translateY(-10px);
-                transition: all 0.3s ease;
-                margin-top: 0.5rem;
-            }
-
-            .navbar-user:hover .user-dropdown {
-                opacity: 1;
-                visibility: visible;
-                transform: translateY(0);
-            }
-
-            .user-dropdown a {
-                display: flex;
-                align-items: center;
-                gap: 0.75rem;
-                color: #1a2352;
-                text-decoration: none;
-                padding: 0.75rem 1.25rem;
-                transition: all 0.3s ease;
-                font-weight: 500;
-            }
-
-            .user-dropdown a:hover {
-                background-color: rgba(212, 163, 115, 0.1);
-                color: #8b2e3d;
-                padding-left: 1.5rem;
-            }
-
-            .user-dropdown hr {
-                margin: 0.5rem 0;
-                border: none;
-                border-top: 1px solid #eee;
-            }
-
-            /* RESPONSIVE */
-            @media (max-width: 1024px) {
-                .navbar-container {
-                    padding: 0.75rem 1rem;
-                    gap: 1rem;
-                }
-
-                .navbar-menu a {
-                    padding: 0.5rem 0.75rem;
-                    font-size: 0.85rem;
-                }
-
-                .navbar-icons {
-                    gap: 0.75rem;
-                }
-            }
-
-            @media (max-width: 768px) {
-                .navbar-container {
-                    padding: 0.5rem 1rem;
-                    flex-wrap: wrap;
-                }
-
-                .navbar-menu {
-                    flex-basis: 100%;
-                    order: 3;
-                    gap: 0.25rem;
-                }
-
-                .navbar-menu a {
-                    padding: 0.4rem 0.5rem;
-                    font-size: 0.8rem;
-                }
-
-                .navbar-right {
-                    gap: 1rem;
-                }
-
-                .navbar-icons a {
-                    font-size: 1rem;
-                }
-            }
-
-            @media (max-width: 576px) {
-                .navbar-logo span {
-                    display: none;
-                }
-
-                .navbar-logo img {
-                    height: 35px;
-                }
-
-                .navbar-menu a i {
-                    font-size: 1rem;
-                }
-
-                .navbar-menu a span {
-                    display: none;
-                }
-
-                .navbar-icons {
-                    gap: 0.5rem;
-                }
-
-                .user-dropdown {
-                    min-width: 150px;
-                }
-            }
-        </style>
-
-      <!-- MAIN CONTAINER - 3 COLUMNAS -->
-    <div class="container">
-        <div class="left-column">
-            {% block left_sidebar %}{% endblock left_sidebar %}
-        </div>
-        <div class="center-column">
-            {% block main_content %}{% endblock main_content %}
-        </div>
-        <div class="right-column">
-            {% block right_sidebar %}{% endblock right_sidebar %}
-        </div>
+  <!-- EDIT-ZONE: Navbar -->
+  <nav class="navbar-premium" id="mainNav" role="navigation" aria-label="Navegación principal">
+
+    <!-- Logo Section -->
+    <div class="navbar-logo-container">
+      <a href="{% url 'dashboard' %}" class="navbar-logo" title="Ir al inicio">
+        <img src="{% static 'images/logo-lobby69-white.svg' %}"
+             alt="LOBBY69"
+             class="navbar-logo-img"
+             width="40"
+             height="40">
+        <span class="navbar-logo-text">LOBBY69</span>
+      </a>
     </div>
 
-    <!-- SCRIPTS -->
-    <script src="{% static 'js/main.js' %}"></script>
-    <script src="{% static 'js/hamburger.js' %}"></script>
-    <script src="{% static 'js/drawer.js' %}"></script>
-    <script src="{% static 'js/dashboard.js' %}"></script>
-    <script src="{% static 'js/explore.js' %}"></script>
-    <script src="{% static 'js/conversations.js' %}"></script>
-    <script src="{% static 'js/my_profile.js' %}"></script>
-    <script src="{% static 'js/gallery.js' %}"></script>
-    <script src="{% static 'js/memberships.js' %}"></script>
-    <script src="{% static 'js/notifications.js' %}"></script>
-    <script src="{% static 'js/friend_requests.js' %}"></script>
-    <script src="{% static 'js/settings.js' %}"></script>
-    <script src="{% static 'js/user_profile.js' %}"></script>
+    <!-- Main Menu -->
+    <div class="navbar-menu-container">
+      <ul class="navbar-menu" id="navMenu" role="menubar">
 
-    <script src="{% static 'js/common.js' %}"></script>
+        <li class="nav-item" role="none">
+          <a href="{% url 'dashboard' %}"
+             class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
+             data-nav="dashboard"
+             title="Ir a Inicio">
+            <i class="fas fa-home nav-icon"></i>
+            <span class="nav-text">Inicio</span>
+          </a>
+        </li>
 
-    {% block extra_js %}{% endblock extra_js %}
+        <li class="nav-item" role="none">
+          <a href="{% url 'explore' %}"
+             class="nav-link {% if request.resolver_match.url_name == 'explore' %}active{% endif %}"
+             data-nav="explore"
+             title="Explorar perfiles">
+            <i class="fas fa-search nav-icon"></i>
+            <span class="nav-text">Explorar</span>
+          </a>
+        </li>
 
-    <script src="{% static 'js/navbar-premium.js' %}"></script>`n`</body>
+        <li class="nav-item" role="none">
+          <a href="{% url 'connections' %}"
+             class="nav-link {% if request.resolver_match.url_name == 'connections' %}active{% endif %}"
+             data-nav="connections"
+             title="Ver conexiones">
+            <i class="fas fa-handshake nav-icon"></i>
+            <span class="nav-text">Conexiones</span>
+            {% if pending_connections > 0 %}
+              <span class="nav-badge" data-badge="pending">{{ pending_connections }}</span>
+            {% endif %}
+          </a>
+        </li>
+
+        <li class="nav-item" role="none">
+          <a href="{% url 'messages' %}"
+             class="nav-link {% if request.resolver_match.url_name == 'messages' %}active{% endif %}"
+             data-nav="messages"
+             title="Mensajes privados">
+            <i class="fas fa-comments nav-icon"></i>
+            <span class="nav-text">Mensajes</span>
+            {% if unread_messages > 0 %}
+              <span class="nav-badge alert" data-badge="unread">{{ unread_messages }}</span>
+            {% endif %}
+          </a>
+        </li>
+
+        <li class="nav-item" role="none">
+          <a href="{% url 'gallery' %}"
+             class="nav-link {% if request.resolver_match.url_name == 'gallery' %}active{% endif %}"
+             data-nav="gallery"
+             title="Galería privada">
+            <i class="fas fa-images nav-icon"></i>
+            <span class="nav-text">Galería</span>
+          </a>
+        </li>
+
+      </ul>
+    </div>
+
+    <!-- Right Section: Actions -->
+    <div class="navbar-right">
+
+      <!-- Search Bar -->
+      <div class="navbar-search-wrapper">
+        <div class="search-container">
+          <input type="text"
+                 class="search-input"
+                 id="globalSearch"
+                 placeholder="Buscar usuarios..."
+                 aria-label="Búsqueda global de usuarios"
+                 autocomplete="off">
+          <i class="fas fa-search search-icon"></i>
+          <div class="search-results" id="searchResults" style="display:none;"></div>
+        </div>
+      </div>
+
+      <!-- Notifications Dropdown -->
+      <div class="navbar-item dropdown-wrapper" id="notificationDropdown">
+        <button class="navbar-icon-btn"
+                id="notificationBtn"
+                aria-label="Notificaciones"
+                aria-haspopup="true"
+                aria-expanded="false"
+                data-dropdown="notifications">
+          <i class="fas fa-bell nav-icon"></i>
+          {% if total_notifications > 0 %}
+            <span class="dot-badge">{{ total_notifications }}</span>
+          {% endif %}
+        </button>
+
+        <div class="dropdown-menu notification-menu"
+             id="notificationMenu"
+             role="menu"
+             style="display:none;">
+          <div class="dropdown-header">
+            <h4>Notificaciones</h4>
+            <button class="dropdown-close-btn" onclick="closeDropdown('notifications')"
+                    aria-label="Cerrar">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+
+          <div class="notification-list" id="notificationList">
+            <div class="empty-state">
+              <i class="fas fa-bell-slash"></i>
+              <p>No tienes notificaciones</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Privacy Control Dropdown -->
+      <div class="navbar-item dropdown-wrapper" id="privacyDropdown">
+        <button class="navbar-icon-btn"
+                id="privacyBtn"
+                aria-label="Control de privacidad"
+                aria-haspopup="true"
+                aria-expanded="false"
+                data-dropdown="privacy"
+                title="Tu perfil es {{ user.profile.privacy_level }}">
+          <i class="fas fa-{% if user.profile.privacy_level == 'public' %}globe{% elif user.profile.privacy_level == 'friends' %}users{% else %}lock{% endif %} nav-icon"></i>
+        </button>
+
+        <div class="dropdown-menu privacy-menu"
+             id="privacyMenu"
+             role="menu"
+             style="display:none;">
+          <div class="dropdown-header">
+            <h4>Tu Privacidad</h4>
+          </div>
+
+          <div class="privacy-options">
+            <label class="privacy-option">
+              <input type="radio"
+                     name="privacy_level"
+                     value="public"
+                     {% if user.profile.privacy_level == 'public' %}checked{% endif %}
+                     onchange="updatePrivacy(this)">
+              <span class="privacy-label">
+                <i class="fas fa-globe"></i>
+                <strong>Público</strong>
+                <small>Visible para todos</small>
+              </span>
+            </label>
+
+            <label class="privacy-option">
+              <input type="radio"
+                     name="privacy_level"
+                     value="friends"
+                     {% if user.profile.privacy_level == 'friends' %}checked{% endif %}
+                     onchange="updatePrivacy(this)">
+              <span class="privacy-label">
+                <i class="fas fa-users"></i>
+                <strong>Solo conexiones</strong>
+                <small>Solo para tus conexiones</small>
+              </span>
+            </label>
+
+            <label class="privacy-option">
+              <input type="radio"
+                     name="privacy_level"
+                     value="private"
+                     {% if user.profile.privacy_level == 'private' %}checked{% endif %}
+                     onchange="updatePrivacy(this)">
+              <span class="privacy-label">
+                <i class="fas fa-lock"></i>
+                <strong>Privado</strong>
+                <small>Oculto del directorio</small>
+              </span>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- User Menu Dropdown -->
+      <div class="navbar-item dropdown-wrapper" id="userDropdown">
+        <button class="user-profile-btn"
+                id="userMenuBtn"
+                aria-label="Menú de usuario"
+                aria-haspopup="true"
+                aria-expanded="false"
+                data-dropdown="user">
+
+          <div class="avatar-wrapper">
+            {% if user.profile.avatar %}
+              <img src="{{ user.profile.avatar }}"
+                   alt="{{ user.profile.display_name }}"
+                   class="user-avatar"
+                   loading="lazy">
+            {% else %}
+              <div class="avatar-placeholder">
+                {{ user.profile.display_name|first|upper }}
+              </div>
+            {% endif %}
+
+            {% if user.profile.is_online %}
+              <span class="online-indicator" title="En línea"></span>
+            {% endif %}
+          </div>
+
+          <div class="user-info">
+            <span class="user-name">{{ user.profile.display_name }}</span>
+            {% if user.profile.is_verified %}
+              <span class="verified-badge" title="Perfil verificado">
+                <i class="fas fa-check-circle"></i>
+              </span>
+            {% endif %}
+          </div>
+
+          <i class="fas fa-chevron-down chevron"></i>
+        </button>
+
+        <div class="dropdown-menu user-menu"
+             id="userMenu"
+             role="menu"
+             style="display:none;">
+
+          <div class="user-menu-header">
+            {% if user.profile.avatar %}
+              <img src="{{ user.profile.avatar }}"
+                   alt="{{ user.profile.display_name }}"
+                   class="menu-avatar"
+                   loading="lazy">
+            {% else %}
+              <div class="avatar-placeholder-small">
+                {{ user.profile.display_name|first|upper }}
+              </div>
+            {% endif %}
+            <div class="user-quick-info">
+              <h5>{{ user.profile.display_name }}, {{ user.profile.age }}</h5>
+              <p>{{ user.profile.city }}, {{ user.profile.state }}</p>
+              {% if user.is_premium %}
+                <span class="premium-badge">
+                  <i class="fas fa-crown"></i> Premium
+                </span>
+              {% endif %}
+            </div>
+          </div>
+
+          <hr class="dropdown-divider">
+
+          <a href="{% url 'profile' %}" class="dropdown-item" role="menuitem">
+            <i class="fas fa-user"></i> <span>Mi Perfil</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+
+          <a href="{% url 'edit_profile' %}" class="dropdown-item" role="menuitem">
+            <i class="fas fa-edit"></i> <span>Editar Perfil</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+
+          <a href="{% url 'gallery' %}" class="dropdown-item" role="menuitem">
+            <i class="fas fa-images"></i> <span>Mi Galería</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+
+          <a href="{% url 'memberships' %}" class="dropdown-item" role="menuitem">
+            <i class="fas fa-crown"></i> <span>Planes Premium</span>
+            {% if not user.is_premium %}
+              <span class="new-badge">NEW</span>
+            {% endif %}
+            <i class="fas fa-arrow-right"></i>
+          </a>
+
+          <hr class="dropdown-divider">
+
+          <a href="{% url 'settings' %}" class="dropdown-item" role="menuitem">
+            <i class="fas fa-cog"></i> <span>Configuración</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+
+          <a href="{% url 'security' %}" class="dropdown-item" role="menuitem">
+            <i class="fas fa-shield-alt"></i> <span>Seguridad</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+
+          <a href="{% url 'support' %}" class="dropdown-item" role="menuitem">
+            <i class="fas fa-question-circle"></i> <span>Ayuda & Soporte</span>
+            <i class="fas fa-arrow-right"></i>
+          </a>
+
+          <hr class="dropdown-divider">
+
+          <form method="POST" action="{% url 'logout' %}" class="logout-form">
+            {% csrf_token %}
+            <button type="submit" class="dropdown-item logout-item" role="menuitem"
+                    onclick="return confirm('¿Estás seguro de cerrar sesión?')">
+              <i class="fas fa-sign-out-alt"></i> <span>Cerrar Sesión</span>
+            </button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Theme Toggle -->
+      <button class="navbar-icon-btn"
+              id="themeToggle"
+              aria-label="Cambiar tema"
+              title="Cambiar tema">
+        <i class="fas fa-moon theme-icon"></i>
+      </button>
+
+    </div>
+    <!-- END-EDIT-ZONE: Navbar -->
+
+  </nav>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    {% block content %}{% endblock %}
+  </main>
+
+  <!-- EDIT-ZONE: Footer -->
+  {% include "includes/footer.html" %}
+  <!-- END-EDIT-ZONE -->
+
+  <!-- EDIT-ZONE: Scripts -->
+  <!-- jQuery (opcional, pero útil) -->
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+  <!-- Main JS -->
+  <script src="{% static 'js/main.js' %}"></script>
+
+  <!-- Navbar JS -->
+  <script src="{% static 'js/navbar.js' %}"></script>
+
+  <!-- Block adicional para scripts de página -->
+  {% block extra_js %}{% endblock %}
+  <!-- END-EDIT-ZONE -->
+
+  <!-- EDIT-ZONE: Inline Scripts -->
+  <script>
+    /*
+      SECCIÓN: Funciones Globales del Navbar
+      DESCRIPCIÓN: Funciones reutilizables de navbar
+    */
+
+    // Cerrar dropdown
+    function closeDropdown(type) {
+      const menu = document.getElementById(type + 'Menu');
+      if (menu) menu.style.display = 'none';
+    }
+
+    // Actualizar privacidad
+    async function updatePrivacy(radioButton) {
+      try {
+        const response = await fetch('{% url "api_update_privacy" %}', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+          },
+          body: JSON.stringify({
+            privacy_level: radioButton.value
+          })
+        });
+
+        const data = await response.json();
+        if (data.success) {
+          console.log('Privacidad actualizada');
+          // Actualizar ícono
+          const icon = document.getElementById('privacyBtn').querySelector('i');
+          icon.className = 'fas fa-' + (
+            radioButton.value === 'public' ? 'globe' :
+            radioButton.value === 'friends' ? 'users' : 'lock'
+          ) + ' nav-icon';
+        }
+      } catch (error) {
+        console.error('Error:', error);
+      }
+    }
+
+    // Obtener cookie CSRF
+    function getCookie(name) {
+      let cookieValue = null;
+      if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+          const cookie = cookies[i].trim();
+          if (cookie.substring(0, name.length + 1) === (name + '=')) {
+            cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+            break;
+          }
+        }
+      }
+      return cookieValue;
+    }
+  </script>
+  <!-- END-EDIT-ZONE -->
+
+</body>
+
 </html>
-
-
-
-
-
-
-
-
-
-
-
-
-
-

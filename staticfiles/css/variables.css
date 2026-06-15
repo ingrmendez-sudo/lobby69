@@ -1,0 +1,319 @@
+/* /social/static/css/design-system/variables.css */
+/* ============================================= */
+/* LOBBY69 DESIGN SYSTEM v1.0 - VARIABLES BASE */
+/* ============================================= */
+
+:root {
+  /* ==========================================
+     COLORES PRINCIPALES
+     ========================================== */
+  
+  /* PRIMARY - Burgundy (Pasión y Elegancia) */
+  --primary-burgundy: #8b2e3d;
+  --primary-burgundy-light: #a13648;
+  --primary-burgundy-dark: #6d2331;
+  
+  /* SECONDARY - Rose Gold (Lujo) */
+  --secondary-rose-gold: #d4a373;
+  --secondary-rose-gold-light: #e0b888;
+  --secondary-rose-gold-dark: #c08f5e;
+  
+  /* ACCENT - Navy Blue (Sofisticación) */
+  --accent-navy: #1a2332;
+  --accent-navy-light: #2d3b4e;
+  --accent-navy-dark: #0f1820;
+  
+  /* ACCENT - Purple (Sensualidad) */
+  --accent-purple: #4a2c5e;
+  --accent-purple-light: #5e3a76;
+  --accent-purple-dark: #361f47;
+  
+  /* ==========================================
+     COLORES NEUTRALES
+     ========================================== */
+  
+  /* Backgrounds */
+  --background-primary: #faf8f5; /* Warm white */
+  --background-secondary: #ffffff;
+  --background-tertiary: #f5f5f5;
+  
+  /* Text */
+  --text-primary: #2d2d2d; /* Charcoal */
+  --text-secondary: #666666;
+  --text-tertiary: #999999;
+  --text-on-dark: #ffffff;
+  
+  /* ==========================================
+     COLORES DE ESTADO
+     ========================================== */
+  
+  --success: #4caf50;
+  --success-light: #81c784;
+  --success-dark: #388e3c;
+  
+  --warning: #ff9800;
+  --warning-light: #ffb74d;
+  --warning-dark: #f57c00;
+  
+  --error: #e74c3c;
+  --error-light: #ef5350;
+  --error-dark: #c62828;
+  
+  --info: #2196f3;
+  --info-light: #64b5f6;
+  --info-dark: #1976d2;
+  
+  /* ==========================================
+     TIPOGRAFÍA
+     ========================================== */
+  
+  /* Font Families */
+  --font-body: 'Inter', 'Montserrat', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-heading: 'Georgia', 'Garamond', serif;
+  
+  /* Font Sizes */
+  --font-size-h1: 40px;
+  --font-size-h2: 32px;
+  --font-size-h3: 24px;
+  --font-size-h4: 20px;
+  --font-size-h5: 18px;
+  --font-size-body-large: 18px;
+  --font-size-body: 16px;
+  --font-size-body-small: 14px;
+  --font-size-caption: 12px;
+  
+  /* Font Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  
+  /* Line Heights */
+  --line-height-tight: 1.2;
+  --line-height-normal: 1.4;
+  --line-height-relaxed: 1.6;
+  
+  /* ==========================================
+     ESPACIADO (Escala 8px)
+     ========================================== */
+  
+  --spacing-xxs: 4px;
+  --spacing-xs: 8px;
+  --spacing-s: 12px;
+  --spacing-m: 16px;
+  --spacing-l: 24px;
+  --spacing-xl: 32px;
+  --spacing-xxl: 48px;
+  --spacing-xxxl: 64px;
+  
+  /* ==========================================
+     BORDER RADIUS
+     ========================================== */
+  
+  --radius-small: 8px;
+  --radius-medium: 12px;
+  --radius-large: 16px;
+  --radius-xlarge: 24px;
+  --radius-full: 9999px;
+  
+  /* ==========================================
+     SOMBRAS
+     ========================================== */
+  
+  --shadow-subtle: 0 2px 4px rgba(0, 0, 0, 0.08);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.12);
+  --shadow-elevated: 0 4px 16px rgba(0, 0, 0, 0.16);
+  --shadow-modal: 0 8px 24px rgba(0, 0, 0, 0.20);
+  --shadow-burgundy-glow: 0 0 12px rgba(139, 46, 61, 0.3);
+  
+  /* ==========================================
+     TRANSICIONES
+     ========================================== */
+  
+  --transition-fast: all 0.15s ease;
+  --transition-default: all 0.3s ease;
+  --transition-slow: all 0.5s ease;
+  
+  /* ==========================================
+     Z-INDEX SCALE
+     ========================================== */
+  
+  --z-base: 1;
+  --z-dropdown: 100;
+  --z-sticky: 500;
+  --z-fixed: 1000;
+  --z-modal-backdrop: 1200;
+  --z-modal: 1300;
+  --z-tooltip: 1400;
+  --z-notification: 1500;
+}
+
+/* ==========================================
+   RESET GLOBAL
+   ========================================== */
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html {
+  font-size: 16px;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-body);
+  color: var(--text-primary);
+  background: var(--background-primary);
+  line-height: var(--line-height-relaxed);
+}
+
+/* ==========================================
+   TIPOGRAFÍA BASE
+   ========================================== */
+
+h1, .h1 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h1);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+h2, .h2 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h2);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+
+h3, .h3 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h3);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-normal);
+}
+
+h4, .h4 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h4);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-normal);
+}
+
+h5, .h5 {
+  font-family: var(--font-heading);
+  font-size: var(--font-size-h5);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-normal);
+}
+
+.body-large {
+  font-size: var(--font-size-body-large);
+  line-height: var(--line-height-relaxed);
+}
+
+.body, body {
+  font-size: var(--font-size-body);
+  line-height: var(--line-height-relaxed);
+}
+
+.body-small {
+  font-size: var(--font-size-body-small);
+  line-height: var(--line-height-relaxed);
+}
+
+.caption {
+  font-size: var(--font-size-caption);
+  line-height: var(--line-height-normal);
+  color: var(--text-tertiary);
+}
+
+/* ==========================================
+   CONTAINER RESPONSIVE
+   ========================================== */
+
+.container {
+  width: 100%;
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 0 var(--spacing-l);
+}
+
+@media (max-width: 768px) {
+  .container {
+    padding: 0 var(--spacing-m);
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 0 var(--spacing-s);
+  }
+}
+
+/* ==========================================
+   BREAKPOINTS (Mobile First)
+   ========================================== */
+
+/*
+  Mobile: 0px - 480px
+  Tablet: 481px - 768px
+  Desktop: 769px - 1023px
+  Large Desktop: 1024px+
+  
+  Uso:
+  @media (min-width: 768px) { ... }
+  @media (min-width: 1024px) { ... }
+  @media (min-width: 1440px) { ... }
+*/
+
+/* ==========================================
+   UTILIDADES BÁSICAS
+   ========================================== */
+
+.flex {
+  display: flex;
+}
+
+.flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.grid {
+  display: grid;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.visible {
+  display: block !important;
+}
+
+.opacity-0 {
+  opacity: 0;
+}
+
+.opacity-50 {
+  opacity: 0.5;
+}
+
+.opacity-100 {
+  opacity: 1;
+}
+
+/* ==========================================
+   FIN DE VARIABLES.CSS
+   ========================================== */

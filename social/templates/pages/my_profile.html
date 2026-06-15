@@ -1,389 +1,1088 @@
-{% extends 'base_authenticated.html' %}
-{% load static i18n %}
+﻿{% extends "base_authenticated.html" %}
+{% load static %}
 
-{% block page_title %}{% trans "Mi Perfil" %} - LOBBY69{% endblock %}
-
-{% block left_sidebar %}
-<!-- SIDEBAR IZQUIERDO - ESTADÍSTICAS Y ESTADO -->
-<div style="background-color: var(--card-bg); border-radius: 0; height: 100%; overflow-y: auto; display: flex; flex-direction: column; padding: 0;">
-
-    <!-- ESTADÍSTICAS RÁPIDAS -->
-    <div class="profile-stats" style="background-color: var(--card-bg); border-radius: 0; border-bottom: 1px solid var(--border-color); margin-bottom: 0; padding: 15px;">
-        <div style="font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--primary-color); text-transform: uppercase;">📊 {% trans "Estadísticas" %}</div>
-
-        <div class="stat-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-            <span class="stat-label" style="font-size: 12px; color: var(--text-secondary);">👁️ {% trans "Vistas" %}</span>
-            <span class="stat-value" style="font-size: 18px; font-weight: 700; color: var(--primary-color);">1,234</span>
-        </div>
-
-        <div class="stat-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-            <span class="stat-label" style="font-size: 12px; color: var(--text-secondary);">❤️ {% trans "Likes" %}</span>
-            <span class="stat-value" style="font-size: 18px; font-weight: 700; color: var(--primary-color);">567</span>
-        </div>
-
-        <div class="stat-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border-color);">
-            <span class="stat-label" style="font-size: 12px; color: var(--text-secondary);">💬 {% trans "Mensajes" %}</span>
-            <span class="stat-value" style="font-size: 18px; font-weight: 700; color: var(--primary-color);">89</span>
-        </div>
-
-        <div class="stat-item" style="display: flex; justify-content: space-between; align-items: center; padding: 12px 0;">
-            <span class="stat-label" style="font-size: 12px; color: var(--text-secondary);">👥 {% trans "Amigos" %}</span>
-            <span class="stat-value" style="font-size: 18px; font-weight: 700; color: var(--primary-color);">42</span>
-        </div>
-    </div>
-
-    <!-- ESTADO ACTUAL -->
-    <div class="profile-status" style="background-color: var(--bg-secondary); border-radius: 0; padding: 12px; margin-bottom: 0; text-align: center; border-bottom: 1px solid var(--border-color);">
-        <div style="margin-bottom: 10px; font-size: 12px; font-weight: 700; color: var(--text-secondary); text-transform: uppercase;">🔴 {% trans "Tu Estado" %}</div>
-        <span class="status-badge status-online" style="display: inline-block; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; background-color: #10b981; color: white;">{% trans "En línea ahora" %}</span>
-        <div style="font-size: 11px; color: var(--text-secondary); margin-top: 8px;">{% trans "Última conexión: Hace 5 min" %}</div>
-    </div>
-
-    <!-- INSIGNIAS/LOGROS -->
-    <div class="badges-section" style="background-color: var(--card-bg); border-radius: 0; padding: 12px; margin-bottom: 0; border-bottom: 1px solid var(--border-color);">
-        <h4 style="font-size: 12px; font-weight: 700; margin-bottom: 10px; color: var(--primary-color); text-transform: uppercase;">⭐ {% trans "Insignias" %}</h4>
-        <div class="badges-list" style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
-            <div class="badge" data-badge="Verificado" style="width: 100%; aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: all 0.3s; border: 2px solid var(--border-color);" onclick="alert('✅ Perfil Verificado')">✅</div>
-            <div class="badge" data-badge="Premium" style="width: 100%; aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: all 0.3s; border: 2px solid var(--border-color);" onclick="alert('💎 Miembro Premium')">💎</div>
-            <div class="badge" data-badge="Popular" style="width: 100%; aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: all 0.3s; border: 2px solid var(--border-color);" onclick="alert('🔥 Perfil Popular')">🔥</div>
-            <div class="badge" data-badge="Activo" style="width: 100%; aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: all 0.3s; border: 2px solid var(--border-color);" onclick="alert('⚡ Muy Activo')">⚡</div>
-            <div class="badge" data-badge="Fotos" style="width: 100%; aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: all 0.3s; border: 2px solid var(--border-color);" onclick="alert('📸 Muchas Fotos')">📸</div>
-            <div class="badge" data-badge="Destacado" style="width: 100%; aspect-ratio: 1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: all 0.3s; border: 2px solid var(--border-color);" onclick="alert('🌟 Destacado')">🌟</div>
-        </div>
-    </div>
-
-    <!-- ACCIONES RÁPIDAS -->
-    <div class="quick-actions" style="background-color: var(--card-bg); border-radius: 0; padding: 12px; flex-grow: 1; display: flex; flex-direction: column;">
-        <button style="width: 100%; padding: 10px; margin-bottom: 8px; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s;" onclick="alert('🔒 Ver perfiles bloqueados')">🚫 {% trans "Bloqueados" %}</button>
-        <button style="width: 100%; padding: 10px; margin-bottom: 8px; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s;" onclick="alert('⚙️ Ver configuración de privacidad')">⚙️ {% trans "Privacidad" %}</button>
-        <button style="width: 100%; padding: 10px; margin-bottom: 8px; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s;" onclick="alert('🔔 Ver notificaciones')">🔔 {% trans "Notificaciones" %}</button>
-        <button style="width: 100%; padding: 10px; background-color: var(--bg-secondary); border: 1px solid var(--border-color); border-radius: 6px; color: var(--text-primary); font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.3s;" onclick="alert('📥 Ver mensajes archivados')">📥 {% trans "Archivados" %}</button>
-    </div>
-</div>
-{% endblock left_sidebar %}
+{% block page_title %}Mi Perfil - LOBBY69{% endblock %}
 
 {% block main_content %}
-<!-- CONTENIDO PRINCIPAL -->
-<div class="card" style="background-color: var(--card-bg); border-radius: 0;">
-    <h2 style="margin-bottom: 20px; font-size: 20px;">👤 {% trans "Mi Perfil" %}</h2>
 
-    <!-- MENSAJES -->
-    {% if messages %}
-    <div class="messages" style="display: none;">
-        {% for message in messages %}
-        <div class="alert alert-{{ message.tags }}">
-            {{ message }}
-        </div>
-        {% endfor %}
-    </div>
-    {% endif %}
-
-    <!-- INFORMACIÓN PERSONAL -->
-    <div class="profile-section">
-        <div class="section-title">👤 {% trans "Información Personal" %}</div>
-
-        <div class="profile-grid">
-            <div class="form-group">
-                <label>{% trans "Nick" %}</label>
-                <input type="text" value="{{ profile.nick|default:user.username }}" disabled>
+<div class="profile-container">
+    
+    <!-- HEADER DEL PERFIL -->
+    <div class="profile-header-section">
+        <div class="profile-header-bg"></div>
+        
+        <div class="profile-header-content">
+            <div class="profile-avatar-wrapper">
+                <img src="{% static 'images/default-avatar.svg' %}" alt="Avatar" class="profile-avatar-large">
+                <div class="avatar-badge online">
+                    <i class="fas fa-circle"></i> En línea
+                </div>
             </div>
-            <div class="form-group">
-                <label>{% trans "¿Qué eres?" %}</label>
-                <input type="text" value="{{ profile.profile_type|default:'Individual' }}" disabled>
+            
+            <div class="profile-header-info">
+                <h1 class="profile-title">{{ user.name|default:user.username }}, 27</h1>
+                <p class="profile-location">
+                    <i class="fas fa-map-marker-alt"></i> México, CDMX
+                </p>
+                <div class="profile-tags">
+                    <span class="tag">Soltero</span>
+                    <span class="tag">Activo</span>
+                    <span class="tag premium">Premium</span>
+                </div>
             </div>
-        </div>
-
-        <div class="profile-grid">
-            <div class="form-group">
-                <label>{% trans "Nombre" %}</label>
-                <input type="text" value="{{ profile.display_name|default:'' }}" disabled>
-            </div>
-            <div class="form-group">
-                <label>{% trans "Edad" %}</label>
-                <input type="number" value="{{ profile.age|default:'' }}" disabled>
-            </div>
-        </div>
-
-        <div class="profile-grid">
-            <div class="form-group">
-                <label>{% trans "Género" %}</label>
-                <input type="text" value="{{ profile.gender|default:'' }}" disabled>
-            </div>
-            <div class="form-group">
-                <label>{% trans "Descripción" %}</label>
-                <textarea disabled>{{ profile.bio|default:'' }}</textarea>
+            
+            <div class="profile-actions">
+                <button class="btn btn-secondary" id="editProfileBtn">
+                    <i class="fas fa-edit"></i> Editar Perfil
+                </button>
+                <button class="btn btn-outline">
+                    <i class="fas fa-cog"></i> Ajustes
+                </button>
             </div>
         </div>
     </div>
-
-    <!-- UBICACIÓN -->
-    <div class="profile-section">
-        <div class="section-title">📍 {% trans "Ubicación" %}</div>
-
-        <div class="profile-grid">
-            <div class="form-group">
-                <label>{% trans "Estado" %}</label>
-                <input type="text" value="{{ profile.state|default:'' }}" disabled>
+    
+    <!-- CONTENIDO PRINCIPAL -->
+    <div class="profile-content">
+        
+        <!-- SIDEBAR IZQUIERDO -->
+        <aside class="profile-sidebar">
+            
+            <!-- ESTADÍSTICAS -->
+            <div class="card stats-section">
+                <h3 class="card-title">Tus Estadísticas</h3>
+                
+                <div class="stat-full">
+                    <div class="stat-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">342</span>
+                        <span class="stat-label">Visitas</span>
+                    </div>
+                </div>
+                
+                <div class="stat-full">
+                    <div class="stat-icon">
+                        <i class="fas fa-heart"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">89</span>
+                        <span class="stat-label">Likes</span>
+                    </div>
+                </div>
+                
+                <div class="stat-full">
+                    <div class="stat-icon">
+                        <i class="fas fa-comments"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">15</span>
+                        <span class="stat-label">Mensajes</span>
+                    </div>
+                </div>
+                
+                <div class="stat-full">
+                    <div class="stat-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
+                    <div class="stat-info">
+                        <span class="stat-value">42</span>
+                        <span class="stat-label">Conexiones</span>
+                    </div>
+                </div>
             </div>
-            <div class="form-group">
-                <label>{% trans "Ciudad" %}</label>
-                <input type="text" value="{{ profile.city|default:'' }}" disabled>
+            
+            <!-- INSIGNIAS -->
+            <div class="card badges-section">
+                <h3 class="card-title">Insignias & Logros</h3>
+                
+                <div class="badges-grid">
+                    <div class="badge-item" title="Perfil Verificado">
+                        <div class="badge-icon verified">
+                            <i class="fas fa-check-circle"></i>
+                        </div>
+                        <span class="badge-label">Verificado</span>
+                    </div>
+                    
+                    <div class="badge-item" title="Miembro Premium">
+                        <div class="badge-icon premium">
+                            <i class="fas fa-crown"></i>
+                        </div>
+                        <span class="badge-label">Premium</span>
+                    </div>
+                    
+                    <div class="badge-item" title="Perfil Popular">
+                        <div class="badge-icon popular">
+                            <i class="fas fa-fire"></i>
+                        </div>
+                        <span class="badge-label">Popular</span>
+                    </div>
+                    
+                    <div class="badge-item" title="Muy Activo">
+                        <div class="badge-icon active">
+                            <i class="fas fa-bolt"></i>
+                        </div>
+                        <span class="badge-label">Activo</span>
+                    </div>
+                </div>
             </div>
-        </div>
-    </div>
-
-    <!-- ¿QUÉ BUSCAS? -->
-    <div class="profile-section">
-        <div class="section-title">🔍 {% trans "¿Qué buscas?" %}</div>
-        <div class="checkbox-group">
-            <div class="checkbox-item">
-                <input type="checkbox" id="cb1" checked disabled>
-                <label for="cb1">{% trans "Parejas heterosexuales" %}</label>
+            
+        </aside>
+        
+        <!-- CONTENIDO CENTRAL -->
+        <main class="profile-main">
+            
+            <!-- TABS DE INFORMACIÓN -->
+            <div class="profile-tabs">
+                <button class="tab-btn active" data-tab="about">
+                    <i class="fas fa-user"></i> Acerca de Mí
+                </button>
+                <button class="tab-btn" data-tab="gallery">
+                    <i class="fas fa-images"></i> Galería
+                </button>
+                <button class="tab-btn" data-tab="settings">
+                    <i class="fas fa-lock"></i> Privacidad
+                </button>
             </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="cb2" disabled>
-                <label for="cb2">{% trans "Parejas bisexuales" %}</label>
+            
+            <!-- TAB: ACERCA DE MÍ -->
+            <div class="tab-content active" id="tab-about">
+                <div class="card form-card">
+                    <h3 class="card-title">Información Personal</h3>
+                    
+                    <form class="profile-form" id="profileForm">
+                        <!-- USUARIO Y EMAIL (Read-only) -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="username">Usuario</label>
+                                <input type="text" id="username" class="form-control" value="{{ user.username }}" disabled>
+                                <small class="form-text">No se puede cambiar</small>
+                            </div>
+                            <div class="form-group">
+                                <label for="email">Email</label>
+                                <input type="email" id="email" class="form-control" value="{{ user.email }}" disabled>
+                                <small class="form-text">No se puede cambiar</small>
+                            </div>
+                        </div>
+                        
+                        <!-- NOMBRE Y EDAD -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="nombre">Nombre Completo</label>
+                                <input type="text" id="nombre" class="form-control" value="{{ user.name|default:'' }}" placeholder="Tu nombre completo">
+                            </div>
+                            <div class="form-group">
+                                <label for="edad">Edad</label>
+                                <input type="number" id="edad" class="form-control" value="27" min="18" max="100" placeholder="Tu edad">
+                            </div>
+                        </div>
+                        
+                        <!-- UBICACIÓN -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="estado">Estado</label>
+                                <select id="estado" class="form-control">
+                                    <option value="cdmx">Ciudad de México</option>
+                                    <option value="jalisco">Jalisco</option>
+                                    <option value="guanajuato">Guanajuato</option>
+                                    <option value="nuevo_leon">Nuevo León</option>
+                                    <option value="veracruz">Veracruz</option>
+                                    <option value="otro">Otro</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="ciudad">Ciudad</label>
+                                <input type="text" id="ciudad" class="form-control" value="México" placeholder="Tu ciudad">
+                            </div>
+                        </div>
+                        
+                        <!-- GÉNERO Y ESTADO CIVIL -->
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="genero">Género</label>
+                                <select id="genero" class="form-control">
+                                    <option value="masculino">Masculino</option>
+                                    <option value="femenino">Femenino</option>
+                                    <option value="otro">Otro</option>
+                                    <option value="prefiero_no_decir">Prefiero no decir</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="estado_civil">Estado Civil</label>
+                                <select id="estado_civil" class="form-control">
+                                    <option value="soltero">Soltero</option>
+                                    <option value="en_relacion">En relación</option>
+                                    <option value="casado">Casado</option>
+                                    <option value="divorciado">Divorciado</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <!-- TIPO DE PERFIL -->
+                        <div class="form-group">
+                            <label for="tipo_perfil">Tipo de Perfil</label>
+                            <select id="tipo_perfil" class="form-control">
+                                <option value="single">Single</option>
+                                <option value="pareja">Pareja</option>
+                                <option value="unicornio">Unicornio</option>
+                                <option value="otro">Otro</option>
+                            </select>
+                        </div>
+                        
+                        <!-- DESCRIPCIÓN -->
+                        <div class="form-group">
+                            <label for="descripcion">Acerca de Ti</label>
+                            <textarea id="descripcion" class="form-control" rows="4" placeholder="Cuéntanos sobre ti, tus intereses, qué buscas...">Soy una persona extrovertida, amante de las aventuras y los viajes.</textarea>
+                            <small class="form-text">Máximo 500 caracteres</small>
+                        </div>
+                        
+                        <!-- INTERESES -->
+                        <div class="form-group">
+                            <label>Intereses</label>
+                            <div class="interests-grid">
+                                <label class="interest-checkbox">
+                                    <input type="checkbox" value="viajes" checked>
+                                    <span>Viajes</span>
+                                </label>
+                                <label class="interest-checkbox">
+                                    <input type="checkbox" value="musica" checked>
+                                    <span>Música</span>
+                                </label>
+                                <label class="interest-checkbox">
+                                    <input type="checkbox" value="deportes">
+                                    <span>Deportes</span>
+                                </label>
+                                <label class="interest-checkbox">
+                                    <input type="checkbox" value="cine" checked>
+                                    <span>Cine</span>
+                                </label>
+                                <label class="interest-checkbox">
+                                    <input type="checkbox" value="gastronomia">
+                                    <span>Gastronomía</span>
+                                </label>
+                                <label class="interest-checkbox">
+                                    <input type="checkbox" value="arte">
+                                    <span>Arte</span>
+                                </label>
+                                <label class="interest-checkbox">
+                                    <input type="checkbox" value="tecnologia">
+                                    <span>Tecnología</span>
+                                </label>
+                                <label class="interest-checkbox">
+                                    <input type="checkbox" value="fotografia">
+                                    <span>Fotografía</span>
+                                </label>
+                                <label class="interest-checkbox">
+                                    <input type="checkbox" value="lectura">
+                                    <span>Lectura</span>
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- ACCIONES -->
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> Guardar Cambios
+                            </button>
+                            <button type="button" class="btn btn-outline" id="cancelBtn">
+                                Cancelar
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="cb3" disabled>
-                <label for="cb3">{% trans "Parejas (ella bisexual)" %}</label>
+            
+            <!-- TAB: GALERÍA -->
+            <div class="tab-content" id="tab-gallery">
+                <div class="card gallery-card">
+                    <div class="gallery-header">
+                        <h3 class="card-title">Mi Galería de Fotos</h3>
+                        <button class="btn btn-secondary btn-sm">
+                            <i class="fas fa-plus"></i> Agregar Foto
+                        </button>
+                    </div>
+                    
+                    <div class="gallery-grid">
+                        <div class="gallery-item">
+                            <img src="{% static 'images/default-avatar.svg' %}" alt="Foto 1">
+                            <div class="gallery-overlay">
+                                <button class="gallery-action" title="Ver">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="gallery-action" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="gallery-item">
+                            <img src="{% static 'images/default-avatar.svg' %}" alt="Foto 2">
+                            <div class="gallery-overlay">
+                                <button class="gallery-action" title="Ver">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="gallery-action" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="gallery-item">
+                            <img src="{% static 'images/default-avatar.svg' %}" alt="Foto 3">
+                            <div class="gallery-overlay">
+                                <button class="gallery-action" title="Ver">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="gallery-action" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="gallery-item">
+                            <img src="{% static 'images/default-avatar.svg' %}" alt="Foto 4">
+                            <div class="gallery-overlay">
+                                <button class="gallery-action" title="Ver">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                                <button class="gallery-action" title="Eliminar">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
             </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="cb4" disabled>
-                <label for="cb4">{% trans "Parejas (él bisexual)" %}</label>
+            
+            <!-- TAB: PRIVACIDAD -->
+            <div class="tab-content" id="tab-settings">
+                <div class="card settings-card">
+                    <h3 class="card-title">Configuración de Privacidad</h3>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Perfil visible</h4>
+                            <p>Permite que otros usuarios vean tu perfil</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Mostrar ubicación</h4>
+                            <p>Compartir tu ubicación con otros usuarios</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Permitir mensajes</h4>
+                            <p>Recibir mensajes de otros usuarios</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    
+                    <div class="setting-item">
+                        <div class="setting-info">
+                            <h4>Notificaciones por email</h4>
+                            <p>Recibir notificaciones en tu correo</p>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
             </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="cb5" disabled>
-                <label for="cb5">{% trans "Hombres heterosexuales" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="cb6" disabled>
-                <label for="cb6">{% trans "Hombres bisexuales" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="cb7" disabled>
-                <label for="cb7">{% trans "Mujeres heterosexuales" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="cb8" disabled>
-                <label for="cb8">{% trans "Mujeres bisexuales" %}</label>
-            </div>
-        </div>
-    </div>
-
-    <!-- ¿PARA QUÉ? -->
-    <div class="profile-section">
-        <div class="section-title">🎯 {% trans "¿Para qué?" %}</div>
-        <div class="checkbox-group">
-            <div class="checkbox-item">
-                <input type="checkbox" id="para1" checked disabled>
-                <label for="para1">{% trans "Intercambio completo" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="para2" disabled>
-                <label for="para2">{% trans "Tríos" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="para3" checked disabled>
-                <label for="para3">{% trans "Cuckold" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="para4" checked disabled>
-                <label for="para4">{% trans "Cybersexo" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="para5" checked disabled>
-                <label for="para5">{% trans "Amistad" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="para6" checked disabled>
-                <label for="para6">{% trans "Intercambio light" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="para7" checked disabled>
-                <label for="para7">{% trans "Mirar y ser vistos" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="para8" checked disabled>
-                <label for="para8">{% trans "Compartir fetishes" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="para9" checked disabled>
-                <label for="para9">{% trans "Intercambio de fotos" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="para10" disabled>
-                <label for="para10">{% trans "Sólo ellas" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="para11" disabled>
-                <label for="para11">{% trans "Prácticas BDSM" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="para12" disabled>
-                <label for="para12">{% trans "Sexo en grupo" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="para13" disabled>
-                <label for="para13">{% trans "Relaciones abiertas" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="para14" disabled>
-                <label for="para14">{% trans "Otros" %}</label>
-            </div>
-        </div>
-    </div>
-
-    <!-- PRIVACIDAD -->
-    <div class="profile-section">
-        <div class="section-title">🔒 {% trans "No quiero que vean mi perfil..." %}</div>
-        <div class="alert-box">
-            <strong>{% trans "Selecciona quién NO debe ver tu perfil:" %}</strong>
-        </div>
-        <div class="checkbox-group">
-            <div class="checkbox-item">
-                <input type="checkbox" id="priv1" checked disabled>
-                <label for="priv1">{% trans "Chicos solos" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="priv2" disabled>
-                <label for="priv2">{% trans "Locales/Clubs" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="priv3" disabled>
-                <label for="priv3">{% trans "Miembros Basic que no pagan" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="priv4" disabled>
-                <label for="priv4">{% trans "Extranjeros no amigos" %}</label>
-            </div>
-        </div>
-    </div>
-
-    <!-- NOTIFICACIONES -->
-    <div class="profile-section">
-        <div class="section-title">🔔 {% trans "Avisarme por e-mail" %}</div>
-        <div class="checkbox-group">
-            <div class="checkbox-item">
-                <input type="checkbox" id="notif1" checked disabled>
-                <label for="notif1">{% trans "Cuando me envíen un mensaje" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="notif2" disabled>
-                <label for="notif2">{% trans "Cuando alguien me envíe o acepte solicitud de amistad" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="notif3" disabled>
-                <label for="notif3">{% trans "Cuando alguien verifique mi perfil" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="notif4" disabled>
-                <label for="notif4">{% trans "Cuando a alguien le guste mi perfil o fotos" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="notif5" disabled>
-                <label for="notif5">{% trans "Cuando alguien escriba en mi muro" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="notif6" disabled>
-                <label for="notif6">{% trans "Cuando alguien comente una foto de otro perfil" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="notif7" disabled>
-                <label for="notif7">{% trans "Cuando alguien comenté una de mis fotos" %}</label>
-            </div>
-            <div class="checkbox-item">
-                <input type="checkbox" id="notif8" disabled>
-                <label for="notif8">{% trans "Cuando alguien interesante está disponible" %}</label>
-            </div>
-        </div>
-    </div>
-
-    <!-- BOTONES -->
-    <div class="button-group">
-        <a href="{% url 'pages:dashboard' %}" class="btn btn-secondary">{% trans "Cancelar" %}</a>
-        <a href="{% url 'pages:edit_profile' %}" class="btn btn-primary">✏️ {% trans "Editar Perfil" %}</a>
+            
+        </main>
+        
     </div>
 </div>
-{% endblock main_content %}
 
-{% block right_sidebar %}
-<!-- SIDEBAR DERECHO - LIKES Y VISITANTES -->
-<div style="background-color: var(--card-bg); border-radius: 0; height: 100%; overflow-y: auto; display: flex; flex-direction: column; padding: 0;">
+<!-- ESTILOS (igual que antes, omitido por brevedad) -->
+<style>
+    .profile-container {
+        background: #f5f5f5;
+        min-height: 100vh;
+    }
+    
+    .profile-header-section {
+        background: white;
+        position: relative;
+        margin-bottom: 30px;
+    }
+    
+    .profile-header-bg {
+        height: 200px;
+        background: linear-gradient(135deg, #8b2e3d, #d4a373);
+        position: relative;
+    }
+    
+    .profile-header-content {
+        display: flex;
+        align-items: flex-end;
+        gap: 30px;
+        padding: 0 40px 40px;
+        position: relative;
+        top: -100px;
+    }
+    
+    .profile-avatar-wrapper {
+        position: relative;
+    }
+    
+    .profile-avatar-large {
+        width: 150px;
+        height: 150px;
+        border-radius: 50%;
+        border: 5px solid white;
+        background: #e0e0e0;
+        box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+    }
+    
+    .avatar-badge {
+        position: absolute;
+        bottom: 10px;
+        right: 10px;
+        background: #4caf50;
+        color: white;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+    
+    .avatar-badge i {
+        font-size: 8px;
+        animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+    
+    .profile-header-info {
+        flex: 1;
+    }
+    
+    .profile-title {
+        font-size: 32px;
+        font-weight: 700;
+        color: #1a2352;
+        margin: 0;
+    }
+    
+    .profile-location {
+        color: #666;
+        font-size: 16px;
+        margin: 10px 0;
+    }
+    
+    .profile-tags {
+        display: flex;
+        gap: 10px;
+        margin: 15px 0;
+        flex-wrap: wrap;
+    }
+    
+    .tag {
+        background: #f0f0f0;
+        color: #1a2352;
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+    
+    .tag.premium {
+        background: linear-gradient(135deg, #d4a373, #e8b876);
+        color: white;
+    }
+    
+    .profile-actions {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .profile-actions .btn {
+        padding: 10px 20px;
+    }
+    
+    .profile-content {
+        display: grid;
+        grid-template-columns: 300px 1fr;
+        gap: 30px;
+        padding: 0 40px;
+        max-width: 1400px;
+        margin: 0 auto 40px;
+    }
+    
+    .profile-sidebar {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+    
+    .card-title {
+        font-size: 16px;
+        font-weight: 700;
+        color: #1a2352;
+        margin-bottom: 15px;
+    }
+    
+    .stat-full {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        padding: 15px 0;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .stat-icon {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #d4a373, #e8b876);
+        color: white;
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+    
+    .stat-value {
+        display: block;
+        font-size: 20px;
+        font-weight: 700;
+        color: #1a2352;
+    }
+    
+    .stat-label {
+        display: block;
+        font-size: 13px;
+        color: #999;
+    }
+    
+    .badges-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+    }
+    
+    .badge-item {
+        text-align: center;
+        padding: 15px;
+        background: #f9f9f9;
+        border-radius: 10px;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .badge-item:hover {
+        background: #f0f0f0;
+        transform: translateY(-5px);
+    }
+    
+    .badge-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 10px;
+        font-size: 28px;
+        color: white;
+    }
+    
+    .badge-icon.verified {
+        background: #4caf50;
+    }
+    
+    .badge-icon.premium {
+        background: #d4a373;
+    }
+    
+    .badge-icon.popular {
+        background: #ff6b6b;
+    }
+    
+    .badge-icon.active {
+        background: #2196f3;
+    }
+    
+    .badge-label {
+        display: block;
+        font-size: 12px;
+        font-weight: 600;
+        color: #1a2352;
+    }
+    
+    .profile-tabs {
+        display: flex;
+        gap: 10px;
+        border-bottom: 2px solid #f0f0f0;
+        margin-bottom: 30px;
+    }
+    
+    .tab-btn {
+        background: none;
+        border: none;
+        color: #666;
+        font-size: 15px;
+        font-weight: 600;
+        padding: 15px 20px;
+        cursor: pointer;
+        position: relative;
+        transition: all 0.3s ease;
+    }
+    
+    .tab-btn:hover {
+        color: #8b2e3d;
+    }
+    
+    .tab-btn.active {
+        color: #8b2e3d;
+    }
+    
+    .tab-btn.active::after {
+        content: '';
+        position: absolute;
+        bottom: -2px;
+        left: 0;
+        right: 0;
+        height: 2px;
+        background: #8b2e3d;
+    }
+    
+    .tab-content {
+        display: none;
+    }
+    
+    .tab-content.active {
+        display: block;
+    }
+    
+    .form-card {
+        background: white;
+    }
+    
+    .profile-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .form-group label {
+        font-weight: 600;
+        color: #1a2352;
+        margin-bottom: 8px;
+        font-size: 14px;
+    }
+    
+    .form-control {
+        padding: 12px 15px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        font-size: 14px;
+        font-family: inherit;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control:focus {
+        outline: none;
+        border-color: #d4a373;
+        box-shadow: 0 0 0 3px rgba(212, 163, 115, 0.1);
+    }
+    
+    .form-control:disabled {
+        background: #f5f5f5;
+        color: #999;
+        cursor: not-allowed;
+    }
+    
+    .form-text {
+        font-size: 12px;
+        color: #999;
+        margin-top: 3px;
+    }
+    
+    .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 20px;
+    }
+    
+    .interests-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 12px;
+    }
+    
+    .interest-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 12px;
+        background: #f9f9f9;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+    }
+    
+    .interest-checkbox:hover {
+        background: #f0f0f0;
+    }
+    
+    .interest-checkbox input {
+        cursor: pointer;
+    }
+    
+    .interest-checkbox input:checked + span {
+        color: #8b2e3d;
+        font-weight: 600;
+    }
+    
+    .form-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+    }
+    
+    .form-actions .btn {
+        flex: 1;
+    }
+    
+    .gallery-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+    
+    .gallery-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+        gap: 15px;
+    }
+    
+    .gallery-item {
+        position: relative;
+        border-radius: 12px;
+        overflow: hidden;
+        aspect-ratio: 1;
+        background: #f0f0f0;
+    }
+    
+    .gallery-item img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    
+    .gallery-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(0,0,0,0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .gallery-item:hover .gallery-overlay {
+        opacity: 1;
+    }
+    
+    .gallery-action {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: white;
+        border: none;
+        color: #8b2e3d;
+        font-size: 16px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+    }
+    
+    .gallery-action:hover {
+        background: #d4a373;
+        color: white;
+    }
+    
+    .setting-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 20px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .setting-info h4 {
+        margin: 0 0 5px;
+        color: #1a2352;
+        font-size: 15px;
+    }
+    
+    .setting-info p {
+        margin: 0;
+        color: #999;
+        font-size: 13px;
+    }
+    
+    .toggle-switch {
+        position: relative;
+        display: inline-block;
+        width: 50px;
+        height: 26px;
+    }
+    
+    .toggle-switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+    
+    .toggle-slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: 0.4s;
+        border-radius: 26px;
+    }
+    
+    .toggle-slider:before {
+        position: absolute;
+        content: "";
+        height: 20px;
+        width: 20px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: 0.4s;
+        border-radius: 50%;
+    }
+    
+    input:checked + .toggle-slider {
+        background-color: #8b2e3d;
+    }
+    
+    input:checked + .toggle-slider:before {
+        transform: translateX(24px);
+    }
+    
+    @media (max-width: 1024px) {
+        .profile-content {
+            grid-template-columns: 1fr;
+            padding: 0 20px;
+        }
+        
+        .profile-header-content {
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            padding: 20px;
+            top: -60px;
+        }
+    }
+    
+    @media (max-width: 768px) {
+        .profile-header-bg {
+            height: 120px;
+        }
+        
+        .profile-avatar-large {
+            width: 100px;
+            height: 100px;
+        }
+        
+        .profile-title {
+            font-size: 24px;
+        }
+        
+        .profile-tags {
+            justify-content: center;
+        }
+        
+        .profile-actions {
+            flex-wrap: wrap;
+        }
+        
+        .form-row {
+            grid-template-columns: 1fr;
+        }
+        
+        .interests-grid {
+            grid-template-columns: 1fr 1fr;
+        }
+        
+        .gallery-grid {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .badges-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
 
-    <!-- ME DIERON LIKE -->
-    <div class="right-sidebar-section" style="background-color: var(--card-bg); border-radius: 0; border-bottom: 1px solid var(--border-color); padding: 15px; margin-bottom: 0;">
-        <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--primary-color); text-transform: uppercase;">❤️ {% trans "Me Dieron Like" %}</h3>
+<!-- SCRIPT: TABS + TEMA -->
+<script>
+    console.log('✅ my_profile.js inicializado');
+    
+    // ==================== TABS ====================
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const tabName = this.getAttribute('data-tab');
+            
+            // Remover activos
+            document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            // Activar nuevo
+            this.classList.add('active');
+            document.getElementById(`tab-${tabName}`).classList.add('active');
+            console.log('📑 Tab cambiado a:', tabName);
+        });
+    });
+    
+    // ==================== BOTONES ====================
+    document.getElementById('editProfileBtn')?.addEventListener('click', function() {
+        document.querySelector('[data-tab="about"]').click();
+    });
+    
+    document.getElementById('cancelBtn')?.addEventListener('click', function() {
+        document.getElementById('profileForm').reset();
+    });
+    
+    // ==================== FORMULARIO ====================
+    document.getElementById('profileForm')?.addEventListener('submit', function(e) {
+        e.preventDefault();
+        alert('Formulario guardado correctamente');
+        console.log('💾 Perfil actualizado');
+    });
+    
+    // ==================== TEMA NOCTURNO (ARREGLADO) ====================
+    const themeToggleBtn = document.getElementById('theme-toggle');
+    
+    if (themeToggleBtn) {
+        console.log('🌓 Sistema de tema inicializado');
+        
+        // Cargar tema guardado
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        document.documentElement.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+        
+        // Escuchar clicks en el botón
+        themeToggleBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            
+            document.documentElement.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            updateThemeIcon(newTheme);
+            
+            console.log('🌓 Tema cambiado a:', newTheme);
+        });
+    } else {
+        console.warn('⚠️ Botón de tema no encontrado');
+    }
+    
+    function updateThemeIcon(theme) {
+        const icon = document.querySelector('#theme-toggle i');
+        if (icon) {
+            if (theme === 'dark') {
+                icon.className = 'fas fa-sun';
+                icon.style.color = '#FFD700';
+            } else {
+                icon.className = 'fas fa-moon';
+                icon.style.color = '#666';
+            }
+        }
+    }
+    
+    // ==================== ESTILOS DE TEMA ====================
+    const themeStyles = document.createElement('style');
+    themeStyles.textContent = `
+        html[data-theme="dark"] {
+            --bg-primary: #1a1a1a;
+            --bg-secondary: #2a2a2a;
+            --text-primary: #ffffff;
+            --text-secondary: #cccccc;
+        }
+        
+        html[data-theme="dark"] .profile-container {
+            background: #1a1a1a;
+        }
+        
+        html[data-theme="dark"] .card {
+            background: #2a2a2a;
+            color: #ffffff;
+        }
+        
+        html[data-theme="dark"] .form-control {
+            background: #333;
+            color: #fff;
+            border-color: #444;
+        }
+        
+        html[data-theme="dark"] .profile-title,
+        html[data-theme="dark"] .card-title,
+        html[data-theme="dark"] .form-group label {
+            color: #ffffff;
+        }
+        
+        html[data-theme="dark"] .profile-location,
+        html[data-theme="dark"] .stat-label {
+            color: #999;
+        }
+    `;
+    document.head.appendChild(themeStyles);
+    
+    console.log('✅ my_profile.js listo');
+</script>
 
-        <!-- Perfil 1 -->
-        <div class="profile-card-mini" style="background-color: var(--bg-secondary); border-radius: 8px; padding: 10px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s; text-align: center;" onclick="alert('👁️ Ver perfil de Sofia')">
-            <div class="profile-avatar-mini" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 24px; margin: 0 auto 8px;">S</div>
-            <div class="profile-name-mini" style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Sofia</div>
-            <div class="profile-location-mini" style="font-size: 11px; color: var(--text-secondary);">28, México</div>
-        </div>
-
-        <!-- Perfil 2 -->
-        <div class="profile-card-mini" style="background-color: var(--bg-secondary); border-radius: 8px; padding: 10px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s; text-align: center;" onclick="alert('👁️ Ver perfil de Valentina')">
-            <div class="profile-avatar-mini" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 24px; margin: 0 auto 8px;">V</div>
-            <div class="profile-name-mini" style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Valentina</div>
-            <div class="profile-location-mini" style="font-size: 11px; color: var(--text-secondary);">26, Colombia</div>
-        </div>
-
-        <!-- Perfil 3 -->
-        <div class="profile-card-mini" style="background-color: var(--bg-secondary); border-radius: 8px; padding: 10px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s; text-align: center;" onclick="alert('👁️ Ver perfil de Andrea')">
-            <div class="profile-avatar-mini" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 24px; margin: 0 auto 8px;">A</div>
-            <div class="profile-name-mini" style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Andrea</div>
-            <div class="profile-location-mini" style="font-size: 11px; color: var(--text-secondary);">30, Argentina</div>
-        </div>
-
-        <button class="view-all-btn" onclick="viewAllLikes()" style="width: 100%; padding: 8px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-top: 10px;">{% trans "Ver Todos" %}</button>
-    </div>
-
-    <!-- VISITANTES RECIENTES -->
-    <div class="right-sidebar-section" style="background-color: var(--card-bg); border-radius: 0; border-bottom: 1px solid var(--border-color); padding: 15px; margin-bottom: 0;">
-        <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--primary-color); text-transform: uppercase;">👁️ {% trans "Visitantes" %}</h3>
-
-        <!-- Visitante 1 -->
-        <div class="profile-card-mini" style="background-color: var(--bg-secondary); border-radius: 8px; padding: 10px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s; text-align: center;" onclick="alert('👁️ Ver perfil de Carlos')">
-            <div class="profile-avatar-mini" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 24px; margin: 0 auto 8px;">C</div>
-            <div class="profile-name-mini" style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Carlos</div>
-            <div class="profile-location-mini" style="font-size: 11px; color: var(--text-secondary);">Hace 2 horas</div>
-        </div>
-
-        <!-- Visitante 2 -->
-        <div class="profile-card-mini" style="background-color: var(--bg-secondary); border-radius: 8px; padding: 10px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s; text-align: center;" onclick="alert('👁️ Ver perfil de Marco')">
-            <div class="profile-avatar-mini" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 24px; margin: 0 auto 8px;">M</div>
-            <div class="profile-name-mini" style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Marco</div>
-            <div class="profile-location-mini" style="font-size: 11px; color: var(--text-secondary);">Hace 5 horas</div>
-        </div>
-
-        <!-- Visitante 3 -->
-        <div class="profile-card-mini" style="background-color: var(--bg-secondary); border-radius: 8px; padding: 10px; margin-bottom: 10px; cursor: pointer; transition: all 0.3s; text-align: center;" onclick="alert('👁️ Ver perfil de Juan')">
-            <div class="profile-avatar-mini" style="width: 60px; height: 60px; border-radius: 50%; background: linear-gradient(135deg, var(--primary-color), #2c5aa0); display: flex; align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 24px; margin: 0 auto 8px;">J</div>
-            <div class="profile-name-mini" style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">Juan</div>
-            <div class="profile-location-mini" style="font-size: 11px; color: var(--text-secondary);">Hace 1 día</div>
-        </div>
-
-        <button class="view-all-btn" onclick="viewAllVisitors()" style="width: 100%; padding: 8px; background-color: var(--primary-color); color: white; border: none; border-radius: 6px; font-size: 12px; font-weight: 600; cursor: pointer; transition: all 0.3s; margin-top: 10px;">{% trans "Ver Todos" %}</button>
-    </div>
-
-    <!-- SUGERENCIAS -->
-    <div class="right-sidebar-section" style="background-color: var(--card-bg); border-radius: 0; padding: 15px; flex-grow: 1;">
-        <h3 style="font-size: 13px; font-weight: 700; margin-bottom: 12px; color: var(--primary-color); text-transform: uppercase;">🎁 {% trans "Sugerencias" %}</h3>
-
-        <div style="background-color: var(--bg-secondary); border-radius: 8px; padding: 12px; margin-bottom: 12px; cursor: pointer; transition: all 0.3s; text-align: center;" onclick="alert('💎 Actualizar a Premium')">
-            <div style="font-size: 32px; margin-bottom: 8px;">💎</div>
-            <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">{% trans "Membresía Premium" %}</div>
-            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px;">{% trans "Desbloquea todas las funciones" %}</div>
-            <button style="width: 100%; padding: 6px; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer;">{% trans "Mejorar" %}</button>
-        </div>
-
-        <div style="background-color: var(--bg-secondary); border-radius: 8px; padding: 12px; text-align: center;" onclick="alert('📸 Añadir más fotos')">
-            <div style="font-size: 32px; margin-bottom: 8px;">📸</div>
-            <div style="font-size: 12px; font-weight: 700; color: var(--text-primary); margin-bottom: 4px;">{% trans "Completa tu Galería" %}</div>
-            <div style="font-size: 11px; color: var(--text-secondary); margin-bottom: 10px;">{% trans "Más fotos = Más likes" %}</div>
-            <button style="width: 100%; padding: 6px; background-color: var(--primary-color); color: white; border: none; border-radius: 5px; font-size: 11px; font-weight: 600; cursor: pointer;">{% trans "Subir" %}</button>
-        </div>
-    </div>
-</div>
-{% endblock right_sidebar %}
+{% endblock %}
