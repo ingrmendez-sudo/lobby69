@@ -43,8 +43,9 @@ class Profile extends Model
         });
     }
 
-    public function account()
+    public function user()
     {
-        return $this->belongsTo(Account::class, 'account_id', 'id');
+        return $this->belongsTo(\App\Models\User::class, 'user_id', 'id');
     }
+
 }

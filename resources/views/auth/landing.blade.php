@@ -80,7 +80,7 @@
 <section class="section-memberships">
     <div class="container">
         <h2 class="section-title">Planes de Membresía</h2>
-        <p class="section-subtitle">Elige el plan que mejor se adapte a ti</p>
+        <p class="section-subtitle">Elige el plan que mejor se adapte a ti <br> Obten un Mes gratis si cuentas con invitación</p>
 
         <div class="plans-grid">
             @php

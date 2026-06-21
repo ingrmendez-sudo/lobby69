@@ -27,6 +27,9 @@ Route::middleware('guest')->group(function () {
 
 // ── Rutas protegidas (requieren autenticación) ──
 Route::middleware('auth')->group(function () {
+    Route::get('/explorar', function () {
+            return view('profiles.explore');
+        })->name('explore');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });

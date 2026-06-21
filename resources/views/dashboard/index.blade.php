@@ -8,16 +8,16 @@
         <article class="profile-summary-card card">
             <div class="profile-summary-card__header">
                 <img src="{{ $profile->avatar_url ?? asset('img/default-avatar.svg') }}"
-                     alt="{{ $profile->display_name ?? $account->email }}"
+                     alt="{{ $profile->display_name ?? $user->name ?? $user->email }}"
                      class="avatar avatar--lg"
                      onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
                 <div>
-                    <h2>{{ $profile->display_name ?? $account->email }}</h2>
+                    <h2>{{ $profile->display_name ?? $user->name ?? $user->email }}</h2>
                     <p class="text-sm text-muted">
-                        @if($profile)
-                            <span class="badge badge--verified"><i class="fas fa-check-circle"></i> Verificado</span>
+                        @if($user->isAdmin())
+                            <span class="badge badge--vip"><i class="fas fa-crown"></i> Administrador</span>
                         @else
-                            <span class="badge badge--new"><i class="fas fa-clock"></i> Perfil incompleto</span>
+                            <span class="badge badge--verified"><i class="fas fa-check-circle"></i> Miembro verificado</span>
                         @endif
                     </p>
                 </div>
@@ -27,7 +27,7 @@
 
     <section class="dashboard__feed">
         <h1 class="h2">Bienvenido a LOBBY69</h1>
-        <p class="text-lg text-muted">Explora la comunidad, conecta con personas afines y disfruta de una experiencia exclusiva.</p>
+        <p class="text-lg text-muted">¡Hola <strong>{{ $user->name ?? $user->email }}</strong>! Explora la comunidad, conecta con personas afines y disfruta de una experiencia exclusiva.</p>
 
         @if(!$profile)
         <div class="card" style="padding: 2rem; margin-top: 1.5rem; text-align: center;">
