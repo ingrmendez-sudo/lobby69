@@ -1,0 +1,506 @@
+﻿{% load static %}
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LOBBY69 - Plataforma Premium de Conexiones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #a74563;
+            --secondary: #463a6d;
+            --dark: #1a1a2e;
+            --light: #f5f5f5;
+            --accent: #ec4899;
+        }
+        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        html, body { height: 100%; font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+        
+        body { display: flex; flex-direction: column; background-color: var(--light); }
+        
+        main { flex: 1; }
+        
+        /* NAVBAR */
+        .navbar-landing {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        
+        .navbar-brand-logo {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--primary) !important;
+        }
+        
+        .navbar-landing .nav-link {
+            color: var(--dark) !important;
+            font-weight: 500;
+            margin: 0 0.5rem;
+            transition: color 0.3s ease;
+        }
+        
+        .navbar-landing .nav-link:hover {
+            color: var(--primary) !important;
+        }
+        
+        /* HERO SECTION */
+        .hero {
+            background: linear-gradient(135deg, rgba(167, 69, 99, 0.95) 0%, rgba(70, 58, 109, 0.95) 100%);
+            background-attachment: fixed;
+            color: white;
+            padding: 6rem 2rem;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 600"><defs><pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse"><path d="M 40 0 L 0 0 0 40" fill="none" stroke="rgba(255,255,255,0.05)" stroke-width="1"/></pattern></defs><rect width="1200" height="600" fill="url(%23grid)" /></svg>');
+            opacity: 0.1;
+        }
+        
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        
+        .hero-logo {
+            width: 120px;
+            height: 120px;
+            margin: 0 auto 2rem;
+            animation: float 3s ease-in-out infinite;
+        }
+        
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-20px); }
+        }
+        
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            letter-spacing: -1px;
+            text-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .hero p {
+            font-size: 1.3rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+        
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .btn-hero {
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: none;
+        }
+        
+        .btn-primary-hero {
+            background: white;
+            color: var(--primary);
+        }
+        
+        .btn-primary-hero:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        .btn-secondary-hero {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+        
+        .btn-secondary-hero:hover {
+            background: white;
+            color: var(--primary);
+        }
+        
+        /* FEATURES SECTION */
+        .features {
+            padding: 5rem 2rem;
+            background: white;
+        }
+        
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--dark);
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .feature-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 1px solid #f0f0f0;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+            height: 100%;
+        }
+        
+        .feature-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 12px 30px rgba(167, 69, 99, 0.15);
+        }
+        
+        .feature-card i {
+            font-size: 3rem;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin-bottom: 1rem;
+        }
+        
+        .feature-card p {
+            color: #666;
+            font-size: 1rem;
+            line-height: 1.6;
+        }
+        
+        /* MEMBERSHIPS SECTION */
+        .memberships {
+            padding: 5rem 2rem;
+            background: linear-gradient(135deg, rgba(167, 69, 99, 0.05) 0%, rgba(70, 58, 109, 0.05) 100%);
+        }
+        
+        .plan-card {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
+            text-align: center;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            position: relative;
+            height: 100%;
+        }
+        
+        .plan-card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 12px 30px rgba(167, 69, 99, 0.2);
+        }
+        
+        .plan-card.popular {
+            border-color: var(--primary);
+            box-shadow: 0 12px 30px rgba(167, 69, 99, 0.2);
+            transform: scale(1.05);
+        }
+        
+        .plan-badge {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: var(--primary);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 700;
+        }
+        
+        .plan-name {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: var(--dark);
+            margin: 1rem 0;
+        }
+        
+        .plan-price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin: 1rem 0;
+        }
+        
+        .plan-duration {
+            font-size: 0.95rem;
+            color: #999;
+            margin-bottom: 1.5rem;
+        }
+        
+        .plan-features {
+            list-style: none;
+            margin: 1.5rem 0;
+            text-align: left;
+            font-size: 0.95rem;
+            color: #666;
+        }
+        
+        .plan-features li {
+            padding: 0.5rem 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        
+        .plan-features li:last-child {
+            border-bottom: none;
+        }
+        
+        .plan-features i {
+            color: var(--primary);
+            margin-right: 0.5rem;
+        }
+        
+        /* CTA SECTION */
+        .cta {
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            color: white;
+            text-align: center;
+        }
+        
+        .cta h2 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+        }
+        
+        .cta p {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.95;
+        }
+        
+        .cta .btn-cta {
+            background: white;
+            color: var(--primary);
+            padding: 1rem 2.5rem;
+            font-size: 1.1rem;
+            font-weight: 600;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .cta .btn-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        }
+        
+        /* FOOTER */
+        footer {
+            background: var(--dark);
+            color: rgba(255, 255, 255, 0.7);
+            padding: 2rem;
+            text-align: center;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        footer a {
+            color: rgba(255, 255, 255, 0.9);
+            text-decoration: none;
+        }
+        
+        footer a:hover {
+            color: var(--primary);
+        }
+        
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2.5rem; }
+            .hero p { font-size: 1.1rem; }
+            .section-title { font-size: 2rem; }
+            .plan-card.popular { transform: scale(1); }
+        }
+    </style>
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-landing">
+        <div class="container-lg">
+            <a class="navbar-brand navbar-brand-logo" href="/">
+                <i class="fas fa-heart"></i> LOBBY69
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#planes">Planes</a></li>
+                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Iniciar Sesión</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link btn btn-sm" style="background: var(--primary); color: white; border-radius: 6px; padding: 0.5rem 1rem; margin-left: 0.5rem;" href="{% url 'invitation-request' %}">
+                            Solicitar Invitación
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- MAIN CONTENT -->
+    <main>
+        <!-- HERO SECTION -->
+        <section class="hero">
+            <div class="hero-content">
+                <div class="hero-logo">
+                    <i class="fas fa-heart" style="font-size: 120px; color: white;"></i>
+                </div>
+                <h1>Bienvenido a LOBBY69</h1>
+                <p>La plataforma premium para conexiones significativas en México</p>
+                <div class="hero-buttons">
+                    <a href="{% url 'login' %}" class="btn-hero btn-primary-hero">Iniciar Sesión</a>
+                    <a href="{% url 'invitation-request' %}" class="btn-hero btn-secondary-hero">Solicitar Invitación</a>
+                </div>
+            </div>
+        </section>
+
+        <!-- FEATURES SECTION -->
+        <section class="features">
+            <div class="container-lg">
+                <h2 class="section-title">¿Por qué elegir LOBBY69?</h2>
+                <div class="row g-4">
+                    <div class="col-md-4">
+                        <div class="feature-card">
+                            <i class="fas fa-shield-alt"></i>
+                            <h3>100% Seguro</h3>
+                            <p>Verifica tu identidad y conecta con confianza en un ambiente seguro y verificado.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-card">
+                            <i class="fas fa-search"></i>
+                            <h3>Busca Inteligente</h3>
+                            <p>Filtros avanzados para encontrar exactamente lo que buscas y tus intereses.</p>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="feature-card">
+                            <i class="fas fa-comments"></i>
+                            <h3>Chat Privado</h3>
+                            <p>Comunícate en tiempo real con compatibilidades en un ambiente confidencial.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- MEMBERSHIPS SECTION -->
+        <section class="memberships" id="planes">
+            <div class="container-lg">
+                <h2 class="section-title">Planes de Membresía</h2>
+                <div class="row g-4">
+                    <div class="col-lg-3 col-md-6">
+                        <div class="plan-card">
+                            <div class="plan-name">EXPLORER</div>
+                            <div class="plan-price">$180</div>
+                            <div class="plan-duration">1 mes</div>
+                            <ul class="plan-features">
+                                <li><i class="fas fa-check"></i> Perfil verificado</li>
+                                <li><i class="fas fa-check"></i> 50 búsquedas/mes</li>
+                                <li><i class="fas fa-check"></i> Chat limitado</li>
+                                <li><i class="fas fa-check"></i> Soporte básico</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="plan-card">
+                            <div class="plan-name">CONNECTORS</div>
+                            <div class="plan-price">$299</div>
+                            <div class="plan-duration">3 meses</div>
+                            <ul class="plan-features">
+                                <li><i class="fas fa-check"></i> Todo en EXPLORER</li>
+                                <li><i class="fas fa-check"></i> Búsquedas ilimitadas</li>
+                                <li><i class="fas fa-check"></i> Chat prioritario</li>
+                                <li><i class="fas fa-check"></i> Promociones exclusivas</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="plan-card">
+                            <div class="plan-name">INFLUENCER</div>
+                            <div class="plan-price">$599</div>
+                            <div class="plan-duration">6 meses</div>
+                            <ul class="plan-features">
+                                <li><i class="fas fa-check"></i> Todo en CONNECTORS</li>
+                                <li><i class="fas fa-check"></i> Perfil destacado</li>
+                                <li><i class="fas fa-check"></i> Video verificación</li>
+                                <li><i class="fas fa-check"></i> Soporte VIP</li>
+                            </ul>
+                        </div>
+                    </div>
+                    <div class="col-lg-3 col-md-6">
+                        <div class="plan-card popular">
+                            <div class="plan-badge">MÁS POPULAR</div>
+                            <div class="plan-name">VIP ELITE</div>
+                            <div class="plan-price">$1,199</div>
+                            <div class="plan-duration">1 año</div>
+                            <ul class="plan-features">
+                                <li><i class="fas fa-check"></i> Todo en INFLUENCER</li>
+                                <li><i class="fas fa-check"></i> Concierge personal</li>
+                                <li><i class="fas fa-check"></i> Eventos exclusivos</li>
+                                <li><i class="fas fa-check"></i> Máxima privacidad</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- CTA SECTION -->
+        <section class="cta">
+            <div class="container-lg">
+                <h2>¿Listo para conectar?</h2>
+                <p>Únete a miles de usuarios que buscan conexiones significativas en LOBBY69</p>
+                <a href="{% url 'invitation-request' %}" class="btn-cta">Solicitar Invitación Ahora</a>
+            </div>
+        </section>
+    </main>
+
+    <!-- FOOTER -->
+    <footer>
+        <div class="container-lg">
+            <p>&copy; 2026 LOBBY69 - CRIMSON ARCHITECTS. Todos los derechos reservados.</p>
+            <p style="margin-top: 1rem; font-size: 0.9rem;">
+                <a href="#">Términos y Condiciones</a> | 
+                <a href="#">Política de Privacidad</a> | 
+                <a href="#">Contacto</a>
+            </p>
+        </div>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

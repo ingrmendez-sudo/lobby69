@@ -1,0 +1,172 @@
+﻿{% extends "layouts/base.html" %}
+{% load static %}
+
+{% block title %}Inicio - LOBBY69{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/dashboard-custom.css' %}">
+{% endblock %}
+
+
+{% block content %}
+<!-- WELCOME SECTION -->
+<div class="welcome-section">
+    <h2><i class="fas fa-wave-hand"></i> ¡Bienvenido, {{ request.user.first_name|default:request.user.email }}!</h2>
+    <p>Explora nuevas conexiones y comparte tus momentos especiales.</p>
+</div>
+
+<!-- RECENT PHOTOS SECTION -->
+<h3 class="section-title">
+    <i class="fas fa-images"></i> Fotos Recientes
+</h3>
+
+{% if recent_photos %}
+    <div class="photo-grid">
+        {% for photo in recent_photos %}
+            <div class="photo-card" onclick="window.location.href='/gallery/{{ photo.id }}/';">
+                <img src="{{ photo.image.url }}" alt="{{ photo.caption }}" class="photo-image">
+                <div class="photo-info">
+                    <div class="photo-user">
+                        <img src="{{ photo.user.profile.avatar_url|default:'https://via.placeholder.com/35' }}"
+                             alt="{{ photo.user.first_name }}" class="photo-avatar">
+                        <div class="photo-user-info">
+                            <h5>{{ photo.user.first_name }} {{ photo.user.last_name }}</h5>
+                            <p>{{ photo.created_at|timesince }} atrás</p>
+                        </div>
+                    </div>
+                    <p style="font-size: 0.9rem; color: #666; margin: 0 0 0.75rem;">{{ photo.caption|truncatewords:10 }}</p>
+                    <div class="photo-actions">
+                        <button class="action-btn like-btn" data-photo-id="{{ photo.id }}">
+                            <i class="fas fa-heart"></i> <span class="like-count">{{ photo.likes_count|default:0 }}</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-comment"></i> <span>{{ photo.comments_count|default:0 }}</span>
+                        </button>
+                        <button class="action-btn">
+                            <i class="fas fa-share"></i> Compartir
+                        </button>
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <i class="fas fa-image"></i>
+        <h3>No hay fotos aún</h3>
+        <p>Sé el primero en compartir una foto</p>
+        <a href="{% url 'gallery' %}" class="btn-primary-action">Subir Foto</a>
+    </div>
+{% endif %}
+
+<!-- SUGGESTIONS SECTION -->
+<h3 class="section-title">
+    <i class="fas fa-sparkles"></i> Sugerencias para Ti
+</h3>
+
+<div class="row">
+    <div class="col-lg-8">
+        {% if suggestions %}
+            <div class="suggestions-section">
+                {% for profile in suggestions %}
+                    <div class="suggestion-card">
+                        <img src="{{ profile.avatar_url|default:'https://via.placeholder.com/80' }}"
+                             alt="{{ profile.user.first_name }}" class="suggestion-image">
+                        <div class="suggestion-info">
+                            <h5>{{ profile.user.first_name }} {{ profile.user.last_name }}</h5>
+                            <p>{{ profile.city }}, {{ profile.country|default:"México" }}</p>
+                            <p style="font-size: 0.8rem; margin-top: 0.25rem;">
+                                <i class="fas fa-heart" style="color: var(--primary);"></i> {{ profile.interests }}
+                            </p>
+                        </div>
+                        <div class="suggestion-actions">
+                            <button class="btn-secondary-action">
+                                <i class="fas fa-times"></i>
+                            </button>
+                            <button class="btn-primary-action" onclick="window.location.href='/profiles/{{ profile.id }}/';">
+                                <i class="fas fa-eye"></i> Ver Perfil
+                            </button>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <i class="fas fa-search"></i>
+                <h3>No hay sugerencias</h3>
+                <p>Ajusta tus preferencias para obtener mejores sugerencias</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- SIDEBAR -->
+    <div class="col-lg-4">
+        <div class="suggestions-section">
+            <h5 style="margin-bottom: 1rem; color: var(--primary); font-weight: 700;">
+                <i class="fas fa-info-circle"></i> Tu Membresía
+            </h5>
+            <div style="background: rgba(167, 69, 99, 0.1); padding: 1rem; border-radius: 8px; margin-bottom: 1rem;">
+                <p style="margin: 0; font-weight: 600; color: var(--primary); font-size: 1.1rem;">
+                    {{ request.user.membership_plan|default:"EXPLORER" }}
+                </p>
+                <p style="margin: 0.5rem 0 0; font-size: 0.9rem; color: #666;">
+                    Renovación: {{ membership_renewal_date|default:"Próximamente" }}
+                </p>
+            </div>
+
+            <h5 style="margin: 1.5rem 0 1rem; color: var(--primary); font-weight: 700;">
+                <i class="fas fa-chart-line"></i> Estadísticas
+            </h5>
+            <div style="font-size: 0.9rem;">
+                <p style="margin: 0.5rem 0; display: flex; justify-content: space-between;">
+                    <span>Fotos:</span> <strong>{{ user_photos_count|default:0 }}</strong>
+                </p>
+                <p style="margin: 0.5rem 0; display: flex; justify-content: space-between;">
+                    <span>Seguidores:</span> <strong>{{ followers_count|default:0 }}</strong>
+                </p>
+                <p style="margin: 0.5rem 0; display: flex; justify-content: space-between;">
+                    <span>Me gusta recibidos:</span> <strong>{{ total_likes|default:0 }}</strong>
+                </p>
+            </div>
+
+            <a href="{% url 'memberships' %}" class="btn-primary-action" style="display: block; width: 100%; text-align: center; margin-top: 1.5rem;">
+                <i class="fas fa-crown"></i> Actualizar Membresía
+            </a>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Like button functionality
+    document.querySelectorAll('.like-btn').forEach(btn => {
+        btn.addEventListener('click', async function(e) {
+            e.stopPropagation();
+            const photoId = this.dataset.photoId;
+            const isLiked = this.classList.contains('liked');
+            const endpoint = isLiked ? `unlike` : `like`;
+
+            try {
+                const response = await fetch(`/api/gallery/${photoId}/${endpoint}/`, {
+                    method: 'POST',
+                    headers: {
+                        'X-CSRFToken': '{{ csrf_token }}',
+                        'Content-Type': 'application/json'
+                    }
+                });
+
+                if (response.ok) {
+                    this.classList.toggle('liked');
+                    const countSpan = this.querySelector('.like-count');
+                    let count = parseInt(countSpan.textContent);
+                    countSpan.textContent = isLiked ? count - 1 : count + 1;
+                }
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        });
+    });
+</script>
+{% endblock %}

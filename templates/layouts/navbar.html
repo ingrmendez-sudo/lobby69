@@ -1,0 +1,158 @@
+﻿<!-- PREMIUM NAVBAR - Reusable Component -->
+<nav class="navbar navbar-expand-lg navbar-dark premium-navbar">
+    <div class="container-lg">
+        <!-- LOGO -->
+        <a class="navbar-brand" href="{% url 'home' %}">
+            <i class="fas fa-heart"></i> <strong>LOBBY69</strong>
+        </a>
+
+        <!-- TOGGLE BUTTON (Mobile) -->
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarContent">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <!-- NAVBAR CONTENT -->
+        <div class="collapse navbar-collapse" id="navbarContent">
+            <!-- CENTER LINKS -->
+            <ul class="navbar-nav mx-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'home' %}">
+                        <i class="fas fa-home"></i> Inicio
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'explore' %}">
+                        <i class="fas fa-search"></i> Explorar
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'gallery' %}">
+                        <i class="fas fa-images"></i> Galería
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="{% url 'messages' %}">
+                        <i class="fas fa-comments"></i> Mensajes
+                        {% if unread_messages > 0 %}
+                            <span class="badge bg-danger ms-1">{{ unread_messages }}</span>
+                        {% endif %}
+                    </a>
+                </li>
+            </ul>
+
+            <!-- RIGHT ICONS & PROFILE -->
+            <ul class="navbar-nav ms-auto align-items-center">
+                <!-- NOTIFICATIONS -->
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle position-relative" href="#" id="notificationsDropdown" role="button" data-bs-toggle="dropdown">
+                        <i class="fas fa-bell"></i>
+                        {% if unread_notifications > 0 %}
+                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger" style="font-size: 0.7rem;">
+                                {{ unread_notifications }}
+                            </span>
+                        {% endif %}
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="notificationsDropdown" style="max-width: 300px;">
+                        <li><h6 class="dropdown-header">Notificaciones</h6></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'notifications' %}">Ver todas</a></li>
+                    </ul>
+                </li>
+
+                <!-- PROFILE DROPDOWN -->
+                <li class="nav-item dropdown ms-3">
+                    <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" id="profileDropdown" role="button" data-bs-toggle="dropdown">
+                        <img src="{{ request.user.profile.avatar_url|default:'https://via.placeholder.com/40' }}" 
+                             alt="Avatar" class="rounded-circle" style="width: 35px; height: 35px; object-fit: cover; margin-right: 0.5rem;">
+                        <span class="d-none d-lg-inline-block" style="font-size: 0.9rem;">{{ request.user.first_name|default:request.user.email }}</span>
+                    </a>
+                    <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                        <li><h6 class="dropdown-header">Mi Cuenta</h6></li>
+                        <li><a class="dropdown-item" href="{% url 'my_profile' %}"><i class="fas fa-user"></i> Mi Perfil</a></li>
+                        <li><a class="dropdown-item" href="{% url 'memberships' %}"><i class="fas fa-crown"></i> Membresía</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item" href="{% url 'settings' %}"><i class="fas fa-cog"></i> Configuración</a></li>
+                        {% if request.user.is_staff %}
+                            <li><a class="dropdown-item" href="{% url 'admin:index' %}"><i class="fas fa-shield-alt"></i> Admin Panel</a></li>
+                        {% endif %}
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="{% url 'logout' %}"><i class="fas fa-sign-out-alt"></i> Cerrar Sesión</a></li>
+                    </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<style>
+    .premium-navbar {
+        background: linear-gradient(90deg, rgba(167, 69, 99, 0.95) 0%, rgba(70, 58, 109, 0.95) 100%);
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        padding: 1rem 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .premium-navbar .navbar-brand {
+        font-size: 1.4rem;
+        font-weight: 700;
+        color: white !important;
+        transition: transform 0.3s ease;
+    }
+
+    .premium-navbar .navbar-brand:hover {
+        transform: scale(1.05);
+    }
+
+    .premium-navbar .nav-link {
+        color: rgba(255, 255, 255, 0.85) !important;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        margin: 0 0.5rem;
+        padding: 0.5rem 0.75rem !important;
+    }
+
+    .premium-navbar .nav-link:hover,
+    .premium-navbar .nav-link.active {
+        color: white !important;
+        background: rgba(255, 255, 255, 0.1);
+        border-radius: 6px;
+    }
+
+    .premium-navbar .dropdown-menu {
+        background: rgba(30, 30, 46, 0.98);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 8px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    .premium-navbar .dropdown-item {
+        color: rgba(255, 255, 255, 0.85);
+        transition: all 0.3s ease;
+    }
+
+    .premium-navbar .dropdown-item:hover {
+        background: rgba(167, 69, 99, 0.3);
+        color: white;
+    }
+
+    .premium-navbar .dropdown-header {
+        color: rgba(255, 255, 255, 0.7);
+        font-weight: 600;
+    }
+
+    .premium-navbar .dropdown-divider {
+        border-color: rgba(255, 255, 255, 0.1);
+    }
+
+    @media (max-width: 991px) {
+        .premium-navbar .navbar-collapse {
+            background: rgba(30, 30, 46, 0.98);
+            border-radius: 8px;
+            margin-top: 1rem;
+            padding: 1rem;
+            backdrop-filter: blur(10px);
+        }
+    }
+</style>
