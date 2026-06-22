@@ -14,6 +14,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->alias([
            'admin.only'             => \App\Http\Middleware\AdminOnly::class,
         'force.password.change'  => \App\Http\Middleware\ForcePasswordChange::class,
+        'profile.completed'      => \App\Http\Middleware\ProfileCompleted::class,
        ]);
     })
 

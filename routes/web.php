@@ -24,12 +24,8 @@ Route::middleware('guest')->group(function () {
     Route::post('/solicitar-invitacion', [InvitationController::class, 'store'])->name('invitation.store');
 });
 
-// Rutas protegidas
+// Rutas solo auth + force password (sin requerir perfil completo)
 Route::middleware(['auth', 'force.password.change'])->group(function () {
-    Route::get('/explorar', function () {
-        return view('profiles.explore');
-    })->name('explore');
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     // Cambio de contrasena obligatorio
@@ -37,6 +33,24 @@ Route::middleware(['auth', 'force.password.change'])->group(function () {
         ->name('password.change');
     Route::post('/cambiar-password', [App\Http\Controllers\Auth\PasswordChangeController::class, 'store'])
         ->name('password.change.store');
+
+    // Perfil setup inicial (no requiere perfil completo)
+    Route::get('/perfil/configurar',  [App\Http\Controllers\Profile\ProfileController::class, 'setup'])
+        ->name('profile.setup');
+    Route::post('/perfil/configurar', [App\Http\Controllers\Profile\ProfileController::class, 'store'])
+        ->name('profile.store');
+});
+
+// Rutas que requieren perfil completo
+Route::middleware(['auth', 'force.password.change', 'profile.completed'])->group(function () {
+    Route::get('/dashboard',  [DashboardController::class, 'index'])->name('dashboard');
+    Route::get('/explorar', function () {
+        return view('profiles.explore');
+    })->name('explore');
+    Route::get('/perfil/editar',  [App\Http\Controllers\Profile\ProfileController::class, 'edit'])
+        ->name('profile.edit');
+    Route::post('/perfil/editar', [App\Http\Controllers\Profile\ProfileController::class, 'update'])
+        ->name('profile.update');
 });
 
 // Admin

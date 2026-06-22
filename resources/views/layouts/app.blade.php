@@ -84,6 +84,7 @@
         to   { transform: translateX(0);    opacity: 1; }
     }
     </style>
+<style>[x-cloak] { display: none !important; }</style>
 </head>
 <body>
     @include('components.navbar')
