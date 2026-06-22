@@ -33,3 +33,14 @@ Route::middleware('auth')->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 });
+// ── Admin ────────────────────────────────────────────────
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin.only'])->group(function () {
+    Route::get('invitaciones', [App\Http\Controllers\Admin\AdminInvitationController::class, 'index'])
+        ->name('invitations.index');
+    Route::get('invitaciones/{id}', [App\Http\Controllers\Admin\AdminInvitationController::class, 'show'])
+        ->name('invitations.show');
+    Route::post('invitaciones/{id}/aprobar', [App\Http\Controllers\Admin\AdminInvitationController::class, 'approve'])
+        ->name('invitations.approve');
+    Route::post('invitaciones/{id}/rechazar', [App\Http\Controllers\Admin\AdminInvitationController::class, 'reject'])
+        ->name('invitations.reject');
+});

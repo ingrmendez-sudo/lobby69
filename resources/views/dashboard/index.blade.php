@@ -10,7 +10,7 @@
                 <img src="{{ $profile->avatar_url ?? asset('img/default-avatar.svg') }}"
                      alt="{{ $profile->display_name ?? $user->name ?? $user->email }}"
                      class="avatar avatar--lg"
-                     onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
+                     onerror="this.onerror=null; this.src='{{ asset('img/default-avatar.svg') }}'">
                 <div>
                     <h2>{{ $profile->display_name ?? $user->name ?? $user->email }}</h2>
                     <p class="text-sm text-muted">
