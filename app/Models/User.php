@@ -40,7 +40,9 @@ class User extends Authenticatable
         'terms_accepted' => 'boolean',
         'active' => 'boolean',
         'email_verified_at' => 'datetime',
-        'last_login_at' => 'datetime',
+        'last_login_at'          => 'datetime',
+        'password_changed'       => 'boolean',
+        'password_changed_at'    => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
     ];

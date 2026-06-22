@@ -25,12 +25,18 @@ Route::middleware('guest')->group(function () {
 });
 
 // Rutas protegidas
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'force.password.change'])->group(function () {
     Route::get('/explorar', function () {
         return view('profiles.explore');
     })->name('explore');
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
+
+    // Cambio de contrasena obligatorio
+    Route::get('/cambiar-password',  [App\Http\Controllers\Auth\PasswordChangeController::class, 'show'])
+        ->name('password.change');
+    Route::post('/cambiar-password', [App\Http\Controllers\Auth\PasswordChangeController::class, 'store'])
+        ->name('password.change.store');
 });
 
 // Admin
