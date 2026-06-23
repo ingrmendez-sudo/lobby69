@@ -5,7 +5,16 @@
 
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:2rem;">
     <h1 style="font-size:1.8rem;font-weight:700;color:var(--color-text);">
-      🛡️ Panel Admin — Invitaciones
+      🛡️ Panel Admin</h1>
+    <a href="{{ route('admin.verifications.index') }}"
+       style="display:inline-block;margin-top:.5rem;padding:.5rem 1rem;background:#8b5cf6;color:white;border-radius:8px;font-size:.85rem;text-decoration:none;font-weight:600;">
+        🛡️ Cola de Verificaciones
+        @php $pending = \Illuminate\Support\Facades\DB::table('verifications')->where('status','pending')->count(); @endphp
+        @if($pending > 0)
+            <span style="background:#ef4444;color:white;border-radius:50%;padding:.1rem .4rem;font-size:.75rem;margin-left:.3rem;">{{ $pending }}</span>
+        @endif
+    </a>
+    <span style="display:none — Invitaciones
     </h1>
     <a href="{{ route('dashboard') }}" class="btn btn--ghost btn--sm">← Dashboard</a>
   </div>

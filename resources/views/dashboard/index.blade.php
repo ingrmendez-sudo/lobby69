@@ -114,6 +114,62 @@
             Explora la comunidad, conecta con personas afines y disfruta de una experiencia exclusiva.
         </p>
 
+        
+        {{-- Banner verificación --}}
+        @php
+            $vStatus = $user->verification_status ?? 'unverified';
+            $mType   = $user->membership_type ?? 'trial';
+            $trialDays = $user->trial_started_at
+                ? (int) \Carbon\Carbon::parse($user->trial_started_at)->diffInDays(\Carbon\Carbon::now())
+                : 0;
+            $trialLeft = max(0, 7 - (int) $trialDays);
+        @endphp
+
+        @if($vStatus === 'unverified')
+        <div style="background:linear-gradient(135deg,#fef3c7,#fff);border:2px solid #f59e0b;border-radius:12px;padding:1.25rem 1.5rem;margin-top:1.5rem;display:flex;gap:1rem;align-items:center;">
+            <span style="font-size:2rem;flex-shrink:0;">⚠️</span>
+            <div style="flex:1;">
+                <strong style="color:#92400e;font-size:.95rem;">Verifica tu identidad</strong>
+                <p style="color:#78350f;font-size:.85rem;margin:.3rem 0 0;">
+                    @if($trialLeft > 0)
+                        Te quedan <strong>{{ $trialLeft }} día{{ $trialLeft !== 1 ? 's' : '' }}</strong> de prueba.
+                    @else
+                        Tu período de prueba ha terminado.
+                    @endif
+                    Verifica tu identidad para seguir usando LOBBY69.
+                </p>
+            </div>
+            <a href="{{ route('verification.show') }}"
+               style="flex-shrink:0;padding:.6rem 1.2rem;background:#f59e0b;color:white;border-radius:8px;font-weight:700;font-size:.85rem;text-decoration:none;white-space:nowrap;">
+                Verificar ahora →
+            </a>
+        </div>
+        @elseif($vStatus === 'pending')
+        <div style="background:linear-gradient(135deg,#eff6ff,#fff);border:2px solid #3b82f6;border-radius:12px;padding:1.25rem 1.5rem;margin-top:1.5rem;display:flex;gap:1rem;align-items:center;">
+            <span style="font-size:2rem;flex-shrink:0;">⏳</span>
+            <div>
+                <strong style="color:#1e40af;font-size:.95rem;">Verificación en revisión</strong>
+                <p style="color:#1d4ed8;font-size:.85rem;margin:.3rem 0 0;">El equipo revisará tu foto en las próximas 24-48 horas.</p>
+            </div>
+        </div>
+        @elseif($vStatus === 'approved')
+        <div style="background:linear-gradient(135deg,#f0fdf4,#fff);border:2px solid #10b981;border-radius:12px;padding:1rem 1.5rem;margin-top:1.5rem;display:flex;gap:1rem;align-items:center;">
+            <span style="font-size:1.5rem;">✅</span>
+            <strong style="color:#065f46;font-size:.9rem;">Identidad verificada — Badge activo en tu perfil</strong>
+        </div>
+        @elseif($vStatus === 'rejected')
+        <div style="background:linear-gradient(135deg,#fff1f2,#fff);border:2px solid #ef4444;border-radius:12px;padding:1.25rem 1.5rem;margin-top:1.5rem;display:flex;gap:1rem;align-items:center;">
+            <span style="font-size:2rem;flex-shrink:0;">❌</span>
+            <div style="flex:1;">
+                <strong style="color:#991b1b;font-size:.95rem;">Verificación rechazada</strong>
+                <p style="color:#7f1d1d;font-size:.85rem;margin:.3rem 0 0;">Revisa el motivo y envía una nueva foto.</p>
+            </div>
+            <a href="{{ route('verification.show') }}"
+               style="flex-shrink:0;padding:.6rem 1.2rem;background:#ef4444;color:white;border-radius:8px;font-weight:700;font-size:.85rem;text-decoration:none;">
+                Reintentar →
+            </a>
+        </div>
+        @endif
         {{-- Alerta si perfil incompleto --}}
         @if(!$profile || !$profile->profile_completed)
         <div class="card" style="padding:2rem;margin-top:1.5rem;text-align:center;border:2px dashed #f59e0b;">

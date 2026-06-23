@@ -1,4 +1,6 @@
 <?php
+$content = <<<'PHP'
+<?php
 
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -21,3 +23,7 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
+PHP;
+
+file_put_contents(__DIR__ . '/bootstrap/app.php', $content);
+echo "✅ bootstrap/app.php reescrito correctamente\n";

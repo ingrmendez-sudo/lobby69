@@ -79,3 +79,45 @@ Route::get('/debug-auth', function () {
         'active'     => $user->active,
     ]);
 })->middleware('auth');
+
+// ── VERIFICACIÓN DE IDENTIDAD ─────────────────────────────────────────────
+Route::middleware(['auth', 'force.password.change', 'profile.completed'])->group(function () {
+    Route::get('/verificar',
+        [\App\Http\Controllers\Verification\VerificationController::class, 'show'])
+        ->name('verification.show');
+
+    Route::post('/verificar',
+        [\App\Http\Controllers\Verification\VerificationController::class, 'store'])
+        ->name('verification.store');
+
+    Route::get('/verificar/pendiente',
+        [\App\Http\Controllers\Verification\VerificationController::class, 'pending'])
+        ->name('verification.pending');
+
+    Route::get('/verificar/estado',
+        [\App\Http\Controllers\Verification\VerificationController::class, 'status'])
+        ->name('verification.status');
+});
+
+// ── ADMIN: VERIFICACIONES ─────────────────────────────────────────────────
+Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/verificaciones',
+        [\App\Http\Controllers\Admin\AdminVerificationController::class, 'index'])
+        ->name('verifications.index');
+
+    Route::get('/verificaciones/{id}',
+        [\App\Http\Controllers\Admin\AdminVerificationController::class, 'show'])
+        ->name('verifications.show');
+
+    Route::post('/verificaciones/{id}/aprobar',
+        [\App\Http\Controllers\Admin\AdminVerificationController::class, 'approve'])
+        ->name('verifications.approve');
+
+    Route::post('/verificaciones/{id}/rechazar',
+        [\App\Http\Controllers\Admin\AdminVerificationController::class, 'reject'])
+        ->name('verifications.reject');
+
+    Route::get('/verificaciones/imagen/{id}',
+        [\App\Http\Controllers\Admin\AdminVerificationController::class, 'serveImage'])
+        ->name('verifications.image');
+});
