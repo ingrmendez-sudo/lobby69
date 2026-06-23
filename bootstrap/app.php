@@ -16,6 +16,8 @@ return Application::configure(basePath: dirname(__DIR__))
             'force.password.change' => \App\Http\Middleware\ForcePasswordChange::class,
             'profile.completed'     => \App\Http\Middleware\ProfileCompleted::class,
             'check.membership'      => \App\Http\Middleware\CheckMembershipStatus::class,
+            'track.seen' => \App\Http\Middleware\TrackLastSeen::class,
+
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

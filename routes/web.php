@@ -2,7 +2,7 @@
 
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Auth\InvitationController;
-use App\Http\Controllers\Dashboard\DashboardController;
+use App\Http\Controllers\DashboardController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,10 +22,14 @@ Route::middleware('guest')->group(function () {
     Route::post('/login', [LoginController::class, 'store'])->name('login.store');
     Route::get('/solicitar-invitacion', [InvitationController::class, 'show'])->name('invitation.show');
     Route::post('/solicitar-invitacion', [InvitationController::class, 'store'])->name('invitation.store');
+
+    Route::get('/dashboard/feed', [App\Http\Controllers\DashboardController::class, 'feedAjax'])->name('dashboard.feed.ajax');
+    Route::post('/dashboard/like/{photo}', [App\Http\Controllers\DashboardController::class, 'toggleLike'])->name('dashboard.like');
+    Route::get('/dashboard/photo/{photo}', [App\Http\Controllers\DashboardController::class, 'photoModal'])->name('dashboard.photo.modal');
 });
 
 // Rutas solo auth + force password (sin requerir perfil completo)
-Route::middleware(['auth', 'force.password.change'])->group(function () {
+Route::middleware(['auth', 'force.password.change', 'track.seen'])->group(function () {
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
     // Cambio de contrasena obligatorio
@@ -121,3 +125,54 @@ Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->grou
         [\App\Http\Controllers\Admin\AdminVerificationController::class, 'serveImage'])
         ->name('verifications.image');
 });
+
+// ── FOTOS (usuario autenticado) ───────────────────────
+Route::middleware(['auth', 'force.password.change', 'profile.completed', 'check.membership'])
+    ->group(function () {
+
+    Route::get('/mis-fotos',
+        [\App\Http\Controllers\Photo\PhotoController::class, 'index'])
+        ->name('photos.index');
+
+    Route::post('/mis-fotos',
+        [\App\Http\Controllers\Photo\PhotoController::class, 'store'])
+        ->name('photos.store');
+
+    Route::post('/mis-fotos/{id}/perfil',
+        [\App\Http\Controllers\Photo\PhotoController::class, 'setProfilePhoto'])
+        ->name('photos.profile');
+
+    Route::delete('/mis-fotos/{id}',
+        [\App\Http\Controllers\Photo\PhotoController::class, 'destroy'])
+        ->name('photos.destroy');
+
+    // Ver foto (con control de acceso por membresía)
+    Route::get('/fotos/{id}',
+        [\App\Http\Controllers\Photo\PhotoController::class, 'serve'])
+        ->name('photos.serve');
+
+    // Perfil público de un usuario
+    Route::get('/perfil/{nickname}',
+        [\App\Http\Controllers\Profile\ProfileController::class, 'publicShow'])
+        ->name('profile.show');
+});
+
+// ── ADMIN: FOTOS ──────────────────────────────────────
+Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/fotos',
+        [\App\Http\Controllers\Admin\AdminPhotoController::class, 'index'])
+        ->name('photos.index');
+
+    Route::post('/fotos/{id}/aprobar',
+        [\App\Http\Controllers\Admin\AdminPhotoController::class, 'approve'])
+        ->name('photos.approve');
+
+    Route::post('/fotos/{id}/rechazar',
+        [\App\Http\Controllers\Admin\AdminPhotoController::class, 'reject'])
+        ->name('photos.reject');
+
+    Route::get('/fotos/imagen/{id}',
+        [\App\Http\Controllers\Admin\AdminPhotoController::class, 'serve'])
+        ->name('photos.serve');
+});
+

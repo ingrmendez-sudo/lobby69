@@ -407,3 +407,518 @@ h4, .h4 { font-size: var(--text-lg); font-weight: 600; line-height: 1.5; }
   .plan-card--featured { transform: none; }
   .plans-grid { grid-template-columns: 1fr; }
 }
+
+/* ============================================================
+   LOBBY69 — SISTEMA DE TEMAS DÍA / NOCHE
+   ============================================================ */
+
+/* ── MODO DÍA (default) ── */
+:root,
+[data-theme="light"] {
+    --theme-bg:           #faf9f7;
+    --theme-bg-2:         #f3f0f7;
+    --theme-surface:      #ffffff;
+    --theme-surface-2:    #f8f5fc;
+    --theme-surface-3:    #f0ebf8;
+    --theme-border:       rgba(180, 60, 120, 0.15);
+    --theme-border-soft:  rgba(0, 0, 0, 0.07);
+    --theme-text:         #1a1523;
+    --theme-text-2:       #4a3f5c;
+    --theme-text-3:       #7c6e8a;
+    --theme-text-muted:   #a394b0;
+    --theme-accent:       #c0392b;
+    --theme-accent-2:     #8e44ad;
+    --theme-accent-soft:  rgba(192, 57, 43, 0.1);
+    --theme-pink:         #d63080;
+    --theme-pink-soft:    rgba(214, 48, 128, 0.1);
+    --theme-pink-border:  rgba(214, 48, 128, 0.25);
+    --theme-success:      #16a34a;
+    --theme-warning:      #d97706;
+    --theme-danger:       #dc2626;
+    --theme-online:       #16a34a;
+    --theme-shadow:       0 4px 20px rgba(100, 50, 120, 0.1);
+    --theme-shadow-md:    0 8px 32px rgba(100, 50, 120, 0.14);
+    --theme-shadow-lg:    0 16px 48px rgba(100, 50, 120, 0.18);
+    --theme-navbar-bg:    rgba(255, 255, 255, 0.97);
+    --theme-navbar-text:  #1a1523;
+    --theme-navbar-border:rgba(180, 60, 120, 0.2);
+    --theme-dropdown-bg:  #ffffff;
+    --theme-gradient:     linear-gradient(135deg, #c0392b, #8e44ad);
+    --theme-ring-opacity: 0.6;
+    --theme-icon-opacity: 0.7;
+}
+
+/* ── MODO NOCHE ── */
+[data-theme="dark"] {
+    --theme-bg:           #0f0a1a;
+    --theme-bg-2:         #150d26;
+    --theme-surface:      #1e1232;
+    --theme-surface-2:    #251840;
+    --theme-surface-3:    #2d1e4e;
+    --theme-border:       rgba(180, 60, 120, 0.22);
+    --theme-border-soft:  rgba(255, 255, 255, 0.06);
+    --theme-text:         #f0eaf8;
+    --theme-text-2:       #d4c8e8;
+    --theme-text-3:       #a992c4;
+    --theme-text-muted:   #7a6690;
+    --theme-accent:       #e05060;
+    --theme-accent-2:     #a855f7;
+    --theme-accent-soft:  rgba(224, 80, 96, 0.15);
+    --theme-pink:         #e056a0;
+    --theme-pink-soft:    rgba(224, 86, 160, 0.12);
+    --theme-pink-border:  rgba(224, 86, 160, 0.25);
+    --theme-success:      #22c55e;
+    --theme-warning:      #f59e0b;
+    --theme-danger:       #ef4444;
+    --theme-online:       #22c55e;
+    --theme-shadow:       0 4px 20px rgba(0, 0, 0, 0.4);
+    --theme-shadow-md:    0 8px 32px rgba(0, 0, 0, 0.5);
+    --theme-shadow-lg:    0 16px 48px rgba(0, 0, 0, 0.6);
+    --theme-navbar-bg:    rgba(15, 10, 26, 0.97);
+    --theme-navbar-text:  #f0eaf8;
+    --theme-navbar-border:rgba(180, 60, 120, 0.25);
+    --theme-dropdown-bg:  #1e1232;
+    --theme-gradient:     linear-gradient(135deg, #c0392b, #8e44ad);
+    --theme-ring-opacity: 0.5;
+    --theme-icon-opacity: 0.85;
+}
+
+/* ── Transición suave al cambiar tema ── */
+*, *::before, *::after {
+    transition: background-color 0.25s ease,
+                border-color 0.25s ease,
+                color 0.2s ease,
+                box-shadow 0.25s ease;
+}
+/* Excluir elementos donde la transición genera glitch */
+img, svg, video, canvas,
+[class*="fa-"],
+.dsb-progress-fill,
+.l69-nav__search-wrap { transition: none !important; }
+
+/* ── Body con variables de tema ── */
+body {
+    background-color: var(--theme-bg) !important;
+    color: var(--theme-text) !important;
+}
+
+
+/* ══════════════════════════════════════════════════════════
+   SISTEMA DE TEMAS — LOBBY69
+   El toggle aplica data-theme="dark" en <html>
+   Por defecto: modo claro (day)
+   ══════════════════════════════════════════════════════════ */
+
+/* MODO DÍA (default) */
+:root,
+html[data-theme="light"],
+html:not([data-theme="dark"]) {
+    --bg-body:        #faf9f7;
+    --bg-card:        #ffffff;
+    --bg-card-hover:  #f5f3ef;
+    --bg-sidebar:     #ffffff;
+    --bg-navbar:      rgba(255, 255, 255, 0.95);
+    --bg-input:       #f0eee8;
+    --text-primary:   #1a1523;
+    --text-secondary: #5a5470;
+    --text-muted:     #9590a8;
+    --text-on-accent: #ffffff;
+    --border-color:   rgba(26, 21, 35, 0.10);
+    --shadow-card:    0 2px 12px rgba(0,0,0,0.08);
+    --shadow-navbar:  0 2px 20px rgba(0,0,0,0.08);
+    --overlay-bg:     rgba(0,0,0,0.5);
+    --toggle-bg:      #e8e4f0;
+    --toggle-icon:    "🌙";
+}
+
+/* MODO NOCHE */
+html[data-theme="dark"] {
+    --bg-body:        #0f0a1e;
+    --bg-card:        rgba(255, 255, 255, 0.06);
+    --bg-card-hover:  rgba(255, 255, 255, 0.10);
+    --bg-sidebar:     rgba(255, 255, 255, 0.04);
+    --bg-navbar:      rgba(15, 10, 30, 0.95);
+    --bg-input:       rgba(255, 255, 255, 0.08);
+    --text-primary:   #f0eaf8;
+    --text-secondary: #c4b8d8;
+    --text-muted:     #8a7fa0;
+    --text-on-accent: #ffffff;
+    --border-color:   rgba(255, 255, 255, 0.10);
+    --shadow-card:    0 2px 12px rgba(0,0,0,0.40);
+    --shadow-navbar:  0 2px 20px rgba(0,0,0,0.50);
+    --overlay-bg:     rgba(0,0,0,0.75);
+    --toggle-bg:      rgba(255, 255, 255, 0.12);
+    --toggle-icon:    "☀️";
+}
+
+/* ── Aplicar variables al DOM ─────────────────────────────── */
+body {
+    background-color: var(--bg-body) !important;
+    color:            var(--text-primary) !important;
+    transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.card, .sidebar-card, .profile-card,
+[class*="bg-white"], [class*="bg-card"] {
+    background-color: var(--bg-card) !important;
+    color:            var(--text-primary) !important;
+    border-color:     var(--border-color) !important;
+}
+
+.navbar, nav {
+    background: var(--bg-navbar) !important;
+    border-bottom: 1px solid var(--border-color) !important;
+    box-shadow: var(--shadow-navbar) !important;
+}
+
+input, textarea, select, .search-input {
+    background-color: var(--bg-input) !important;
+    color:            var(--text-primary) !important;
+    border-color:     var(--border-color) !important;
+}
+
+input::placeholder, textarea::placeholder {
+    color: var(--text-muted) !important;
+}
+
+p, span, h1, h2, h3, h4, h5, h6, label, td, th, li {
+    color: var(--text-primary);
+}
+
+.text-muted, .text-secondary {
+    color: var(--text-secondary) !important;
+}
+
+/* ── Botón toggle tema ─────────────────────────────────────── */
+#theme-toggle {
+    display:         inline-flex;
+    align-items:     center;
+    justify-content: center;
+    width:           36px;
+    height:          36px;
+    border-radius:   50%;
+    background:      var(--toggle-bg);
+    border:          1px solid var(--border-color);
+    cursor:          pointer;
+    font-size:       16px;
+    transition:      all 0.2s ease;
+    flex-shrink:     0;
+    position:        relative; /* NO absolute */
+    z-index:         10;
+}
+
+#theme-toggle:hover {
+    transform: scale(1.1);
+    background: var(--bg-card-hover) !important;
+}
+
+/* ══════════════════════════════════════════════════════
+   SISTEMA DE TEMAS LOBBY69
+   Soporta: --theme-*, --bg-*, --text-* (todos los alias)
+   ══════════════════════════════════════════════════════ */
+
+/* MODO DÍA (default) */
+:root,
+html:not([data-theme="dark"]) {
+    /* Fondos */
+    --bg-body:              #f5f0fa;
+    --bg-card:              #ffffff;
+    --bg-card-hover:        #faf7ff;
+    --bg-sidebar:           #ffffff;
+    --bg-input:             #f0eaf8;
+    --bg-navbar:            rgba(255,255,255,0.97);
+
+    /* Textos */
+    --text-primary:         #1a1523;
+    --text-secondary:       #5a5470;
+    --text-muted:           #9590a8;
+    --text-on-accent:       #ffffff;
+
+    /* Bordes y sombras */
+    --border-color:         rgba(26,21,35,0.10);
+    --shadow-card:          0 2px 12px rgba(0,0,0,0.08);
+    --shadow-navbar:        0 2px 20px rgba(0,0,0,0.08);
+
+    /* Toggle */
+    --toggle-bg:            #ede8f5;
+
+    /* Aliases para compatibilidad con navbar/sidebar */
+    --theme-navbar-bg:      rgba(255,255,255,0.97);
+    --theme-navbar-border:  rgba(26,21,35,0.10);
+    --theme-navbar-text:    #1a1523;
+    --theme-text:           #1a1523;
+    --theme-text-muted:     #9590a8;
+    --theme-accent:         #e056a0;
+    --theme-accent-2:       #9B59B6;
+    --theme-pink:           #e056a0;
+    --theme-pink-soft:      rgba(224,86,160,0.08);
+    --theme-dropdown-bg:    #ffffff;
+    --theme-surface-2:      #f5f0fa;
+    --theme-shadow-md:      0 4px 20px rgba(0,0,0,0.10);
+    --theme-border:         rgba(26,21,35,0.10);
+}
+
+/* MODO NOCHE */
+html[data-theme="dark"] {
+    /* Fondos */
+    --bg-body:              #0f0a1e;
+    --bg-card:              rgba(255,255,255,0.06);
+    --bg-card-hover:        rgba(255,255,255,0.10);
+    --bg-sidebar:           rgba(255,255,255,0.04);
+    --bg-input:             rgba(255,255,255,0.08);
+    --bg-navbar:            rgba(15,10,30,0.97);
+
+    /* Textos */
+    --text-primary:         #f0eaf8;
+    --text-secondary:       #c4b8d8;
+    --text-muted:           #8a7fa0;
+    --text-on-accent:       #ffffff;
+
+    /* Bordes y sombras */
+    --border-color:         rgba(255,255,255,0.10);
+    --shadow-card:          0 2px 12px rgba(0,0,0,0.40);
+    --shadow-navbar:        0 2px 20px rgba(0,0,0,0.50);
+
+    /* Toggle */
+    --toggle-bg:            rgba(255,255,255,0.12);
+
+    /* Aliases para compatibilidad */
+    --theme-navbar-bg:      rgba(15,10,30,0.97);
+    --theme-navbar-border:  rgba(255,255,255,0.10);
+    --theme-navbar-text:    #f0eaf8;
+    --theme-text:           #f0eaf8;
+    --theme-text-muted:     #8a7fa0;
+    --theme-accent:         #e056a0;
+    --theme-accent-2:       #a855f7;
+    --theme-pink:           #e056a0;
+    --theme-pink-soft:      rgba(224,86,160,0.12);
+    --theme-dropdown-bg:    #1e1530;
+    --theme-surface-2:      rgba(255,255,255,0.06);
+    --theme-shadow-md:      0 4px 20px rgba(0,0,0,0.40);
+    --theme-border:         rgba(255,255,255,0.10);
+}
+
+/* ── Aplicar fondos y textos base ── */
+html, body {
+    background-color: var(--bg-body) !important;
+    color:            var(--text-primary) !important;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ── Cards y superficies ── */
+.card, .sidebar-card, .profile-card, .l69-card,
+.feed-card, .stat-card, .activity-card, .sidebar-section {
+    background: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: var(--shadow-card) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ── Navbar ── */
+.l69-nav, nav.l69-nav {
+    background: var(--bg-navbar) !important;
+    border-color: var(--border-color) !important;
+    box-shadow: var(--shadow-navbar) !important;
+}
+
+/* ── Inputs ── */
+input:not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]),
+textarea, select, .l69-search-input {
+    background: var(--bg-input) !important;
+    color:       var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+input::placeholder, textarea::placeholder {
+    color: var(--text-muted) !important;
+}
+
+/* ── Textos secundarios ── */
+.text-muted, .l69-muted, small {
+    color: var(--text-muted) !important;
+}
+
+/* ── Toggle button ── */
+#theme-toggle {
+    display:         inline-flex;
+    align-items:     center;
+    justify-content: center;
+    width:           36px;
+    height:          36px;
+    min-width:       36px;
+    border-radius:   50%;
+    background:      var(--toggle-bg) !important;
+    border:          1px solid var(--border-color);
+    cursor:          pointer;
+    font-size:       18px;
+    line-height:     1;
+    transition:      transform 0.2s ease;
+    flex-shrink:     0;
+    position:        static !important;
+}
+#theme-toggle:hover { transform: scale(1.12); }
+
+/* ══════════════════════════════════════════════════════
+   LOBBY69 — SISTEMA DE TEMAS (light / dark)
+   ══════════════════════════════════════════════════════ */
+
+/* MODO DÍA */
+:root,
+html:not([data-theme="dark"]) {
+    --bg-body:           #f5f0fa;
+    --bg-card:           #ffffff;
+    --bg-card-hover:     #faf7ff;
+    --bg-sidebar:        #ffffff;
+    --bg-input:          #ede8f5;
+    --bg-navbar:         rgba(255,255,255,0.97);
+    --text-primary:      #1a1523;
+    --text-secondary:    #5a5470;
+    --text-muted:        #9590a8;
+    --border-color:      rgba(26,21,35,0.10);
+    --shadow-card:       0 2px 12px rgba(0,0,0,0.08);
+    --shadow-navbar:     0 2px 20px rgba(0,0,0,0.08);
+    --toggle-bg:         #ede8f5;
+    --theme-text:        #1a1523;
+    --theme-text-muted:  #9590a8;
+    --theme-surface-2:   #f5f0fa;
+    --theme-navbar-bg:   rgba(255,255,255,0.97);
+    --theme-navbar-border: rgba(26,21,35,0.10);
+    --theme-navbar-text: #1a1523;
+    --theme-accent:      #c0392b;
+    --theme-accent-2:    #8e44ad;
+    --theme-pink:        #e056a0;
+    --theme-pink-soft:   rgba(224,86,160,0.08);
+    --theme-dropdown-bg: #ffffff;
+    --theme-shadow-md:   0 4px 20px rgba(0,0,0,0.10);
+    --theme-border:      rgba(26,21,35,0.10);
+}
+
+/* MODO NOCHE */
+html[data-theme="dark"] {
+    --bg-body:           #0f0a1e;
+    --bg-card:           rgba(255,255,255,0.06);
+    --bg-card-hover:     rgba(255,255,255,0.10);
+    --bg-sidebar:        rgba(255,255,255,0.04);
+    --bg-input:          rgba(255,255,255,0.08);
+    --bg-navbar:         rgba(15,10,30,0.97);
+    --text-primary:      #f0eaf8;
+    --text-secondary:    #c4b8d8;
+    --text-muted:        #8a7fa0;
+    --border-color:      rgba(255,255,255,0.10);
+    --shadow-card:       0 2px 12px rgba(0,0,0,0.40);
+    --shadow-navbar:     0 2px 20px rgba(0,0,0,0.50);
+    --toggle-bg:         rgba(255,255,255,0.12);
+    --theme-text:        #f0eaf8;
+    --theme-text-muted:  #8a7fa0;
+    --theme-surface-2:   rgba(255,255,255,0.06);
+    --theme-navbar-bg:   rgba(15,10,30,0.97);
+    --theme-navbar-border: rgba(255,255,255,0.10);
+    --theme-navbar-text: #f0eaf8;
+    --theme-accent:      #c0392b;
+    --theme-accent-2:    #a855f7;
+    --theme-pink:        #e056a0;
+    --theme-pink-soft:   rgba(224,86,160,0.12);
+    --theme-dropdown-bg: #1e1530;
+    --theme-shadow-md:   0 4px 20px rgba(0,0,0,0.40);
+    --theme-border:      rgba(255,255,255,0.10);
+}
+
+/* ── Base ── */
+html, body {
+    background-color: var(--bg-body) !important;
+    color: var(--text-primary) !important;
+    transition: background-color 0.25s ease, color 0.25s ease;
+}
+
+/* ── Navbar ── */
+.l69-nav {
+    background: var(--bg-navbar) !important;
+    border-bottom-color: var(--border-color) !important;
+    box-shadow: var(--shadow-navbar) !important;
+}
+
+/* ── Sidebar cards ── */
+.l69-sidebar-card {
+    background: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+}
+
+/* ── Sidebar nav items: texto legible en ambos modos ── */
+.l69-sidebar-nav__item a,
+.l69-sidebar-nav__item button {
+    color: var(--text-secondary) !important;
+}
+.l69-sidebar-nav__item a:hover,
+.l69-sidebar-nav__item button:hover {
+    background: var(--theme-pink-soft) !important;
+    color: var(--text-primary) !important;
+}
+.l69-sidebar-nav__item a.is-active {
+    color: var(--theme-pink) !important;
+}
+
+/* ── Mini perfil nick/tipo ── */
+.l69-mini-profile__nick { color: var(--text-primary) !important; }
+.l69-mini-profile__type { color: var(--theme-pink) !important; }
+
+/* ── Stats sidebar ── */
+.l69-stat {
+    background: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+}
+.l69-stat__label { color: var(--text-muted) !important; }
+
+/* ── Quick buttons ── */
+.l69-quick-btn {
+    color: var(--text-secondary) !important;
+    background: var(--theme-pink-soft) !important;
+    border-color: rgba(224,86,160,0.20) !important;
+}
+.l69-quick-btn:hover {
+    color: var(--text-primary) !important;
+}
+
+/* ── Inputs ── */
+input:not([type=submit]):not([type=button]):not([type=checkbox]):not([type=radio]),
+textarea, select {
+    background: var(--bg-input) !important;
+    color: var(--text-primary) !important;
+    border-color: var(--border-color) !important;
+}
+input::placeholder, textarea::placeholder {
+    color: var(--text-muted) !important;
+}
+
+/* ── Cards generales ── */
+.card, .l69-card, .feed-card {
+    background: var(--bg-card) !important;
+    border-color: var(--border-color) !important;
+    color: var(--text-primary) !important;
+}
+
+/* ── Títulos sidebar ── */
+.l69-sidebar-card__title {
+    color: var(--theme-pink) !important;
+}
+
+/* ── Toggle ── */
+#theme-toggle {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    border-radius: 50% !important;
+    background: var(--toggle-bg) !important;
+    border: 1px solid var(--border-color) !important;
+    cursor: pointer !important;
+    font-size: 17px !important;
+    flex-shrink: 0 !important;
+    position: static !important;
+    transition: transform 0.2s ease !important;
+}
+#theme-toggle:hover { transform: scale(1.1) !important; }
+
+/* ── Progress bar ── */
+.l69-profile-progress__label { color: var(--text-muted) !important; }
+.l69-profile-progress__bar { background: var(--border-color) !important; }

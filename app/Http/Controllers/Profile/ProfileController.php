@@ -114,4 +114,24 @@ class ProfileController extends Controller
         // Reutilizar store pero forzando nick fijo
         return $this->store($request);
     }
+
+    public function publicShow($nickname)
+    {
+        $profile = \Illuminate\Support\Facades\DB::table('profiles')
+            ->where('nickname', $nickname)
+            ->where('profile_completed', true)
+            ->first();
+
+        if (!$profile) abort(404, 'Perfil no encontrado.');
+
+        $user = \Illuminate\Support\Facades\DB::table('users')
+            ->whereRaw('id::text = ?', [$profile->user_id])
+            ->first();
+
+        if (!$user || in_array($user->membership_type, ['banned', 'suspended'])) {
+            abort(404);
+        }
+
+        return view('profile.show', compact('profile', 'user'));
+    }
 }

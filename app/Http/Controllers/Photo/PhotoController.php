@@ -1,0 +1,169 @@
+<?php
+namespace App\Http\Controllers\Photo;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Carbon\Carbon;
+
+class PhotoController extends Controller
+{
+    // Límites por álbum (sin límite real, pero controlable)
+    const ALBUM_TYPES = ['public', 'private', 'vip'];
+
+    public function index()
+    {
+        $userId = auth()->id();
+        $photos = DB::table('photos')
+            ->whereRaw('user_id::text = ?', [$userId])
+            ->orderBy('album_type')
+            ->orderBy('sort_order')
+            ->orderBy('created_at', 'desc')
+            ->get();
+
+        $grouped = [
+            'public'  => $photos->where('album_type', 'public'),
+            'private' => $photos->where('album_type', 'private'),
+            'vip'     => $photos->where('album_type', 'vip'),
+        ];
+
+        $user    = auth()->user();
+        $profile = DB::table('profiles')->whereRaw('user_id::text = ?', [$userId])->first();
+
+        return view('photos.index', compact('grouped', 'user', 'profile'));
+    }
+
+    public function store(Request $request)
+    {
+        $request->validate([
+            'photos.*'   => 'required|image|mimes:jpeg,jpg,png,webp|max:10240',
+            'album_type' => 'required|in:public,private,vip',
+            'caption'    => 'nullable|string|max:200',
+        ], [
+            'photos.*.image'  => 'Cada archivo debe ser una imagen.',
+            'photos.*.mimes'  => 'Solo JPG, PNG o WEBP.',
+            'photos.*.max'    => 'Cada imagen máximo 10MB.',
+        ]);
+
+        $userId    = auth()->id();
+        $albumType = $request->input('album_type', 'public');
+        $caption   = $request->input('caption', '');
+        $uploaded  = 0;
+
+        if ($request->hasFile('photos')) {
+            foreach ($request->file('photos') as $file) {
+                $filename = 'photo_' . $userId . '_' . time() . '_' . $uploaded
+                          . '.' . $file->getClientOriginalExtension();
+                $path = $file->storeAs('photos/' . $userId, $filename, 'private');
+
+                DB::table('photos')->insert([
+                    'user_id'    => $userId,
+                    'album_type' => $albumType,
+                    'file_path'  => $path,
+                    'status'     => 'pending',
+                    'caption'    => $caption,
+                    'sort_order' => 0,
+                    'created_at' => Carbon::now(),
+                    'updated_at' => Carbon::now(),
+                ]);
+                $uploaded++;
+            }
+        }
+
+        return redirect()->route('photos.index')
+            ->with('success', "✅ {$uploaded} foto(s) subidas correctamente. El equipo las revisará pronto.");
+    }
+
+    public function setProfilePhoto(Request $request, $id)
+    {
+        $userId = auth()->id();
+        $photo  = DB::table('photos')
+            ->whereRaw('id = ?', [$id])
+            ->whereRaw('user_id::text = ?', [$userId])
+            ->where('status', 'approved')
+            ->first();
+
+        if (!$photo) {
+            return back()->with('error', 'Foto no encontrada o no aprobada.');
+        }
+
+        // Quitar foto de perfil anterior
+        DB::table('photos')
+            ->whereRaw('user_id::text = ?', [$userId])
+            ->update(['is_profile_photo' => false, 'updated_at' => Carbon::now()]);
+
+        // Establecer nueva
+        DB::table('photos')->where('id', $id)
+            ->update(['is_profile_photo' => true, 'updated_at' => Carbon::now()]);
+
+        // Actualizar avatar_url en profiles
+        DB::table('profiles')
+            ->whereRaw('user_id::text = ?', [$userId])
+            ->update([
+                'avatar_url' => route('photos.serve', $id),
+                'updated_at' => Carbon::now(),
+            ]);
+
+        return back()->with('success', '✅ Foto de perfil actualizada.');
+    }
+
+    public function destroy($id)
+    {
+        $userId = auth()->id();
+        $photo  = DB::table('photos')
+            ->where('id', $id)
+            ->whereRaw('user_id::text = ?', [$userId])
+            ->first();
+
+        if (!$photo) return back()->with('error', 'Foto no encontrada.');
+
+        // Eliminar archivo
+        $fullPath = storage_path('app/private/' . $photo->file_path);
+        if (file_exists($fullPath)) unlink($fullPath);
+
+        DB::table('photos')->where('id', $id)->delete();
+
+        return back()->with('success', 'Foto eliminada.');
+    }
+
+    public function serve($id)
+    {
+        $userId = auth()->id();
+
+        $photo = DB::table('photos')->where('id', $id)->first();
+        if (!$photo) abort(404);
+
+        // Verificar acceso según album_type y membresía
+        $membershipType = DB::table('users')
+            ->whereRaw('id::text = ?', [$userId])
+            ->value('membership_type') ?? 'trial';
+
+        $canView = false;
+        switch ($photo->album_type) {
+            case 'public':
+                $canView = in_array($membershipType, ['trial_verified','explorer','connectors','influencer','vip_elite','vitalicio','admin']);
+                break;
+            case 'private':
+                $canView = in_array($membershipType, ['connectors','influencer','vip_elite','vitalicio','admin']);
+                // También si son amigos (fase 9)
+                break;
+            case 'vip':
+                $canView = in_array($membershipType, ['vip_elite','vitalicio','admin']);
+                break;
+        }
+
+        // El dueño siempre puede ver sus propias fotos
+        if ($photo->user_id === $userId) $canView = true;
+
+        if (!$canView) abort(403, 'No tienes acceso a esta foto.');
+
+        $path = storage_path('app/private/' . $photo->file_path);
+        if (!file_exists($path)) abort(404);
+
+        return response()->file($path, [
+            'Content-Type'  => mime_content_type($path),
+            'Cache-Control' => 'private, max-age=3600',
+            'X-Robots-Tag'  => 'noindex',
+        ]);
+    }
+}
