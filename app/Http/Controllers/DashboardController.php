@@ -53,23 +53,6 @@ class DashboardController extends Controller
         }
     }
 
-    public function feedAjax(Request $request)
-    {
-        $user = auth()->user();
-        $tab  = $request->get('tab','new');
-        $page = (int)$request->get('page',1);
-        $feed = $this->getFeed((string)$user->id,$tab,$page);
-        $html = '';
-        foreach ($feed as $photo) {
-            $src  = asset('storage/'.($photo->thumbnail_path?:$photo->file_path));
-            $nick = optional(optional($photo->user)->profile)->nickname ?? 'Usuario';
-            $av   = optional(optional($photo->user)->profile)->avatar_url ? asset('storage/'.optional(optional($photo->user)->profile)->avatar_url) : asset('img/default-avatar.svg');
-            $l = (int)$photo->likes_count; $co = (int)$photo->comments_count; $pid = $photo->id;
-            $html .= '<div class="feed-card" data-photo-id="' . $pid . '"><div class="feed-card-img-wrap"><img src="' . $src . '" loading="lazy" onclick=\'openPhotoModal("' . $pid . '")\'/></div><div class="feed-card-footer"><a href="/perfil/' . $nick . '" class="feed-card-user"><img src="' . $av . '" class="feed-card-avatar"/><span>' . $nick . '</span></a><div class="feed-card-actions"><button onclick=\'toggleLike("' . $pid . '",this)\' class="btn-like">&#x2665; <span class="like-count">' . $l . '</span></button><button onclick=\'openPhotoModal("' . $pid . '")\' class="btn-comment">&#x1F4AC; ' . $co . '</button></div></div></div>';
-        }
-        return response()->json(['html'=>$html,'hasMore'=>$feed->hasMorePages(),'nextPage'=>$feed->currentPage()+1]);
-    }
-
     public function toggleLike(Request $request, string $photoId)
     {
         $userId = (string)auth()->id();
@@ -80,15 +63,167 @@ class DashboardController extends Controller
         return response()->json(['liked'=>$liked,'count'=>$count]);
     }
 
+    
+    public function feedAjax(Request $request)
+    {
+        $user = auth()->user();
+        $tab  = $request->get('tab', 'new');
+        $page = (int) $request->get('page', 1);
+        $feed = $this->getFeed((string) $user->id, $tab, $page);
+
+        $html = '';
+        foreach ($feed as $photo) {
+            $pid      = (string) $photo->id;
+            $imgUrl   = route('photo.serve', ['path' => $photo->file_path]);
+            $nick     = optional(optional($photo->user)->profile)->nickname ?? 'Usuario';
+            $avRaw    = optional(optional($photo->user)->profile)->avatar_url;
+            $av       = $avRaw ? route('photo.serve', ['path' => $avRaw]) : asset('img/default-avatar.svg');
+            $l        = (int) $photo->likes_count;
+            $co       = (int) $photo->comments_count;
+            $isLiked  = DB::table('photo_likes')
+                          ->where(DB::raw('photo_id::text'), $pid)
+                          ->where(DB::raw('user_id::text'), (string) $user->id)
+                          ->exists();
+            $likedClass = $isLiked ? ' is-liked' : '';
+            $heartIcon  = $isLiked ? 'fas' : 'far';
+
+            $html .= '
+<div class="dsb-photo-card" data-photo-id="' . $pid . '">
+  <div class="dsb-photo-card__header">
+    <a href="/perfil/' . htmlspecialchars($nick) . '" class="dsb-photo-card__owner">
+      <img src="' . $av . '" onerror="this.src=\'' . asset('img/default-avatar.svg') . '\'">
+      <div><span class="dsb-photo-card__owner-nick">' . htmlspecialchars($nick) . '</span></div>
+    </a>
+  </div>
+  <div class="dsb-photo-card__img-wrap">
+    <img src="' . $imgUrl . '" class="dsb-photo-card__img" loading="lazy"
+         onerror="this.parentElement.style.background=\'#1a1028\'">
+  </div>
+  <div class="dsb-photo-card__footer">
+    <div class="dsb-photo-card__actions">
+      <button class="dsb-like-btn' . $likedClass . '" data-photo-id="' . $pid . '">
+        <i class="' . $heartIcon . ' fa-heart"></i>
+        <span>' . $l . '</span>
+      </button>
+      <button class="dsb-comment-btn" data-photo-id="' . $pid . '">
+        <i class="far fa-comment"></i>
+        <span>' . $co . '</span>
+      </button>
+      <a href="/perfil/' . htmlspecialchars($nick) . '" class="dsb-profile-btn">
+        <i class="fas fa-user"></i>
+      </a>
+    </div>
+  </div>
+</div>';
+        }
+
+        return response()->json([
+            'html'     => $html,
+            'hasMore'  => $feed->hasMorePages(),
+            'nextPage' => $feed->currentPage() + 1,
+        ]);
+    }
+
     public function photoModal(Request $request, string $photoId)
     {
         try {
-            $photo = Photo::with(['user.profile'])->where(DB::raw('id::text'),$photoId)->firstOrFail();
-            $photo->likes_count    = DB::table('photo_likes')->where(DB::raw('photo_id::text'),$photoId)->count();
-            $photo->comments_count = DB::table('photo_comments')->where(DB::raw('photo_id::text'),$photoId)->where('status','approved')->count();
-            $comments = DB::table('photo_comments')->join('users',DB::raw('photo_comments.user_id::text'),'=',DB::raw('users.id::text'))->join('profiles',DB::raw('users.id::text'),'=',DB::raw('profiles.user_id::text'))->select('photo_comments.id','photo_comments.body','photo_comments.created_at','profiles.nickname','profiles.avatar_url')->where(DB::raw('photo_comments.photo_id::text'),$photoId)->where('photo_comments.status','approved')->orderBy('photo_comments.created_at')->get();
-            $userLiked = DB::table('photo_likes')->where(DB::raw('photo_id::text'),$photoId)->where(DB::raw('user_id::text'),(string)auth()->id())->exists();
-            return response()->json(['photo'=>['id'=>$photo->id,'url'=>asset('storage/'.$photo->file_path),'caption'=>$photo->caption,'likes'=>(int)$photo->likes_count,'comments'=>(int)$photo->comments_count,'userLiked'=>$userLiked,'nick'=>optional(optional($photo->user)->profile)->nickname,'avatar'=>optional(optional($photo->user)->profile)->avatar_url ? asset('storage/'.optional(optional($photo->user)->profile)->avatar_url) : asset('img/default-avatar.svg')],'comments'=>$comments]);
-        } catch (\Exception $e) { return response()->json(['error'=>(string)$e->getMessage()],500); }
+            $photo = Photo::with(['user.profile'])
+                          ->where(DB::raw('id::text'), $photoId)
+                          ->firstOrFail();
+
+            $likesCount    = DB::table('photo_likes')
+                               ->where(DB::raw('photo_id::text'), $photoId)
+                               ->count();
+            $commentsCount = DB::table('photo_comments')
+                               ->where(DB::raw('photo_id::text'), $photoId)
+                               ->where('status', 'approved')
+                               ->count();
+            $userLiked = DB::table('photo_likes')
+                           ->where(DB::raw('photo_id::text'), $photoId)
+                           ->where(DB::raw('user_id::text'), (string) auth()->id())
+                           ->exists();
+
+            $comments = DB::table('photo_comments')
+                ->join('users',    DB::raw('photo_comments.user_id::text'), '=', DB::raw('users.id::text'))
+                ->join('profiles', DB::raw('users.id::text'),               '=', DB::raw('profiles.user_id::text'))
+                ->select(
+                    'photo_comments.id',
+                    'photo_comments.body',
+                    'photo_comments.created_at',
+                    'profiles.nickname as user_nick',
+                    'profiles.avatar_url'
+                )
+                ->where(DB::raw('photo_comments.photo_id::text'), $photoId)
+                ->where('photo_comments.status', 'approved')
+                ->orderBy('photo_comments.created_at')
+                ->get()
+                ->map(function ($c) {
+                    $avRaw = $c->avatar_url;
+                    return [
+                        'user_nick'   => $c->user_nick ?? 'Usuario',
+                        'user_avatar' => $avRaw
+                            ? route('photo.serve', ['path' => $avRaw])
+                            : asset('img/default-avatar.svg'),
+                        'body'        => $c->body,
+                        'created_at'  => \Carbon\Carbon::parse($c->created_at)->diffForHumans(),
+                    ];
+                });
+
+            $profile  = optional($photo->user)->profile;
+            $avRaw    = $profile?->avatar_url;
+
+            return response()->json([
+                'photo' => [
+                    'id'           => (string) $photo->id,
+                    'url'          => route('photo.serve', ['path' => $photo->file_path]),
+                    'caption'      => $photo->caption ?? '',
+                    'likes_count'  => $likesCount,
+                    'comments_count' => $commentsCount,
+                    'liked'        => $userLiked,
+                ],
+                'owner' => [
+                    'nick'         => $profile?->nickname ?? 'Usuario',
+                    'avatar'       => $avRaw
+                        ? route('photo.serve', ['path' => $avRaw])
+                        : asset('img/default-avatar.svg'),
+                    'profile_type' => $profile?->profile_type ?? 'single',
+                    'city'         => $profile?->city ?? '',
+                    'profile_url'  => $profile?->nickname
+                        ? route('profile.show', $profile->nickname)
+                        : '#',
+                ],
+                'comments' => $comments,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('photoModal: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
     }
+
+    public function storeComment(Request $request, string $photoId)
+    {
+        $request->validate(['body' => 'required|string|max:500']);
+
+        try {
+            DB::table('photo_comments')->insert([
+                'id'         => \Illuminate\Support\Str::uuid(),
+                'photo_id'   => $photoId,
+                'user_id'    => (string) auth()->id(),
+                'body'       => $request->input('body'),
+                'status'     => 'pending',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            return response()->json([
+                'message' => 'Comentario enviado, pendiente de revisión.',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('storeComment: ' . $e->getMessage());
+            return response()->json(['error' => $e->getMessage()], 500);
+        }
+    }
+
 }

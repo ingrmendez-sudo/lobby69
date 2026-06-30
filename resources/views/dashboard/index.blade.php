@@ -1,981 +1,3 @@
-@extends('layouts.app')
-@section('title', 'Inicio')
-
-{{-- ══ SIDEBAR IZQUIERDO ══ --}}
-@push('sidebar-left')
-@php
-    $sbUser    = auth()->user();
-    $sbProfile = $sbUser->profile ?? null;
-    $sbAvatar  = $sbProfile?->avatar_url ?? asset('img/default-avatar.svg');
-    $sbNick    = $sbProfile?->nickname ?? $sbUser->name ?? 'Usuario';
-    $sbMember  = $sbUser->membership_type ?? 'trial';
-    $memberCfg = [
-        'trial'      => ['label'=>'Trial',      'icon'=>'fa-clock',   'color'=>'#9ca3af', 'bg'=>'rgba(156,163,175,.15)'],
-        'explorer'   => ['label'=>'Explorer',   'icon'=>'fa-compass', 'color'=>'#60a5fa', 'bg'=>'rgba(96,165,250,.15)'],
-        'connectors' => ['label'=>'Connectors', 'icon'=>'fa-link',    'color'=>'#34d399', 'bg'=>'rgba(52,211,153,.15)'],
-        'influencer' => ['label'=>'Influencer', 'icon'=>'fa-star',    'color'=>'#a78bfa', 'bg'=>'rgba(167,139,250,.15)'],
-        'vip_elite'  => ['label'=>'VIP Elite',  'icon'=>'fa-gem',     'color'=>'#fbbf24', 'bg'=>'rgba(251,191,36,.15)'],
-        'vitalicio'  => ['label'=>'Vitalicio',  'icon'=>'fa-crown',   'color'=>'#e056a0', 'bg'=>'rgba(224,86,160,.15)'],
-    ];
-    $mCfg = $memberCfg[$sbMember] ?? $memberCfg['trial'];
-    $lastSeen = $sbUser->last_seen_at
-        ? \Carbon\Carbon::parse($sbUser->last_seen_at)->diffForHumans()
-        : 'Primera vez';
-
-    // Calcular progreso
-    $fields = ['nickname','bio','profile_type','age','gender','location_country'];
-    $filled = collect($fields)->filter(fn($f) => !empty($sbProfile?->$f))->count();
-    $progress = $sbProfile ? (int)(($filled / count($fields)) * 100) : 0;
-    if ($sbProfile?->avatar_url) $progress = min(100, $progress + 10);
-
-    // Stats rápidas
-    $statsViews   = \Illuminate\Support\Facades\DB::table('profile_views')->whereRaw('viewed_id::text = ?', [$sbUser->id])->count();
-    $statsPhotos  = \Illuminate\Support\Facades\DB::table('photos')->whereRaw('user_id::text = ?', [$sbUser->id])->where('status','approved')->count();
-    $statsLikes   = \Illuminate\Support\Facades\DB::table('photo_likes')
-                        ->join('photos', DB::raw('photo_likes.photo_id::text'), '=', DB::raw('photos.id::text'))
-                        ->whereRaw('photos.user_id::text = ?', [$sbUser->id])->count();
-@endphp
-
-{{-- ── Tarjeta principal de perfil ── --}}
-<div class="dsb-profile-card">
-    {{-- Avatar con ring de membresía --}}
-    <div class="dsb-avatar-ring" style="--ring-color: {{ $mCfg['color'] }};">
-        <img src="{{ $sbAvatar }}"
-             alt="{{ $sbNick }}"
-             class="dsb-avatar-img"
-             onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
-        @if($sbUser->identity_verified ?? false)
-        <span class="dsb-avatar-verified"><i class="fas fa-check"></i></span>
-        @endif
-    </div>
-
-    {{-- Info básica --}}
-    <h3 class="dsb-profile-nick">{{ $sbNick }}</h3>
-    <p class="dsb-profile-location">
-        @if($sbProfile?->city)
-            <i class="fas fa-map-marker-alt"></i>
-            {{ $sbProfile->city }}@if($sbProfile?->location_country), {{ $sbProfile->location_country }}@endif
-        @endif
-    </p>
-
-    {{-- Badge membresía --}}
-    <span class="dsb-membership-badge"
-          style="color:{{ $mCfg['color'] }};background:{{ $mCfg['bg'] }};border-color:{{ $mCfg['color'] }}44;">
-        <i class="fas {{ $mCfg['icon'] }}"></i> {{ $mCfg['label'] }}
-    </span>
-
-    {{-- Tipo de perfil --}}
-    <p class="dsb-profile-type">
-        @if($sbProfile?->profile_type === 'pareja') 👫 Pareja
-        @elseif($sbProfile?->profile_type === 'unicornio') ⭐ Unicornio
-        @else 👤 Single @endif
-        @if($sbUser->identity_verified ?? false)
-        · <span style="color:#22c55e;font-size:.75rem;"><i class="fas fa-check-circle"></i> Verificado</span>
-        @endif
-    </p>
-
-    {{-- Grid de stats ── --}}
-    <div class="dsb-stats-grid" style="grid-template-columns:repeat(3,1fr);">
-        <div class="dsb-stat-box">
-            <i class="fas fa-eye" style="color:var(--theme-pink);"></i>
-            <span class="dsb-stat-num">{{ $statsViews }}</span>
-            <span class="dsb-stat-lbl">Vistas</span>
-        </div>
-        <div class="dsb-stat-box">
-            <i class="fas fa-heart" style="color:#dc2626;"></i>
-            <span class="dsb-stat-num">{{ $statsLikes }}</span>
-            <span class="dsb-stat-lbl">Likes</span>
-        </div>
-        <div class="dsb-stat-box">
-            <i class="fas fa-images" style="color:var(--theme-accent-2);"></i>
-            <span class="dsb-stat-num">{{ $statsPhotos }}</span>
-            <span class="dsb-stat-lbl">Fotos</span>
-        </div>
-    </div>
-    {{-- Última vez — una sola línea --}}
-    <div class="dsb-lastseen-row">
-        <i class="fas fa-clock"></i>
-        <span>Última vez: <strong>{{ $lastSeen }}</strong></span>
-    </div>
-
-    {{-- Progreso del perfil --}}
-    @if($progress < 100)
-    <div class="dsb-progress-wrap">
-        <div class="dsb-progress-label">
-            <span>Completa tu perfil</span>
-            <span style="color:#e056a0;font-weight:700;">{{ $progress }}%</span>
-        </div>
-        <div class="dsb-progress-bar">
-            <div class="dsb-progress-fill" style="width:{{ $progress }}%;"></div>
-        </div>
-    </div>
-    @endif
-
-    {{-- Acciones rápidas --}}
-    <div class="dsb-quick-actions">
-        <a href="{{ route('profile.edit') }}" class="dsb-action-btn dsb-action-btn--primary">
-            <i class="fas fa-user-edit"></i> Editar perfil
-        </a>
-        <a href="{{ route('photos.index') }}" class="dsb-action-btn dsb-action-btn--ghost">
-            <i class="fas fa-camera"></i> Mis fotos
-        </a>
-    </div>
-</div>
-
-{{-- ── Te han visitado ── --}}
-<div class="dsb-section-card">
-    <div class="dsb-section-header">
-        <span><i class="fas fa-eye"></i> Te han visitado</span>
-        @if($whoViewedMeCount > 0)
-        <span class="dsb-section-badge">{{ $whoViewedMeCount }}</span>
-        @endif
-    </div>
-    @forelse($whoViewedMe as $view)
-    @php $vp = $view->viewer?->profile; @endphp
-    <a href="{{ $vp?->nickname ? route('profile.show', $vp->nickname) : '#' }}"
-       class="dsb-user-row">
-        <div class="dsb-user-avatar-wrap">
-            <img src="{{ $vp?->avatar_url ?? asset('img/default-avatar.svg') }}"
-                 onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
-        </div>
-        <div class="dsb-user-info">
-            <span class="dsb-user-nick">{{ $vp?->nickname ?? 'Usuario' }}</span>
-            <span class="dsb-user-time">
-                <i class="fas fa-clock"></i>
-                {{ \Carbon\Carbon::parse($view->viewed_at)->diffForHumans() }}
-            </span>
-        </div>
-        <i class="fas fa-chevron-right" style="color:rgba(226,217,243,.2);font-size:.7rem;"></i>
-    </a>
-    @empty
-    <div class="dsb-empty-state">
-        <i class="fas fa-eye-slash"></i>
-        <span>Aún nadie ha visitado tu perfil</span>
-    </div>
-    @endforelse
-    @if($whoViewedMeCount > 5)
-    <a href="#" class="dsb-see-more">Ver todos ({{ $whoViewedMeCount }}) →</a>
-    @endif
-</div>
-
-{{-- ── Perfiles que visité ── --}}
-<div class="dsb-section-card">
-    <div class="dsb-section-header">
-        <span><i class="fas fa-walking"></i> Perfiles que visité</span>
-    </div>
-    @forelse($iViewed as $view)
-    @php $vp = $view->viewed?->profile; @endphp
-    <a href="{{ $vp?->nickname ? route('profile.show', $vp->nickname) : '#' }}"
-       class="dsb-user-row">
-        <div class="dsb-user-avatar-wrap">
-            <img src="{{ $vp?->avatar_url ?? asset('img/default-avatar.svg') }}"
-                 onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
-        </div>
-        <div class="dsb-user-info">
-            <span class="dsb-user-nick">{{ $vp?->nickname ?? 'Usuario' }}</span>
-            <span class="dsb-user-time">
-                <i class="fas fa-clock"></i>
-                {{ \Carbon\Carbon::parse($view->viewed_at)->diffForHumans() }}
-            </span>
-        </div>
-        <i class="fas fa-chevron-right" style="color:rgba(226,217,243,.2);font-size:.7rem;"></i>
-    </a>
-    @empty
-    <div class="dsb-empty-state">
-        <i class="fas fa-compass"></i>
-        <span>No has visitado perfiles aún</span>
-    </div>
-    @endforelse
-    @if($iViewedCount > 5)
-    <a href="#" class="dsb-see-more">Ver historial completo →</a>
-    @endif
-</div>
-@endpush
-
-{{-- ══ SIDEBAR DERECHO ══ --}}
-@push('sidebar-right')
-
-{{-- ── En línea ahora ── --}}
-<div class="dsb-section-card">
-    <div class="dsb-section-header">
-        <span>
-            <span class="dsb-online-dot"></span>
-            En línea ahora
-        </span>
-        @if($onlineUsers->count() > 0)
-        <span class="dsb-section-badge" style="background:rgba(34,197,94,.15);color:#22c55e;">
-            {{ $onlineUsers->count() }}
-        </span>
-        @endif
-    </div>
-    @forelse($onlineUsers->take(8) as $ou)
-    <a href="{{ route('profile.show', $ou->nickname) }}" class="dsb-user-row">
-        <div class="dsb-user-avatar-wrap">
-            <img src="{{ $ou->avatar_url ?? asset('img/default-avatar.svg') }}"
-                 onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
-            <span class="dsb-online-indicator"></span>
-        </div>
-        <div class="dsb-user-info">
-            <span class="dsb-user-nick">{{ $ou->nickname }}</span>
-            <span class="dsb-user-time" style="color:#22c55e;">
-                <i class="fas fa-circle" style="font-size:.45rem;"></i> En línea
-            </span>
-        </div>
-        <a href="{{ route('profile.show', $ou->nickname) }}"
-           class="dsb-ver-btn">Ver</a>
-    </a>
-    @empty
-    <div class="dsb-empty-state">
-        <i class="fas fa-moon"></i>
-        <span>No hay usuarios en línea</span>
-    </div>
-    @endforelse
-</div>
-
-{{-- ── Nuevos miembros ── --}}
-<div class="dsb-section-card">
-    <div class="dsb-section-header">
-        <span><i class="fas fa-user-plus"></i> Nuevos miembros</span>
-    </div>
-    @forelse($newUsers as $nu)
-    <a href="{{ route('profile.show', $nu->nickname) }}" class="dsb-user-row">
-        <div class="dsb-user-avatar-wrap">
-            <img src="{{ $nu->avatar_url ?? asset('img/default-avatar.svg') }}"
-                 onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
-        </div>
-        <div class="dsb-user-info">
-            <span class="dsb-user-nick">{{ $nu->nickname }}</span>
-            <span class="dsb-user-time">
-                @if($nu->profile_type==='pareja') 👫
-                @elseif($nu->profile_type==='unicornio') ⭐
-                @else 👤 @endif
-                {{ \Carbon\Carbon::parse($nu->created_at)->diffForHumans() }}
-            </span>
-        </div>
-        <a href="{{ route('profile.show', $nu->nickname) }}"
-           class="dsb-ver-btn">Ver</a>
-    </a>
-    @empty
-    <div class="dsb-empty-state">
-        <i class="fas fa-users"></i>
-        <span>Sin nuevos miembros recientes</span>
-    </div>
-    @endforelse
-</div>
-@endpush
-
-{{-- ══ CONTENIDO CENTRAL ══ --}}
-@section('content')
-
-{{-- Tabs --}}
-<div class="dsb-feed-tabs">
-    <a href="?tab=new"
-       class="dsb-feed-tab {{ $tab==='new' ? 'is-active' : '' }}">
-        <i class="fas fa-clock"></i> Fotos Nuevas
-    </a>
-    <a href="?tab=likes"
-       class="dsb-feed-tab {{ $tab==='likes' ? 'is-active' : '' }}">
-        <i class="fas fa-fire"></i> Más Populares
-    </a>
-</div>
-
-{{-- Grid de fotos --}}
-<div class="dsb-feed-grid" id="feedGrid">
-    @forelse($feed as $photo)
-    @php
-        $owner     = $photo->user?->profile;
-        $ownerNick = $owner?->nickname ?? $photo->user?->name ?? 'Usuario';
-        $ownerAvatar = $owner?->avatar_url ?? asset('img/default-avatar.svg');
-        $isLiked   = $photo->isLikedBy(auth()->id());
-    @endphp
-    <div class="dsb-photo-card" data-photo-id="{{ $photo->id }}">
-        {{-- Header de la tarjeta --}}
-        <div class="dsb-photo-card__header">
-            <a href="{{ $owner?->nickname ? route('profile.show', $owner->nickname) : '#' }}"
-               class="dsb-photo-card__owner">
-                <img src="{{ $ownerAvatar }}"
-                     alt="{{ $ownerNick }}"
-                     onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
-                <div>
-                    <span class="dsb-photo-card__owner-nick">{{ $ownerNick }}</span>
-                    @if($owner?->city)
-                    <span class="dsb-photo-card__owner-loc">
-                        <i class="fas fa-map-marker-alt"></i> {{ $owner->city }}
-                    </span>
-                    @endif
-                </div>
-            </a>
-        </div>
-
-        {{-- Foto --}}
-        <div class="dsb-photo-card__img-wrap">
-            <img src="{{ route('photo.serve', ['path' => $photo->file_path]) }}"
-                 alt="{{ $ownerNick }}"
-                 class="dsb-photo-card__img"
-                 loading="lazy"
-                 onerror="this.parentElement.style.background='#1a1028'">
-        </div>
-
-        {{-- Footer con acciones --}}
-        <div class="dsb-photo-card__footer">
-            @if($photo->caption)
-            <p class="dsb-photo-card__caption">{{ Str::limit($photo->caption, 80) }}</p>
-            @endif
-            <div class="dsb-photo-card__actions">
-                <button class="dsb-like-btn {{ $isLiked ? 'is-liked' : '' }}"
-                        data-photo-id="{{ $photo->id }}"
-                        title="{{ $isLiked ? 'Quitar like' : 'Me gusta' }}">
-                    <i class="{{ $isLiked ? 'fas' : 'far' }} fa-heart"></i>
-                    <span>{{ $photo->likes_count }}</span>
-                </button>
-                <button class="dsb-comment-btn" data-photo-id="{{ $photo->id }}"
-                        title="Comentarios">
-                    <i class="far fa-comment"></i>
-                    <span>{{ $photo->comments_count }}</span>
-                </button>
-                <a href="{{ $owner?->nickname ? route('profile.show', $owner->nickname) : '#' }}"
-                   class="dsb-profile-btn" title="Ver perfil">
-                    <i class="fas fa-user"></i>
-                </a>
-            </div>
-        </div>
-    </div>
-    @empty
-    <div class="dsb-feed-empty">
-        <i class="fas fa-images"></i>
-        <p>No hay fotos disponibles aún</p>
-        <a href="{{ route('photos.index') }}" class="dsb-action-btn dsb-action-btn--primary">
-            Subir mis fotos
-        </a>
-    </div>
-    @endforelse
-</div>
-
-{{-- Cargar más --}}
-@if($feed->hasMorePages())
-<div style="text-align:center;margin:1.5rem 0;" id="loadMoreWrap">
-    <button class="dsb-load-more-btn" id="loadMoreBtn"
-            data-page="2" data-tab="{{ $tab }}">
-        <i class="fas fa-chevron-down"></i> Cargar más fotos
-    </button>
-</div>
-@endif
-
-{{-- ══ MODAL DE FOTO ══ --}}
-<div class="dsb-modal" id="photoModal" style="display:none;">
-    <div class="dsb-modal__overlay" id="photoModalOverlay"></div>
-    <div class="dsb-modal__box">
-        <button class="dsb-modal__close" id="photoModalClose">
-            <i class="fas fa-times"></i>
-        </button>
-        <div class="dsb-modal__layout">
-            {{-- Foto grande --}}
-            <div class="dsb-modal__photo-side">
-                <img src="" alt="" id="modalPhoto" class="dsb-modal__photo">
-                <div class="dsb-modal__photo-actions">
-                    <button class="dsb-like-btn" id="modalLikeBtn" data-photo-id="">
-                        <i class="far fa-heart"></i>
-                        <span id="modalLikeCount">0</span>
-                    </button>
-                    <span class="dsb-comment-count">
-                        <i class="far fa-comment"></i>
-                        <span id="modalCommentCount">0</span>
-                    </span>
-                </div>
-            </div>
-            {{-- Panel lateral --}}
-            <div class="dsb-modal__panel">
-                {{-- Owner --}}
-                <div class="dsb-modal__owner">
-                    <a href="#" id="modalOwnerLink" class="dsb-modal__owner-link">
-                        <img src="" alt="" id="modalOwnerAvatar" class="dsb-modal__owner-avatar">
-                        <div>
-                            <div class="dsb-modal__owner-nick" id="modalOwnerNick"></div>
-                            <div class="dsb-modal__owner-meta" id="modalOwnerMeta"></div>
-                        </div>
-                    </a>
-                    <a href="#" id="modalProfileLink" class="dsb-ver-btn">
-                        Ver perfil
-                    </a>
-                </div>
-                <p class="dsb-modal__caption" id="modalCaption" style="display:none;"></p>
-                {{-- Comentarios --}}
-                <div class="dsb-modal__comments" id="commentsList">
-                    <div class="dsb-empty-state">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        <span>Cargando...</span>
-                    </div>
-                </div>
-                {{-- Form comentario --}}
-                <form class="dsb-modal__comment-form" id="commentForm">
-                    @csrf
-                    <input type="hidden" id="commentPhotoId">
-                    <div class="dsb-modal__comment-row">
-                        <img src="{{ auth()->user()->profile?->avatar_url ?? asset('img/default-avatar.svg') }}"
-                             class="dsb-modal__comment-avatar"
-                             onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
-                        <input type="text" id="commentBody"
-                               placeholder="Escribe un comentario..."
-                               class="dsb-modal__comment-input"
-                               maxlength="500" autocomplete="off">
-                        <button type="submit" class="dsb-modal__comment-send">
-                            <i class="fas fa-paper-plane"></i>
-                        </button>
-                    </div>
-                    <p class="dsb-modal__comment-note" id="commentNote">
-                        <i class="fas fa-info-circle"></i>
-                        Los comentarios se publican tras revisión del admin
-                    </p>
-                </form>
-            </div>
-        </div>
-    </div>
-</div>
-
-@endsection
-
-@push('styles')
-<style>
-/* ══════════════════════════════════════════════════
-   DASHBOARD — Variables de tema aplicadas
-   ══════════════════════════════════════════════════ */
-
-/* ── Tarjeta principal de perfil — COMPACTA ── */
-.dsb-profile-card {
-    background: var(--theme-surface);
-    border: 1px solid var(--theme-border);
-    border-radius: 16px;
-    padding: 1.1rem 1rem 1rem;
-    margin-bottom: .85rem;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: .35rem;
-    box-shadow: var(--theme-shadow);
-}
-.dsb-avatar-ring {
-    position: relative;
-    width: 68px; height: 68px;
-    border-radius: 50%;
-    padding: 3px;
-    background: linear-gradient(135deg, var(--ring-color, #e056a0), rgba(142,68,173,.5));
-    margin-bottom: .15rem;
-}
-.dsb-avatar-img {
-    width: 100%; height: 100%;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 2px solid var(--theme-surface);
-}
-.dsb-avatar-verified {
-    position: absolute; bottom: 1px; right: 1px;
-    width: 18px; height: 18px;
-    background: var(--theme-success);
-    border-radius: 50%;
-    border: 2px solid var(--theme-surface);
-    display: flex; align-items: center; justify-content: center;
-    font-size: .55rem; color: #fff;
-}
-.dsb-profile-nick {
-    font-size: 1rem; font-weight: 800;
-    color: var(--theme-text); margin: 0;
-}
-.dsb-profile-location {
-    font-size: .75rem; color: var(--theme-text-muted);
-    display: flex; align-items: center; gap: .3rem;
-    margin: 0;
-}
-.dsb-membership-badge {
-    display: inline-flex; align-items: center; gap: .3rem;
-    padding: .18rem .65rem; border-radius: 20px;
-    font-size: .68rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .04em;
-    border: 1px solid;
-}
-.dsb-profile-type {
-    font-size: .77rem; color: var(--theme-text-3);
-    margin: 0;
-}
-
-/* ── Última vez — una línea ── */
-.dsb-lastseen-row {
-    display: flex; align-items: center; justify-content: center;
-    gap: .35rem;
-    font-size: .72rem; color: var(--theme-text-muted);
-    background: var(--theme-surface-2);
-    border: 1px solid var(--theme-border-soft);
-    border-radius: 20px;
-    padding: .2rem .7rem;
-    width: 100%;
-}
-.dsb-lastseen-row i { font-size: .65rem; opacity: .7; }
-
-/* ── Stats grid — compacto ── */
-.dsb-stats-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr);
-    gap: .4rem; width: 100%; margin: .3rem 0;
-}
-.dsb-stat-box {
-    background: var(--theme-surface-2);
-    border: 1px solid var(--theme-border-soft);
-    border-radius: 9px;
-    padding: .45rem .2rem;
-    display: flex; flex-direction: column;
-    align-items: center; gap: .15rem;
-}
-.dsb-stat-box i { font-size: .8rem; opacity: var(--theme-icon-opacity); }
-.dsb-stat-num {
-    font-size: .85rem; font-weight: 800;
-    color: var(--theme-text); line-height: 1;
-}
-.dsb-stat-lbl {
-    font-size: .6rem; color: var(--theme-text-muted);
-    text-transform: uppercase; letter-spacing: .04em;
-}
-
-/* ── Progreso ── */
-.dsb-progress-wrap { width: 100%; margin: .2rem 0; }
-.dsb-progress-label {
-    display: flex; justify-content: space-between;
-    font-size: .72rem; color: var(--theme-text-3);
-    margin-bottom: .3rem;
-}
-.dsb-progress-label span:last-child {
-    color: var(--theme-pink); font-weight: 700;
-}
-.dsb-progress-bar {
-    height: 5px;
-    background: var(--theme-surface-3);
-    border-radius: 4px; overflow: hidden;
-}
-.dsb-progress-fill {
-    height: 100%;
-    background: var(--theme-gradient);
-    border-radius: 4px;
-}
-
-/* ── Acciones rápidas ── */
-.dsb-quick-actions {
-    display: flex; gap: .4rem; width: 100%; margin-top: .2rem;
-}
-.dsb-action-btn {
-    flex: 1; display: inline-flex; align-items: center;
-    justify-content: center; gap: .35rem;
-    padding: .5rem .6rem; border-radius: 9px;
-    font-size: .79rem; font-weight: 600;
-    text-decoration: none; cursor: pointer;
-    border: none; transition: all .18s !important;
-}
-.dsb-action-btn--primary {
-    background: var(--theme-gradient);
-    color: #fff;
-}
-.dsb-action-btn--primary:hover { opacity: .88; transform: translateY(-1px); }
-.dsb-action-btn--ghost {
-    background: var(--theme-surface-2);
-    border: 1px solid var(--theme-border);
-    color: var(--theme-text-2);
-}
-.dsb-action-btn--ghost:hover {
-    background: var(--theme-pink-soft);
-    border-color: var(--theme-pink-border);
-    color: var(--theme-pink);
-}
-
-/* ── Sección card ── */
-.dsb-section-card {
-    background: var(--theme-surface);
-    border: 1px solid var(--theme-border);
-    border-radius: 14px;
-    padding: .9rem;
-    margin-bottom: .75rem;
-    box-shadow: var(--theme-shadow);
-}
-.dsb-section-header {
-    display: flex; align-items: center;
-    justify-content: space-between;
-    font-size: .72rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .07em;
-    color: var(--theme-pink);
-    margin-bottom: .7rem;
-    padding-bottom: .55rem;
-    border-bottom: 1px solid var(--theme-border-soft);
-}
-.dsb-section-badge {
-    background: var(--theme-pink-soft);
-    color: var(--theme-pink);
-    border-radius: 10px;
-    padding: .1rem .45rem;
-    font-size: .7rem; font-weight: 700;
-}
-
-/* ── Fila de usuario ── */
-.dsb-user-row {
-    display: flex; align-items: center; gap: .55rem;
-    padding: .45rem .4rem;
-    border-bottom: 1px solid var(--theme-border-soft);
-    text-decoration: none;
-    border-radius: 8px;
-    transition: background .15s !important;
-}
-.dsb-user-row:last-of-type { border-bottom: none; }
-.dsb-user-row:hover { background: var(--theme-pink-soft); }
-.dsb-user-avatar-wrap { position: relative; flex-shrink: 0; }
-.dsb-user-avatar-wrap img {
-    width: 34px; height: 34px;
-    border-radius: 50%; object-fit: cover;
-    border: 2px solid var(--theme-border);
-}
-.dsb-online-indicator {
-    position: absolute; bottom: 1px; right: 1px;
-    width: 9px; height: 9px;
-    background: var(--theme-online); border-radius: 50%;
-    border: 2px solid var(--theme-surface);
-}
-.dsb-user-info {
-    flex: 1; min-width: 0;
-    display: flex; flex-direction: column;
-}
-.dsb-user-nick {
-    font-size: .82rem; font-weight: 600;
-    color: var(--theme-text-2);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.dsb-user-row:hover .dsb-user-nick { color: var(--theme-pink); }
-.dsb-user-time {
-    font-size: .7rem; color: var(--theme-text-muted);
-    display: flex; align-items: center; gap: .25rem;
-}
-.dsb-online-dot {
-    display: inline-block;
-    width: 7px; height: 7px;
-    background: var(--theme-online); border-radius: 50%;
-}
-.dsb-ver-btn {
-    display: inline-flex; align-items: center;
-    padding: .22rem .6rem;
-    background: var(--theme-pink-soft);
-    border: 1px solid var(--theme-pink-border);
-    border-radius: 20px;
-    color: var(--theme-pink); font-size: .72rem; font-weight: 600;
-    text-decoration: none; white-space: nowrap;
-    transition: all .15s !important; flex-shrink: 0;
-}
-.dsb-ver-btn:hover {
-    background: var(--theme-pink);
-    color: #fff;
-    border-color: var(--theme-pink);
-}
-.dsb-empty-state {
-    display: flex; flex-direction: column;
-    align-items: center; gap: .4rem;
-    padding: 1rem;
-    color: var(--theme-text-muted);
-    font-size: .8rem; text-align: center;
-}
-.dsb-empty-state i { font-size: 1.3rem; opacity: .4; }
-.dsb-see-more {
-    display: block; text-align: right;
-    font-size: .76rem; color: var(--theme-pink);
-    text-decoration: none; margin-top: .5rem;
-    font-weight: 600;
-}
-
-/* ── Feed tabs ── */
-.dsb-feed-tabs {
-    display: flex; gap: .5rem;
-    margin-bottom: 1.1rem;
-}
-.dsb-feed-tab {
-    display: flex; align-items: center; gap: .4rem;
-    padding: .48rem 1rem; border-radius: 9px;
-    color: var(--theme-text-3);
-    text-decoration: none; font-size: .86rem; font-weight: 600;
-    border: 1px solid var(--theme-border-soft);
-    transition: all .18s !important;
-    background: var(--theme-surface);
-}
-.dsb-feed-tab:hover { color: var(--theme-text); background: var(--theme-surface-2); }
-.dsb-feed-tab.is-active {
-    color: var(--theme-pink);
-    background: var(--theme-pink-soft);
-    border-color: var(--theme-pink-border);
-}
-
-/* ── Grid de fotos ── */
-.dsb-feed-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(210px, 1fr));
-    gap: .85rem;
-}
-.dsb-feed-empty {
-    grid-column: 1/-1;
-    display: flex; flex-direction: column;
-    align-items: center; gap: 1rem;
-    padding: 3rem;
-    color: var(--theme-text-muted);
-    font-size: .9rem;
-}
-.dsb-feed-empty i { font-size: 2.5rem; opacity: .3; }
-
-/* ── Tarjeta de foto ── */
-.dsb-photo-card {
-    background: var(--theme-surface);
-    border: 1px solid var(--theme-border-soft);
-    border-radius: 14px;
-    overflow: hidden;
-    cursor: pointer;
-    box-shadow: var(--theme-shadow);
-    transition: transform .2s, box-shadow .2s, border-color .2s !important;
-}
-.dsb-photo-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--theme-shadow-md);
-    border-color: var(--theme-pink-border);
-}
-.dsb-photo-card__header {
-    padding: .6rem .75rem;
-    border-bottom: 1px solid var(--theme-border-soft);
-}
-.dsb-photo-card__owner {
-    display: flex; align-items: center; gap: .45rem;
-    text-decoration: none;
-}
-.dsb-photo-card__owner img {
-    width: 26px; height: 26px;
-    border-radius: 50%; object-fit: cover;
-    border: 1px solid var(--theme-border);
-    flex-shrink: 0;
-}
-.dsb-photo-card__owner-nick {
-    font-size: .8rem; font-weight: 700;
-    color: var(--theme-text-2); display: block;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.dsb-photo-card__owner:hover .dsb-photo-card__owner-nick { color: var(--theme-pink); }
-.dsb-photo-card__owner-loc {
-    font-size: .68rem; color: var(--theme-text-muted);
-    display: flex; align-items: center; gap: .2rem;
-}
-.dsb-photo-card__img-wrap {
-    aspect-ratio: 4/3;
-    overflow: hidden;
-    background: var(--theme-surface-3);
-}
-.dsb-photo-card__img {
-    width: 100%; height: 100%;
-    object-fit: cover;
-    transition: transform .3s !important;
-}
-.dsb-photo-card:hover .dsb-photo-card__img { transform: scale(1.04); }
-.dsb-photo-card__footer { padding: .6rem .75rem; }
-.dsb-photo-card__caption {
-    font-size: .76rem; color: var(--theme-text-muted);
-    margin: 0 0 .45rem;
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.dsb-photo-card__actions {
-    display: flex; align-items: center; gap: .45rem;
-}
-
-/* ── Botones de acción en fotos ── */
-.dsb-like-btn {
-    display: inline-flex; align-items: center; gap: .3rem;
-    padding: .27rem .65rem;
-    background: rgba(220,38,38,.08);
-    border: 1px solid rgba(220,38,38,.2);
-    border-radius: 20px;
-    color: var(--theme-text-3); font-size: .8rem; font-weight: 600;
-    cursor: pointer; transition: all .15s !important;
-}
-.dsb-like-btn:hover { background: rgba(220,38,38,.15); color: #dc2626; }
-.dsb-like-btn.is-liked {
-    background: rgba(220,38,38,.18);
-    border-color: rgba(220,38,38,.4);
-    color: #dc2626;
-}
-.dsb-like-btn.is-liked i { color: #ef4444; }
-.dsb-comment-btn {
-    display: inline-flex; align-items: center; gap: .3rem;
-    padding: .27rem .65rem;
-    background: var(--theme-surface-2);
-    border: 1px solid var(--theme-border-soft);
-    border-radius: 20px;
-    color: var(--theme-text-3); font-size: .8rem; font-weight: 600;
-    cursor: pointer; transition: all .15s !important;
-}
-.dsb-comment-btn:hover { background: var(--theme-surface-3); color: var(--theme-text); }
-.dsb-profile-btn {
-    margin-left: auto;
-    display: inline-flex; align-items: center; justify-content: center;
-    width: 28px; height: 28px;
-    background: var(--theme-pink-soft);
-    border: 1px solid var(--theme-pink-border);
-    border-radius: 50%;
-    color: var(--theme-pink); font-size: .75rem;
-    text-decoration: none; transition: all .15s !important;
-}
-.dsb-profile-btn:hover { background: var(--theme-pink); color: #fff; }
-
-/* ── Cargar más ── */
-.dsb-load-more-btn {
-    display: inline-flex; align-items: center; gap: .5rem;
-    padding: .6rem 2rem;
-    background: var(--theme-surface);
-    border: 1px solid var(--theme-border);
-    border-radius: 10px;
-    color: var(--theme-text-2); font-size: .88rem; font-weight: 600;
-    cursor: pointer; transition: all .18s !important;
-    box-shadow: var(--theme-shadow);
-}
-.dsb-load-more-btn:hover {
-    background: var(--theme-pink-soft);
-    border-color: var(--theme-pink-border);
-    color: var(--theme-pink);
-}
-
-/* ── Modal ── */
-.dsb-modal {
-    position: fixed; inset: 0; z-index: 99990;
-    display: flex; align-items: center; justify-content: center;
-    padding: 1rem;
-}
-.dsb-modal__overlay {
-    position: absolute; inset: 0;
-    background: rgba(0,0,0,.75);
-    backdrop-filter: blur(6px);
-}
-.dsb-modal__box {
-    position: relative; z-index: 1;
-    background: var(--theme-surface);
-    border: 1px solid var(--theme-border);
-    border-radius: 18px;
-    max-width: 900px; width: 100%;
-    max-height: 90vh; overflow: hidden;
-    box-shadow: var(--theme-shadow-lg);
-}
-.dsb-modal__close {
-    position: absolute; top: .7rem; right: .7rem;
-    width: 30px; height: 30px;
-    background: var(--theme-surface-2);
-    border: 1px solid var(--theme-border-soft);
-    border-radius: 50%;
-    color: var(--theme-text-3); cursor: pointer; z-index: 10;
-    display: flex; align-items: center; justify-content: center;
-    font-size: .82rem; transition: all .15s !important;
-}
-.dsb-modal__close:hover { background: rgba(220,38,38,.15); color: #dc2626; }
-.dsb-modal__layout {
-    display: grid; grid-template-columns: 1fr 300px;
-    max-height: 90vh;
-}
-.dsb-modal__photo-side {
-    position: relative; background: #000;
-    display: flex; align-items: center; justify-content: center;
-    min-height: 360px;
-}
-.dsb-modal__photo { max-width: 100%; max-height: 78vh; object-fit: contain; }
-.dsb-modal__photo-actions {
-    position: absolute; bottom: .75rem; left: .75rem;
-    display: flex; gap: .45rem; align-items: center;
-}
-.dsb-comment-count {
-    display: flex; align-items: center; gap: .3rem;
-    color: rgba(255,255,255,.85); font-size: .8rem;
-    background: rgba(0,0,0,.45); padding: .28rem .6rem;
-    border-radius: 20px;
-}
-.dsb-modal__panel {
-    display: flex; flex-direction: column;
-    border-left: 1px solid var(--theme-border-soft);
-    max-height: 90vh; overflow: hidden;
-    background: var(--theme-surface);
-}
-.dsb-modal__owner {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: .85rem .95rem;
-    border-bottom: 1px solid var(--theme-border-soft);
-    gap: .5rem;
-}
-.dsb-modal__owner-link {
-    display: flex; align-items: center; gap: .55rem;
-    text-decoration: none;
-}
-.dsb-modal__owner-avatar {
-    width: 36px; height: 36px;
-    border-radius: 50%; object-fit: cover;
-    border: 2px solid var(--theme-border);
-    flex-shrink: 0;
-}
-.dsb-modal__owner-nick { font-weight: 700; font-size: .88rem; color: var(--theme-text); }
-.dsb-modal__owner-meta { font-size: .73rem; color: var(--theme-text-muted); }
-.dsb-modal__caption {
-    padding: .6rem .95rem;
-    font-size: .82rem; color: var(--theme-text-3);
-    border-bottom: 1px solid var(--theme-border-soft); margin: 0;
-}
-.dsb-modal__comments {
-    flex: 1; overflow-y: auto; padding: .7rem .95rem;
-    scrollbar-width: thin;
-    scrollbar-color: var(--theme-border) transparent;
-}
-.dsb-comment-item {
-    display: flex; gap: .5rem; margin-bottom: .7rem;
-}
-.dsb-comment-item img {
-    width: 26px; height: 26px;
-    border-radius: 50%; object-fit: cover; flex-shrink: 0;
-}
-.dsb-comment-nick { font-size: .77rem; font-weight: 700; color: var(--theme-text-2); }
-.dsb-comment-time { font-size: .69rem; color: var(--theme-text-muted); margin-left: .3rem; }
-.dsb-comment-body {
-    font-size: .8rem; color: var(--theme-text-3);
-    margin: .12rem 0 0; line-height: 1.45;
-}
-.dsb-modal__comment-form {
-    padding: .7rem .95rem;
-    border-top: 1px solid var(--theme-border-soft);
-    background: var(--theme-surface);
-}
-.dsb-modal__comment-row {
-    display: flex; align-items: center; gap: .45rem;
-}
-.dsb-modal__comment-avatar {
-    width: 26px; height: 26px;
-    border-radius: 50%; object-fit: cover; flex-shrink: 0;
-}
-.dsb-modal__comment-input {
-    flex: 1; padding: .4rem .7rem;
-    background: var(--theme-surface-2);
-    border: 1px solid var(--theme-border);
-    border-radius: 20px; color: var(--theme-text);
-    font-size: .82rem; outline: none;
-    transition: border-color .2s !important;
-}
-.dsb-modal__comment-input:focus { border-color: var(--theme-pink-border); }
-.dsb-modal__comment-input::placeholder { color: var(--theme-text-muted); }
-.dsb-modal__comment-send {
-    width: 30px; height: 30px;
-    background: var(--theme-gradient);
-    border: none; border-radius: 50%; color: #fff;
-    cursor: pointer; font-size: .78rem;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0; transition: opacity .15s !important;
-}
-.dsb-modal__comment-send:hover { opacity: .85; }
-.dsb-modal__comment-note {
-    font-size: .7rem; color: var(--theme-text-muted);
-    margin: .35rem 0 0; display: flex; gap: .3rem; align-items: center;
-}
-@media (max-width: 640px) {
-    .dsb-modal__layout { grid-template-columns: 1fr; }
-    .dsb-modal__panel { max-height: 45vh; border-left: none; border-top: 1px solid var(--theme-border-soft); }
-    .dsb-stats-grid { grid-template-columns: repeat(2, 1fr); }
-}
-</style>
-@endpush
-
 @push('scripts')
 <script>
 (function(){
@@ -985,7 +7,7 @@ var CSRF = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 document.addEventListener('click', function(e) {
     var card = e.target.closest('.dsb-photo-card');
     if (!card) return;
-    if (e.target.closest('.dsb-like-btn') ||
+    if (e.target.closest('.dsb-like-btn')    ||
         e.target.closest('.dsb-comment-btn') ||
         e.target.closest('.dsb-profile-btn') ||
         e.target.closest('.dsb-photo-card__owner')) return;
@@ -1000,7 +22,7 @@ document.addEventListener('click', function(e) {
     toggleLike(btn.dataset.photoId, btn);
 });
 
-// ── Comentario en feed (abre modal) ──
+// ── Comentario en feed (abre modal con foco) ──
 document.addEventListener('click', function(e) {
     var btn = e.target.closest('.dsb-comment-btn');
     if (!btn) return;
@@ -1008,136 +30,236 @@ document.addEventListener('click', function(e) {
     openModal(btn.dataset.photoId, true);
 });
 
+// ── Toggle Like ──
 function toggleLike(photoId, btn) {
+    btn.disabled = true;
     fetch('/fotos/' + photoId + '/like', {
         method: 'POST',
         headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }
     })
-    .then(r => r.json())
-    .then(d => {
-        var icon  = btn.querySelector('i');
-        var count = btn.querySelector('span');
-        icon.className = d.liked ? 'fas fa-heart' : 'far fa-heart';
-        d.liked ? btn.classList.add('is-liked') : btn.classList.remove('is-liked');
-        if (count) count.textContent = d.count;
-        // Sync modal
-        var mBtn = document.getElementById('modalLikeBtn');
-        if (mBtn && mBtn.dataset.photoId === photoId) {
-            mBtn.querySelector('i').className = d.liked ? 'fas fa-heart' : 'far fa-heart';
-            d.liked ? mBtn.classList.add('is-liked') : mBtn.classList.remove('is-liked');
-            document.getElementById('modalLikeCount').textContent = d.count;
+    .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(function(d) {
+        // Actualizar TODOS los botones de like con este photoId (feed + modal)
+        document.querySelectorAll('.dsb-like-btn[data-photo-id="' + photoId + '"]')
+            .forEach(function(b) {
+                b.querySelector('i').className = d.liked ? 'fas fa-heart' : 'far fa-heart';
+                d.liked ? b.classList.add('is-liked') : b.classList.remove('is-liked');
+                var sp = b.querySelector('span');
+                if (sp) sp.textContent = d.count;
+            });
+        // Sync contador modal si está abierto
+        var mc = document.getElementById('modalLikeCount');
+        if (mc && document.getElementById('modalLikeBtn')?.dataset.photoId === photoId) {
+            mc.textContent = d.count;
         }
+    })
+    .catch(function(err) {
+        console.warn('toggleLike error:', err);
+    })
+    .finally(function() {
+        btn.disabled = false;
     });
 }
 
+// ── Abrir Modal ──
 function openModal(photoId, focusComment) {
+    if (!photoId) return;
     var modal = document.getElementById('photoModal');
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
-    document.getElementById('modalPhoto').src = '';
-    document.getElementById('commentsList').innerHTML =
-        '<div class="dsb-empty-state"><i class="fas fa-spinner fa-spin"></i><span>Cargando...</span></div>';
 
-    fetch('/fotos/' + photoId + '/info', { headers: { 'Accept': 'application/json' } })
-    .then(r => r.json())
-    .then(d => {
-        document.getElementById('modalPhoto').src = d.photo.url;
+    // Reset visual
+    document.getElementById('modalPhoto').src = '';
+    document.getElementById('modalOwnerAvatar').src = '';
+    document.getElementById('modalOwnerNick').textContent = '';
+    document.getElementById('modalOwnerMeta').textContent = '';
+    document.getElementById('modalLikeCount').textContent = '0';
+    document.getElementById('modalCommentCount').textContent = '0';
+    document.getElementById('modalCaption').style.display = 'none';
+    document.getElementById('commentsList').innerHTML =
+        '<div class="dsb-empty-state">' +
+        '<i class="fas fa-spinner fa-spin"></i>' +
+        '<span>Cargando...</span></div>';
+
+    fetch('/fotos/' + photoId + '/info', {
+        headers: { 'Accept': 'application/json' }
+    })
+    .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(function(d) {
+        document.getElementById('modalPhoto').src            = d.photo.url;
         document.getElementById('modalLikeCount').textContent = d.photo.likes_count;
         document.getElementById('modalCommentCount').textContent = d.comments.length;
+
         var lb = document.getElementById('modalLikeBtn');
         lb.dataset.photoId = d.photo.id;
         lb.querySelector('i').className = d.photo.liked ? 'fas fa-heart' : 'far fa-heart';
         d.photo.liked ? lb.classList.add('is-liked') : lb.classList.remove('is-liked');
+
         var cap = document.getElementById('modalCaption');
-        if (d.photo.caption) { cap.textContent = d.photo.caption; cap.style.display = 'block'; }
-        else { cap.style.display = 'none'; }
-        document.getElementById('modalOwnerAvatar').src = d.owner.avatar;
-        document.getElementById('modalOwnerNick').textContent = d.owner.nick;
-        document.getElementById('modalOwnerMeta').textContent =
-            (d.owner.profile_type === 'pareja' ? '👫 Pareja' :
-             d.owner.profile_type === 'unicornio' ? '⭐ Unicornio' : '👤 Single') +
-            (d.owner.city ? ' · ' + d.owner.city : '');
-        document.getElementById('modalOwnerLink').href = d.owner.profile_url;
-        document.getElementById('modalProfileLink').href = d.owner.profile_url;
-        document.getElementById('commentPhotoId').value = d.photo.id;
-        var list = document.getElementById('commentsList');
-        list.innerHTML = d.comments.length === 0
-            ? '<div class="dsb-empty-state"><i class="far fa-comment"></i><span>Sé el primero en comentar</span></div>'
-            : d.comments.map(c =>
-                '<div class="dsb-comment-item">' +
-                '<img src="' + c.user_avatar + '" onerror="this.src=\'/img/default-avatar.svg\'">' +
-                '<div><span class="dsb-comment-nick">' + c.user_nick + '</span>' +
-                '<span class="dsb-comment-time">' + c.created_at + '</span>' +
-                '<p class="dsb-comment-body">' + c.body + '</p></div></div>'
-              ).join('');
-        if (focusComment) {
-            setTimeout(() => document.getElementById('commentBody')?.focus(), 100);
+        if (d.photo.caption) {
+            cap.textContent    = d.photo.caption;
+            cap.style.display  = 'block';
         }
+
+        document.getElementById('modalOwnerAvatar').src        = d.owner.avatar;
+        document.getElementById('modalOwnerNick').textContent  = d.owner.nick;
+        document.getElementById('modalOwnerLink').href         = d.owner.profile_url;
+        document.getElementById('modalProfileLink').href       = d.owner.profile_url;
+        document.getElementById('commentPhotoId').value        = d.photo.id;
+
+        var typeLabel = d.owner.profile_type === 'pareja'    ? '👫 Pareja'    :
+                        d.owner.profile_type === 'unicornio' ? '⭐ Unicornio' : '👤 Single';
+        document.getElementById('modalOwnerMeta').textContent =
+            typeLabel + (d.owner.city ? ' · ' + d.owner.city : '');
+
+        var list = document.getElementById('commentsList');
+        if (d.comments.length === 0) {
+            list.innerHTML =
+                '<div class="dsb-empty-state">' +
+                '<i class="far fa-comment"></i>' +
+                '<span>Sé el primero en comentar</span></div>';
+        } else {
+            list.innerHTML = d.comments.map(function(c) {
+                return '<div class="dsb-comment-item">' +
+                    '<img src="' + c.user_avatar + '" ' +
+                         'onerror="this.src=\'' + '{{ asset('img/default-avatar.svg') }}' + '\'">' +
+                    '<div>' +
+                    '<span class="dsb-comment-nick">'  + c.user_nick  + '</span>' +
+                    '<span class="dsb-comment-time">'  + c.created_at + '</span>' +
+                    '<p class="dsb-comment-body">'     + c.body       + '</p>' +
+                    '</div></div>';
+            }).join('');
+        }
+
+        if (focusComment) {
+            setTimeout(function() {
+                var inp = document.getElementById('commentBody');
+                if (inp) inp.focus();
+            }, 120);
+        }
+    })
+    .catch(function(err) {
+        console.error('openModal error:', err);
+        document.getElementById('commentsList').innerHTML =
+            '<div class="dsb-empty-state">' +
+            '<i class="fas fa-exclamation-circle"></i>' +
+            '<span>Error al cargar la foto. Intenta de nuevo.</span></div>';
     });
 }
 
-// Cerrar modal
+// ── Cerrar modal ──
 document.getElementById('photoModalClose').addEventListener('click', closeModal);
 document.getElementById('photoModalOverlay').addEventListener('click', closeModal);
-document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeModal();
+});
 function closeModal() {
     document.getElementById('photoModal').style.display = 'none';
     document.body.style.overflow = '';
 }
 
-// Like en modal
+// ── Like en modal ──
 document.getElementById('modalLikeBtn').addEventListener('click', function() {
     toggleLike(this.dataset.photoId, this);
 });
 
-// Comentario
+// ── Enviar comentario ──
 document.getElementById('commentForm').addEventListener('submit', function(e) {
     e.preventDefault();
     var photoId = document.getElementById('commentPhotoId').value;
-    var body    = document.getElementById('commentBody').value.trim();
+    var bodyEl  = document.getElementById('commentBody');
+    var body    = bodyEl.value.trim();
+    var note    = document.getElementById('commentNote');
+    var sendBtn = this.querySelector('.dsb-modal__comment-send');
     if (!body) return;
+
+    sendBtn.disabled = true;
+    sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+
     fetch('/fotos/' + photoId + '/comentario', {
         method: 'POST',
-        headers: { 'X-CSRF-TOKEN': CSRF, 'Content-Type': 'application/json', 'Accept': 'application/json' },
-        body: JSON.stringify({ body })
+        headers: {
+            'X-CSRF-TOKEN':  CSRF,
+            'Content-Type':  'application/json',
+            'Accept':        'application/json'
+        },
+        body: JSON.stringify({ body: body })
     })
-    .then(r => r.json())
-    .then(d => {
-        document.getElementById('commentBody').value = '';
-        var note = document.getElementById('commentNote');
-        note.style.color = '#34d399';
-        note.innerHTML = '<i class="fas fa-check-circle"></i> ' + d.message;
-        setTimeout(() => {
+    .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(function(d) {
+        bodyEl.value      = '';
+        note.style.color  = '#34d399';
+        note.innerHTML    = '<i class="fas fa-check-circle"></i> ' + d.message;
+        setTimeout(function() {
             note.style.color = '';
-            note.innerHTML = '<i class="fas fa-info-circle"></i> Los comentarios se publican tras revisión del admin';
+            note.innerHTML   =
+                '<i class="fas fa-info-circle"></i> ' +
+                'Los comentarios se publican tras revisión del admin';
         }, 3500);
+        // Actualizar contador
+        var mc = document.getElementById('modalCommentCount');
+        if (mc) mc.textContent = parseInt(mc.textContent || '0') + 1;
+    })
+    .catch(function(err) {
+        note.style.color = '#ef4444';
+        note.innerHTML   = '<i class="fas fa-times-circle"></i> Error al enviar. Intenta de nuevo.';
+        console.error('comentario error:', err);
+    })
+    .finally(function() {
+        sendBtn.disabled  = false;
+        sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
     });
 });
 
-// Cargar más
+// ── Cargar más fotos ──
 var loadBtn = document.getElementById('loadMoreBtn');
 if (loadBtn) {
     loadBtn.addEventListener('click', function() {
         var page = this.dataset.page;
         var tab  = this.dataset.tab;
-        this.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
-        this.disabled = true;
+        var self = this;
+        self.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Cargando...';
+        self.disabled  = true;
+
         fetch('/dashboard/feed?tab=' + tab + '&page=' + page, {
-            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(r => r.json())
-        .then(d => {
-            document.getElementById('feedGrid').insertAdjacentHTML('beforeend', d.html);
-            if (d.hasMore) {
-                this.dataset.page = d.nextPage;
-                this.innerHTML = '<i class="fas fa-chevron-down"></i> Cargar más fotos';
-                this.disabled = false;
-            } else {
-                document.getElementById('loadMoreWrap').style.display = 'none';
+            headers: {
+                'Accept':           'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             }
+        })
+        .then(function(r) {
+            if (!r.ok) throw new Error('HTTP ' + r.status);
+            return r.json();
+        })
+        .then(function(d) {
+            document.getElementById('feedGrid')
+                    .insertAdjacentHTML('beforeend', d.html);
+            if (d.hasMore) {
+                self.dataset.page = d.nextPage;
+                self.innerHTML    = '<i class="fas fa-chevron-down"></i> Cargar más fotos';
+                self.disabled     = false;
+            } else {
+                var wrap = document.getElementById('loadMoreWrap');
+                if (wrap) wrap.style.display = 'none';
+            }
+        })
+        .catch(function(err) {
+            self.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error al cargar';
+            self.disabled  = false;
+            console.error('loadMore error:', err);
         });
     });
 }
+
 })();
 </script>
 @endpush
