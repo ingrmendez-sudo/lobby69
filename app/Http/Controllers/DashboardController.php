@@ -40,7 +40,7 @@ class DashboardController extends Controller
     private function getFeed(string $userId, string $tab, int $page): LengthAwarePaginator
     {
         try {
-            $photos = Photo::with(['user.profile'])->approved()->where('album_type','public')->where(DB::raw('user_id::text'),'!=',$userId)->orderByDesc('created_at')->paginate(12,['*'],'page',$page);
+           $photos = Photo::with(['user.profile'])->approved()->where('album_type','public')->orderByDesc('created_at')->paginate(12,['*'],'page',$page);
             foreach ($photos as $photo) {
                 $pid = (string)$photo->id;
                 $photo->likes_count    = DB::table('photo_likes')->where(DB::raw('photo_id::text'),$pid)->count();

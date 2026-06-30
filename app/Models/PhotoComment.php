@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 class PhotoComment extends Model
 {
     use HasUuids;
+    public $timestamps = false;
     protected $table = 'photo_comments';
     protected $fillable = ['photo_id', 'user_id', 'body', 'status'];
 

@@ -26,7 +26,13 @@ Route::middleware('guest')->group(function () {
     Route::get('/dashboard/feed', [App\Http\Controllers\DashboardController::class, 'feedAjax'])->name('dashboard.feed.ajax');
     Route::post('/dashboard/like/{photo}', [App\Http\Controllers\DashboardController::class, 'toggleLike'])->name('dashboard.like');
     Route::get('/dashboard/photo/{photo}', [App\Http\Controllers\DashboardController::class, 'photoModal'])->name('dashboard.photo.modal');
+    
 });
+Route::get('/foto/{path}', function ($path) {
+      $fullPath = storage_path('app/private/' . $path);
+      if (!file_exists($fullPath)) abort(404);
+      return response()->file($fullPath);
+    })->where('path', '.*')->name('photo.serve');
 
 // Rutas solo auth + force password (sin requerir perfil completo)
 Route::middleware(['auth', 'force.password.change', 'track.seen'])->group(function () {

@@ -309,7 +309,7 @@
 
         {{-- Foto --}}
         <div class="dsb-photo-card__img-wrap">
-            <img src="{{ asset('storage/' . $photo->file_path) }}"
+            <img src="{{ route('photo.serve', ['path' => $photo->file_path]) }}"
                  alt="{{ $ownerNick }}"
                  class="dsb-photo-card__img"
                  loading="lazy"
