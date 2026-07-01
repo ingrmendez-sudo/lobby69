@@ -7,7 +7,7 @@
     --nav-text:        var(--text-primary);
     --nav-text-muted:  var(--text-muted);
     --nav-hover-bg:    var(--theme-pink-soft);
-    --nav-dropdown-bg: var(--bg-card);
+    --nav-dropdown-bg: var(--bg-body);
 }
 .l69-nav {
     position: sticky; top: 0; z-index: 9000;
@@ -194,10 +194,13 @@
 <nav class="l69-nav" id="mainNav" role="navigation">
     <div class="l69-nav__inner">
 
-        {{-- Logo --}}
+        {{-- CON LOGO --}}
         <a href="{{ route('dashboard') }}" class="l69-nav__brand">
-            <span class="l69-nav__brand-name">LOBBY69</span>
+            <img src="{{ asset('img/logo-lobby69_.png') }}"
+                alt=""
+                style="height:36px;width:auto;object-fit:contain;">
         </a>
+
 
         {{-- Links principales --}}
         @auth

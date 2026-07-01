@@ -13,9 +13,11 @@ Route::get('/', function () {
 // Foto privada (sin auth, protegida por path)
 Route::get('/foto/{path}', function ($path) {
     $fullPath = storage_path('app/private/' . $path);
+    \Illuminate\Support\Facades\Log::info('FOTO path=' . $path . ' fullPath=' . $fullPath . ' exists=' . (file_exists($fullPath) ? 'SI' : 'NO'));
     if (!file_exists($fullPath)) abort(404);
     return response()->file($fullPath);
 })->where('path', '.*')->name('photo.serve');
+
 
 // Debug temporal
 Route::get('/debug-auth', function () {
