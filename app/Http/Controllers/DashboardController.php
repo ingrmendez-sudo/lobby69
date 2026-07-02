@@ -68,7 +68,7 @@ class DashboardController extends Controller
         try {
             $myViews = DB::table('profile_views')
                 ->whereRaw('viewer_id::text = ?', [(string) $user->id])
-                ->orderByDesc('created_at')
+                ->orderByDesc('viewed_at')
                 ->limit(10)
                 ->get();
 
@@ -101,7 +101,7 @@ class DashboardController extends Controller
         try {
             $newUsers = User::with('profile')
                 ->whereRaw('id::text != ?', [(string) $user->id])
-                ->orderByDesc('created_at')
+                ->orderByDesc('viewed_at')
                 ->limit(12)
                 ->get();
         } catch (\Throwable $e) {

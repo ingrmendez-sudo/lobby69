@@ -220,9 +220,21 @@
         ->where('is_profile_photo', true)
         ->where('status', 'approved')
         ->first();
-    $avatarUrl = $profilePhoto
-        ? url('foto/' . $profilePhoto->file_path)
-        : asset('img/default-avatar.svg');
+
+    if (!$profilePhoto) {
+        $profilePhoto = DB::table('photos')
+            ->whereRaw('user_id::text = ?', [$profile->user_id])
+            ->where('album_type', 'public')
+            ->where('status', 'approved')
+            ->orderBy('sort_order')
+            ->orderBy('created_at')
+            ->first();
+    }
+
+$avatarUrl = $profilePhoto
+    ? url('foto/' . $profilePhoto->file_path)
+    : asset('img/default-avatar.svg');
+
 
     // Fotos públicas aprobadas
     $photos = DB::table('photos')

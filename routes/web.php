@@ -56,7 +56,7 @@ Route::middleware(['auth', 'force.password.change', 'profile.completed'])->group
     Route::post('/fotos/{id}/like',       [DashboardController::class, 'toggleLike'])->name('photo.like');
     Route::get('/fotos/{id}/info',        [DashboardController::class, 'photoModal'])->name('photo.info');
     Route::post('/fotos/{id}/comentario', [DashboardController::class, 'storeComment'])->name('photo.comment');
-    Route::get('/explorar', function () { return view('profiles.explore'); })->name('explore');
+    Route::get('/explorar', [\App\Http\Controllers\ExploreController::class, 'index'])->name('explore');
     Route::get('/perfil/editar',  [App\Http\Controllers\Profile\ProfileController::class, 'edit'])->name('profile.edit');
     Route::post('/perfil/editar', [App\Http\Controllers\Profile\ProfileController::class, 'update'])->name('profile.update');
     Route::get('/verificar',           [\App\Http\Controllers\Verification\VerificationController::class, 'show'])->name('verification.show');
