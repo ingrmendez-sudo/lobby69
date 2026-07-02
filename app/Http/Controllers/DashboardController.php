@@ -415,7 +415,7 @@ class DashboardController extends Controller
                 'photo_id'   => $photo->photo_uuid,
                 'user_id'    => (string) $user->id,
                 'body'       => $validated['body'],
-                'status'     => 'approved',
+                'status' => 'approved',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

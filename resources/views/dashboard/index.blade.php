@@ -2,28 +2,19 @@
 
 @section('title', 'Dashboard')
 
-{{-- ═══════════════════════════════════════
-     SIDEBAR IZQUIERDO
-════════════════════════════════════════ --}}
 @push('sidebar-left')
     @include('layouts.sidebar-left')
 @endpush
 
-{{-- ═══════════════════════════════════════
-     SIDEBAR DERECHO
-════════════════════════════════════════ --}}
 @push('sidebar-right')
     @include('layouts.sidebar-right')
 @endpush
 
-{{-- ═══════════════════════════════════════
-     CONTENIDO CENTRAL
-════════════════════════════════════════ --}}
 @section('content')
 
 @push('styles')
 <style>
-/* ── Tarjeta del feed ── */
+/* ══ TARJETA DEL FEED ══ */
 .l69-feed-card {
     position: relative;
     border-radius: 12px;
@@ -37,8 +28,6 @@
     transform: translateY(-3px);
     box-shadow: 0 8px 24px rgba(0,0,0,.25);
 }
-
-/* Imagen cuadrada */
 .l69-feed-card__img-wrap {
     position: relative;
     aspect-ratio: 1 / 1;
@@ -47,120 +36,239 @@
 }
 .l69-feed-card__img {
     width: 100%; height: 100%;
-    object-fit: cover;
-    display: block;
+    object-fit: cover; display: block;
     transition: transform .2s;
 }
-.l69-feed-card:hover .l69-feed-card__img {
-    transform: scale(1.04);
-}
+.l69-feed-card:hover .l69-feed-card__img { transform: scale(1.04); }
 
-/* ── Info del dueño en esquina superior izquierda ── */
 .l69-feed-card__owner-top {
-    position: absolute;
-    top: .5rem;
-    left: .5rem;
-    display: flex;
-    align-items: center;
-    gap: .4rem;
-    background: rgba(0,0,0,.55);
-    backdrop-filter: blur(4px);
-    border-radius: 20px;
-    padding: .25rem .55rem .25rem .25rem;
-    z-index: 2;
-    text-decoration: none;
+    position: absolute; top: .5rem; left: .5rem;
+    display: flex; align-items: center; gap: .4rem;
+    background: rgba(0,0,0,.55); backdrop-filter: blur(4px);
+    border-radius: 20px; padding: .25rem .55rem .25rem .25rem;
+    z-index: 2; text-decoration: none;
     max-width: calc(100% - 1rem);
 }
 .l69-feed-card__owner-top img {
-    width: 22px; height: 22px;
-    border-radius: 50%;
-    object-fit: cover;
-    border: 1px solid rgba(255,255,255,.3);
-    flex-shrink: 0;
+    width: 22px; height: 22px; border-radius: 50%;
+    object-fit: cover; border: 1px solid rgba(255,255,255,.3); flex-shrink: 0;
 }
 .l69-feed-card__owner-top span {
-    font-size: .72rem;
-    font-weight: 600;
-    color: #fff;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    font-size: .72rem; font-weight: 600; color: #fff;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-
-/* ── Overlay con like y comentario — visible al hover ── */
 .l69-feed-card__overlay {
-    position: absolute;
-    inset: 0;
+    position: absolute; inset: 0;
     background: linear-gradient(to top, rgba(0,0,0,.65) 0%, transparent 55%);
-    display: flex;
-    align-items: flex-end;
-    gap: .6rem;
-    padding: .65rem .75rem;
-    opacity: 0;
-    transition: opacity .18s;
-    z-index: 2;
+    display: flex; align-items: flex-end; gap: .6rem;
+    padding: .65rem .75rem; opacity: 0;
+    transition: opacity .18s; z-index: 2;
 }
-.l69-feed-card:hover .l69-feed-card__overlay {
-    opacity: 1;
-}
+.l69-feed-card:hover .l69-feed-card__overlay { opacity: 1; }
 
-/* Botón like */
 .l69-like-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: .35rem;
-    background: rgba(0,0,0,.5);
-    border: 1px solid rgba(255,255,255,.15);
-    border-radius: 20px;
-    color: #fff;
-    font-size: .8rem;
-    font-weight: 600;
-    padding: .3rem .65rem;
-    cursor: pointer;
-    transition: background .15s;
-    white-space: nowrap;
+    display: inline-flex; align-items: center; gap: .35rem;
+    background: rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.15);
+    border-radius: 20px; color: #fff; font-size: .8rem; font-weight: 600;
+    padding: .3rem .65rem; cursor: pointer;
+    transition: background .15s; white-space: nowrap;
 }
-.l69-like-btn:hover { background: rgba(224,86,160,.75); }
-.l69-like-btn.is-liked {
-    background: rgba(224,86,160,.7);
-    color: #fff;
-}
-.l69-like-btn i { font-size: .85rem; }
+.l69-like-btn:hover      { background: rgba(224,86,160,.75); }
+.l69-like-btn.is-liked   { background: rgba(224,86,160,.7); color: #fff; }
+.l69-like-btn.is-liked i { color: #fff; }
 
-/* Contador comentarios */
 .l69-feed-card__comments {
-    display: inline-flex;
-    align-items: center;
-    gap: .35rem;
-    background: rgba(0,0,0,.5);
-    border: 1px solid rgba(255,255,255,.15);
-    border-radius: 20px;
-    color: #fff;
-    font-size: .8rem;
-    font-weight: 600;
-    padding: .3rem .65rem;
-    white-space: nowrap;
+    display: inline-flex; align-items: center; gap: .35rem;
+    background: rgba(0,0,0,.5); border: 1px solid rgba(255,255,255,.15);
+    border-radius: 20px; color: #fff; font-size: .8rem;
+    font-weight: 600; padding: .3rem .65rem; white-space: nowrap;
 }
+.l69-feed-card__footer { display: none; }
+.l69-feed-tabs a { color: var(--theme-text-2); border-color: rgba(180,60,120,.2); }
+.l69-feed-tabs a:hover { color: var(--theme-text); }
 
-/* Footer — oculto, la info va en el overlay superior */
-.l69-feed-card__footer {
+/* ══ MODAL ══ */
+#photoModal {
     display: none;
+    position: fixed; inset: 0; z-index: 9999;
+    align-items: center; justify-content: center;
+    padding: 1rem; background: rgba(0,0,0,.88); overflow: hidden;
+}
+#photoModal.modal-open {
+    display: flex !important;
 }
 
-/* ── Tabs del feed ── */
-.l69-feed-tabs a {
-    color: var(--theme-text-2);
-    border-color: rgba(180,60,120,.2);
+
+.l69-modal-inner {
+    position: relative; display: flex; flex-direction: row;
+    width: 100%; max-width: 820px; max-height: 82vh;
+    background: var(--bg-body, #1a1028);
+    border-radius: 12px; overflow: hidden;
+    box-shadow: 0 24px 80px rgba(0,0,0,.7);
 }
-.l69-feed-tabs a:hover {
-    color: var(--theme-text);
+.l69-modal-photo-wrap {
+    position: relative; flex: 0 0 52%; max-width: 52%;
+    background: #0d0d0d; display: flex;
+    align-items: center; justify-content: center;
+    min-height: 300px; overflow: hidden;
 }
+#modalPhoto {
+    display: block; width: 100%; height: 100%;
+    max-height: 82vh; object-fit: contain;
+    opacity: 0; transition: opacity 0.3s ease;
+}
+#photoSpinner {
+    position: absolute; inset: 0; display: flex;
+    align-items: center; justify-content: center;
+    background: rgba(0,0,0,.35); z-index: 2;
+}
+#photoModalClose {
+    position: absolute; top: 0.75rem; right: 0.75rem; z-index: 10;
+    background: rgba(0,0,0,.55); border: none; color: #fff;
+    width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1rem; line-height: 1; transition: background .2s;
+}
+#photoModalClose:hover { background: rgba(0,0,0,.85); }
+
+.l69-modal-side {
+    flex: 1; display: flex; flex-direction: column;
+    overflow-y: auto; padding: 1rem; max-height: 82vh; gap: 0.6rem;
+    position: relative;
+}
+.l69-modal-owner { display: flex; align-items: center; gap: 0.6rem; }
+.l69-modal-owner img {
+    width: 36px; height: 36px; border-radius: 50%;
+    object-fit: cover; border: 2px solid rgba(224,86,160,.4);
+}
+.l69-modal-owner span {
+    font-weight: 700; font-size: 0.9rem;
+    color: var(--theme-text, #f0e8ff);
+}
+.l69-modal-caption {
+    font-size: 0.85rem; color: var(--theme-text-secondary, #c8b8e8);
+    margin: 0; word-break: break-word;
+}
+.l69-modal-actions { display: flex; gap: 0.5rem; align-items: center; }
+
+/* ══ SPINNERS ══ */
+.l69-spinner {
+    width: 32px; height: 32px;
+    border: 3px solid rgba(255,255,255,.15);
+    border-top-color: #e056a0; border-radius: 50%;
+    animation: l69spin 0.7s linear infinite;
+}
+@keyframes l69spin { to { transform: rotate(360deg); } }
+
+#commentSpinner {
+    display: flex; align-items: center;
+    justify-content: center; padding: 1.5rem 0;
+}
+
+/* ══ LISTA DE COMENTARIOS ══ */
+#commentsList {
+    flex: 1; overflow-y: auto; padding: 0.25rem 0;
+    min-height: 60px; display: flex;
+    flex-direction: column; gap: 0.25rem;
+}
+.l69-modal-comment-item {
+    display: flex; gap: 0.5rem; padding: 0.45rem 0;
+    border-bottom: 1px solid var(--theme-border, rgba(128,128,128,0.15));
+    align-items: flex-start;
+}
+.l69-comment-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    object-fit: cover; flex-shrink: 0;
+}
+.l69-comment-content { min-width: 0; flex: 1; }
+.l69-comment-author {
+    display: block; font-weight: 700; font-size: 0.82rem;
+    color: var(--theme-text, #1a1028);
+}
+.l69-comment-body {
+    margin: 0.15rem 0 0; font-size: 0.82rem;
+    word-break: break-word;
+    color: var(--theme-text-secondary, #4a3a5a);
+}
+.l69-no-comments {
+    font-size: 0.85rem; text-align: center;
+    padding: 1.5rem 0; color: var(--theme-text-secondary, #666);
+}
+[data-theme="light"] .l69-comment-author    { color: #1a1028; }
+[data-theme="light"] .l69-comment-body      { color: #4a3a5a; }
+[data-theme="light"] .l69-no-comments       { color: #5a4a6a; }
+[data-theme="light"] .l69-modal-owner span  { color: #1a1028; }
+[data-theme="light"] .l69-modal-caption     { color: #4a3a5a; }
+[data-theme="dark"]  .l69-comment-author    { color: #f0e8ff; }
+[data-theme="dark"]  .l69-comment-body      { color: #c8b8e8; }
+[data-theme="dark"]  .l69-no-comments       { color: #9070b0; }
+[data-theme="dark"]  .l69-modal-owner span  { color: #f0e8ff; }
+[data-theme="dark"]  .l69-modal-caption     { color: #c8b8e8; }
+
+/* ══ FORMULARIO COMENTARIO ══ */
+.l69-comment-form {
+    display: flex; flex-direction: column; gap: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid var(--theme-border, rgba(128,128,128,0.15));
+    margin-top: auto;
+}
+.l69-comment-input {
+    width: 100%; background: var(--bg-input, rgba(255,255,255,.06));
+    border: 1px solid var(--theme-border, rgba(180,60,120,.2));
+    border-radius: 8px; color: var(--theme-text, #f0e8ff);
+    font-size: 0.85rem; padding: 0.5rem 0.75rem;
+    resize: none; transition: border-color .2s; font-family: inherit;
+}
+.l69-comment-input:focus { outline: none; border-color: #e056a0; }
+[data-theme="light"] .l69-comment-input { color: #1a1028; background: rgba(0,0,0,.04); }
+.l69-comment-submit {
+    align-self: flex-end; background: #e056a0; border: none;
+    border-radius: 8px; color: #fff; font-size: 0.82rem;
+    font-weight: 600; padding: 0.4rem 1rem;
+    cursor: pointer; transition: background .2s;
+}
+.l69-comment-submit:hover    { background: #c43d8a; }
+.l69-comment-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* ══ RESPONSIVE ══ */
+@media (max-width: 640px) {
+    .l69-modal-inner { flex-direction: column; max-height: 95vh; border-radius: 8px; }
+    .l69-modal-photo-wrap { flex: 0 0 auto; max-width: 100%; height: 45vw; min-height: 200px; max-height: 50vh; }
+    #modalPhoto { max-height: 50vh; }
+    .l69-modal-side { max-height: 48vh; padding: 0.8rem; }
+}
+
+/* Fecha del comentario */
+.l69-comment-date {
+    font-size: 0.72rem;
+    font-weight: 400;
+    opacity: 0.55;
+    margin-left: 0.35rem;
+}
+
+/* Toast de comentario publicado */
+.l69-comment-toast {
+    position: absolute;
+    bottom: 4.5rem;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #1a8a5a;
+    color: #fff;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.4rem 1rem;
+    border-radius: 20px;
+    opacity: 1;
+    transition: opacity 0.4s ease;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 10;
+}
+
 </style>
 @endpush
 
-
-
-{{-- ── Tabs de navegación del feed ── --}}
+{{-- ── Tabs ── --}}
 <div class="l69-feed-tabs" style="display:flex;gap:.5rem;margin-bottom:1.25rem;">
     <a href="{{ route('dashboard', ['tab'=>'new']) }}"
        class="l69-quick-btn {{ $tab === 'new' ? 'l69-quick-btn--active' : '' }}"
@@ -182,19 +290,15 @@
 {{-- ── Grid de fotos ── --}}
 @if($feed->count() > 0)
 <div class="l69-feed-grid" id="feedGrid" style="
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-">
+    display:grid;
+    grid-template-columns:repeat(auto-fill, minmax(220px, 1fr));
+    gap:1rem; margin-bottom:1.5rem;">
     @include('dashboard._feed_items', ['feed' => $feed, 'user' => $user])
 </div>
 
-{{-- ── Botón cargar más ── --}}
 @if($feed->hasMorePages())
 <div id="loadMoreWrap" style="text-align:center;margin-bottom:2rem;">
-    <button id="loadMoreBtn"
-            class="l69-quick-btn"
+    <button id="loadMoreBtn" class="l69-quick-btn"
             data-page="{{ $feed->currentPage() + 1 }}"
             data-tab="{{ $tab }}"
             style="display:inline-flex;width:auto;padding:.75rem 2rem;">
@@ -204,14 +308,7 @@
 @endif
 
 @else
-{{-- ── Estado vacío ── --}}
-<div style="
-    text-align:center;
-    padding:4rem 2rem;
-    background:var(--theme-surface-2);
-    border-radius:16px;
-    border:1px solid rgba(180,60,120,.15);
-">
+<div style="text-align:center;padding:4rem 2rem;background:var(--theme-surface-2);border-radius:16px;border:1px solid rgba(180,60,120,.15);">
     <i class="fas fa-images" style="font-size:3rem;color:rgba(180,60,120,.4);margin-bottom:1rem;display:block;"></i>
     <p style="color:rgba(226,217,243,.6);margin:0 0 1rem;">
         @if($tab === 'following')
@@ -226,194 +323,257 @@
 </div>
 @endif
 
-{{-- ══════════════════════════════════════════
-     MODAL DE FOTO
-═══════════════════════════════════════════ --}}
-<div id="photoModal" style="
-    display:none;
-    position:fixed;top:0;left:0;right:0;bottom:0;
-    background:rgba(0,0,0,.85);
-    z-index:99999;
-    align-items:center;
-    justify-content:center;
-    padding:1rem;
-">
-    {{-- Overlay para cerrar al click fuera --}}
-    <div id="photoModalOverlay" style="position:absolute;inset:0;"></div>
+{{-- ══ MODAL DE FOTO ══ --}}
+<div id="photoModal" aria-hidden="true">
 
-    {{-- Contenedor del modal --}}
-    <div style="
-        position:relative;
-        background:var(--theme-surface-2, #1a1028);
-        border-radius:16px;
-        max-width:960px;
-        width:100%;
-        max-height:90vh;
-        overflow:hidden;
-        display:flex;
-        flex-direction:row;
-        z-index:1;
-    ">
-        {{-- ── Imagen ── --}}
-        <div style="flex:1;min-width:0;background:#000;display:flex;align-items:center;justify-content:center;">
-            <img id="modalPhoto" src="" alt="Foto"
-                 style="max-width:100%;max-height:90vh;object-fit:contain;display:block;">
+    {{-- fondo oscuro: click cierra --}}
+    <div id="photoModalOverlay"
+         style="position:absolute;inset:0;cursor:pointer;"></div>
+
+    <div class="l69-modal-inner">
+
+        {{-- botón cerrar --}}
+        <button id="photoModalClose" aria-label="Cerrar">
+            <i class="fas fa-times"></i>
+        </button>
+
+        {{-- SECCIÓN FOTO --}}
+        <div class="l69-modal-photo-wrap">
+            <div id="photoSpinner">
+                <div class="l69-spinner"></div>
+            </div>
+            <img id="modalPhoto" src="" alt="Foto">
         </div>
 
-        {{-- ── Panel derecho ── --}}
-        <div style="width:320px;flex-shrink:0;display:flex;flex-direction:column;overflow:hidden;">
+        {{-- SECCIÓN INFO + COMENTARIOS --}}
+        <div class="l69-modal-side">
 
-            {{-- Header del modal --}}
-            <div style="
-                display:flex;align-items:center;
-                justify-content:space-between;
-                padding:.9rem 1rem;
-                border-bottom:1px solid rgba(180,60,120,.2);
-                flex-shrink:0;
-            ">
-                {{-- Owner --}}
-                <a id="modalOwnerLink" href="#" style="display:flex;align-items:center;gap:.6rem;text-decoration:none;">
-                    <img id="modalOwnerAvatar" src="" alt=""
-                         style="width:38px;height:38px;border-radius:50%;object-fit:cover;border:2px solid rgba(180,60,120,.4);"
-                         onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
-                    <div>
-                        <div id="modalOwnerNick" style="font-weight:700;font-size:.9rem;color:var(--theme-text);"></div>
-                        <div id="modalOwnerMeta" style="font-size:.72rem;color:rgba(226,217,243,.5);"></div>
-                    </div>
-                </a>
-                {{-- Cerrar --}}
-                <button id="photoModalClose" style="
-                    background:none;border:none;cursor:pointer;
-                    color:rgba(226,217,243,.6);font-size:1.2rem;
-                    padding:.3rem;line-height:1;
-                " title="Cerrar">&times;</button>
+            <div class="l69-modal-owner">
+                <img id="modalOwnerAvatar" src="/img/default-avatar.svg" alt="">
+                <span id="modalOwnerName"></span>
             </div>
 
-            {{-- Caption --}}
-            <p id="modalCaption" style="
-                display:none;
-                margin:.75rem 1rem 0;
-                font-size:.85rem;
-                color:rgba(226,217,243,.75);
-                flex-shrink:0;
-            "></p>
+            <p id="modalCaption" class="l69-modal-caption"></p>
 
-            {{-- Acciones: like + comentarios --}}
-            <div style="
-                display:flex;align-items:center;gap:1rem;
-                padding:.75rem 1rem;
-                border-bottom:1px solid rgba(180,60,120,.15);
-                flex-shrink:0;
-            ">
-                <button id="modalLikeBtn"
-                        class="l69-like-btn"
-                        data-photo-id=""
-                        style="
-                            background:none;border:none;cursor:pointer;
-                            display:flex;align-items:center;gap:.4rem;
-                            color:rgba(226,217,243,.7);font-size:.9rem;padding:0;
-                        ">
-                    <i class="far fa-heart" style="font-size:1.1rem;"></i>
-                    <span id="modalLikeCount">0</span>
+            <div class="l69-modal-actions">
+                <button id="modalLikeBtn" class="l69-like-btn"
+                        data-photo-id="" data-liked="0">
+                    <i class="far fa-heart"></i>
+                    <span class="like-count">0</span>
                 </button>
-                <span style="display:flex;align-items:center;gap:.4rem;color:rgba(226,217,243,.5);font-size:.9rem;">
-                    <i class="far fa-comment"></i>
-                    <span id="modalCommentCount">0</span>
-                </span>
-                <a id="modalProfileLink" href="#"
-                   style="margin-left:auto;font-size:.78rem;color:rgba(180,60,120,.8);text-decoration:none;">
-                    Ver perfil →
-                </a>
             </div>
 
-            {{-- Lista de comentarios --}}
-            <div id="commentsList" style="
-                flex:1;overflow-y:auto;
-                padding:.75rem 1rem;
-                display:flex;flex-direction:column;gap:.75rem;
-                scrollbar-width:thin;
-                scrollbar-color:rgba(180,60,120,.3) transparent;
-            ">
-                <div style="text-align:center;color:rgba(226,217,243,.4);font-size:.85rem;padding:2rem 0;">
-                    <i class="far fa-comment"></i><br>Sin comentarios aún
-                </div>
+            <div id="commentSpinner">
+                <div class="l69-spinner"></div>
             </div>
 
-            {{-- Formulario de comentario --}}
-            <form id="commentForm" style="
-                border-top:1px solid rgba(180,60,120,.15);
-                padding:.75rem 1rem;
-                flex-shrink:0;
-            ">
+            <div id="commentsList"></div>
+
+            <form id="commentForm" class="l69-comment-form">
                 <input type="hidden" id="commentPhotoId" value="">
-                <div style="display:flex;gap:.5rem;align-items:flex-end;">
-                    <textarea id="commentBody"
-                              placeholder="Escribe un comentario..."
-                              maxlength="500"
-                              rows="2"
-                              style="
-                                  flex:1;resize:none;
-                                  background:rgba(255,255,255,.06);
-                                  border:1px solid rgba(180,60,120,.25);
-                                  border-radius:9px;
-                                  padding:.55rem .75rem;
-                                  color:var(--theme-text);
-                                  font-size:.85rem;
-                                  outline:none;
-                              "></textarea>
-                    <button type="submit"
-                            class="dsb-modal__comment-send"
-                            style="
-                                background:rgba(180,60,120,.7);
-                                border:none;border-radius:9px;
-                                color:#fff;cursor:pointer;
-                                padding:.55rem .75rem;
-                                font-size:.9rem;
-                                flex-shrink:0;
-                            ">
-                        <i class="fas fa-paper-plane"></i>
-                    </button>
-                </div>
-                <p id="commentNote" style="font-size:.72rem;color:rgba(226,217,243,.45);margin:.4rem 0 0;">
-                    <i class="fas fa-info-circle"></i>
-                    Los comentarios se publican tras revisión del admin
-                </p>
+                <textarea id="commentBody" class="l69-comment-input"
+                          placeholder="Escribe un comentario..." rows="2"></textarea>
+                <button type="submit" class="l69-comment-submit">
+                    <i class="fas fa-paper-plane"></i> Enviar
+                </button>
             </form>
 
-        </div>{{-- fin panel derecho --}}
-    </div>{{-- fin contenedor modal --}}
-</div>{{-- fin photoModal --}}
+        </div>{{-- /modal-side --}}
+    </div>{{-- /modal-inner --}}
+</div>{{-- /photoModal --}}
 
 @endsection
 
-{{-- ═══════════════════════════════════════
-     JAVASCRIPT
-════════════════════════════════════════ --}}
 @push('scripts')
 <script>
-(function(){
-var CSRF = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+/* ═══════════════════════════════════════════════════════
+   DASHBOARD — script único, sin IIFE, scope global
+═══════════════════════════════════════════════════════ */
+var CSRF           = (document.querySelector('meta[name="csrf-token"]') || {}).content || '';
+var currentPhotoId = null;
 
-// ── Abrir modal al click en tarjeta ──
-document.addEventListener('click', function(e) {
-    var card = e.target.closest('.l69-feed-card');
-    if (!card) return;
-    if (e.target.closest('.l69-like-btn') ||
-        e.target.closest('.l69-card__owner')) return;
-    openModal(card.dataset.photoId);
-});
+/* ── Helpers ── */
+function escapeHtml(str) {
+    var d = document.createElement('div');
+    d.appendChild(document.createTextNode(String(str == null ? '' : str)));
+    return d.innerHTML;
+}
 
-// ── Like en feed ──
-document.addEventListener('click', function(e) {
-    var btn = e.target.closest('.l69-like-btn');
-    if (!btn || !btn.dataset.photoId) return;
-    e.preventDefault(); e.stopPropagation();
-    toggleLike(btn.dataset.photoId, btn);
-});
+function formatDate(isoString) {
+    if (!isoString) return '';
+    var d = new Date(isoString);
+    if (isNaN(d)) return '';
+    var ahora  = new Date();
+    var diff   = Math.floor((ahora - d) / 1000); // segundos
 
-// ── Toggle Like ──
+    if (diff < 60)                        return 'ahora';
+    if (diff < 3600)                      return Math.floor(diff / 60) + ' min';
+    if (diff < 86400)                     return Math.floor(diff / 3600) + ' h';
+    if (diff < 604800)                    return Math.floor(diff / 86400) + ' d';
+
+    // más de 7 días: mostrar fecha corta
+    return d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
+}
+
+
+/* ── Cerrar modal ── */
+function dsbCloseModal() {
+
+    var m = document.getElementById('photoModal');
+    if (m) {
+        m.classList.remove('modal-open');
+        m.removeAttribute('style');          /* elimina cualquier style inline */
+        m.setAttribute('aria-hidden', 'true');
+    }
+    document.body.style.overflow = '';
+    currentPhotoId = null;
+}
+
+/* ── Renderizar comentarios ── */
+function renderComments(comments) {
+    var list = document.getElementById('commentsList');
+    if (!list) return;
+
+    if (!comments || comments.length === 0) {
+        list.innerHTML = '<p class="l69-no-comments">Sé el primero en comentar.</p>';
+        return;
+    }
+
+    list.innerHTML = comments.map(function(c) {
+        var nick   = escapeHtml(c.user_nick || (c.user && c.user.nickname) || 'Usuario');
+        var body   = escapeHtml(c.comment || c.body || '');
+        var avatar = c.user_avatar ? '/foto/' + c.user_avatar : '/img/default-avatar.svg';
+        var fecha = c.created_at ? formatDate(c.created_at) : '';
+        return '<div class="l69-modal-comment-item">' +
+                '<img src="' + avatar + '" class="l69-comment-avatar" ' +
+                        'onerror="this.src=\'/img/default-avatar.svg\'">' +
+                '<div class="l69-comment-content">' +
+                    '<span class="l69-comment-author">' + nick +
+                        (fecha ? ' <span class="l69-comment-date">' + fecha + '</span>' : '') +
+                    '</span>' +
+                    '<p class="l69-comment-body">' + body + '</p>' +
+                '</div>' +
+            '</div>';
+    }).join('');
+
+    list.scrollTop = list.scrollHeight;
+}
+
+/* ── Abrir modal ── */
+function dsbOpenModal(photoId) {
+    if (!photoId) return;
+
+    var modal          = document.getElementById('photoModal');
+    var modalPhoto     = document.getElementById('modalPhoto');
+    var photoSpinner   = document.getElementById('photoSpinner');
+    var commentsList   = document.getElementById('commentsList');
+    var commentSpinner = document.getElementById('commentSpinner');
+
+    if (!modal || !modalPhoto) return;
+
+    /* mostrar modal */
+    modal.removeAttribute('style');          /* elimina display:none inline si existe */
+    modal.classList.add('modal-open');
+    modal.setAttribute('aria-hidden', 'false');
+    document.body.style.overflow = 'hidden';
+
+
+    /* resetear estado visual — crítico para 2ª, 3ª foto */
+    modalPhoto.style.opacity = '0';
+    if (photoSpinner)   photoSpinner.style.display   = 'flex';
+    if (commentsList)   commentsList.innerHTML        = '';
+    if (commentSpinner) commentSpinner.style.display  = 'flex';
+
+    /* vaciar src para forzar onload aunque sea la misma URL */
+    modalPhoto.src = '';
+
+    modalPhoto.onload = function() {
+        if (photoSpinner) photoSpinner.style.display = 'none';
+        modalPhoto.style.opacity = '1';
+    };
+    modalPhoto.onerror = function() {
+        if (photoSpinner) photoSpinner.style.display = 'none';
+        modalPhoto.style.opacity = '1';
+    };
+
+    /* fetch datos */
+    fetch('/fotos/' + photoId + '/info', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(function(d) {
+        /* foto */
+        modalPhoto.src = '/foto/' + d.photo.file_path;
+
+        /* input oculto */
+        var cpId = document.getElementById('commentPhotoId');
+        if (cpId) cpId.value = photoId;
+
+        /* like */
+        var likeBtn = document.getElementById('modalLikeBtn');
+        if (likeBtn) {
+            likeBtn.dataset.photoId = photoId;
+            var li = likeBtn.querySelector('i');
+            var ls = likeBtn.querySelector('.like-count');
+            if (d.photo.user_liked) {
+                likeBtn.classList.add('is-liked');
+                if (li) { li.className = 'fas fa-heart'; li.style.color = '#e056a0'; }
+            } else {
+                likeBtn.classList.remove('is-liked');
+                if (li) { li.className = 'far fa-heart'; li.style.color = ''; }
+            }
+            if (ls) ls.textContent = d.photo.likes_count || 0;
+        }
+
+        /* owner */
+        var on = document.getElementById('modalOwnerName');
+        var oa = document.getElementById('modalOwnerAvatar');
+        if (on) on.textContent = (d.owner && d.owner.nickname) ? d.owner.nickname : '';
+        if (oa) oa.src = (d.owner && d.owner.avatar)
+            ? '/foto/' + d.owner.avatar
+            : '/img/default-avatar.svg';
+
+        /* caption */
+        var cap = document.getElementById('modalCaption');
+        if (cap) cap.textContent = d.photo.caption || '';
+
+        /* comentarios */
+        if (commentSpinner) commentSpinner.style.display = 'none';
+        renderComments(d.photo.comments || []);
+    })
+    .catch(function(err) {
+        console.error('openModal error:', err);
+        if (photoSpinner)   photoSpinner.style.display   = 'none';
+        if (commentSpinner) commentSpinner.style.display  = 'none';
+    });
+}
+
+/* ── Toggle like (feed y modal) ── */
 function toggleLike(photoId, btn) {
-    btn.disabled = true;
+    if (!photoId || !btn || btn.dataset.loading === 'true') return;
+
+    btn.dataset.loading = 'true';
+    btn.style.opacity   = '0.6';
+
+    var icon         = btn.querySelector('i');
+    var counter      = btn.querySelector('.like-count') || btn.querySelector('span');
+    var wasLiked     = btn.classList.contains('is-liked');
+    var currentCount = parseInt((counter && counter.textContent) || '0', 10);
+
+    /* optimistic UI */
+    if (wasLiked) {
+        btn.classList.remove('is-liked');
+        if (icon)    { icon.className = 'far fa-heart'; icon.style.color = ''; }
+        if (counter) counter.textContent = Math.max(0, currentCount - 1);
+    } else {
+        btn.classList.add('is-liked');
+        if (icon)    { icon.className = 'fas fa-heart'; icon.style.color = '#e056a0'; }
+        if (counter) counter.textContent = currentCount + 1;
+    }
+
     fetch('/fotos/' + photoId + '/like', {
         method: 'POST',
         headers: { 'X-CSRF-TOKEN': CSRF, 'Accept': 'application/json' }
@@ -425,133 +585,53 @@ function toggleLike(photoId, btn) {
     .then(function(d) {
         document.querySelectorAll('.l69-like-btn[data-photo-id="' + photoId + '"]')
             .forEach(function(b) {
-                b.querySelector('i').className = d.liked ? 'fas fa-heart' : 'far fa-heart';
-                d.liked ? b.classList.add('is-liked') : b.classList.remove('is-liked');
-                var sp = b.querySelector('span');
+                var i  = b.querySelector('i');
+                var sp = b.querySelector('.like-count') || b.querySelector('span');
+                if (d.liked) {
+                    b.classList.add('is-liked');
+                    if (i) { i.className = 'fas fa-heart'; i.style.color = '#e056a0'; }
+                } else {
+                    b.classList.remove('is-liked');
+                    if (i) { i.className = 'far fa-heart'; i.style.color = ''; }
+                }
                 if (sp) sp.textContent = d.likes_count;
             });
-        var mc = document.getElementById('modalLikeCount');
-        if (mc && document.getElementById('modalLikeBtn')?.dataset.photoId === photoId) {
-            mc.textContent = d.likes_count;
-        }
     })
-    .catch(function(err) { console.warn('toggleLike error:', err); })
-    .finally(function() { btn.disabled = false; });
-}
-
-// ── Abrir Modal ──
-function openModal(photoId) {
-    if (!photoId) return;
-    document.getElementById('photoModal').style.display = 'flex';
-    document.body.style.overflow = 'hidden';
-
-    document.getElementById('modalPhoto').src          = '';
-    document.getElementById('modalOwnerAvatar').src    = '';
-    document.getElementById('modalOwnerNick').textContent  = '';
-    document.getElementById('modalOwnerMeta').textContent  = '';
-    document.getElementById('modalLikeCount').textContent  = '0';
-    document.getElementById('modalCommentCount').textContent = '0';
-    document.getElementById('modalCaption').style.display   = 'none';
-    document.getElementById('commentsList').innerHTML =
-        '<div style="text-align:center;padding:2rem;color:rgba(226,217,243,.4);">' +
-        '<i class="fas fa-spinner fa-spin"></i></div>';
-
-    fetch('/fotos/' + photoId + '/info', {
-        headers: { 'Accept': 'application/json' }
-    })
-    .then(function(r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
-    })
-    .then(function(d) {
-        var p = d.photo;
-        document.getElementById('modalPhoto').src = '/foto/' + p.file_path;
-        document.getElementById('modalLikeCount').textContent  = p.likes_count;
-        document.getElementById('modalCommentCount').textContent = d.photo.comments_count;
-
-        var lb = document.getElementById('modalLikeBtn');
-        lb.dataset.photoId = p.id;
-        lb.querySelector('i').className = d.photo.user_liked ? 'fas fa-heart' : 'far fa-heart';
-        d.photo.user_liked ? lb.classList.add('is-liked') : lb.classList.remove('is-liked');
-
-       if (p.description && p.description.trim() !== '') {
-            var cap = document.getElementById('modalCaption');
-            cap.textContent   = p.description;
-            cap.style.display = 'block';
-        }
-
-        document.getElementById('modalOwnerAvatar').src       = p.owner.avatar_url ?? '{{ asset('img/default-avatar.svg') }}';
-        document.getElementById('modalOwnerNick').textContent = p.owner.nick;
-        document.getElementById('modalOwnerLink').href        = '/perfil/' + p.owner.nick;
-        document.getElementById('modalProfileLink').href      = '/perfil/' + p.owner.nick;
-        document.getElementById('commentPhotoId').value       = p.id;
-
-        var typeLabel = p.owner.profile_type === 'pareja'    ? '👫 Pareja'    :
-                        p.owner.profile_type === 'unicornio' ? '⭐ Unicornio' : '👤 Single';
-        document.getElementById('modalOwnerMeta').textContent =
-            typeLabel + (p.owner.city ? ' · ' + p.owner.city : '');
-
-        var list = document.getElementById('commentsList');
-        if (!d.photo.comments || d.photo.comments.length === 0) {
-            list.innerHTML =
-                '<div style="text-align:center;padding:2rem;color:rgba(226,217,243,.4);font-size:.85rem;">' +
-                '<i class="far fa-comment"></i><br>Sé el primero en comentar</div>';
+    .catch(function() {
+        /* revertir */
+        if (wasLiked) {
+            btn.classList.add('is-liked');
+            if (icon)    { icon.className = 'fas fa-heart'; icon.style.color = '#e056a0'; }
+            if (counter) counter.textContent = currentCount;
         } else {
-            list.innerHTML = d.photo.comments.map(function(c) {
-                var avatar = c.user_avatar || '{{ asset('img/default-avatar.svg') }}';
-                return '<div style="display:flex;gap:.6rem;align-items:flex-start;">' +
-                    '<img src="' + avatar + '" ' +
-                         'onerror="this.src=\'{{ asset('img/default-avatar.svg') }}\'" ' +
-                         'style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0;">' +
-                    '<div style="min-width:0;">' +
-                    '<span style="font-weight:700;font-size:.82rem;color:var(--theme-text);">' + (c.user_nick || 'Usuario') + '</span>' +
-                    '<span style="font-size:.72rem;color:rgba(226,217,243,.4);margin-left:.4rem;">' + (c.created_at || '') + '</span>' +
-                    '<p style="margin:.2rem 0 0;font-size:.83rem;color:rgba(226,217,243,.75);word-break:break-word;">' + c.comment + '</p>' +
-                    '</div></div>';
-            }).join('');
+            btn.classList.remove('is-liked');
+            if (icon)    { icon.className = 'far fa-heart'; icon.style.color = ''; }
+            if (counter) counter.textContent = currentCount;
         }
     })
-    .catch(function(err) {
-        console.error('openModal error:', err);
-        document.getElementById('commentsList').innerHTML =
-            '<div style="text-align:center;padding:2rem;color:#ef4444;font-size:.85rem;">' +
-            '<i class="fas fa-exclamation-circle"></i><br>Error al cargar</div>';
+    .finally(function() {
+        btn.dataset.loading = 'false';
+        btn.style.opacity   = '1';
     });
 }
 
-// ── Cerrar modal ──
-document.getElementById('photoModalClose').addEventListener('click', closeModal);
-document.getElementById('photoModalOverlay').addEventListener('click', closeModal);
-document.addEventListener('keydown', function(e) { if (e.key === 'Escape') closeModal(); });
-function closeModal() {
-    document.getElementById('photoModal').style.display = 'none';
-    document.body.style.overflow = '';
-}
-
-// ── Like en modal ──
-document.getElementById('modalLikeBtn').addEventListener('click', function() {
-    toggleLike(this.dataset.photoId, this);
-});
-
-// ── Enviar comentario ──
-document.getElementById('commentForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    var photoId = document.getElementById('commentPhotoId').value;
+/* ── Enviar comentario ── */
+function handleCommentSubmit(form) {
+    var photoId = (document.getElementById('commentPhotoId') || {}).value;
     var bodyEl  = document.getElementById('commentBody');
-    var body    = bodyEl.value.trim();
-    var note    = document.getElementById('commentNote');
-    var sendBtn = this.querySelector('.dsb-modal__comment-send');
-    if (!body) return;
+    var body    = bodyEl ? bodyEl.value.trim() : '';
+    var sendBtn = form ? form.querySelector('button[type="submit"]') : null;
 
-    sendBtn.disabled  = true;
-    sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    if (!body || !photoId) return;
+
+    if (sendBtn) { sendBtn.disabled = true; sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
 
     fetch('/fotos/' + photoId + '/comentario', {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': CSRF,
             'Content-Type': 'application/json',
-            'Accept':       'application/json'
+            'Accept': 'application/json'
         },
         body: JSON.stringify({ body: body })
     })
@@ -560,31 +640,103 @@ document.getElementById('commentForm').addEventListener('submit', function(e) {
         return r.json();
     })
     .then(function(d) {
-        bodyEl.value     = '';
-        note.style.color = '#34d399';
-        note.innerHTML   = '<i class="fas fa-check-circle"></i> Comentario enviado';
-        var mc = document.getElementById('modalCommentCount');
-        if (mc) mc.textContent = parseInt(mc.textContent || '0') + 1;
-        setTimeout(function() {
-            note.style.color = '';
-            note.innerHTML   = '<i class="fas fa-info-circle"></i> Los comentarios se publican tras revisión del admin';
-        }, 3500);
+        if (bodyEl) bodyEl.value = '';
+
+        var list = document.getElementById('commentsList');
+        if (list) {
+            var empty = list.querySelector('.l69-no-comments');
+            if (empty) empty.remove();
+
+            var av = d.comment.user_avatar
+                ? '/foto/' + d.comment.user_avatar
+                : '/img/default-avatar.svg';
+
+            var ahora = formatDate(new Date().toISOString());
+            list.insertAdjacentHTML('beforeend',
+                '<div class="l69-modal-comment-item">' +
+                    '<img src="' + av + '" class="l69-comment-avatar" ' +
+                        'onerror="this.src=\'/img/default-avatar.svg\'">' +
+                    '<div class="l69-comment-content">' +
+                        '<span class="l69-comment-author">' +
+                            escapeHtml(d.comment.user_nick || 'Usuario') +
+                            ' <span class="l69-comment-date">' + ahora + '</span>' +
+                        '</span>' +
+                        '<p class="l69-comment-body">' +
+                            escapeHtml(d.comment.comment || d.comment.body || '') +
+                        '</p>' +
+                    '</div>' +
+                '</div>'
+            );
+            list.scrollTop = list.scrollHeight;
+            // Leyenda temporal de éxito
+            var toast = document.createElement('div');
+            toast.className   = 'l69-comment-toast';
+            toast.textContent = '✓ Comentario publicado';
+            list.parentElement.appendChild(toast);
+            setTimeout(function() {
+                toast.style.opacity = '0';
+                setTimeout(function() { toast.remove(); }, 400);
+            }, 2000);
+
+        }
     })
     .catch(function(err) {
-        note.style.color = '#ef4444';
-        note.innerHTML   = '<i class="fas fa-times-circle"></i> Error al enviar';
         console.error('comentario error:', err);
     })
     .finally(function() {
-        sendBtn.disabled  = false;
-        sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i>';
+        if (sendBtn) {
+            sendBtn.disabled  = false;
+            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar';
+        }
     });
+}
+
+/* ══ EVENT LISTENERS — uno solo de cada tipo ══ */
+
+/* click en tarjeta → abrir modal */
+document.addEventListener('click', function(e) {
+    var card = e.target.closest('.l69-feed-card');
+    if (!card) return;
+    if (e.target.closest('.l69-like-btn')) return;
+    if (e.target.closest('.l69-feed-card__owner-top')) return;
+    dsbOpenModal(card.dataset.photoId);
 });
 
-// ── Cargar más fotos ──
-var loadBtn = document.getElementById('loadMoreBtn');
-if (loadBtn) {
-    loadBtn.addEventListener('click', function() {
+/* like en feed */
+document.addEventListener('click', function(e) {
+    var btn = e.target.closest('.l69-like-btn');
+    if (!btn || !btn.dataset.photoId || btn.dataset.loading === 'true') return;
+    e.preventDefault();
+    e.stopPropagation();
+    toggleLike(btn.dataset.photoId, btn);
+});
+
+/* cerrar con botón ✕ */
+var elClose = document.getElementById('photoModalClose');
+if (elClose) elClose.addEventListener('click', dsbCloseModal);
+
+/* cerrar con click en overlay */
+var elOverlay = document.getElementById('photoModalOverlay');
+if (elOverlay) elOverlay.addEventListener('click', dsbCloseModal);
+
+/* cerrar con Escape */
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') dsbCloseModal();
+});
+
+/* formulario de comentario */
+var elForm = document.getElementById('commentForm');
+if (elForm) {
+    elForm.addEventListener('submit', function(e) {
+        e.preventDefault();
+        handleCommentSubmit(this);
+    });
+}
+
+/* cargar más fotos */
+var elLoadMore = document.getElementById('loadMoreBtn');
+if (elLoadMore) {
+    elLoadMore.addEventListener('click', function() {
         var page = this.dataset.page;
         var tab  = this.dataset.tab;
         var self = this;
@@ -612,11 +764,9 @@ if (loadBtn) {
         .catch(function(err) {
             self.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error al cargar';
             self.disabled  = false;
-            console.error('loadMore error:', err);
         });
     });
 }
-
-})();
 </script>
 @endpush
+
