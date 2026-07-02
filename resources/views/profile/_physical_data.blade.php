@@ -36,12 +36,12 @@
     ]);
 @endphp
 
-<table style="width:100%;font-size:.85rem;border-collapse:collapse;">
+<table class="prf-table">
   @foreach($rows as $label => $value)
   @if($label && $value)
-  <tr style="border-bottom:1px solid #f8fafc;">
-    <td style="padding:.35rem 0;color:#9ca3af;width:45%;">{{ $label }}:</td>
-    <td style="padding:.35rem 0;color:#374151;font-weight:500;">{{ $value }}</td>
+  <tr>
+    <td>{{ $label }}:</td>
+    <td>{{ $value }}</td>
   </tr>
   @endif
   @endforeach
