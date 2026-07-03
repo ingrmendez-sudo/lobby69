@@ -85,13 +85,13 @@ class DashboardController extends Controller
         }
 
         // ── Usuarios en línea ────────────────────
-        $onlineUsers = collect();
-        try {
-            $onlineUsers = User::with('profile')
-                ->where('last_seen_at', '>=', now()->subMinutes(15))
-                ->whereRaw('id::text != ?', [(string) $user->id])
-                ->limit(20)
-                ->get();
+        $onlineUsers = User::with('profile')
+            ->where('last_seen_at', '>=', now()->subMinutes(15))
+            ->whereRaw('id::text != ?', [(string) $user->id])
+            ->where('role', '!=', 'admin')
+            ->limit(20)
+            ->get();
+
         } catch (\Throwable $e) {
             Log::warning('DashboardController@index - onlineUsers: ' . $e->getMessage());
         }
@@ -101,9 +101,11 @@ class DashboardController extends Controller
         try {
             $newUsers = User::with('profile')
                 ->whereRaw('id::text != ?', [(string) $user->id])
-                ->orderByDesc('viewed_at')
+                ->where('role', '!=', 'admin')
+                ->orderByDesc('created_at')
                 ->limit(12)
                 ->get();
+
         } catch (\Throwable $e) {
             Log::warning('DashboardController@index - newUsers: ' . $e->getMessage());
         }
@@ -132,6 +134,19 @@ class DashboardController extends Controller
     $idsQuery = DB::table('photos')
         ->where('status', 'approved')
         ->where('album_type', 'public');
+        private function getFeed(string $userId, string $tab, int $page): LengthAwarePaginator
+        {
+            $idsQuery = DB::table('photos')
+                ->where('status', 'approved')
+                ->where('album_type', 'public')
+                // Excluir fotos de cuentas admin
+                ->whereNotExists(function($q) {
+                    $q->select(DB::raw(1))
+                    ->from('users')
+                    ->whereRaw('users.id::text = photos.user_id::text')
+                    ->where('users.role', 'admin');
+                });
+
 
     switch ($tab) {
         case 'popular':

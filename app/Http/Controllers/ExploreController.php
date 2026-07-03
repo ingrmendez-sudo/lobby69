@@ -16,6 +16,21 @@ class ExploreController extends Controller
             })
             ->whereNotNull('nickname')
             ->where('nickname', '!=', '');
+            ->whereNotExists(function($q) {
+                $q->select(DB::raw(1))
+                ->from('users')
+                ->whereRaw('users.id::text = profiles.user_id::text')
+                ->where('users.role', 'admin');
+            })
+
+            // Excluir cuentas admin del explorador
+            ->whereNotExists(function($q) {
+                $q->select(DB::raw(1))
+                ->from('users')
+                ->whereRaw('users.id::text = profiles.user_id::text')
+                ->where('users.role', 'admin');
+})
+
 
 
         // ── Filtros ──

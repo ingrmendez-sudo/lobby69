@@ -1,6 +1,15 @@
 @extends('layouts.app')
 @section('title', 'Mis Fotos — LOBBY69')
-@section('content')
+
+@push('sidebar-left')
+    @include('layouts.sidebar-left')
+@endpush
+@push('sidebar-right')
+    @include('layouts.sidebar-right')
+@endpush
+
+@push('styles')
+
 <div style="max-width:1000px;margin:2rem auto;padding:0 1rem;">
 
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:2rem;">

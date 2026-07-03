@@ -70,6 +70,12 @@ Route::middleware(['auth', 'force.password.change', 'profile.completed'])->group
     Route::get('/siguiendo',             [App\Http\Controllers\FollowController::class, 'following']) ->name('follow.following');
     Route::get('/mis-seguidores', [App\Http\Controllers\FollowController::class, 'followers'])->name('follow.followers');
     Route::get('/siguiendo',      [App\Http\Controllers\FollowController::class, 'following'])->name('follow.following');
+    // ── Videos ──
+    Route::get('/mis-videos',          [App\Http\Controllers\Video\VideoController::class, 'index'])   ->name('videos.index');
+    Route::post('/mis-videos',         [App\Http\Controllers\Video\VideoController::class, 'store'])   ->name('videos.store');
+    Route::get('/videos/{id}',         [App\Http\Controllers\Video\VideoController::class, 'serve'])   ->name('videos.serve');
+    Route::delete('/mis-videos/{id}',  [App\Http\Controllers\Video\VideoController::class, 'destroy']) ->name('videos.destroy');
+
 
 });
 

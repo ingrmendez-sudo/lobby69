@@ -92,20 +92,14 @@ class PhotoController extends Controller
             ->whereRaw('user_id::text = ?', [$userId])
             ->update(['is_profile_photo' => false, 'updated_at' => Carbon::now()]);
 
-        // Establecer nueva
-        DB::table('photos')->where('id', $id)
+        // Establecer nueva — NO guardar URL en profiles, se construye dinámicamente
+        DB::table('photos')
+            ->where('id', $id)
             ->update(['is_profile_photo' => true, 'updated_at' => Carbon::now()]);
-
-        // Actualizar avatar_url en profiles
-        DB::table('profiles')
-            ->whereRaw('user_id::text = ?', [$userId])
-            ->update([
-                'avatar_url' => route('photos.serve', $id),
-                'updated_at' => Carbon::now(),
-            ]);
 
         return back()->with('success', '✅ Foto de perfil actualizada.');
     }
+
 
     public function destroy($id)
     {
@@ -133,27 +127,45 @@ class PhotoController extends Controller
         $photo = DB::table('photos')->where('id', $id)->first();
         if (!$photo) abort(404);
 
-        // Verificar acceso según album_type y membresía
+        // El dueño SIEMPRE puede ver sus propias fotos
+        // Comparación como string para evitar fallos de tipo
+        if ((string)$photo->user_id === (string)$userId) {
+            $path = storage_path('app/private/' . $photo->file_path);
+            if (!file_exists($path)) abort(404);
+            return response()->file($path, [
+                'Content-Type'  => mime_content_type($path),
+                'Cache-Control' => 'private, max-age=3600',
+                'X-Robots-Tag'  => 'noindex',
+            ]);
+        }
+
+        // Verificar membresía para terceros
         $membershipType = DB::table('users')
             ->whereRaw('id::text = ?', [$userId])
             ->value('membership_type') ?? 'trial';
 
+        // Todos los usuarios autenticados pueden ver fotos públicas aprobadas
+        // trial = primer mes gratis, tiene acceso a fotos públicas
+        $allMembers = ['trial','trial_verified','explorer','connectors',
+                    'influencer','vip_elite','vitalicio','admin'];
+
         $canView = false;
         switch ($photo->album_type) {
             case 'public':
-                $canView = in_array($membershipType, ['trial_verified','explorer','connectors','influencer','vip_elite','vitalicio','admin']);
+                $canView = in_array($membershipType, $allMembers)
+                        && $photo->status === 'approved';
                 break;
             case 'private':
-                $canView = in_array($membershipType, ['connectors','influencer','vip_elite','vitalicio','admin']);
-                // También si son amigos (fase 9)
+                $canView = in_array($membershipType,
+                    ['connectors','influencer','vip_elite','vitalicio','admin'])
+                        && $photo->status === 'approved';
                 break;
             case 'vip':
-                $canView = in_array($membershipType, ['vip_elite','vitalicio','admin']);
+                $canView = in_array($membershipType,
+                    ['vip_elite','vitalicio','admin'])
+                        && $photo->status === 'approved';
                 break;
         }
-
-        // El dueño siempre puede ver sus propias fotos
-        if ($photo->user_id === $userId) $canView = true;
 
         if (!$canView) abort(403, 'No tienes acceso a esta foto.');
 
@@ -166,4 +178,5 @@ class PhotoController extends Controller
             'X-Robots-Tag'  => 'noindex',
         ]);
     }
+
 }

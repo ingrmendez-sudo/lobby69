@@ -265,7 +265,7 @@ h4, .h4 { font-size: var(--text-lg); font-weight: 600; line-height: 1.5; }
 }
 
 .landing-hero--with-image {
-  background: linear-gradient(rgba(44, 62, 80, 0.7), rgba(26, 37, 47, 0.8)),
+  background: linear-gradient(rgba(58, 67, 74, 0.7), rgba(26, 37, 47, 0.8)),
               url('/img/hero.png') center/cover no-repeat;
 }
 
@@ -892,9 +892,9 @@ html:not([data-theme="dark"]) {
     --bg-sidebar:        #ffffff;
     --bg-input:          #ede8f5;
     --bg-navbar:         rgba(255,255,255,0.97);
-    --text-primary:      #1a1523;
+    --text-primary:      #1f1f21;
     --text-secondary:    #5a5470;
-    --text-muted:        #9590a8;
+    --text-muted:        #180460;
     --border-color:      rgba(26,21,35,0.10);
     --shadow-card:       0 2px 12px rgba(0,0,0,0.08);
     --shadow-navbar:     0 2px 20px rgba(0,0,0,0.08);
@@ -1044,3 +1044,62 @@ input::placeholder, textarea::placeholder {
 /* ── Progress bar ── */
 .l69-profile-progress__label { color: var(--text-muted) !important; }
 .l69-profile-progress__bar { background: var(--border-color) !important; }
+
+/* ══ SIDEBAR DERECHO — legibilidad modo día ══ */
+[data-theme="light"] .l69-sidebar-card {
+    background: #ffffff;
+    border-color: rgba(180, 60, 120, 0.12);
+}
+[data-theme="light"] .l69-sidebar-card__title {
+    color: rgba(140, 40, 100, 0.8);
+}
+[data-theme="light"] .l69-stat {
+    background: #f9f5ff;
+    border-color: rgba(180, 60, 120, 0.1);
+}
+[data-theme="light"] .l69-stat__value {
+    color: #c0392b;
+}
+[data-theme="light"] .l69-stat__label {
+    color: #6b7280;
+}
+[data-theme="light"] .l69-sidebar-nav__item a,
+[data-theme="light"] .l69-sidebar-nav__item button {
+    color: #374151;
+}
+[data-theme="light"] .l69-sidebar-nav__item a:hover,
+[data-theme="light"] .l69-sidebar-nav__item button:hover {
+    background: rgba(180, 60, 120, 0.08);
+    color: #1f2937;
+}
+[data-theme="light"] .l69-sidebar-nav__item a.is-active {
+    background: rgba(180, 60, 120, 0.12);
+    color: #b43c78;
+}
+[data-theme="light"] .l69-mini-profile__nick {
+    color: #1f2937;
+}
+[data-theme="light"] .l69-mini-profile__type {
+    color: #b43c78;
+}
+[data-theme="light"] .l69-profile-progress__label {
+    color: #6b7280;
+}
+[data-theme="light"] .l69-quick-btn {
+    background: rgba(180, 60, 120, 0.06);
+    border-color: rgba(180, 60, 120, 0.15);
+    color: #374151;
+}
+[data-theme="light"] .l69-quick-btn:hover {
+    background: rgba(180, 60, 120, 0.12);
+    color: #1f2937;
+}
+/* Textos de consejos en sidebar derecho modo día */
+[data-theme="light"] .l69-sidebar-card ul li {
+    color: #4b5563 !important;
+}
+[data-theme="light"] .l69-membership-badge--trial {
+    background: rgba(107,114,128,0.12);
+    color: #6b7280;
+    border-color: rgba(107,114,128,0.2);
+}
