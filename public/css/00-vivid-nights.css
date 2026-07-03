@@ -54,6 +54,128 @@
   --shadow-xl: 0 24px 64px rgba(44, 62, 80, 0.2);
 }
 
+/* ============================================================
+   LOBBY69 — SISTEMA DE TEMAS DÍA / NOCHE
+   Variables --theme-* usadas en todas las vistas
+   ============================================================ */
+
+/* Modo día (default) */
+[data-theme="light"],
+:root {
+  --theme-bg:        #FAF9F6;
+  --theme-card:      #FFFFFF;
+  --theme-card-alt:  #F3F4F6;
+  --theme-border:    rgba(44, 62, 80, 0.12);
+  --theme-text:      #2C3E50;
+  --theme-text-soft: #4B5563;
+  --theme-muted:     #9CA3AF;
+  --theme-input:     #FFFFFF;
+  --theme-hover:     rgba(139, 92, 246, 0.06);
+  --theme-shadow:    0 4px 16px rgba(44, 62, 80, 0.10);
+  --theme-navbar:    #FFFFFF;
+  --theme-overlay:   rgba(44, 62, 80, 0.75);
+}
+
+/* Modo noche */
+[data-theme="dark"] {
+  --theme-bg:        #0f0d1a;
+  --theme-card:      #1a1728;
+  --theme-card-alt:  #221f33;
+  --theme-border:    rgba(255, 255, 255, 0.08);
+  --theme-text:      #F0EEF8;
+  --theme-text-soft: #C4BFDA;
+  --theme-muted:     #7C7A8E;
+  --theme-input:     #221f33;
+  --theme-hover:     rgba(139, 92, 246, 0.12);
+  --theme-shadow:    0 4px 16px rgba(0, 0, 0, 0.40);
+  --theme-navbar:    #14111f;
+  --theme-overlay:   rgba(0, 0, 0, 0.85);
+}
+
+/* ── Aplicar tema al body y elementos base ── */
+body {
+  background-color: var(--theme-bg) !important;
+  color: var(--theme-text) !important;
+}
+
+/* Navbar */
+.navbar {
+  background: var(--theme-navbar) !important;
+  border-bottom: 1px solid var(--theme-border);
+}
+.navbar__brand-text,
+.navbar__link {
+  color: var(--theme-text) !important;
+}
+.navbar__link:hover {
+  background: var(--theme-hover) !important;
+  color: var(--theme-text) !important;
+}
+[data-theme="dark"] .navbar__toggle span {
+  background: var(--theme-text);
+}
+[data-theme="dark"] .navbar__menu {
+  background: var(--theme-navbar);
+}
+
+/* Cards genéricas */
+.card {
+  background: var(--theme-card) !important;
+  border: 1px solid var(--theme-border) !important;
+  color: var(--theme-text) !important;
+}
+
+/* Formularios */
+.form-control {
+  background: var(--theme-input) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+.form-label {
+  color: var(--theme-text) !important;
+}
+
+/* Modales genéricos del layout */
+[data-theme="dark"] .modal,
+[data-theme="dark"] .modal__header {
+  background: var(--theme-card) !important;
+  color: var(--theme-text) !important;
+}
+[data-theme="dark"] .modal__body p,
+[data-theme="dark"] .modal__body li {
+  color: var(--theme-text-soft) !important;
+}
+[data-theme="dark"] .modal__header,
+[data-theme="dark"] .modal__footer {
+  border-color: var(--theme-border) !important;
+}
+
+/* Textos globales */
+h1, h2, h3, h4, h5, h6,
+p, span, label, td, th, li {
+  color: inherit;
+}
+
+/* Inputs select y textarea */
+select, textarea, input[type="text"],
+input[type="email"], input[type="password"],
+input[type="number"], input[type="tel"] {
+  background: var(--theme-input) !important;
+  color: var(--theme-text) !important;
+  border-color: var(--theme-border) !important;
+}
+
+/* Scrollbar modo noche */
+[data-theme="dark"] ::-webkit-scrollbar {
+  width: 8px;
+  background: var(--theme-card);
+}
+[data-theme="dark"] ::-webkit-scrollbar-thumb {
+  background: #3b3556;
+  border-radius: 4px;
+}
+
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { font-size: 16px; scroll-behavior: smooth; }
 body { font-family: var(--font-base); font-size: var(--text-base); line-height: 1.6; color: var(--color-navy); background-color: var(--color-ivory); min-height: 100vh; -webkit-font-smoothing: antialiased; }

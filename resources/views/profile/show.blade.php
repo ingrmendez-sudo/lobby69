@@ -188,6 +188,79 @@
 [data-theme="light"] .prf-table td:last-child { color: #1a1028; }
 [data-theme="light"] .prf-bio                 { color: #1a1028; }
 [data-theme="light"] .prf-nick                { color: #1a1028; }
+
+/* ── Follow row ── */
+.prf-follow-row {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-top: .85rem;
+    flex-wrap: wrap;
+}
+.prf-follow-stats {
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+    font-size: .88rem;
+    color: var(--theme-muted, #9ca3af);
+}
+.prf-follow-stats strong {
+    color: var(--theme-text);
+    font-weight: 700;
+}
+.prf-follow-stat-sep {
+    color: var(--theme-muted, #9ca3af);
+}
+
+/* Botón Seguir */
+.prf-btn-follow {
+    padding: .45rem 1.25rem;
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    color: #fff;
+    border: none;
+    border-radius: 999px;
+    font-size: .88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .2s;
+}
+.prf-btn-follow:hover { opacity: .85; }
+
+/* Botón Siguiendo */
+.prf-btn-unfollow {
+    padding: .45rem 1.25rem;
+    background: transparent;
+    color: var(--theme-text);
+    border: 1.5px solid var(--theme-border);
+    border-radius: 999px;
+    font-size: .88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all .2s;
+}
+.prf-btn-unfollow:hover {
+    background: #ef4444;
+    color: #fff;
+    border-color: #ef4444;
+}
+
+/* Botón Editar perfil */
+.prf-btn-edit {
+    padding: .45rem 1.25rem;
+    background: transparent;
+    color: var(--theme-muted, #9ca3af);
+    border: 1.5px solid var(--theme-border);
+    border-radius: 999px;
+    font-size: .88rem;
+    font-weight: 600;
+    text-decoration: none;
+    transition: all .2s;
+}
+.prf-btn-edit:hover {
+    color: var(--theme-text);
+    border-color: var(--theme-text);
+}
+
 </style>
 @endpush
 
@@ -273,7 +346,23 @@ $avatarUrl = $profilePhoto
                 <span class="prf-badge prf-badge--verified">✓ Verificado</span>
             @endif
             <span class="prf-badge prf-badge--type">{{ $typeLabel }}</span>
-            <span class="prf-badge prf-badge--member">{{ $memberLabel }}</span>
+            <span class="prf-badge prf-badge--member">
+    @php
+        $memberIcon = match($user->membership_type ?? 'trial') {
+            'explorer'   => asset('img/membership/explorer.png'),
+            'connectors' => asset('img/membership/connectors.png'),
+            'influencer' => asset('img/membership/influencer.png'),
+            'vip_elite'  => asset('img/membership/vip-elite.png'),
+            'vitalicio'  => asset('img/membership/vitalicio.png'),
+            default      => asset('img/membership/trial.png'),
+        };
+    @endphp
+    <img src="{{ $memberIcon }}"
+         alt="{{ $memberLabel }}"
+         style="width:18px;height:18px;object-fit:contain;vertical-align:middle;">
+    {{ $memberLabel }}
+</span>
+
         </h1>
 
         @php
@@ -286,11 +375,56 @@ $avatarUrl = $profilePhoto
             <p class="prf-location">📍 {{ $location }}</p>
         @endif
 
-        @if($profile->bio)
+                @if($profile->bio)
             <p class="prf-bio">{{ $profile->bio }}</p>
         @endif
+
+        {{-- ── Contadores y botón Follow ── --}}
+        <div class="prf-follow-row">
+
+            <div class="prf-follow-stats">
+                <span class="prf-follow-stat">
+                    <strong>{{ $followersCount }}</strong> seguidores
+                </span>
+                <span class="prf-follow-stat-sep">·</span>
+                <span class="prf-follow-stat">
+                    <strong>{{ $followingCount }}</strong> siguiendo
+                </span>
+            </div>
+
+            @auth
+                @if(!$isOwnProfile)
+                    @if($isFollowing)
+                        <form method="POST"
+                              action="{{ route('follow.unfollow', $profile->nickname) }}"
+                              style="margin:0;">
+                            @csrf @method('DELETE')
+                            <button type="submit" class="prf-btn-unfollow">
+                                ✓ Siguiendo
+                            </button>
+                        </form>
+                    @else
+                        <form method="POST"
+                              action="{{ route('follow.follow', $profile->nickname) }}"
+                              style="margin:0;">
+                            @csrf
+                            <button type="submit" class="prf-btn-follow">
+                                + Seguir
+                            </button>
+                        </form>
+                    @endif
+                @else
+                    <a href="{{ route('profile.edit') }}" class="prf-btn-edit">
+                        ✏️ Editar perfil
+                    </a>
+                @endif
+            @endauth
+
+        </div>
+
     </div>
 </div>
+
 
 {{-- ── CUERPO ── --}}
 <div class="prf-body-grid">

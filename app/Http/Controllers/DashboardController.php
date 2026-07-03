@@ -405,6 +405,32 @@ class DashboardController extends Controller
             'body' => ['required', 'string', 'min:1', 'max:500'],
         ]);
 
+        // ── Filtro anti-spam: teléfonos, redes sociales y links ──
+        $body = $validated['body'];
+
+        $forbiddenPatterns = [
+            // Teléfonos mexicanos y extranjeros
+            '/(\+?[\d\s\-\.\(\)]{7,20}\d)/',
+            // URLs y links
+            '/(https?:\/\/|www\.)/i',
+            // Dominios directos
+            '/\b[\w\-]+\.(com|net|org|mx|io|co|me|ly|app|club|online|site)\b/i',
+            // Redes sociales por @usuario
+            '/@[a-zA-Z0-9_\.]{2,}/i',
+            // Menciones directas de redes
+            '/\b(instagram|insta|ig|facebook|fb|whatsapp|wsp|wa|twitter|tiktok|telegram|snap|snapchat|onlyfans|of)\b/i',
+            // Emails
+            '/[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}/i',
+        ];
+
+        foreach ($forbiddenPatterns as $pattern) {
+            if (preg_match($pattern, $body)) {
+                return response()->json([
+                    'error' => 'El comentario no puede contener teléfonos, links, emails ni referencias a redes sociales.',
+                ], 422);
+            }
+        }
+
         try {
             $photo = Photo::findOrFail((int)$photoId);
 
@@ -415,7 +441,7 @@ class DashboardController extends Controller
                 'photo_id'   => $photo->photo_uuid,
                 'user_id'    => (string) $user->id,
                 'body'       => $validated['body'],
-                'status' => 'approved',
+                'status'     => 'approved',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);
@@ -434,8 +460,6 @@ class DashboardController extends Controller
                 ],
             ]);
 
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            return response()->json(['error' => 'Foto no encontrada'], 404);
         } catch (\Illuminate\Validation\ValidationException $e) {
             return response()->json(['error' => $e->errors()], 422);
         } catch (\Throwable $e) {
@@ -443,6 +467,4 @@ class DashboardController extends Controller
             return response()->json(['error' => 'Error interno'], 500);
         }
     }
-
 }
-

@@ -132,6 +132,37 @@ class ProfileController extends Controller
             abort(404);
         }
 
-        return view('profile.show', compact('profile', 'user'));
+        $me = auth()->id();
+
+        // ¿Es el propio perfil?
+        $isOwnProfile = $me && (string)$me === (string)$profile->user_id;
+
+        // ¿Ya lo sigue el usuario autenticado?
+        $isFollowing = false;
+        if ($me && !$isOwnProfile) {
+            $isFollowing = \Illuminate\Support\Facades\DB::table('follows')
+                ->where('follower_id', $me)
+                ->where('following_id', $profile->user_id)
+                ->exists();
+        }
+
+        // Contadores
+        $followersCount = \Illuminate\Support\Facades\DB::table('follows')
+            ->where('following_id', $profile->user_id)
+            ->count();
+
+        $followingCount = \Illuminate\Support\Facades\DB::table('follows')
+            ->where('follower_id', $profile->user_id)
+            ->count();
+
+        return view('profile.show', compact(
+            'profile',
+            'user',
+            'isOwnProfile',
+            'isFollowing',
+            'followersCount',
+            'followingCount'
+        ));
     }
+
 }

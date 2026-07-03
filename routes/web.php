@@ -63,6 +63,14 @@ Route::middleware(['auth', 'force.password.change', 'profile.completed'])->group
     Route::post('/verificar',          [\App\Http\Controllers\Verification\VerificationController::class, 'store'])->name('verification.store');
     Route::get('/verificar/pendiente', [\App\Http\Controllers\Verification\VerificationController::class, 'pending'])->name('verification.pending');
     Route::get('/verificar/estado',    [\App\Http\Controllers\Verification\VerificationController::class, 'status'])->name('verification.status');
+    // ── Follows ──
+    Route::post('/seguir/{nickname}',    [App\Http\Controllers\FollowController::class, 'follow'])    ->name('follow.follow');
+    Route::delete('/seguir/{nickname}',  [App\Http\Controllers\FollowController::class, 'unfollow'])  ->name('follow.unfollow');
+    Route::get('/mis-seguidores',        [App\Http\Controllers\FollowController::class, 'followers']) ->name('follow.followers');
+    Route::get('/siguiendo',             [App\Http\Controllers\FollowController::class, 'following']) ->name('follow.following');
+    Route::get('/mis-seguidores', [App\Http\Controllers\FollowController::class, 'followers'])->name('follow.followers');
+    Route::get('/siguiendo',      [App\Http\Controllers\FollowController::class, 'following'])->name('follow.following');
+
 });
 
 // Auth + perfil + membresia

@@ -265,6 +265,23 @@
     z-index: 10;
 }
 
+/* Error de comentario */
+.l69-comment-error {
+    font-size: .82rem;
+    color: #ef4444;
+    background: rgba(239, 68, 68, .08);
+    border: 1px solid rgba(239, 68, 68, .25);
+    border-radius: 6px;
+    padding: .4rem .65rem;
+    margin: 0;
+    line-height: 1.4;
+}
+[data-theme="dark"] .l69-comment-error {
+    background: rgba(239, 68, 68, .12);
+    border-color: rgba(239, 68, 68, .3);
+    color: #fca5a5;
+}
+
 </style>
 @endpush
 
@@ -624,7 +641,13 @@ function handleCommentSubmit(form) {
 
     if (!body || !photoId) return;
 
-    if (sendBtn) { sendBtn.disabled = true; sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+    if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    }
+
+    // Limpiar error previo
+    showCommentError(null);
 
     fetch('/fotos/' + photoId + '/comentario', {
         method: 'POST',
@@ -636,10 +659,30 @@ function handleCommentSubmit(form) {
         body: JSON.stringify({ body: body })
     })
     .then(function(r) {
-        if (!r.ok) throw new Error('HTTP ' + r.status);
-        return r.json();
+        return r.json().then(function(data) {
+            return { ok: r.ok, status: r.status, data: data };
+        });
     })
-    .then(function(d) {
+    .then(function(res) {
+        if (sendBtn) {
+            sendBtn.disabled = false;
+            sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar';
+        }
+
+        // ── Error del servidor (422, 500, etc.) ──
+        if (!res.ok) {
+            var msg = 'No se pudo publicar el comentario.';
+            if (res.data && res.data.error) {
+                msg = typeof res.data.error === 'string'
+                    ? res.data.error
+                    : Object.values(res.data.error).flat().join(' ');
+            }
+            showCommentError(msg);
+            return;
+        }
+
+        // ── Éxito ──
+        var d = res.data;
         if (bodyEl) bodyEl.value = '';
 
         var list = document.getElementById('commentsList');
@@ -668,7 +711,8 @@ function handleCommentSubmit(form) {
                 '</div>'
             );
             list.scrollTop = list.scrollHeight;
-            // Leyenda temporal de éxito
+
+            // Toast de éxito
             var toast = document.createElement('div');
             toast.className   = 'l69-comment-toast';
             toast.textContent = '✓ Comentario publicado';
@@ -677,19 +721,37 @@ function handleCommentSubmit(form) {
                 toast.style.opacity = '0';
                 setTimeout(function() { toast.remove(); }, 400);
             }, 2000);
-
         }
     })
     .catch(function(err) {
-        console.error('comentario error:', err);
-    })
-    .finally(function() {
         if (sendBtn) {
-            sendBtn.disabled  = false;
+            sendBtn.disabled = false;
             sendBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Enviar';
         }
+        showCommentError('Error de conexión. Intenta de nuevo.');
     });
 }
+
+// ── Helper: mostrar / limpiar error bajo el textarea ──
+function showCommentError(msg) {
+    var form    = document.getElementById('commentForm');
+    var existing = form ? form.querySelector('.l69-comment-error') : null;
+    if (existing) existing.remove();
+
+    if (!msg || !form) return;
+
+    var el = document.createElement('p');
+    el.className   = 'l69-comment-error';
+    el.textContent = '⚠️ ' + msg;
+    // Insertar antes del botón submit
+    var btn = form.querySelector('button[type="submit"]');
+    if (btn) {
+        form.insertBefore(el, btn);
+    } else {
+        form.appendChild(el);
+    }
+}
+
 
 /* ══ EVENT LISTENERS — uno solo de cada tipo ══ */
 
