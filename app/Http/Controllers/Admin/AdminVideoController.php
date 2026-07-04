@@ -8,40 +8,42 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
-class AdminPhotoController extends Controller
+class AdminVideoController extends Controller
 {
     public function index(Request $request)
     {
         $status = $request->get('status', 'pending');
 
-        $photos = DB::table('photos')
+        $videos = DB::table('videos')
             ->joinSub(
                 DB::table('users')->selectRaw('"id"::text as uid, "username", "membership_type", "role"'),
                 'u',
-                'photos.user_id', '=', 'u.uid'
+                'videos.user_id', '=', 'u.uid'
             )
             ->leftJoinSub(
                 DB::table('profiles')->selectRaw('"user_id"::text as pid, "display_name", "nickname"'),
                 'p',
-                'photos.user_id', '=', 'p.pid'
+                'videos.user_id', '=', 'p.pid'
             )
             ->select(
-                'photos.id',
-                'photos.user_id',
-                'photos.album_type',
-                'photos.file_path',
-                'photos.caption',
-                'photos.status',
-                'photos.admin_note',
-                'photos.created_at',
+                'videos.id',
+                'videos.user_id',
+                'videos.album_type',
+                'videos.file_path',
+                'videos.caption',
+                'videos.status',
+                'videos.admin_note',
+                'videos.duration_seconds',
+                'videos.file_size_bytes',
+                'videos.created_at',
                 'u.username',
                 'u.membership_type',
                 'p.display_name',
                 'p.nickname'
             )
-            ->where('photos.status', $status)
+            ->where('videos.status', $status)
             ->where('u.role', '!=', 'admin')
-            ->orderBy('photos.created_at', $status === 'pending' ? 'asc' : 'desc')
+            ->orderBy('videos.created_at', $status === 'pending' ? 'asc' : 'desc')
             ->paginate(20);
 
         $counts = [
@@ -50,25 +52,25 @@ class AdminPhotoController extends Controller
             'rejected' => $this->countByStatus('rejected'),
         ];
 
-        return view('admin.photos.index', compact('photos', 'status', 'counts'));
+        return view('admin.videos.index', compact('videos', 'status', 'counts'));
     }
 
     private function countByStatus(string $status): int
     {
-        return DB::table('photos')
+        return DB::table('videos')
             ->joinSub(
                 DB::table('users')->selectRaw('"id"::text as uid, "role"'),
                 'u',
-                'photos.user_id', '=', 'u.uid'
+                'videos.user_id', '=', 'u.uid'
             )
-            ->where('photos.status', $status)
+            ->where('videos.status', $status)
             ->where('u.role', '!=', 'admin')
             ->count();
     }
 
     public function approve(Request $request, $id)
     {
-        DB::table('photos')
+        DB::table('videos')
             ->where('id', $id)
             ->update([
                 'status'      => 'approved',
@@ -78,14 +80,14 @@ class AdminPhotoController extends Controller
                 'updated_at'  => now(),
             ]);
 
-        return back()->with('success', 'Foto aprobada correctamente.');
+        return back()->with('success', 'Video aprobado correctamente.');
     }
 
     public function reject(Request $request, $id)
     {
         $request->validate(['reason' => 'required|string|max:500']);
 
-        DB::table('photos')
+        DB::table('videos')
             ->where('id', $id)
             ->update([
                 'status'      => 'rejected',
@@ -95,25 +97,28 @@ class AdminPhotoController extends Controller
                 'updated_at'  => now(),
             ]);
 
-        return back()->with('success', 'Foto rechazada.');
+        return back()->with('success', 'Video rechazado.');
     }
 
     public function serve($id)
     {
         abort_if(Auth::user()->role !== 'admin', 403);
 
-        $photo = DB::table('photos')->where('id', $id)->first();
-        abort_if(!$photo, 404);
+        $video = DB::table('videos')->where('id', $id)->first();
+        abort_if(!$video, 404);
 
-        if (!Storage::disk('private')->exists($photo->file_path)) {
+        $path = $video->file_path;
+
+        if (!Storage::disk('private')->exists($path)) {
             abort(404, 'Archivo no encontrado');
         }
 
-        $fullPath = Storage::disk('private')->path($photo->file_path);
+        $fullPath = Storage::disk('private')->path($path);
 
         return response()->file($fullPath, [
             'Content-Type'        => mime_content_type($fullPath),
-            'Content-Disposition' => 'inline; filename="' . basename($photo->file_path) . '"',
+            'Content-Length'      => filesize($fullPath),
+            'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
             'Cache-Control'       => 'no-store',
         ]);
     }

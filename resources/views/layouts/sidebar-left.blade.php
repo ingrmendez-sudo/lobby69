@@ -102,6 +102,165 @@
         @endif
     </div>
 
+    @if(str_starts_with($sRoute, 'dashboard'))
+
+{{-- ── Últimas visitas a mi perfil ── --}}
+@php
+    $sWhoViewed = $whoViewedMe ?? collect();
+    $sWhoViewedCount = $whoViewedMeCount ?? 0;
+@endphp
+<div class="l69-sidebar-card">
+    <div class="l69-sidebar-card__title">
+        <i class="fas fa-eye"></i> Quién me visitó
+        @if($sWhoViewedCount > 5)
+            <span style="margin-left:auto;font-size:.7rem;color:rgba(180,60,120,.7);">
+                +{{ $sWhoViewedCount - 5 }} más
+            </span>
+        @endif
+    </div>
+    @if($sWhoViewed->isEmpty())
+        <p style="font-size:.8rem;color:var(--theme-muted,#9ca3af);text-align:center;padding:.5rem 0;">
+            Aún no tienes visitas
+        </p>
+    @else
+        <div style="display:flex;flex-direction:column;gap:.5rem;">
+            @foreach($sWhoViewed->take(5) as $visitor)
+            @php
+                $vProfile = $visitor->profile;
+                $vNick    = $vProfile?->nickname ?? 'Usuario';
+                $vAvatar  = null;
+                try {
+                    $vAvatarPhoto = \Illuminate\Support\Facades\DB::table('photos')
+                        ->whereRaw('user_id::text = ?', [$visitor->id])
+                        ->where('is_profile_photo', true)
+                        ->where('status', 'approved')
+                        ->first();
+                    if (!$vAvatarPhoto) {
+                        $vAvatarPhoto = \Illuminate\Support\Facades\DB::table('photos')
+                            ->whereRaw('user_id::text = ?', [$visitor->id])
+                            ->where('album_type', 'public')
+                            ->where('status', 'approved')
+                            ->orderBy('sort_order')
+                            ->first();
+                    }
+                    $vAvatar = $vAvatarPhoto ? url('foto/' . $vAvatarPhoto->file_path) : null;
+                } catch(\Exception $e) {}
+                $vTime = $visitor->last_seen_at
+                    ? \Carbon\Carbon::parse($visitor->last_seen_at)->diffForHumans()
+                    : '';
+            @endphp
+            <div style="display:flex;align-items:center;gap:.6rem;">
+                <img src="{{ $vAvatar ?? asset('img/default-avatar.svg') }}"
+                     style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;"
+                     onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
+                <div style="min-width:0;flex:1;">
+                    @if($vProfile?->nickname)
+                    <a href="{{ route('profile.show', $vProfile->nickname) }}"
+                       style="font-size:.82rem;font-weight:600;color:var(--theme-text);
+                              text-decoration:none;display:block;
+                              white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {{ $vNick }}
+                    </a>
+                    @else
+                    <span style="font-size:.82rem;font-weight:600;color:var(--theme-text);">
+                        {{ $vNick }}
+                    </span>
+                    @endif
+                    @if($vTime)
+                    <span style="font-size:.72rem;color:var(--theme-muted,#9ca3af);">
+                        {{ $vTime }}
+                    </span>
+                    @endif
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @if($sWhoViewedCount > 5)
+        <a href="#" style="display:block;text-align:center;font-size:.78rem;
+                           color:rgba(180,60,120,.8);margin-top:.75rem;
+                           text-decoration:none;font-weight:600;">
+            Ver historial completo →
+        </a>
+        @endif
+    @endif
+</div>
+
+{{-- ── Últimos perfiles visitados ── --}}
+@php
+    $sIViewed      = $iViewed      ?? collect();
+    $sIViewedCount = $iViewedCount ?? 0;
+@endphp
+<div class="l69-sidebar-card">
+    <div class="l69-sidebar-card__title">
+        <i class="fas fa-user-clock"></i> Últimos visitados
+        @if($sIViewedCount > 5)
+            <span style="margin-left:auto;font-size:.7rem;color:rgba(180,60,120,.7);">
+                +{{ $sIViewedCount - 5 }} más
+            </span>
+        @endif
+    </div>
+    @if($sIViewed->isEmpty())
+        <p style="font-size:.8rem;color:var(--theme-muted,#9ca3af);text-align:center;padding:.5rem 0;">
+            No has visitado perfiles aún
+        </p>
+    @else
+        <div style="display:flex;flex-direction:column;gap:.5rem;">
+            @foreach($sIViewed->take(5) as $visited)
+            @php
+                $vdProfile = $visited->profile;
+                $vdNick    = $vdProfile?->nickname ?? 'Usuario';
+                $vdAvatar  = null;
+                try {
+                    $vdAvatarPhoto = \Illuminate\Support\Facades\DB::table('photos')
+                        ->whereRaw('user_id::text = ?', [$visited->id])
+                        ->where('is_profile_photo', true)
+                        ->where('status', 'approved')
+                        ->first();
+                    if (!$vdAvatarPhoto) {
+                        $vdAvatarPhoto = \Illuminate\Support\Facades\DB::table('photos')
+                            ->whereRaw('user_id::text = ?', [$visited->id])
+                            ->where('album_type', 'public')
+                            ->where('status', 'approved')
+                            ->orderBy('sort_order')
+                            ->first();
+                    }
+                    $vdAvatar = $vdAvatarPhoto ? url('foto/' . $vdAvatarPhoto->file_path) : null;
+                } catch(\Exception $e) {}
+            @endphp
+            <div style="display:flex;align-items:center;gap:.6rem;">
+                <img src="{{ $vdAvatar ?? asset('img/default-avatar.svg') }}"
+                     style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;"
+                     onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
+                <div style="min-width:0;flex:1;">
+                    @if($vdProfile?->nickname)
+                    <a href="{{ route('profile.show', $vdProfile->nickname) }}"
+                       style="font-size:.82rem;font-weight:600;color:var(--theme-text);
+                              text-decoration:none;display:block;
+                              white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                        {{ $vdNick }}
+                    </a>
+                    @else
+                    <span style="font-size:.82rem;font-weight:600;color:var(--theme-text);">
+                        {{ $vdNick }}
+                    </span>
+                    @endif
+                </div>
+            </div>
+            @endforeach
+        </div>
+        @if($sIViewedCount > 5)
+        <a href="#" style="display:block;text-align:center;font-size:.78rem;
+                           color:rgba(180,60,120,.8);margin-top:.75rem;
+                           text-decoration:none;font-weight:600;">
+            Ver historial completo →
+        </a>
+        @endif
+    @endif
+</div>
+
+@endif {{-- fin if dashboard --}}
+
+
     {{-- ══ NAVEGACIÓN CONTEXTUAL ══ --}}
     <ul class="l69-sidebar-nav">
 
@@ -218,32 +377,7 @@
 
         @else
         {{-- Contexto: Dashboard y resto --}}
-        <li class="l69-sidebar-nav__item">
-            <a href="{{ route('dashboard') }}" class="{{ $sActive('dashboard') }}">
-                <i class="fas fa-home"></i> Dashboard
-            </a>
-        </li>
-        <li class="l69-sidebar-nav__item">
-            <a href="{{ route('explore') }}" class="{{ $sActive('explore') }}">
-                <i class="fas fa-compass"></i> Explorar
-            </a>
-        </li>
-        <li class="l69-sidebar-nav__item">
-            <a href="{{ route('photos.index') }}" class="{{ $sActive('photos') }}">
-                <i class="fas fa-images"></i> Mis Fotos
-            </a>
-        </li>
-        <li class="l69-sidebar-nav__item">
-            <a href="{{ route('videos.index') }}" class="{{ $sActive('videos') }}">
-                <i class="fas fa-video"></i> Mis Videos
-            </a>
-        </li>
-        <li class="l69-sidebar-nav__sep"></li>
-        <li class="l69-sidebar-nav__item">
-            <a href="{{ route('profile.edit') }}" class="{{ $sActive('profile.edit') }}">
-                <i class="fas fa-user-edit"></i> Editar Perfil
-            </a>
-        </li>
+
         <li class="l69-sidebar-nav__item" style="opacity:.45;pointer-events:none;">
             <a href="#">
                 <i class="fas fa-calendar-day"></i> Disponible HOY

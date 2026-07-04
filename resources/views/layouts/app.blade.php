@@ -80,10 +80,24 @@
        SISTEMA DE LAYOUT 3 COLUMNAS
        ══════════════════════════════════════════ */
     :root {
-        --sidebar-left-w: 260px;
-        --sidebar-right-w: 240px;
-        --content-gap: 1.5rem;
-        --sidebar-top: 64px; /* altura del navbar */
+        --sidebar-left-w: 280px;
+        --sidebar-right-w: 260px;
+        --content-gap: 1.25rem;
+        --sidebar-top: 64px;
+    }
+
+    @media (max-width: 1400px) {
+        :root {
+            --sidebar-left-w: 250px;
+            --sidebar-right-w: 230px;
+        }
+    }
+
+    @media (max-width: 1199px) {
+        :root {
+            --sidebar-left-w: 220px;
+            --sidebar-right-w: 200px;
+        }
     }
 
     /* Wrapper principal del body con 3 columnas */
@@ -91,12 +105,15 @@
         display: grid;
         grid-template-columns: var(--sidebar-left-w) 1fr var(--sidebar-right-w);
         gap: var(--content-gap);
-        max-width: 1400px;
+        max-width: 100%;
+        width: 100%;
         margin: 0 auto;
-        padding: 1.5rem 1.25rem;
+        padding: 1.5rem 2rem;
         min-height: calc(100vh - var(--sidebar-top));
         align-items: start;
+        box-sizing: border-box;
     }
+
 
     /* Layout de 1 columna (páginas sin sidebar) */
     .l69-layout--single {

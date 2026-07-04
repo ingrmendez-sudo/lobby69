@@ -365,7 +365,7 @@
         {{-- SECCIÓN INFO + COMENTARIOS --}}
         <div class="l69-modal-side">
 
-            <div class="l69-modal-owner">
+            <div class="l69-modal-owner" id="modalOwnerWrap" style="cursor:pointer;">
                 <img id="modalOwnerAvatar" src="/img/default-avatar.svg" alt="">
                 <span id="modalOwnerName"></span>
             </div>
@@ -546,12 +546,30 @@ function dsbOpenModal(photoId) {
         }
 
         /* owner */
-        var on = document.getElementById('modalOwnerName');
-        var oa = document.getElementById('modalOwnerAvatar');
-        if (on) on.textContent = (d.owner && d.owner.nickname) ? d.owner.nickname : '';
-        if (oa) oa.src = (d.owner && d.owner.avatar)
+        /* ── Owner info con link al perfil ── */
+        /* ── Owner info ── */
+        var ownerWrap = document.getElementById('modalOwnerWrap');
+        var onEl = document.getElementById('modalOwnerName');
+        var oaEl = document.getElementById('modalOwnerAvatar');
+
+        var ownerName   = (d.owner && d.owner.name)     ? d.owner.name     : 'Usuario';
+        var ownerNick   = (d.owner && d.owner.nickname) ? d.owner.nickname : null;
+        var ownerAvatar = (d.owner && d.owner.avatar)
             ? '/foto/' + d.owner.avatar
             : '/img/default-avatar.svg';
+        var ownerUrl    = (d.owner && d.owner.url) ? d.owner.url : null;
+
+        if (oaEl) oaEl.src = ownerAvatar;
+        if (onEl) onEl.textContent = ownerNick || ownerName;
+
+        if (ownerWrap) {
+            ownerWrap.style.cursor = ownerUrl ? 'pointer' : 'default';
+            ownerWrap.onclick = ownerUrl
+                ? function(e) { e.stopPropagation(); window.location.href = ownerUrl; }
+                : null;
+        }
+
+
 
         /* caption */
         var cap = document.getElementById('modalCaption');
@@ -806,27 +824,39 @@ if (elLoadMore) {
         self.disabled  = true;
 
         fetch('/dashboard/feed?tab=' + tab + '&page=' + page, {
-            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
-        })
-        .then(function(r) {
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            return r.json();
-        })
-        .then(function(d) {
-            document.getElementById('feedGrid').insertAdjacentHTML('beforeend', d.html);
-            if (d.hasMore) {
-                self.dataset.page = d.currentPage + 1;
-                self.innerHTML    = '<i class="fas fa-chevron-down"></i> Cargar más fotos';
-                self.disabled     = false;
-            } else {
-                var wrap = document.getElementById('loadMoreWrap');
-                if (wrap) wrap.style.display = 'none';
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
             }
         })
-        .catch(function(err) {
-            self.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error al cargar';
-            self.disabled  = false;
-        });
+        fetch('/dashboard/feed?tab=' + tab + '&page=' + page, {
+        headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function(r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json();
+    })
+    .then(function(d) {
+        var grid = document.getElementById('feedGrid');
+        if (grid && d.html) {
+            grid.insertAdjacentHTML('beforeend', d.html);
+        }
+        if (d.hasMore) {
+            self.dataset.page = d.currentPage + 1;
+            self.innerHTML    = '<i class="fas fa-chevron-down"></i> Cargar más fotos';
+            self.disabled     = false;
+        } else {
+            var wrap = document.getElementById('loadMoreWrap');
+            if (wrap) wrap.style.display = 'none';
+        }
+    })
+    .catch(function(err) {
+        console.error('Feed error:', err);
+        self.innerHTML = '<i class="fas fa-exclamation-circle"></i> Error al cargar';
+        self.disabled  = false;
+    });
+
+
     });
 }
 </script>
