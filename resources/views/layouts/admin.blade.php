@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <title>@yield('title', 'Admin') — LOBBY69</title>
+    <link rel="stylesheet" href="{{ asset('css/00-vivid-nights.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+    /* ── Admin Layout ── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+        font-family: 'Inter', sans-serif;
+        background: var(--theme-bg, #0f0a1a);
+        color: var(--theme-text, #f0e8ff);
+        min-height: 100vh;
+        display: flex;
+    }
+
+    /* Sidebar */
+    .adm-sidebar {
+        width: 240px;
+        min-height: 100vh;
+        background: var(--theme-card, #1a1028);
+        border-right: 1px solid var(--theme-border, rgba(108,63,197,.2));
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0; left: 0;
+        z-index: 100;
+        overflow-y: auto;
+    }
+
+    .adm-sidebar__logo {
+        padding: 1.25rem 1.5rem;
+        border-bottom: 1px solid var(--theme-border, rgba(108,63,197,.2));
+        display: flex;
+        align-items: center;
+        gap: .75rem;
+    }
+
+    .adm-sidebar__logo span {
+        font-size: 1.1rem;
+        font-weight: 800;
+        background: linear-gradient(135deg, #e056a0, #6C3FC5);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .adm-sidebar__logo small {
+        display: block;
+        font-size: .65rem;
+        color: var(--theme-muted);
+        font-weight: 400;
+        -webkit-text-fill-color: var(--theme-muted);
+    }
+
+    .adm-nav { padding: 1rem 0; flex: 1; }
+
+    .adm-nav__section {
+        font-size: .65rem;
+        font-weight: 700;
+        letter-spacing: .08em;
+        color: var(--theme-muted);
+        padding: .75rem 1.5rem .35rem;
+        text-transform: uppercase;
+    }
+
+    .adm-nav__item {
+        display: flex;
+        align-items: center;
+        gap: .7rem;
+        padding: .6rem 1.5rem;
+        color: var(--theme-muted);
+        text-decoration: none;
+        font-size: .875rem;
+        font-weight: 500;
+        transition: .15s;
+        border-left: 3px solid transparent;
+        position: relative;
+    }
+
+    .adm-nav__item:hover {
+        color: var(--theme-text);
+        background: rgba(108,63,197,.08);
+    }
+
+    .adm-nav__item.active {
+        color: #b08df0;
+        background: rgba(108,63,197,.12);
+        border-left-color: #6C3FC5;
+    }
+
+    .adm-nav__item i { width: 16px; text-align: center; font-size: .85rem; }
+
+    .adm-nav__badge {
+        margin-left: auto;
+        background: #e056a0;
+        color: #fff;
+        font-size: .65rem;
+        font-weight: 700;
+        padding: .1rem .45rem;
+        border-radius: 10px;
+        min-width: 18px;
+        text-align: center;
+    }
+
+    .adm-nav__badge.yellow { background: #f0c040; color: #1a1000; }
+    .adm-nav__badge.green  { background: #28a745; }
+    .adm-nav__badge.gray   { background: var(--theme-muted); }
+
+    .adm-sidebar__footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--theme-border);
+        font-size: .8rem;
+        color: var(--theme-muted);
+    }
+
+    .adm-sidebar__footer a {
+        color: var(--theme-muted);
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        padding: .4rem 0;
+        transition: .15s;
+    }
+
+    .adm-sidebar__footer a:hover { color: var(--theme-text); }
+
+    /* Main content */
+    .adm-main {
+        margin-left: 240px;
+        flex: 1;
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+    }
+
+    /* Topbar */
+    .adm-topbar {
+        height: 56px;
+        background: var(--theme-card);
+        border-bottom: 1px solid var(--theme-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0 1.5rem;
+        position: sticky;
+        top: 0;
+        z-index: 50;
+    }
+
+    .adm-topbar__title {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--theme-text);
+    }
+
+    .adm-topbar__actions {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+
+    .adm-topbar__user {
+        font-size: .82rem;
+        color: var(--theme-muted);
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+    }
+
+    .adm-topbar__user strong { color: var(--theme-text); }
+
+    /* Page content */
+    .adm-content {
+        flex: 1;
+        padding: 1.5rem;
+        max-width: 1400px;
+        width: 100%;
+        margin: 0 auto;
+    }
+
+    /* Toast */
+    .adm-toast {
+        position: fixed;
+        bottom: 1.5rem;
+        right: 1.5rem;
+        background: #28a745;
+        color: #fff;
+        padding: .75rem 1.25rem;
+        border-radius: 10px;
+        font-size: .875rem;
+        font-weight: 600;
+        box-shadow: 0 4px 16px rgba(0,0,0,.3);
+        z-index: 9999;
+        display: none;
+        align-items: center;
+        gap: .5rem;
+        animation: slideUp .25s ease;
+    }
+
+    @keyframes slideUp {
+        from { transform: translateY(20px); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    @stack('styles')
+    </style>
+    @stack('styles')
+</head>
+<body>
+
+{{-- ── Sidebar ── --}}
+<aside class="adm-sidebar">
+    <div class="adm-sidebar__logo">
+        <div>
+            <span>LOBBY69</span>
+            <small>Panel de Administración</small>
+        </div>
+    </div>
+
+    <nav class="adm-nav">
+        <div class="adm-nav__section">General</div>
+        <a href="{{ route('admin.dashboard') }}"
+           class="adm-nav__item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+            <i class="fas fa-chart-line"></i> Dashboard
+        </a>
+
+        <div class="adm-nav__section">Moderación</div>
+        <a href="{{ route('admin.photos.index') }}"
+           class="adm-nav__item {{ request()->routeIs('admin.photos.*') ? 'active' : '' }}">
+            <i class="fas fa-images"></i> Fotos
+            @if(($pendingPhotos ?? 0) > 0)
+                <span class="adm-nav__badge">{{ $pendingPhotos }}</span>
+            @endif
+        </a>
+        <a href="{{ route('admin.videos.index') }}"
+           class="adm-nav__item {{ request()->routeIs('admin.videos.*') ? 'active' : '' }}">
+            <i class="fas fa-video"></i> Videos
+            @if(($pendingVideos ?? 0) > 0)
+                <span class="adm-nav__badge">{{ $pendingVideos }}</span>
+            @endif
+        </a>
+        <a href="{{ route('admin.verifications.index') }}"
+           class="adm-nav__item {{ request()->routeIs('admin.verifications.*') ? 'active' : '' }}">
+            <i class="fas fa-id-card"></i> Verificaciones
+            @if(($pendingVerifications ?? 0) > 0)
+                <span class="adm-nav__badge yellow">{{ $pendingVerifications }}</span>
+            @endif
+        </a>
+        <a href="{{ route('admin.invitations.index') }}"
+           class="adm-nav__item {{ request()->routeIs('admin.invitations.*') ? 'active' : '' }}">
+            <i class="fas fa-envelope"></i> Invitaciones
+            @if(($pendingInvitations ?? 0) > 0)
+                <span class="adm-nav__badge yellow">{{ $pendingInvitations }}</span>
+            @endif
+        </a>
+
+        <div class="adm-nav__section">Usuarios</div>
+        <a href="{{ route('admin.users.index') }}"
+           class="adm-nav__item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+            <i class="fas fa-users"></i> Gestión de usuarios
+        </a>
+
+        <div class="adm-nav__section">Estadísticas</div>
+        <a href="{{ route('admin.stats.index') }}"
+           class="adm-nav__item {{ request()->routeIs('admin.stats.*') ? 'active' : '' }}">
+            <i class="fas fa-chart-bar"></i> Analíticas
+        </a>
+    </nav>
+
+    <div class="adm-sidebar__footer">
+        <a href="{{ route('admin.dashboard') }}" target="_blank">
+            <i class="fas fa-external-link-alt"></i> Ver sitio
+        </a>
+        <form method="POST" action="{{ '/logout' }}">
+            @csrf
+            <button type="submit" style="background:none;border:none;cursor:pointer;width:100%;text-align:left;padding:.4rem 0;color:var(--theme-muted);font-size:.8rem;display:flex;align-items:center;gap:.5rem;">
+                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+            </button>
+        </form>
+    </div>
+</aside>
+
+{{-- ── Main ── --}}
+<main class="adm-main">
+    <div class="adm-topbar">
+        <span class="adm-topbar__title">@yield('page-title', 'Panel Admin')</span>
+        <div class="adm-topbar__actions">
+            <span class="adm-topbar__user">
+                <i class="fas fa-shield-alt" style="color:#6C3FC5;"></i>
+                <strong>{{ Auth::user()->username ?? 'Admin' }}</strong>
+            </span>
+        </div>
+    </div>
+
+    <div class="adm-content">
+        @if(session('success'))
+            <div style="background:#d4edda;color:#155724;padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.875rem;">
+                ✅ {{ session('success') }}
+            </div>
+        @endif
+        @yield('content')
+    </div>
+</main>
+
+<div class="adm-toast" id="admToast"></div>
+
+@stack('scripts')
+<script>
+function admShowToast(msg, type) {
+    var t = document.getElementById('admToast');
+    if (!t) return;
+    t.textContent = msg;
+    t.style.background = type === 'error' ? '#dc3545' : '#28a745';
+    t.style.display = 'flex';
+    setTimeout(function() { t.style.display = 'none'; }, 3500);
+}
+</script>
+</body>
+</html>
+
+
+

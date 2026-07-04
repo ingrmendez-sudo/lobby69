@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.admin')
 @section('title','Detalle Solicitud')
 @section('content')
 <div style="max-width:700px;margin:2rem auto;padding:0 1rem;">
