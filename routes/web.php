@@ -49,6 +49,11 @@ Route::middleware(['auth', 'admin.only'])
     Route::post('usuarios/{id}/suspender',       [AdminUserController::class, 'suspend'])->name('users.suspend');
     Route::post('usuarios/{id}/activar',         [AdminUserController::class, 'activate'])->name('users.activate');
     Route::post('usuarios/{id}/membresia',       [AdminUserController::class, 'changeMembership'])->name('users.membership');
+    Route::get('usuarios/exportar',          [AdminUserController::class, 'exportCsv'])->name('users.export');
+    Route::get('usuarios/{id}/detalle',      [AdminUserController::class, 'show'])->name('users.show');
+    Route::post('usuarios/{id}/reset-pass',  [AdminUserController::class, 'resetPassword'])->name('users.reset-password');
+    Route::delete('usuarios/{id}/eliminar',  [AdminUserController::class, 'destroy'])->name('users.destroy');
+
 
     // Estadísticas
     Route::get('estadisticas', [AdminStatsController::class, 'index'])->name('stats.index');
