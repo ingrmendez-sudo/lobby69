@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="es" data-theme="dark">
+<html lang="es" data-theme="dark" id="adminRoot">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -208,6 +208,44 @@
         to   { transform: translateY(0);    opacity: 1; }
     }
 
+    /* ── Modo día admin ── */
+    [data-theme="light"] .adm-sidebar {
+        background: #ffffff;
+        border-right-color: #e5e7eb;
+    }
+    [data-theme="light"] .adm-topbar {
+        background: #ffffff;
+        border-bottom-color: #e5e7eb;
+    }
+    [data-theme="light"] .adm-card {
+        background: #ffffff;
+        border-color: #e5e7eb;
+        box-shadow: 0 1px 3px rgba(0,0,0,.08);
+    }
+    [data-theme="light"] body {
+        background: #f3f4f6;
+    }
+    [data-theme="light"] .adm-nav__item {
+        color: #374151;
+    }
+    [data-theme="light"] .adm-nav__item:hover,
+    [data-theme="light"] .adm-nav__item.active {
+        background: #f3f4f6;
+        color: #6C3FC5;
+    }
+    [data-theme="light"] .adm-nav__section {
+        color: #9ca3af;
+    }
+    [data-theme="light"] table tr {
+        border-bottom-color: #e5e7eb;
+    }
+    [data-theme="light"] input,
+    [data-theme="light"] select {
+        background: #f9fafb !important;
+        border-color: #d1d5db !important;
+        color: #111827 !important;
+    }
+
     @stack('styles')
     </style>
     @stack('styles')
@@ -291,6 +329,16 @@
     <div class="adm-topbar">
         <span class="adm-topbar__title">@yield('page-title', 'Panel Admin')</span>
         <div class="adm-topbar__actions">
+            {{-- Toggle dark/light --}}
+            <button id="themeToggle" onclick="toggleAdminTheme()"
+                    title="Cambiar tema"
+                    style="background:none;border:1px solid var(--theme-border);color:var(--theme-muted);
+                        border-radius:8px;padding:.3rem .7rem;cursor:pointer;font-size:.85rem;
+                        display:flex;align-items:center;gap:.4rem;transition:.2s;">
+                <i id="themeIcon" class="fas fa-moon"></i>
+                <span id="themeLabel" style="font-size:.75rem;">Modo día</span>
+            </button>
+
             <span class="adm-topbar__user">
                 <i class="fas fa-shield-alt" style="color:#6C3FC5;"></i>
                 <strong>{{ Auth::user()->username ?? 'Admin' }}</strong>
@@ -320,6 +368,46 @@ function admShowToast(msg, type) {
     t.style.display = 'flex';
     setTimeout(function() { t.style.display = 'none'; }, 3500);
 }
+
+(function() {
+    // Aplicar tema guardado antes del render para evitar flash
+    var saved = localStorage.getItem('adminTheme') || 'dark';
+    document.getElementById('adminRoot').setAttribute('data-theme', saved);
+})();
+
+function toggleAdminTheme() {
+    var root    = document.getElementById('adminRoot');
+    var icon    = document.getElementById('themeIcon');
+    var label   = document.getElementById('themeLabel');
+    var current = root.getAttribute('data-theme');
+    var next    = current === 'dark' ? 'light' : 'dark';
+
+    root.setAttribute('data-theme', next);
+    localStorage.setItem('adminTheme', next);
+
+    if (next === 'light') {
+        icon.className  = 'fas fa-moon';
+        label.textContent = 'Modo noche';
+    } else {
+        icon.className  = 'fas fa-sun';
+        label.textContent = 'Modo día';
+    }
+}
+
+// Sincronizar ícono al cargar según tema guardado
+document.addEventListener('DOMContentLoaded', function() {
+    var saved = localStorage.getItem('adminTheme') || 'dark';
+    var icon  = document.getElementById('themeIcon');
+    var label = document.getElementById('themeLabel');
+    if (saved === 'light') {
+        icon.className    = 'fas fa-moon';
+        label.textContent = 'Modo noche';
+    } else {
+        icon.className    = 'fas fa-sun';
+        label.textContent = 'Modo día';
+    }
+});
+
 </script>
 </body>
 </html>
