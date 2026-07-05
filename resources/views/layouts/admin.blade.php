@@ -304,7 +304,17 @@
             <i class="fas fa-users"></i> Gestión de usuarios
         </a>
 
-        <div class="adm-nav__section">Estadísticas</div>
+        
+        <div class="adm-nav__section">Contenido</div>
+        <a href="{{ route('admin.events.index') }}"
+           class="adm-nav__item {{ request()->routeIs('admin.events.*') ? 'active' : '' }}">
+            <i class="fas fa-calendar-alt"></i> Eventos
+        </a>
+        <a href="{{ route('admin.articles.index') }}"
+           class="adm-nav__item {{ request()->routeIs('admin.articles.*') ? 'active' : '' }}">
+            <i class="fas fa-newspaper"></i> Artículos
+        </a>
+<div class="adm-nav__section">Estadísticas</div>
         <a href="{{ route('admin.stats.index') }}"
            class="adm-nav__item {{ request()->routeIs('admin.stats.*') ? 'active' : '' }}">
             <i class="fas fa-chart-bar"></i> Analíticas
@@ -411,6 +421,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
 
 
 
