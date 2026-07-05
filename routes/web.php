@@ -78,5 +78,7 @@ Route::middleware(['auth', 'admin.only'])
     Route::get('membresias',                    [AdminMembershipController::class, 'index'])->name('memberships.index');
     Route::post('membresias/{id}/aprobar',      [AdminMembershipController::class, 'approve'])->name('memberships.approve');
     Route::post('membresias/{id}/rechazar',     [AdminMembershipController::class, 'reject'])->name('memberships.reject');
+    Route::post('membresias/registrar', [AdminMembershipController::class, 'store'])->name('memberships.store');
+
 
 });

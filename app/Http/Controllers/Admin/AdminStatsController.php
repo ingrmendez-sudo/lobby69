@@ -7,7 +7,7 @@ class AdminStatsController extends Controller
 {
     public function index()
     {
-        // Registros por día últimos 30 días
+        // ── Registros por día últimos 30 días ──
         $usersByDay = DB::table('users')
             ->where('role', '!=', 'admin')
             ->where('created_at', '>=', now()->subDays(29))
@@ -16,7 +16,7 @@ class AdminStatsController extends Controller
             ->orderByRaw("DATE(created_at)")
             ->get();
 
-        // Fotos por día
+        // ── Fotos por día últimos 30 días ──
         $photosByDay = DB::table('photos')
             ->where('created_at', '>=', now()->subDays(29))
             ->selectRaw("TO_CHAR(created_at, 'DD/MM') as day, count(*) as total")
@@ -24,7 +24,41 @@ class AdminStatsController extends Controller
             ->orderByRaw("DATE(created_at)")
             ->get();
 
-        // Membresías
+        // ── Visitas de perfil por día últimos 30 días ──
+        $viewsByDay = DB::table('profile_views')
+            ->where('viewed_at', '>=', now()->subDays(29))
+            ->selectRaw("TO_CHAR(viewed_at, 'DD/MM') as day, count(*) as total")
+            ->groupByRaw("TO_CHAR(viewed_at, 'DD/MM'), DATE(viewed_at)")
+            ->orderByRaw("DATE(viewed_at)")
+            ->get();
+
+        // ── Visitas por semana últimas 12 semanas ──
+        $viewsByWeek = DB::table('profile_views')
+            ->where('viewed_at', '>=', now()->subWeeks(11))
+            ->selectRaw("TO_CHAR(DATE_TRUNC('week', viewed_at), 'DD/MM') as week, count(*) as total")
+            ->groupByRaw("DATE_TRUNC('week', viewed_at)")
+            ->orderByRaw("DATE_TRUNC('week', viewed_at)")
+            ->get();
+
+        // ── Visitas por mes últimos 12 meses ──
+        $viewsByMonth = DB::table('profile_views')
+            ->where('viewed_at', '>=', now()->subMonths(11))
+            ->selectRaw("TO_CHAR(viewed_at, 'MM/YYYY') as month, count(*) as total")
+            ->groupByRaw("TO_CHAR(viewed_at, 'MM/YYYY'), DATE_TRUNC('month', viewed_at)")
+            ->orderByRaw("DATE_TRUNC('month', viewed_at)")
+            ->get();
+
+        // ── Comparativa visitas: semana actual vs anterior ──
+        $viewsThisWeek = DB::table('profile_views')
+            ->where('viewed_at', '>=', now()->startOfWeek())->count();
+        $viewsLastWeek = DB::table('profile_views')
+            ->whereBetween('viewed_at', [now()->subWeek()->startOfWeek(), now()->subWeek()->endOfWeek()])->count();
+        $viewsThisMonth = DB::table('profile_views')
+            ->where('viewed_at', '>=', now()->startOfMonth())->count();
+        $viewsLastMonth = DB::table('profile_views')
+            ->whereBetween('viewed_at', [now()->subMonth()->startOfMonth(), now()->subMonth()->endOfMonth()])->count();
+
+        // ── Membresías ──
         $membershipStats = DB::table('users')
             ->where('role', '!=', 'admin')
             ->selectRaw('membership_type, count(*) as total')
@@ -32,31 +66,93 @@ class AdminStatsController extends Controller
             ->orderByDesc('total')
             ->get();
 
-        // Totales generales
+        // ── Membresías por mes últimos 6 meses (conversión) ──
+        $membershipsByMonth = DB::table('users')
+            ->where('role', '!=', 'admin')
+            ->whereNotNull('membership_started_at')
+            ->where('membership_started_at', '>=', now()->subMonths(5))
+            ->whereNotIn('membership_type', ['trial', 'free'])
+            ->selectRaw("TO_CHAR(membership_started_at, 'MM/YYYY') as month, count(*) as total")
+            ->groupByRaw("TO_CHAR(membership_started_at, 'MM/YYYY'), DATE_TRUNC('month', membership_started_at)")
+            ->orderByRaw("DATE_TRUNC('month', membership_started_at)")
+            ->get();
+
+        // ── Totales generales ──
         $totals = [
-            'users'    => DB::table('users')->where('role','!=','admin')->count(),
-            'photos'   => DB::table('photos')->where('status','approved')->count(),
-            'videos'   => DB::table('videos')->where('status','approved')->count(),
-            'likes'    => DB::table('photo_likes')->count(),
-            'comments' => DB::table('photo_comments')->where('status','approved')->count(),
-            'follows'  => DB::table('follows')->count(),
+            'users'        => DB::table('users')->where('role', '!=', 'admin')->count(),
+            'photos'       => DB::table('photos')->where('status', 'approved')->count(),
+            'videos'       => DB::table('videos')->where('status', 'approved')->count(),
+            'likes'        => DB::table('photo_likes')->count(),
+            'comments'     => DB::table('photo_comments')->where('status', 'approved')->count(),
+            'follows'      => DB::table('follows')->count(),
+            'profile_views'=> DB::table('profile_views')->count(),
         ];
 
-        // Conversión: trial vs pagados
-        $paidCount  = DB::table('users')->where('role','!=','admin')
-            ->whereNotIn('membership_type', ['trial','trial_verified'])->count();
-        $trialCount = DB::table('users')->where('role','!=','admin')
-            ->whereIn('membership_type', ['trial','trial_verified'])->count();
+        // ── Conversión trial vs pagados ──
+        $paidCount  = DB::table('users')->where('role', '!=', 'admin')
+            ->whereNotIn('membership_type', ['trial', 'free'])->count();
+        $trialCount = DB::table('users')->where('role', '!=', 'admin')
+            ->whereIn('membership_type', ['trial', 'free'])->count();
 
-        // Usuarios más activos (más fotos)
+        // ── Funnel de conversión ──
+        $totalRegistered    = DB::table('users')->where('role', '!=', 'admin')->count();
+        $profileCompleted   = DB::table('profiles')->where('profile_completed', true)->count();
+        $uploadedPhoto      = DB::table('photos')->distinct('user_id')->count('user_id');
+        $paidMembership     = DB::table('users')->where('role', '!=', 'admin')
+            ->whereNotIn('membership_type', ['trial', 'free'])->count();
+
+        $funnel = [
+            ['label' => 'Registrados',       'value' => $totalRegistered,  'color' => '#6C3FC5'],
+            ['label' => 'Perfil completo',    'value' => $profileCompleted, 'color' => '#a855f7'],
+            ['label' => 'Subió foto',         'value' => $uploadedPhoto,    'color' => '#ec4899'],
+            ['label' => 'Membresía paga',     'value' => $paidMembership,   'color' => '#22c55e'],
+        ];
+
+        // ── Usuarios por estado (normalizado) ──
+        $usersByState = DB::table('profiles')
+            ->selectRaw("
+                CASE
+                    WHEN LOWER(TRIM(state)) IN ('cdmx','ciudad de mexico','ciudad de méxico','df','d.f.') THEN 'CDMX'
+                    WHEN LOWER(TRIM(state)) IN ('jalisco','jal') THEN 'Jalisco'
+                    WHEN LOWER(TRIM(state)) IN ('nuevo leon','nuevo león','nl') THEN 'Nuevo León'
+                    WHEN LOWER(TRIM(state)) IN ('puebla','pue') THEN 'Puebla'
+                    WHEN LOWER(TRIM(state)) IN ('queretaro','querétaro','qro') THEN 'Querétaro'
+                    WHEN TRIM(state) = '' OR state IS NULL THEN 'Sin especificar'
+                    ELSE INITCAP(TRIM(state))
+                END as estado,
+                count(*) as total
+            ")
+            ->groupByRaw("
+                CASE
+                    WHEN LOWER(TRIM(state)) IN ('cdmx','ciudad de mexico','ciudad de méxico','df','d.f.') THEN 'CDMX'
+                    WHEN LOWER(TRIM(state)) IN ('jalisco','jal') THEN 'Jalisco'
+                    WHEN LOWER(TRIM(state)) IN ('nuevo leon','nuevo león','nl') THEN 'Nuevo León'
+                    WHEN LOWER(TRIM(state)) IN ('puebla','pue') THEN 'Puebla'
+                    WHEN LOWER(TRIM(state)) IN ('queretaro','querétaro','qro') THEN 'Querétaro'
+                    WHEN TRIM(state) = '' OR state IS NULL THEN 'Sin especificar'
+                    ELSE INITCAP(TRIM(state))
+                END
+            ")
+            ->orderByDesc('total')
+            ->get();
+
+        // ── Actividad por hora del día (últimos 30 días) ──
+        $activityByHour = DB::table('profile_views')
+            ->where('viewed_at', '>=', now()->subDays(29))
+            ->selectRaw("EXTRACT(HOUR FROM viewed_at) as hour, count(*) as total")
+            ->groupByRaw("EXTRACT(HOUR FROM viewed_at)")
+            ->orderByRaw("EXTRACT(HOUR FROM viewed_at)")
+            ->get();
+
+        // ── Top uploaders ──
         $topUploaders = DB::table('photos')
-            ->joinSub(
-                DB::table('users')->selectRaw('"id"::text as uid, "username"'),
-                'u', 'photos.user_id', '=', 'u.uid'
+            ->join(
+                DB::raw('(SELECT id::text as uid, username FROM users) as u'),
+                'photos.user_id', '=', 'u.uid'
             )
-            ->leftJoinSub(
-                DB::table('profiles')->selectRaw('"user_id"::text as pid, "nickname"'),
-                'p', 'photos.user_id', '=', 'p.pid'
+            ->leftJoin(
+                DB::raw('(SELECT user_id::text as pid, nickname FROM profiles) as p'),
+                'photos.user_id', '=', 'p.pid'
             )
             ->where('photos.status', 'approved')
             ->selectRaw('COALESCE(p.nickname, u.username) as name, count(*) as total')
@@ -65,9 +161,21 @@ class AdminStatsController extends Controller
             ->limit(10)
             ->get();
 
+        // ── Retención: usuarios activos últimos 7/30 días ──
+        $activeUsers7d  = DB::table('users')
+            ->where('role', '!=', 'admin')
+            ->where('last_seen_at', '>=', now()->subDays(7))->count();
+        $activeUsers30d = DB::table('users')
+            ->where('role', '!=', 'admin')
+            ->where('last_seen_at', '>=', now()->subDays(30))->count();
+
         return view('admin.stats.index', compact(
-            'usersByDay', 'photosByDay', 'membershipStats',
-            'totals', 'paidCount', 'trialCount', 'topUploaders'
+            'usersByDay', 'photosByDay', 'viewsByDay', 'viewsByWeek', 'viewsByMonth',
+            'viewsThisWeek', 'viewsLastWeek', 'viewsThisMonth', 'viewsLastMonth',
+            'membershipStats', 'membershipsByMonth',
+            'totals', 'paidCount', 'trialCount',
+            'funnel', 'usersByState', 'activityByHour', 'topUploaders',
+            'activeUsers7d', 'activeUsers30d', 'totalRegistered'
         ));
     }
 }

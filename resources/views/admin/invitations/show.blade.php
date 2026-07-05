@@ -1,80 +1,172 @@
 @extends('layouts.admin')
-@section('title','Detalle Solicitud')
+
+@section('title', 'Detalle Invitación')
+@section('page-title', 'Detalle de Invitación')
+
 @section('content')
-<div style="max-width:700px;margin:2rem auto;padding:0 1rem;">
-
-  <div style="display:flex;align-items:center;gap:1rem;margin-bottom:2rem;">
-    <a href="{{ route('admin.invitations.index') }}" class="btn btn--ghost btn--sm">← Volver</a>
-    <h1 style="font-size:1.5rem;font-weight:700;color:var(--color-text);">Detalle de Solicitud</h1>
-  </div>
-
-  @if(session('success'))
-    <div style="background:#d1fae5;border:1px solid #6ee7b7;color:#065f46;padding:1rem;border-radius:8px;margin-bottom:1rem;">{{ session('success') }}</div>
-  @endif
-  @if(session('error'))
-    <div style="background:#fee2e2;border:1px solid #fca5a5;color:#991b1b;padding:1rem;border-radius:8px;margin-bottom:1rem;">{{ session('error') }}</div>
-  @endif
-
-  <div style="background:white;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.08);padding:2rem;">
-    @php $pref = json_decode($invitation->preferencias ?? '{}', true); @endphp
-
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
-      <div><div style="font-size:.75rem;color:#94a3b8;margin-bottom:.25rem;">NOMBRE</div><div style="font-weight:600;">{{ $invitation->nombre }}</div></div>
-      <div><div style="font-size:.75rem;color:#94a3b8;margin-bottom:.25rem;">EMAIL</div><div>{{ $invitation->email }}</div></div>
-      <div><div style="font-size:.75rem;color:#94a3b8;margin-bottom:.25rem;">TIPO PERFIL</div><div>{{ ucfirst($invitation->tipo_perfil ?? 'N/A') }}</div></div>
-      <div><div style="font-size:.75rem;color:#94a3b8;margin-bottom:.25rem;">GÉNERO</div><div>{{ ucfirst($invitation->genero ?? 'N/A') }}</div></div>
-      <div><div style="font-size:.75rem;color:#94a3b8;margin-bottom:.25rem;">ENTIDAD</div><div>{{ $invitation->entidad ?? 'N/A' }}</div></div>
-      <div><div style="font-size:.75rem;color:#94a3b8;margin-bottom:.25rem;">EDAD</div><div>{{ $pref['edad'] ?? 'N/A' }} años</div></div>
-      <div><div style="font-size:.75rem;color:#94a3b8;margin-bottom:.25rem;">PAÍS</div><div>{{ $pref['pais'] ?? 'N/A' }}</div></div>
-      <div><div style="font-size:.75rem;color:#94a3b8;margin-bottom:.25rem;">MUNICIPIO</div><div>{{ $pref['municipio'] ?? 'N/A' }}</div></div>
-      <div><div style="font-size:.75rem;color:#94a3b8;margin-bottom:.25rem;">CÓDIGO USADO</div><div>{{ $invitation->invitation_code ?? 'Ninguno' }}</div></div>
-      <div><div style="font-size:.75rem;color:#94a3b8;margin-bottom:.25rem;">FECHA</div><div>{{ \Carbon\Carbon::parse($invitation->created_at)->format('d/m/Y H:i') }}</div></div>
-    </div>
+<div style="max-width:680px;margin:0 auto;">
 
     <div style="margin-bottom:1.5rem;">
-      <div style="font-size:.75rem;color:#94a3b8;margin-bottom:.5rem;">MOTIVO</div>
-      <div style="background:#f8fafc;padding:1rem;border-radius:8px;line-height:1.6;">{{ $invitation->motivo }}</div>
+        <a href="{{ route('admin.invitations.index') }}"
+           style="color:var(--theme-muted);font-size:.85rem;text-decoration:none;display:inline-flex;align-items:center;gap:.4rem;">
+            <i class="fas fa-arrow-left"></i> Volver a invitaciones
+        </a>
     </div>
 
-    @if($invitation->status === 'pending')
-    <div style="display:flex;gap:1rem;flex-wrap:wrap;">
-      <form method="POST" action="{{ route('admin.invitations.approve',$invitation->id) }}">
-        @csrf
-        <button type="submit" class="btn btn--primary"
-                onclick="return confirm('¿Aprobar esta solicitud? Se creará el usuario y se registrarán las credenciales en el log.')">
-          ✅ Aprobar y Crear Usuario
-        </button>
-      </form>
-
-      <button class="btn btn--ghost" onclick="document.getElementById('formRechazo').style.display='block';this.style.display='none'">
-        ❌ Rechazar
-      </button>
-    </div>
-
-    <div id="formRechazo" style="display:none;margin-top:1.5rem;background:#fff5f5;border:1px solid #fca5a5;border-radius:12px;padding:1.5rem;">
-      <form method="POST" action="{{ route('admin.invitations.reject',$invitation->id) }}">
-        @csrf
-        <label style="display:block;font-weight:600;margin-bottom:.5rem;">Motivo de rechazo (opcional):</label>
-        <textarea name="reason" rows="3"
-                  style="width:100%;padding:.75rem;border:1px solid #e2e8f0;border-radius:8px;font-size:.9rem;resize:vertical;"
-                  placeholder="Ej: Perfil incompleto, información sospechosa..."></textarea>
-        <div style="display:flex;gap:1rem;margin-top:1rem;">
-          <button type="submit" style="background:#ef4444;color:white;padding:.6rem 1.5rem;border-radius:8px;border:none;cursor:pointer;font-weight:600;">
-            Confirmar Rechazo
-          </button>
-          <button type="button" onclick="document.getElementById('formRechazo').style.display='none';document.querySelector('.btn--ghost').style.display='inline-flex';"
-                  class="btn btn--ghost btn--sm">Cancelar</button>
-        </div>
-      </form>
-    </div>
-    @else
-    <div style="background:#f8fafc;padding:1rem;border-radius:8px;">
-      <strong>Estado:</strong> {{ ucfirst($invitation->status) }}
-      @if($invitation->admin_notes)
-        <br><strong>Nota admin:</strong> {{ $invitation->admin_notes }}
-      @endif
+    @if(session('success'))
+    <div style="background:#22c55e22;border:1px solid #22c55e;color:#22c55e;padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.85rem;">
+        <i class="fas fa-check-circle"></i> {{ session('success') }}
     </div>
     @endif
-  </div>
+
+    <div class="adm-card" style="padding:1.5rem;margin-bottom:1rem;">
+
+        {{-- Header --}}
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem;padding-bottom:1rem;border-bottom:1px solid var(--theme-border);">
+            <div>
+                <h2 style="margin:0 0 .25rem;font-size:1.1rem;color:var(--theme-text);">
+                    {{ $invitation->nombre ?? 'Sin nombre' }}
+                </h2>
+                <div style="font-size:.85rem;color:var(--theme-muted);">{{ $invitation->email }}</div>
+            </div>
+            <div>
+                @if($invitation->status === 'approved')
+                    <span style="background:#22c55e22;color:#22c55e;padding:.3rem .8rem;border-radius:20px;font-size:.8rem;font-weight:700;">
+                        <i class="fas fa-check"></i> Aprobado
+                    </span>
+                @elseif($invitation->status === 'rejected')
+                    <span style="background:#ef444422;color:#ef4444;padding:.3rem .8rem;border-radius:20px;font-size:.8rem;font-weight:700;">
+                        <i class="fas fa-times"></i> Rechazado
+                    </span>
+                @else
+                    <span style="background:#f59e0b22;color:#f59e0b;padding:.3rem .8rem;border-radius:20px;font-size:.8rem;font-weight:700;">
+                        <i class="fas fa-clock"></i> Pendiente
+                    </span>
+                @endif
+            </div>
+        </div>
+
+        {{-- Datos en grid --}}
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem 1.5rem;font-size:.85rem;margin-bottom:1.25rem;">
+
+            <div>
+                <div style="font-size:.72rem;color:var(--theme-muted);margin-bottom:.2rem;">Género</div>
+                <div style="color:var(--theme-text);font-weight:600;">{{ $invitation->genero ?? '—' }}</div>
+            </div>
+
+            <div>
+                <div style="font-size:.72rem;color:var(--theme-muted);margin-bottom:.2rem;">Tipo de perfil</div>
+                <div style="color:var(--theme-text);font-weight:600;">{{ $invitation->tipo_perfil ?? '—' }}</div>
+            </div>
+
+            <div>
+                <div style="font-size:.72rem;color:var(--theme-muted);margin-bottom:.2rem;">Entidad / Estado</div>
+                <div style="color:var(--theme-text);font-weight:600;">{{ $invitation->entidad ?? '—' }}</div>
+            </div>
+
+            <div>
+                <div style="font-size:.72rem;color:var(--theme-muted);margin-bottom:.2rem;">Fecha de solicitud</div>
+                <div style="color:var(--theme-text);font-weight:600;">
+                    {{ \Carbon\Carbon::parse($invitation->created_at)->format('d/m/Y H:i') }}
+                </div>
+            </div>
+
+            <div>
+                <div style="font-size:.72rem;color:var(--theme-muted);margin-bottom:.2rem;">Términos aceptados</div>
+                <div style="color:{{ $invitation->terminos_aceptados ? '#22c55e' : '#ef4444' }};font-weight:600;">
+                    {{ $invitation->terminos_aceptados ? '✅ Sí' : '❌ No' }}
+                </div>
+            </div>
+
+            <div>
+                <div style="font-size:.72rem;color:var(--theme-muted);margin-bottom:.2rem;">Privacidad aceptada</div>
+                <div style="color:{{ $invitation->privacidad_aceptada ? '#22c55e' : '#ef4444' }};font-weight:600;">
+                    {{ $invitation->privacidad_aceptada ? '✅ Sí' : '❌ No' }}
+                </div>
+            </div>
+
+            @if($invitation->invitation_code)
+            <div style="grid-column:1/-1;">
+                <div style="font-size:.72rem;color:var(--theme-muted);margin-bottom:.2rem;">Código de invitación usado</div>
+                <div style="color:var(--theme-accent);font-weight:600;font-family:monospace;">
+                    {{ $invitation->invitation_code }}
+                </div>
+            </div>
+            @endif
+
+        </div>
+
+        {{-- Preferencias --}}
+        @if($invitation->preferencias)
+        @php
+            $prefs = is_string($invitation->preferencias)
+                ? json_decode($invitation->preferencias, true)
+                : (array)$invitation->preferencias;
+        @endphp
+        @if(!empty($prefs))
+        <div style="margin-bottom:1.25rem;">
+            <div style="font-size:.72rem;color:var(--theme-muted);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em;">
+                Preferencias
+            </div>
+            <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
+                @foreach($prefs as $pref)
+                <span style="background:var(--theme-accent)22;color:var(--theme-accent);padding:.2rem .65rem;border-radius:20px;font-size:.78rem;">
+                    {{ $pref }}
+                </span>
+                @endforeach
+            </div>
+        </div>
+        @endif
+        @endif
+
+        {{-- Motivo --}}
+        @if($invitation->motivo)
+        <div style="margin-bottom:1.25rem;">
+            <div style="font-size:.72rem;color:var(--theme-muted);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em;">
+                Motivo de solicitud
+            </div>
+            <div style="background:var(--theme-bg);border-radius:8px;padding:.9rem;font-size:.87rem;color:var(--theme-text);line-height:1.6;border:1px solid var(--theme-border);">
+                {{ $invitation->motivo }}
+            </div>
+        </div>
+        @endif
+
+        {{-- Nota admin --}}
+        @if($invitation->admin_notes)
+        <div style="margin-bottom:1.25rem;padding:.9rem;background:#ef444411;border:1px solid #ef444433;border-radius:8px;">
+            <div style="font-size:.72rem;color:#ef4444;margin-bottom:.3rem;font-weight:600;">
+                <i class="fas fa-exclamation-triangle"></i> Nota del administrador
+            </div>
+            <div style="font-size:.85rem;color:var(--theme-text);">{{ $invitation->admin_notes }}</div>
+        </div>
+        @endif
+
+        {{-- Acciones --}}
+        @if($invitation->status === 'pending')
+        <div style="display:flex;gap:.75rem;padding-top:1rem;border-top:1px solid var(--theme-border);">
+            <form method="POST" action="{{ route('admin.invitations.approve', $invitation->id) }}" style="flex:1;">
+                @csrf
+                <button type="submit"
+                        onclick="return confirm('¿Aprobar a {{ addslashes($invitation->nombre ?? $invitation->email) }}? Se creará su cuenta.')"
+                        style="width:100%;padding:.55rem;background:#22c55e;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:600;">
+                    <i class="fas fa-check"></i> Aprobar — Crear cuenta
+                </button>
+            </form>
+
+            <form method="POST" action="{{ route('admin.invitations.reject', $invitation->id) }}" style="flex:1;">
+                @csrf
+                <div style="margin-bottom:.5rem;">
+                    <textarea name="reason" rows="2" placeholder="Motivo del rechazo (opcional)"
+                              style="width:100%;padding:.45rem .7rem;border-radius:8px;border:1px solid var(--theme-border);background:var(--theme-bg);color:var(--theme-text);font-size:.82rem;resize:none;"></textarea>
+                </div>
+                <button type="submit"
+                        style="width:100%;padding:.55rem;background:#ef4444;color:#fff;border:none;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:600;">
+                    <i class="fas fa-times"></i> Rechazar solicitud
+                </button>
+            </form>
+        </div>
+        @endif
+
+    </div>
 </div>
 @endsection

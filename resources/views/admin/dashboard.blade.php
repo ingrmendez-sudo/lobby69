@@ -256,4 +256,82 @@
 
 </div>
 
+{{-- ── Fila 3: Actividad 7 días ── --}}
+<div class="adm-row" style="margin-bottom:1.5rem;">
+
+    <div class="adm-panel">
+        <div class="adm-panel__head">
+            <i class="fas fa-user-plus" style="color:var(--theme-accent);"></i> Registros últimos 7 días
+        </div>
+        <div class="adm-panel__body">
+            <canvas id="chartDailyUsers" height="120"></canvas>
+        </div>
+    </div>
+
+    <div class="adm-panel">
+        <div class="adm-panel__head">
+            <i class="fas fa-camera" style="color:#ec4899;"></i> Fotos subidas últimos 7 días
+        </div>
+        <div class="adm-panel__body">
+            <canvas id="chartDailyPhotos" height="120"></canvas>
+        </div>
+    </div>
+
+</div>
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script>
+const isDark     = () => document.getElementById('adminRoot')?.getAttribute('data-theme') !== 'light';
+const gridColor  = () => isDark() ? 'rgba(255,255,255,.07)' : 'rgba(0,0,0,.07)';
+const labelColor = () => isDark() ? '#a89bc2' : '#6b7280';
+
+const userDays  = @json($dailyUsers->pluck('day'));
+const userTots  = @json($dailyUsers->pluck('total')->map(fn($v) => (int)$v));
+const photoDays = @json($dailyPhotos->pluck('day'));
+const photoTots = @json($dailyPhotos->pluck('total')->map(fn($v) => (int)$v));
+
+const baseOpts = {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: {
+        x: { grid: { color: gridColor() }, ticks: { color: labelColor(), font: { size: 10 } } },
+        y: { grid: { color: gridColor() }, ticks: { color: labelColor(), font: { size: 10 } }, beginAtZero: true }
+    }
+};
+
+new Chart(document.getElementById('chartDailyUsers'), {
+    type: 'bar',
+    data: {
+        labels: userDays,
+        datasets: [{
+            data: userTots,
+            backgroundColor: 'rgba(108,63,197,.6)',
+            borderColor: '#6C3FC5',
+            borderWidth: 1,
+            borderRadius: 4,
+        }]
+    },
+    options: baseOpts
+});
+
+new Chart(document.getElementById('chartDailyPhotos'), {
+    type: 'line',
+    data: {
+        labels: photoDays,
+        datasets: [{
+            data: photoTots,
+            borderColor: '#ec4899',
+            backgroundColor: 'rgba(236,72,153,.15)',
+            borderWidth: 2,
+            pointRadius: 3,
+            fill: true,
+            tension: .35,
+        }]
+    },
+    options: baseOpts
+});
+</script>
+@endpush
+
 @endsection

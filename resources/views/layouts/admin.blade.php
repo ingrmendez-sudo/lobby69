@@ -305,7 +305,12 @@
         </a>
 
         
-        <div class="adm-nav__section">Contenido</div>
+                <div class="adm-nav__section">Membresías</div>
+        <a href="{{ route('admin.memberships.index') }}"
+           class="adm-nav__item {{ request()->routeIs('admin.memberships.*') ? 'active' : '' }}">
+            <i class="fas fa-crown"></i> Pagos y membresías
+        </a>
+<div class="adm-nav__section">Contenido</div>
         <a href="{{ route('admin.events.index') }}"
            class="adm-nav__item {{ request()->routeIs('admin.events.*') ? 'active' : '' }}">
             <i class="fas fa-calendar-alt"></i> Eventos
@@ -421,6 +426,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
 
 
 

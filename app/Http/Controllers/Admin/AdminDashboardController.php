@@ -13,7 +13,8 @@ class AdminDashboardController extends Controller
         $pendingPhotos        = DB::table('photos')->where('status', 'pending')->count();
         $pendingVideos        = DB::table('videos')->where('status', 'pending')->count();
         $pendingVerifications = DB::table('verifications')->where('status', 'pending')->count();
-        $pendingInvitations   = DB::table('invitations')->where('status', 'pending')->count();
+        $pendingInvitations   = DB::table('invitation_requests')->where('status', 'pending')->count();
+
 
         // ── Usuarios ──
         $totalUsers    = DB::table('users')->where('role', '!=', 'admin')->count();
@@ -82,28 +83,29 @@ class AdminDashboardController extends Controller
             ->get();
 
         // ── Usuarios más activos ──
+        // ── Usuarios más activos ──
         $topUsers = DB::table('profiles')
-            ->joinSub(
-                DB::table('users')->selectRaw('"id"::text as uid, "username", "membership_type", "created_at"'),
-                'u', DB::raw('profiles.user_id::text'), '=', 'u.uid'
+            ->join(
+                DB::raw('(SELECT id::text as uid, username, membership_type FROM users WHERE role != \'admin\') as u'),
+                DB::raw('profiles.user_id::text'), '=', 'u.uid'
             )
             ->leftJoin(
                 DB::raw('(SELECT user_id::text as fpid, COUNT(*) as fc FROM photos WHERE status = \'approved\' GROUP BY user_id) as ph'),
-                'profiles.user_id', '=', DB::raw('ph.fpid')
+                DB::raw('profiles.user_id::text'), '=', 'ph.fpid'
             )
-            ->where('u.uid', '!=', '')
             ->selectRaw('profiles.nickname, profiles.display_name, u.username, u.membership_type,
-                         COALESCE(ph.fc, 0) as photos_count')
+                        COALESCE(ph.fc, 0) as photos_count')
             ->orderByDesc('photos_count')
             ->limit(5)
             ->get();
+
 
         // ── Últimas acciones pendientes ──
         $recentPending = collect([
             ...$this->recentItems('photos',        'pending', 'Foto'),
             ...$this->recentItems('videos',        'pending', 'Video'),
             ...$this->recentItems('verifications', 'pending', 'Verificación'),
-            ...$this->recentItems('invitations',   'pending', 'Invitación'),
+            ...$this->recentItems('invitation_requests', 'pending', 'Invitación'),
         ])->sortByDesc('created_at')->take(8)->values();
 
         return view('admin.dashboard', compact(
