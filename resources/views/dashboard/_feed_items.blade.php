@@ -4,21 +4,23 @@
      style="cursor:pointer;">
 
     <div class="l69-feed-card__img-wrap">
-        <img src="/foto/{{ $photo->file_path }}"
-             alt="{{ $photo->caption ?? 'Foto' }}"
-             class="l69-feed-card__img"
-             loading="lazy"
-             onerror="this.closest('.l69-feed-card').style.display='none'">
+        <img src="{{ route('photos.serve', $photo->id) }}"
+            alt="{{ $photo->caption ?? 'Foto' }}"
+            class="l69-feed-card__img"
+            loading="lazy"
+            onerror="this.closest('.l69-feed-card').style.display='none'">
+
 
         {{-- Avatar + nombre sobre la imagen --}}
         @php
             $ownerNick   = $photo->nickname    ?? null;
             $ownerName   = $photo->display_name ?? $photo->username ?? 'Usuario';
-            $ownerAvatar = $photo->avatar_path
-                ? '/foto/' . ltrim($photo->avatar_path, '/')
+            $ownerAvatar = $photo->avatar_url
+                ? route('photos.serve', $photo->id)
                 : asset('img/default-avatar.svg');
             $ownerUrl    = $ownerNick ? route('profile.show', $ownerNick) : '#';
         @endphp
+
 
         <a href="{{ $ownerUrl }}"
            class="l69-feed-card__owner-top"
@@ -62,3 +64,7 @@
 
 </div>
 @endforeach
+
+
+
+

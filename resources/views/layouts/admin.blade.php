@@ -23,6 +23,7 @@
     .adm-sidebar {
         width: 240px;
         min-height: 100vh;
+        height: 100vh;
         background: var(--theme-card, #1a1028);
         border-right: 1px solid var(--theme-border, rgba(108,63,197,.2));
         display: flex;
@@ -210,8 +211,17 @@
 
     /* ── Modo día admin ── */
     [data-theme="light"] .adm-sidebar {
-        background: #ffffff;
-        border-right-color: #e5e7eb;
+        width: 240px;
+        min-height: 100vh;
+        height: 100vh;
+        background: var(--theme-card, #1a1028);
+        border-right: 1px solid var(--theme-border, rgba(108,63,197,.2));
+        display: flex;
+        flex-direction: column;
+        position: fixed;
+        top: 0; left: 0;
+        z-index: 100;
+        overflow-y: auto;
     }
     [data-theme="light"] .adm-topbar {
         background: #ffffff;
@@ -304,7 +314,7 @@
             <i class="fas fa-users"></i> Gestión de usuarios
         </a>
 
-        
+
                 <div class="adm-nav__section">Membresías</div>
         <a href="{{ route('admin.memberships.index') }}"
            class="adm-nav__item {{ request()->routeIs('admin.memberships.*') ? 'active' : '' }}">
@@ -327,16 +337,23 @@
     </nav>
 
     <div class="adm-sidebar__footer">
-        <a href="{{ route('admin.dashboard') }}" target="_blank">
+        <a href="{{ route('login') }}" target="_blank"
+        style="display:flex;align-items:center;gap:.5rem;padding:.4rem 0;
+                color:var(--theme-muted);text-decoration:none;font-size:.8rem;">
             <i class="fas fa-external-link-alt"></i> Ver sitio
         </a>
-        <form method="POST" action="{{ '/logout' }}">
+        <a href="#" onclick="event.preventDefault();document.getElementById('frmLogout').submit();"
+        style="display:flex;align-items:center;gap:.5rem;padding:.4rem 0;
+                color:#ef4444;text-decoration:none;font-size:.8rem;cursor:pointer;">
+            <i class="fas fa-sign-out-alt"></i> Cerrar sesión
+        </a>
+        <form id="frmLogout" method="POST" action="{{ route('logout') }}" style="display:none;">
             @csrf
-            <button type="submit" style="background:none;border:none;cursor:pointer;width:100%;text-align:left;padding:.4rem 0;color:var(--theme-muted);font-size:.8rem;display:flex;align-items:center;gap:.5rem;">
-                <i class="fas fa-sign-out-alt"></i> Cerrar sesión
-            </button>
         </form>
     </div>
+
+
+
 </aside>
 
 {{-- ── Main ── --}}
@@ -426,6 +443,11 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
+
+
+
+
 
 
 

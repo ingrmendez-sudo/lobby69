@@ -271,7 +271,7 @@
         <div class="mf-actions">
           @if($photo->status === 'approved' && !$photo->is_profile_photo)
           <form method="POST"
-                action="{{ route('photos.profile', $photo->id) }}"
+                action="{{ route('photos.setProfile', $photo->id) }}"
                 style="margin:0;">
             @csrf
             <button type="submit" class="mf-btn-action mf-btn-star"
@@ -384,3 +384,4 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
 });
 </script>
 @endpush
+
