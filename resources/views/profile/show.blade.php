@@ -396,7 +396,7 @@ $avatarUrl = $profilePhoto
                 @if(!$isOwnProfile)
                     @if($isFollowing)
                         <form method="POST"
-                              action="{{ route('follow.unfollow', $profile->nickname) }}"
+                              action="{{ route('unfollow', $profile->nickname) }}"
                               style="margin:0;">
                             @csrf @method('DELETE')
                             <button type="submit" class="prf-btn-unfollow">
@@ -405,7 +405,7 @@ $avatarUrl = $profilePhoto
                         </form>
                     @else
                         <form method="POST"
-                              action="{{ route('follow.follow', $profile->nickname) }}"
+                              action="{{ route('follow', $profile->nickname) }}"
                               style="margin:0;">
                             @csrf
                             <button type="submit" class="prf-btn-follow">
@@ -503,3 +503,4 @@ $avatarUrl = $profilePhoto
 @endif
 
 @endsection
+

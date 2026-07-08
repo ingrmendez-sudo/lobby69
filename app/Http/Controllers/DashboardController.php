@@ -470,10 +470,13 @@ class DashboardController extends Controller
                     'comments_count' => $comments->count(),
                 ],
                 'owner' => [
-                    'name'     => $ownerName,
-                    'nickname' => $ownerNickname,
-                    'avatar'   => $ownerAvatar,
-                    'url'      => $ownerUrl,
+                    'name'           => $photo->display_name ?? 'Usuario',
+                    'nickname'       => $photo->nickname ?? null,
+                    'avatar'         => $photo->avatar_url ?? null,
+                    'avatar_url'     => $photo->avatar_url
+                                        ? asset('storage/' . ltrim($photo->avatar_url, '/'))
+                                        : null,
+                    'url'            => $photo->nickname ? '/u/' . $photo->nickname : null,
                 ],
                 'comments' => $comments,
             ]);

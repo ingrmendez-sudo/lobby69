@@ -124,7 +124,12 @@ class PhotoController extends Controller
     {
         $userId = auth()->id();
 
-        $photo = DB::table('photos')->where('id', $id)->first();
+        $photo = DB::table('photos')
+            ->where(function($q) use ($id) {
+                $q->whereRaw('photo_uuid::text = ?', [$id])
+                  ->orWhereRaw('id::text = ?', [$id]);
+            })
+            ->first();
         if (!$photo) abort(404);
 
         // El dueño SIEMPRE puede ver sus propias fotos
@@ -180,3 +185,4 @@ class PhotoController extends Controller
     }
 
 }
+

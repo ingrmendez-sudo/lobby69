@@ -440,6 +440,7 @@ function dsbCloseModal() {
     if (m) {
         m.classList.remove('modal-open');
         m.removeAttribute('style');          /* elimina cualquier style inline */
+        if (document.activeElement) document.activeElement.blur();
         m.setAttribute('aria-hidden', 'true');
     }
     document.body.style.overflow = '';
@@ -459,7 +460,7 @@ function renderComments(comments) {
     list.innerHTML = comments.map(function(c) {
         var nick   = escapeHtml(c.user_nick || (c.user && c.user.nickname) || 'Usuario');
         var body   = escapeHtml(c.comment || c.body || '');
-        var avatar = c.user_avatar ? '/foto/' + c.user_avatar : '/img/default-avatar.svg';
+        var avatar = c.avatar_photo_id ? '/fotos/' + c.avatar_photo_id + '/ver' : '/img/default-avatar.svg';
         var fecha = c.created_at ? formatDate(c.created_at) : '';
         return '<div class="l69-modal-comment-item">' +
                 '<img src="' + avatar + '" class="l69-comment-avatar" ' +
@@ -523,7 +524,7 @@ function dsbOpenModal(photoId) {
     })
     .then(function(d) {
         /* foto */
-        modalPhoto.src = '/foto/' + d.photo.file_path;
+        modalPhoto.src = '/fotos/' + photoId + '/ver';
 
         /* input oculto */
         var cpId = document.getElementById('commentPhotoId');
@@ -554,8 +555,8 @@ function dsbOpenModal(photoId) {
 
         var ownerName   = (d.owner && d.owner.name)     ? d.owner.name     : 'Usuario';
         var ownerNick   = (d.owner && d.owner.nickname) ? d.owner.nickname : null;
-        var ownerAvatar = (d.owner && d.owner.avatar)
-            ? '/foto/' + d.owner.avatar
+        var ownerAvatar = (d.owner && d.owner.avatar_url)
+            ? d.owner.avatar_url
             : '/img/default-avatar.svg';
         var ownerUrl    = (d.owner && d.owner.url) ? d.owner.url : null;
 
@@ -667,7 +668,7 @@ function handleCommentSubmit(form) {
     // Limpiar error previo
     showCommentError(null);
 
-    fetch('/fotos/' + photoId + '/comentario', {
+    fetch('/fotos/' + photoId + '/comentar', {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': CSRF,
@@ -709,7 +710,7 @@ function handleCommentSubmit(form) {
             if (empty) empty.remove();
 
             var av = d.comment.user_avatar
-                ? '/foto/' + d.comment.user_avatar
+                ? (d.comment.avatar_photo_id ? '/fotos/' + d.comment.avatar_photo_id + '/ver' : '/img/default-avatar.svg') + ' '
                 : '/img/default-avatar.svg';
 
             var ahora = formatDate(new Date().toISOString());
@@ -861,4 +862,9 @@ if (elLoadMore) {
 }
 </script>
 @endpush
+
+
+
+
+
 

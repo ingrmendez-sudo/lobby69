@@ -30,7 +30,7 @@
                 ->first();
         }
         $sAvatar = $sAvatarPhoto
-            ? url('foto/' . $sAvatarPhoto->file_path)
+            ? route('photos.serve', $sAvatarPhoto->id)
             : asset('img/default-avatar.svg');
     } catch(\Exception $e) {
         $sAvatar = asset('img/default-avatar.svg');
@@ -143,7 +143,7 @@
                             ->orderBy('sort_order')
                             ->first();
                     }
-                    $vAvatar = $vAvatarPhoto ? url('foto/' . $vAvatarPhoto->file_path) : null;
+                    $vAvatar = $vAvatarPhoto ? route('photos.serve', $vAvatarPhoto->id) : null;
                 } catch(\Exception $e) {}
                 $vTime = $visitor->last_seen_at
                     ? \Carbon\Carbon::parse($visitor->last_seen_at)->diffForHumans()
@@ -418,3 +418,4 @@
         </li>
     </ul>
 </div>
+
