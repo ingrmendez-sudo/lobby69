@@ -224,7 +224,7 @@
                             ->orderBy('sort_order')
                             ->first();
                     }
-                    $vdAvatar = $vdAvatarPhoto ? url('foto/' . $vdAvatarPhoto->file_path) : null;
+                    $vdAvatar = $vdAvatarPhoto ? route('photos.serve', $vdAvatarPhoto->id) : null;
                 } catch(\Exception $e) {}
             @endphp
             <div style="display:flex;align-items:center;gap:.6rem;">
@@ -378,22 +378,14 @@
         @else
         {{-- Contexto: Dashboard y resto --}}
 
-        <li class="l69-sidebar-nav__item" style="opacity:.45;pointer-events:none;">
-            <a href="#">
-                <i class="fas fa-calendar-day"></i> Disponible HOY
-                <span style="font-size:.65rem;background:rgba(180,60,120,.3);
-                             padding:.1rem .4rem;border-radius:10px;margin-left:auto;">
-                    Pronto
-                </span>
+        <li class="l69-sidebar-nav__item">
+            <a href="{{ route('events.public.index') }}">
+                <i class="fas fa-calendar-alt"></i> Eventos
             </a>
         </li>
-        <li class="l69-sidebar-nav__item" style="opacity:.45;pointer-events:none;">
-            <a href="#">
-                <i class="fas fa-book-open"></i> Historias
-                <span style="font-size:.65rem;background:rgba(180,60,120,.3);
-                             padding:.1rem .4rem;border-radius:10px;margin-left:auto;">
-                    Pronto
-                </span>
+        <li class="l69-sidebar-nav__item">
+            <a href="{{ route('articles.public.index') }}">
+                <i class="fas fa-newspaper"></i> Noticias
             </a>
         </li>
         @endif
@@ -418,4 +410,6 @@
         </li>
     </ul>
 </div>
+
+
 

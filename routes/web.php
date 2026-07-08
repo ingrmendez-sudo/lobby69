@@ -86,6 +86,16 @@ Route::middleware('auth')->group(function () {
     // Explorar
     Route::get('/explorar', [ExploreController::class, 'index'])->name('explore');
 
+    // Eventos públicos
+    Route::get('/eventos',      [\App\Http\Controllers\EventController::class, 'index'])->name('events.public.index');
+    Route::get('/eventos/{id}', [\App\Http\Controllers\EventController::class, 'show'])->name('events.public.show');
+
+    // Noticias públicas
+    Route::get('/noticias',               [\App\Http\Controllers\ArticleController::class, 'index'])->name('articles.public.index');
+    Route::get('/noticias/{id}',          [\App\Http\Controllers\ArticleController::class, 'show'])->name('articles.public.show');
+    Route::post('/noticias/{id}/like',    [\App\Http\Controllers\ArticleController::class, 'toggleLike'])->name('articles.like');
+    Route::post('/noticias/{id}/comentar',[\App\Http\Controllers\ArticleController::class, 'storeComment'])->name('articles.comment');
+
     // Follows
     Route::post('/seguir/{id}',   [FollowController::class, 'follow'])->name('follow');
     Route::delete('/seguir/{id}', [FollowController::class, 'unfollow'])->name('unfollow');
@@ -159,4 +169,6 @@ Route::middleware(['auth', 'admin.only'])
     Route::post('membresias/registrar',     [AdminMembershipController::class, 'store'])->name('memberships.store');
 
 });
+
+
 
