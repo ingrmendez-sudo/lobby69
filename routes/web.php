@@ -103,6 +103,11 @@ Route::middleware('auth')->group(function () {
     // Buscar
     Route::get('/buscar', [SearchController::class, 'index'])->name('search');
 
+    // Notificaciones
+    Route::get('/notificaciones',            [\App\Http\Controllers\NotificationController::class, 'index'])->name('notifications.index');
+    Route::get('/notificaciones/sin-leer',   [\App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notifications.unread');
+    Route::post('/notificaciones/leer-todo', [\App\Http\Controllers\NotificationController::class, 'markRead'])->name('notifications.markRead');
+
 });
 
 // Rutas públicas de invitación
@@ -159,6 +164,7 @@ Route::middleware(['auth', 'admin.only'])
     Route::get('articulos',              [AdminArticleController::class, 'index'])->name('articles.index');
     Route::get('articulos/crear',        [AdminArticleController::class, 'create'])->name('articles.create');
     Route::post('articulos',             [AdminArticleController::class, 'store'])->name('articles.store');
+    Route::get('articulos/{id}',         [AdminArticleController::class, 'show'])->name('articles.show');
     Route::get('articulos/{id}/editar',  [AdminArticleController::class, 'edit'])->name('articles.edit');
     Route::put('articulos/{id}',         [AdminArticleController::class, 'update'])->name('articles.update');
     Route::delete('articulos/{id}',      [AdminArticleController::class, 'destroy'])->name('articles.destroy');
@@ -168,7 +174,17 @@ Route::middleware(['auth', 'admin.only'])
     Route::post('membresias/{id}/rechazar', [AdminMembershipController::class, 'reject'])->name('memberships.reject');
     Route::post('membresias/registrar',     [AdminMembershipController::class, 'store'])->name('memberships.store');
 
+    Route::get('comentarios-articulos',                    [\App\Http\Controllers\Admin\AdminArticleCommentController::class, 'index'])->name('article-comments.index');
+    Route::post('comentarios-articulos/{id}/aprobar',      [\App\Http\Controllers\Admin\AdminArticleCommentController::class, 'approve'])->name('article-comments.approve');
+    Route::post('comentarios-articulos/{id}/rechazar',     [\App\Http\Controllers\Admin\AdminArticleCommentController::class, 'reject'])->name('article-comments.reject');
+    Route::delete('comentarios-articulos/{id}',            [\App\Http\Controllers\Admin\AdminArticleCommentController::class, 'destroy'])->name('article-comments.destroy');
+
 });
+
+
+
+
+
 
 
 

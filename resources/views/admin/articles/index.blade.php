@@ -121,6 +121,11 @@
             {{-- Acciones --}}
             <td style="padding:.6rem .8rem;text-align:center;">
                 <div style="display:flex;gap:.35rem;justify-content:center;">
+                    <a href="{{ route('admin.articles.show', $article->id) }}"
+                       style="padding:.25rem .6rem;background:#7c3aed22;color:#a78bfa;border:1px solid #7c3aed;border-radius:5px;font-size:.75rem;text-decoration:none;position:relative;"
+                       title="Ver comentarios">
+                        <i class="fas fa-comments"></i>
+                    </a>
                     <a href="{{ route('admin.articles.edit', $article->id) }}"
                        style="padding:.25rem .6rem;background:var(--theme-accent);color:#fff;border-radius:5px;font-size:.75rem;text-decoration:none;"
                        title="Editar">
@@ -165,3 +170,4 @@
 @endif
 
 @endsection
+

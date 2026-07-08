@@ -249,6 +249,26 @@
             <button id="theme-toggle" title="Cambiar tema" aria-label="Cambiar tema">🌙</button>
 
             @auth
+            {{-- Notificaciones --}}
+            <div style="position:relative;" id="notifWrap">
+                <a href="{{ route('notifications.index') }}"
+                   id="notifBtn"
+                   style="display:inline-flex;align-items:center;justify-content:center;
+                          width:34px;height:34px;border-radius:50%;
+                          background:var(--toggle-bg,rgba(255,255,255,0.1));
+                          border:1px solid var(--border-color);
+                          color:var(--nav-text);text-decoration:none;
+                          transition:transform .2s;position:relative;"
+                   title="Notificaciones">
+                    <i class="fas fa-bell" style="font-size:.9rem;"></i>
+                    <span id="notifBadge"
+                          style="display:none;position:absolute;top:-3px;right:-3px;
+                                 min-width:16px;height:16px;background:#e056a0;
+                                 border-radius:8px;font-size:.6rem;font-weight:700;
+                                 color:#fff;align-items:center;justify-content:center;
+                                 padding:0 3px;">0</span>
+                </a>
+            </div>
             <div class="l69-nav__divider"></div>
 
             {{-- Dropdown usuario --}}
@@ -391,6 +411,28 @@
             }
         });
     }
+
+    // Notificaciones — polling cada 60 segundos
+    var notifBadge = document.getElementById('notifBadge');
+    if (notifBadge) {
+        function checkNotifs() {
+            fetch('/notificaciones/sin-leer', {
+                headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (d.count > 0) {
+                    notifBadge.textContent = d.count > 99 ? '99+' : d.count;
+                    notifBadge.style.display = 'inline-flex';
+                } else {
+                    notifBadge.style.display = 'none';
+                }
+            })
+            .catch(function(){});
+        }
+        checkNotifs();
+        setInterval(checkNotifs, 60000);
+    }
 })();
 </script>
 
@@ -417,3 +459,5 @@
     });
 })();
 </script>
+
+

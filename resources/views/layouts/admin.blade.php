@@ -329,6 +329,13 @@
            class="adm-nav__item {{ request()->routeIs('admin.articles.*') ? 'active' : '' }}">
             <i class="fas fa-newspaper"></i> Artículos
         </a>
+        <a href="{{ route('admin.article-comments.index') }}"
+           class="adm-nav__item {{ request()->routeIs('admin.article-comments.*') ? 'active' : '' }}">
+            <i class="fas fa-comments"></i> Comentarios
+            @if(($pendingArticleComments ?? 0) > 0)
+                <span class="adm-nav__badge">{{ $pendingArticleComments }}</span>
+            @endif
+        </a>
 <div class="adm-nav__section">Estadísticas</div>
         <a href="{{ route('admin.stats.index') }}"
            class="adm-nav__item {{ request()->routeIs('admin.stats.*') ? 'active' : '' }}">
@@ -443,6 +450,9 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
+
+
 
 
 

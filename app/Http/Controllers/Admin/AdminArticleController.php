@@ -125,6 +125,34 @@ class AdminArticleController extends Controller
                          ->with('success', 'Artículo actualizado correctamente.');
     }
 
+    public function show($id)
+    {
+        $article = DB::table('articles')->where('id', $id)->first();
+        abort_if(!$article, 404);
+
+        $comments = DB::table('article_comments as ac')
+            ->join('users as u', DB::raw('u.id::text'), '=', DB::raw('ac.user_id::text'))
+            ->leftJoin('profiles as p', DB::raw('p.user_id::text'), '=', DB::raw('u.id::text'))
+            ->where('ac.article_id', $id)
+            ->orderByDesc('ac.created_at')
+            ->select([
+                'ac.id',
+                'ac.body',
+                'ac.status',
+                'ac.created_at',
+                DB::raw('COALESCE(p.nickname, u.username) as author'),
+            ])
+            ->get();
+
+        $counts = [
+            'pending'  => $comments->where('status', 'pending')->count(),
+            'approved' => $comments->where('status', 'approved')->count(),
+            'rejected' => $comments->where('status', 'rejected')->count(),
+        ];
+
+        return view('admin.articles.show', compact('article', 'comments', 'counts'));
+    }
+
     public function destroy($id)
     {
         $article = DB::table('articles')->where('id', $id)->first();
@@ -159,3 +187,4 @@ class AdminArticleController extends Controller
         ];
     }
 }
+
