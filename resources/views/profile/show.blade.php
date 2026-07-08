@@ -305,7 +305,7 @@
     }
 
 $avatarUrl = $profilePhoto
-    ? url('foto/' . $profilePhoto->file_path)
+    ? route('photos.serve', $profilePhoto->id)
     : asset('img/default-avatar.svg');
 
 
@@ -492,7 +492,7 @@ $avatarUrl = $profilePhoto
     <div class="prf-photos-grid">
         @foreach($photos as $photo)
         <div class="prf-photo-item">
-            <img src="{{ url('foto/' . $photo->file_path) }}"
+            <img src="{{ route('photos.serve', $photo->id) }}"
                  alt="{{ $photo->caption ?? '' }}"
                  loading="lazy"
                  onerror="this.parentElement.style.display='none'">
@@ -503,4 +503,6 @@ $avatarUrl = $profilePhoto
 @endif
 
 @endsection
+
+
 

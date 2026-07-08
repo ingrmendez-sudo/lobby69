@@ -155,14 +155,40 @@ class ProfileController extends Controller
             ->where('follower_id', $profile->user_id)
             ->count();
 
+        // Foto de perfil (avatar)
+        $avatarPhotoId = DB::table('photos')
+            ->whereRaw('user_id::text = ?', [$profile->user_id])
+            ->where('is_profile_photo', true)
+            ->where('status', 'approved')
+            ->value('id');
+
+        // Fotos públicas aprobadas
+        $photos = DB::table('photos')
+            ->whereRaw('user_id::text = ?', [$profile->user_id])
+            ->where('album_type', 'public')
+            ->where('status', 'approved')
+            ->orderByDesc('created_at')
+            ->get();
+
+        // Contadores de fotos y likes
+        $photosCount = $photos->count();
+        $likesCount  = DB::table('photo_likes')
+            ->whereIn(DB::raw('photo_id::text'), $photos->pluck('photo_uuid')->map(fn($u) => (string)$u)->toArray())
+            ->count();
+
         return view('profile.show', compact(
             'profile',
             'user',
             'isOwnProfile',
             'isFollowing',
             'followersCount',
-            'followingCount'
+            'followingCount',
+            'avatarPhotoId',
+            'photos',
+            'photosCount',
+            'likesCount'
         ));
     }
 
 }
+
