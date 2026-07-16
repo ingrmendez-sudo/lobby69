@@ -114,15 +114,19 @@
     <ul style="list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:.6rem;">
         <li style="font-size:.8rem;color:rgba(226,217,243,.7);display:flex;gap:.5rem;align-items:flex-start;">
             <i class="fas fa-check-circle" style="color:#27ae60;margin-top:.15rem;flex-shrink:0;"></i>
-            Sube fotos nítidas con buena iluminación
+            Sube fotos nítidas con buena iluminación.
         </li>
         <li style="font-size:.8rem;color:rgba(226,217,243,.7);display:flex;gap:.5rem;align-items:flex-start;">
             <i class="fas fa-check-circle" style="color:#27ae60;margin-top:.15rem;flex-shrink:0;"></i>
-            El álbum público es visible para todos los verificados
+            Te recomendamos contar con una foto en Blanco y negro en tu galeria.
         </li>
         <li style="font-size:.8rem;color:rgba(226,217,243,.7);display:flex;gap:.5rem;align-items:flex-start;">
             <i class="fas fa-check-circle" style="color:#27ae60;margin-top:.15rem;flex-shrink:0;"></i>
-            Las fotos se revisan antes de publicarse
+            El álbum público es visible para todos los verificados.
+        </li>
+        <li style="font-size:.8rem;color:rgba(226,217,243,.7);display:flex;gap:.5rem;align-items:flex-start;">
+            <i class="fas fa-check-circle" style="color:#27ae60;margin-top:.15rem;flex-shrink:0;"></i>
+            Las fotos se revisan antes de publicarse.
         </li>
     </ul>
 </div>
@@ -207,7 +211,7 @@
             <p style="font-size:.8rem;font-weight:600;color:#fbbf24;margin:0 0 .3rem;">
                 Verificación pendiente
             </p>
-            <p style="font-size:.75rem;color:rgba(226,217,243,.6);margin:0 0 .65rem;">
+            <p style="font-size:.75rem;color:rgba(97, 94, 102, 0.6);margin:0 0 .65rem;">
                 Verifica tu identidad para acceder a todos los perfiles.
             </p>
             <a href="{{ route('verification.show') }}"
@@ -216,5 +220,95 @@
             </a>
         </div>
     </div>
+</div>
+@endif
+
+@if(str_contains($rRoute, 'explore'))
+<div class="l69-sidebar-card" style="margin-top:.75rem;">
+    <div class="l69-sidebar-card__title">
+        <i class="fas fa-user-plus"></i> Nuevos perfiles
+    </div>
+    @php
+    try {
+        $rNewProfiles = \Illuminate\Support\Facades\DB::table('profiles')
+            ->join('users', \Illuminate\Support\Facades\DB::raw('users.id::text'), '=', \Illuminate\Support\Facades\DB::raw('profiles.user_id::text'))
+            ->where('profiles.profile_completed', true)
+            ->where('profiles.public', true)
+            ->where('users.active', true)
+            ->where('users.role', '!=', 'admin')
+            ->whereRaw('profiles.user_id::text != ?', [(string)$rUser->id])
+            ->orderByDesc('users.created_at')
+            ->limit(5)
+            ->select(['profiles.nickname', 'profiles.display_name', 'profiles.profile_type', 'profiles.verified_profile', 'users.created_at'])
+            ->get();
+    } catch(\Exception $e) { $rNewProfiles = collect(); }
+    @endphp
+    @forelse($rNewProfiles as $np)
+    <a href="{{ $np->nickname ? route('profile.show', $np->nickname) : '#' }}"
+       style="display:flex;align-items:center;gap:.5rem;padding:.4rem 0;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.05);">
+        <div style="width:28px;height:28px;border-radius:50%;background:rgba(108,63,197,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fas fa-user" style="font-size:.65rem;color:#a78bfa;"></i>
+        </div>
+        <div style="min-width:0;">
+            <div style="font-size:.78rem;font-weight:600;color:var(--theme-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                {{ $np->display_name ?? $np->nickname ?? 'Usuario' }}
+                @if($np->verified_profile)
+                <i class="fas fa-check-circle" style="color:#22c55e;font-size:.6rem;"></i>
+                @endif
+            </div>
+            <div style="font-size:.68rem;color:var(--theme-muted);">{{ $np->profile_type ?? '—' }} · {{ \Carbon\Carbon::parse($np->created_at)->diffForHumans() }}</div>
+        </div>
+    </a>
+    @empty
+    <p style="font-size:.78rem;color:var(--theme-muted);margin:0;">Sin nuevos perfiles.</p>
+    @endforelse
+</div>
+
+<div class="l69-sidebar-card" style="margin-top:.75rem;">
+    <div class="l69-sidebar-card__title">
+        <i class="fas fa-thumbs-up"></i> Recomendados
+    </div>
+    @php
+    try {
+        $rFollowingIds = \Illuminate\Support\Facades\DB::table('follows')
+            ->whereRaw('follower_id::text = ?', [(string)$rUser->id])
+            ->pluck(\Illuminate\Support\Facades\DB::raw('following_id::text'))
+            ->toArray();
+        $rFollowingIds[] = (string)$rUser->id;
+        $rUserCity = $rProfile?->city ?? null;
+
+        $rRecommended = \Illuminate\Support\Facades\DB::table('profiles')
+            ->join('users', \Illuminate\Support\Facades\DB::raw('users.id::text'), '=', \Illuminate\Support\Facades\DB::raw('profiles.user_id::text'))
+            ->where('profiles.profile_completed', true)
+            ->where('profiles.public', true)
+            ->where('users.active', true)
+            ->where('users.role', '!=', 'admin')
+            ->whereNotIn(\Illuminate\Support\Facades\DB::raw('profiles.user_id::text'), $rFollowingIds)
+            ->when($rUserCity, fn($q) => $q->where('profiles.city', 'ilike', '%'.$rUserCity.'%'))
+            ->orderByDesc('profiles.last_active_at')
+            ->limit(5)
+            ->select(['profiles.nickname', 'profiles.display_name', 'profiles.profile_type', 'profiles.city', 'profiles.verified_profile'])
+            ->get();
+    } catch(\Exception $e) { $rRecommended = collect(); }
+    @endphp
+    @forelse($rRecommended as $rp)
+    <a href="{{ $rp->nickname ? route('profile.show', $rp->nickname) : '#' }}"
+       style="display:flex;align-items:center;gap:.5rem;padding:.4rem 0;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.05);">
+        <div style="width:28px;height:28px;border-radius:50%;background:rgba(224,86,160,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+            <i class="fas fa-user" style="font-size:.65rem;color:#f472b6;"></i>
+        </div>
+        <div style="min-width:0;">
+            <div style="font-size:.78rem;font-weight:600;color:var(--theme-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                {{ $rp->display_name ?? $rp->nickname ?? 'Usuario' }}
+                @if($rp->verified_profile)
+                <i class="fas fa-check-circle" style="color:#22c55e;font-size:.6rem;"></i>
+                @endif
+            </div>
+            <div style="font-size:.68rem;color:var(--theme-muted);">{{ $rp->city ?? $rp->profile_type ?? '—' }}</div>
+        </div>
+    </a>
+    @empty
+    <p style="font-size:.78rem;color:var(--theme-muted);margin:0;">Sin recomendaciones aún.</p>
+    @endforelse
 </div>
 @endif

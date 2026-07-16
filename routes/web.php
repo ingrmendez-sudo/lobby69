@@ -53,7 +53,7 @@ Route::middleware('auth')->group(function () {
 
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
-    Route::get('/dashboard/feed', [DashboardController::class, 'getFeed'])->name('dashboard.feed');
+    Route::get('/dashboard/feed', [DashboardController::class, 'feedAjax'])->name('dashboard.feed');
     Route::get('/dashboard/feed-ajax', [DashboardController::class, 'feedAjax'])->name('dashboard.feedAjax');
 
     // Perfil
@@ -180,6 +180,7 @@ Route::middleware(['auth', 'admin.only'])
     Route::delete('comentarios-articulos/{id}',            [\App\Http\Controllers\Admin\AdminArticleCommentController::class, 'destroy'])->name('article-comments.destroy');
 
 });
+
 
 
 

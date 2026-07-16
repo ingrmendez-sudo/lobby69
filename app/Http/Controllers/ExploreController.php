@@ -52,12 +52,12 @@ class ExploreController extends Controller
             ->whereIn(DB::raw('user_id::text'), $userIds)
             ->where('is_profile_photo', true)
             ->where('status', 'approved')
-            ->select('user_id', 'file_path')
+            ->select('user_id', 'file_path', 'id')
             ->get()
-            ->keyBy('user_id');
+            ->keyBy(fn($r) => (string)$r->user_id);
 
         $missingAvatars = collect($userIds)
-            ->filter(fn($uid) => !isset($avatars[$uid]))
+            ->filter(fn($uid) => !isset($avatars[(string)$uid]))
             ->values()
             ->toArray();
 
@@ -68,10 +68,10 @@ class ExploreController extends Controller
                 ->where('status', 'approved')
                 ->orderBy('sort_order')
                 ->orderBy('created_at')
-                ->select('user_id', 'file_path')
+                ->select('user_id', 'file_path', 'id')
                 ->get()
                 ->unique('user_id')
-                ->keyBy('user_id');
+                ->keyBy(fn($r) => (string)$r->user_id);
 
             $avatars = $avatars->merge($fallbacks);
         }

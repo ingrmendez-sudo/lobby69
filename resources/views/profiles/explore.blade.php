@@ -287,6 +287,7 @@
         <i class="fas fa-search"></i> Buscar
     </button>
 
+
     @if(request()->hasAny(['tipo','genero','ciudad','orientacion']))
     <a href="{{ route('explore') }}" class="exp-btn-reset">
         <i class="fas fa-times"></i> Limpiar
@@ -310,8 +311,8 @@
 <div class="exp-grid">
     @foreach($profiles as $profile)
     @php
-        $avatar = isset($avatars[$profile->user_id])
-            ? url('foto/' . $avatars[$profile->user_id]->file_path)
+        $avatarUrl = (!empty($avatars[$profile->user_id]) && isset($avatars[$profile->user_id]->id))
+            ? 'https://kjhaquimghhejqznleyn.supabase.co/storage/v1/object/public/gallery/' . $avatars[$profile->user_id]->file_path
             : asset('img/default-avatar.svg');
 
         $typeClass = match($profile->profile_type ?? 'single') {
@@ -338,7 +339,7 @@
     <a href="{{ route('profile.show', ['nickname' => $profile->nickname]) }}" class="exp-card">
         <div class="exp-card__avatar-wrap">
             <img class="exp-card__avatar"
-                 src="{{ $avatar }}"
+                 src="{{ $avatarUrl }}"
                  alt="{{ $profile->nickname }}"
                  loading="lazy"
                  onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
@@ -413,3 +414,7 @@
 @endif
 
 @endsection
+
+
+
+

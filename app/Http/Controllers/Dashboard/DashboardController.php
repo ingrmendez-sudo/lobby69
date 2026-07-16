@@ -235,6 +235,25 @@ class DashboardController extends Controller
     {
         $userId = (string) $user->id;
 
+        $userCity = DB::table('profiles')
+            ->whereRaw('user_id::text = ?', [$userId])
+            ->value('city');
+
+        $followingIds = DB::table('follows')
+            ->whereRaw('follower_id::text = ?', [$userId])
+            ->pluck(DB::raw('following_id::text'))
+            ->toArray();
+
+        $cityClause = $userCity
+            ? "CASE WHEN p.city ILIKE '%" . addslashes($userCity) . "%' THEN 2 ELSE 0 END"
+            : '0';
+
+        $followClause = !empty($followingIds)
+            ? "CASE WHEN photos.user_id::text IN ('" . implode("','", $followingIds) . "') THEN 3 ELSE 0 END"
+            : '0';
+
+        $scoreSQL = "(" . $followClause . " + " . $cityClause . " + CASE WHEN p.verified_profile = true THEN 1 ELSE 0 END + EXTRACT(EPOCH FROM (NOW() - photos.created_at)) / -86400.0 * 0.5)";
+
         $query = DB::table('photos')
             ->join('users as u', function ($j) {
                 $j->on(DB::raw('u.id::text'), '=', DB::raw('photos.user_id::text'));
@@ -244,6 +263,7 @@ class DashboardController extends Controller
             })
             ->where('photos.status', 'approved')
             ->where('u.active', true)
+            ->whereRaw('photos.user_id::text != ?', [$userId])
             ->select([
                 'photos.id',
                 'photos.photo_uuid',
@@ -256,10 +276,12 @@ class DashboardController extends Controller
                 DB::raw('COALESCE(p.nickname, u.username) as nickname'),
                 DB::raw('COALESCE(p.display_name, u.username) as display_name'),
                 DB::raw('p.verified_profile as verified_profile'),
-                DB::raw('(SELECT id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = \'approved\' LIMIT 1) as avatar_photo_id'),
+                DB::raw('p.city as user_city'),
+                DB::raw("(SELECT id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = 'approved' LIMIT 1) as avatar_photo_id"),
                 DB::raw('(SELECT COUNT(*) FROM photo_likes pl WHERE pl.photo_id::text = photos.photo_uuid::text) as likes_count'),
-                DB::raw('(SELECT COUNT(*) FROM photo_comments pc WHERE pc.photo_id::text = photos.photo_uuid::text AND pc.status = \'approved\') as comments_count'),
-                DB::raw('EXISTS(SELECT 1 FROM photo_likes pl WHERE pl.photo_id::text = photos.photo_uuid::text AND pl.user_id::text = \'' . $userId . '\') as user_liked'),
+                DB::raw("(SELECT COUNT(*) FROM photo_comments pc WHERE pc.photo_id::text = photos.photo_uuid::text AND pc.status = 'approved') as comments_count"),
+                DB::raw("EXISTS(SELECT 1 FROM photo_likes pl WHERE pl.photo_id::text = photos.photo_uuid::text AND pl.user_id::text = '" . $userId . "') as user_liked"),
+                DB::raw($scoreSQL . " as feed_score"),
             ]);
 
         if ($tab === 'following') {
@@ -273,7 +295,7 @@ class DashboardController extends Controller
         if ($tab === 'popular') {
             $query->orderByDesc(DB::raw('(SELECT COUNT(*) FROM photo_likes pl WHERE pl.photo_id::text = photos.photo_uuid::text)'));
         } else {
-            $query->orderByDesc('photos.created_at');
+            $query->orderByDesc(DB::raw($scoreSQL . ' + RANDOM() * 0.3'));
         }
 
         return $query;

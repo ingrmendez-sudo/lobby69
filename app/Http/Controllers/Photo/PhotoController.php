@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Photo;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 use Carbon\Carbon;
 
 class PhotoController extends Controller
@@ -54,7 +55,8 @@ class PhotoController extends Controller
             foreach ($request->file('photos') as $file) {
                 $filename = 'photo_' . $userId . '_' . time() . '_' . $uploaded
                           . '.' . $file->getClientOriginalExtension();
-                $path = $file->storeAs('photos/' . $userId, $filename, 'private');
+                $path = 'photos/' . $userId . '/' . $filename;
+                Storage::disk('supabase')->put($path, file_get_contents($file->getRealPath()), 'public');
 
                 DB::table('photos')->insert([
                     'user_id'    => $userId,
@@ -135,14 +137,14 @@ class PhotoController extends Controller
         // El dueño SIEMPRE puede ver sus propias fotos
         // Comparación como string para evitar fallos de tipo
         if ((string)$photo->user_id === (string)$userId) {
-            $path = storage_path('app/private/' . $photo->file_path);
-            if (!file_exists($path)) abort(404);
-            return response()->file($path, [
-                'Content-Type'  => mime_content_type($path),
-                'Cache-Control' => 'private, max-age=3600',
-                'X-Robots-Tag'  => 'noindex',
-            ]);
+            $url = 'https://kjhaquimghhejqznleyn.supabase.co/storage/v1/object/public/gallery/' . $photo->file_path;
+            return redirect($url);
         }
+
+
+
+
+
 
         // Verificar membresía para terceros
         $membershipType = DB::table('users')
@@ -174,15 +176,18 @@ class PhotoController extends Controller
 
         if (!$canView) abort(403, 'No tienes acceso a esta foto.');
 
-        $path = storage_path('app/private/' . $photo->file_path);
-        if (!file_exists($path)) abort(404);
-
-        return response()->file($path, [
-            'Content-Type'  => mime_content_type($path),
-            'Cache-Control' => 'private, max-age=3600',
-            'X-Robots-Tag'  => 'noindex',
-        ]);
+        $url = 'https://kjhaquimghhejqznleyn.supabase.co/storage/v1/object/public/gallery/' . $photo->file_path;
+        return redirect($url);
     }
-
 }
+
+
+
+
+
+
+
+
+
+
 

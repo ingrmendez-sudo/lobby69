@@ -24,6 +24,7 @@
 
   <form method="POST" action="{{ route('profile.update') }}" id="profileForm">
     @csrf
+    @method('PUT')
 
     {{-- SECCION 1: Info Personal --}}
     <div style="background:white;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.08);padding:2rem;margin-bottom:1.5rem;">

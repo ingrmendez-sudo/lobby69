@@ -287,7 +287,7 @@
                         <div class="l69-nav__dropdown-name">{{ $np?->nickname ?? auth()->user()->name }}</div>
                         <div class="l69-nav__dropdown-sub">{{ ucfirst(auth()->user()->membership_type ?? 'trial') }}</div>
                     </div>
-                    <a href="{{ route('profile.show', ['nickname' => $np?->nickname ?? '']) }}" class="l69-nav__dropdown-item">
+                    <a href="{{ $np?->nickname ? route('profile.show', ['nickname' => $np->nickname]) : '#' }}" class="l69-nav__dropdown-item">
                         <i class="fas fa-user"></i> Mi Perfil
                     </a>
                     <a href="{{ route('photos.index') }}" class="l69-nav__dropdown-item">
@@ -325,7 +325,7 @@
     <a href="{{ route('dashboard') }}" class="l69-nav__mobile-link"><i class="fas fa-home"></i> Inicio</a>
     <a href="{{ route('photos.index') }}" class="l69-nav__mobile-link"><i class="fas fa-images"></i> Mis Fotos</a>
     <a href="/explorar" class="l69-nav__mobile-link"><i class="fas fa-compass"></i> Explorar</a>
-    <a href="{{ route('profile.show', ['nickname' => $np2?->nickname ?? '']) }}" class="l69-nav__mobile-link"><i class="fas fa-user"></i> Mi Perfil</a>
+    <a href="{{ $np2?->nickname ? route('profile.show', ['nickname' => $np2->nickname]) : '#' }}" class="l69-nav__mobile-link"><i class="fas fa-user"></i> Mi Perfil</a>
     <a href="{{ route('profile.edit') }}" class="l69-nav__mobile-link"><i class="fas fa-edit"></i> Editar Perfil</a>
     <div style="height:1px;background:var(--nav-border);margin:.5rem 0;"></div>
     <form method="POST" action="{{ route('logout') }}">
@@ -459,5 +459,7 @@
     });
 })();
 </script>
+
+
 
 
