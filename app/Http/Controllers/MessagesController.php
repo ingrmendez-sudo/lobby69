@@ -239,6 +239,7 @@ class MessagesController extends Controller
                 ->select([
                     'a.id', 'a.title', 'a.looking_for', 'a.event_date',
                     'a.proposal', 'a.created_at', 'a.directed_to', 'a.what_looking',
+                    'a.user_id',
                     DB::raw("COALESCE(a.expires_at, a.created_at + INTERVAL '4 days') AS expires_at"),
                     DB::raw('COALESCE(pr.display_name, u.username) AS display_name'),
                     'pr.nickname', 'pr.profile_type', 'pr.city', 'pr.verified_profile',
