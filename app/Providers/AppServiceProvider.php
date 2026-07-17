@@ -19,6 +19,8 @@ class AppServiceProvider extends ServiceProvider
         // Inyecta contadores de pendientes en el layout admin
         View::composer('layouts.admin', AdminPendingComposer::class);
         View::composer('components.navbar', NavbarComposer::class);
+        View::composer('layouts.sidebar-left', \App\View\Composers\SidebarComposer::class);
     }
 }
+
 
