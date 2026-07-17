@@ -428,7 +428,7 @@
 
             @guest
             <a href="{{ route('login') }}" class="l69-nav__btn l69-nav__btn--ghost">Entrar</a>
-            <a href="{{ route('register') }}" class="l69-nav__btn l69-nav__btn--primary">Registrarse</a>
+            <a href="{{ route('invitation.show') }}" class="l69-nav__btn l69-nav__btn--primary">Solicitar acceso</a>
             @endguest
         </div>
     </div>
