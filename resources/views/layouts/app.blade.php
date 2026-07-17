@@ -84,6 +84,8 @@
         --sidebar-right-w: 260px;
         --content-gap: 1.25rem;
         --sidebar-top: 64px;
+        --nav-h: 64px;
+        --bottom-nav-h: 62px;
     }
 
     @media (max-width: 1400px) {
@@ -100,6 +102,14 @@
         }
     }
 
+    /* Reset main */
+    main {
+        display: block;
+        width: 100%;
+        min-width: 0;
+        box-sizing: border-box;
+    }
+
     /* Wrapper principal del body con 3 columnas */
     .l69-layout {
         display: grid;
@@ -109,9 +119,23 @@
         width: 100%;
         margin: 0 auto;
         padding: 1.5rem 2rem;
-        min-height: calc(100vh - var(--sidebar-top));
         align-items: start;
         box-sizing: border-box;
+    }
+    .l69-layout__content {
+        min-width: 0;
+        width: 100%;
+        align-self: start;
+    }
+    .l69-sidebar--left,
+    .l69-sidebar--right {
+        align-self: start;
+        min-width: 0;
+    }
+    /* Evitar que aside vacio empuje el layout */
+    .l69-sidebar--left:empty,
+    .l69-sidebar--right:empty {
+        display: none;
     }
 
 
@@ -129,8 +153,8 @@
     /* ── Sidebars sticky ── */
     .l69-sidebar {
         position: sticky;
-        top: calc(var(--sidebar-top) + 1.25rem);
-        max-height: calc(100vh - var(--sidebar-top) - 2rem);
+        top: .25rem;
+        max-height: calc(100vh - 2rem);
         overflow-y: auto;
         scrollbar-width: thin;
         scrollbar-color: rgba(180,60,120,0.3) transparent;
@@ -389,7 +413,7 @@
 <body>
     @include('components.navbar')
 
-    <main>
+    <main style="width:100%;min-width:0;display:block;">
         @if(session('success'))
             <div class="toast toast--success" id="toast-success">
                 <i class="fas fa-check-circle"></i>
@@ -512,3 +536,14 @@
     </script>
 </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+

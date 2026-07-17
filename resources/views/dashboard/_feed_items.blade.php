@@ -42,18 +42,25 @@
         </div>
     </div>
 
+    @php
+        $ptLabel = match($photo->profile_type ?? null) {
+            'pareja'    => '👫 Pareja',
+            'single'    => '🙋 Single',
+            'unicornio' => '🦄 Unicornio',
+            default       => '👤 Perfil',
+        };
+    @endphp
     <div style="padding:.5rem .75rem .6rem; display:flex; align-items:center; justify-content:space-between;">
-        <a href="{{ $ownerUrl }}"
-           style="font-size:.82rem; font-weight:600; color:var(--theme-text); text-decoration:none;"
-           onclick="event.stopPropagation()">
-            {{ $ownerName }}
+        <span style="font-size:.78rem; font-weight:600; color:var(--theme-pink);">
+            {{ $ptLabel }}
             @if(!empty($photo->verified_profile))
-                <i class="fas fa-check-circle" style="color:#6C3FC5; font-size:.7rem;"></i>
+                <i class="fas fa-check-circle" style="color:#6C3FC5; font-size:.7rem; margin-left:.2rem;"></i>
             @endif
-        </a>
+        </span>
         <span style="font-size:.72rem; color:var(--theme-muted);">
             {{ \Carbon\Carbon::parse($photo->created_at)->diffForHumans() }}
         </span>
     </div>
 </div>
 @endforeach
+

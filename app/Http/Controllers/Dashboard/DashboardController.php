@@ -73,6 +73,7 @@ class DashboardController extends Controller
                 DB::raw('COALESCE(p.display_name, u.username) as display_name'),
                 DB::raw('p.avatar_url as avatar_url'),
                 DB::raw('p.verified_profile as verified_profile'),
+                DB::raw('p.profile_type as profile_type'),
                 DB::raw('(SELECT id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = \'approved\' LIMIT 1) as avatar_photo_id'),
                 DB::raw('(SELECT COUNT(*) FROM photo_likes pl WHERE pl.photo_id::text = photos.photo_uuid::text) as likes_count'),
                 DB::raw('(SELECT COUNT(*) FROM photo_comments pc WHERE pc.photo_id::text = photos.photo_uuid::text AND pc.status = \'approved\') as comments_count'),
@@ -276,6 +277,7 @@ class DashboardController extends Controller
                 DB::raw('COALESCE(p.nickname, u.username) as nickname'),
                 DB::raw('COALESCE(p.display_name, u.username) as display_name'),
                 DB::raw('p.verified_profile as verified_profile'),
+                DB::raw('p.profile_type as profile_type'),
                 DB::raw('p.city as user_city'),
                 DB::raw("(SELECT id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = 'approved' LIMIT 1) as avatar_photo_id"),
                 DB::raw('(SELECT COUNT(*) FROM photo_likes pl WHERE pl.photo_id::text = photos.photo_uuid::text) as likes_count'),
@@ -301,3 +303,4 @@ class DashboardController extends Controller
         return $query;
     }
 }
+

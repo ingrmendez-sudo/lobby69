@@ -1103,3 +1103,14 @@ input::placeholder, textarea::placeholder {
     color: #6b7280;
     border-color: rgba(107,114,128,0.2);
 }
+
+/* ── Fix scroll horizontal global ── */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+.l69-layout {
+    box-sizing: border-box;
+    max-width: 100%;
+    overflow-x: hidden;
+}

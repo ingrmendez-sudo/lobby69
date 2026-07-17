@@ -10,9 +10,14 @@
     @include('layouts.sidebar-right')
 @endpush
 
-@section('content')
-
 @push('styles')
+
+<style>
+/* Fix alineamiento sidebar-content */
+.l69-layout { align-items: start; }
+.l69-layout__content { min-width: 0; align-self: start; }
+.l69-sidebar { align-self: start; }
+</style>
 <style>
 /* ══ TARJETA DEL FEED ══ */
 .l69-feed-card {
@@ -285,6 +290,9 @@
 </style>
 @endpush
 
+@section('content')
+{{-- ── Wrapper para alinear con sidebars ── --}}
+<div style="min-width:0;">
 {{-- ── Tabs ── --}}
 <div class="l69-feed-tabs" style="display:flex;gap:.5rem;margin-bottom:1.25rem;">
     <a href="{{ route('dashboard', ['tab'=>'new']) }}"
@@ -399,6 +407,7 @@
     </div>{{-- /modal-inner --}}
 </div>{{-- /photoModal --}}
 
+</div>{{-- /wrapper --}}
 @endsection
 
 @push('scripts')
@@ -862,6 +871,11 @@ if (elLoadMore) {
 }
 </script>
 @endpush
+
+
+
+
+
 
 
 

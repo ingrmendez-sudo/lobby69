@@ -255,15 +255,15 @@ class DashboardController extends Controller
         // ── Perfiles ──
         $profileMap = DB::table('profiles')
             ->whereIn(DB::raw('user_id::text'), $userIds)
-            ->select('user_id', 'display_name', 'nickname', 'city', 'age', 'verified_profile')
-            ->get()->keyBy('user_id');
+            ->select('user_id', 'display_name', 'nickname', 'city', 'age', 'verified_profile', 'profile_type')
+            ->get()->keyBy(fn($p) => (string)$p->user_id);
 
         // ── Enriquecer ──
         $enriched = $photos->map(function($photo) use (
             $likesMap, $commentsMap, $likedUuids, $avatarMap, $profileMap
         ) {
             $uuid    = (string)($photo->photo_uuid ?? '');
-            $profile = $profileMap[$photo->user_id] ?? null;
+            $profile = $profileMap[(string)$photo->user_id] ?? null;
 
             $photo->likes_count      = $likesMap[$uuid]    ?? 0;
             $photo->comments_count   = $commentsMap[$uuid] ?? 0;
@@ -274,6 +274,8 @@ class DashboardController extends Controller
             $photo->age              = $profile->age             ?? null;
             $photo->verified_profile = $profile->verified_profile ?? false;
             $photo->avatar_path      = $avatarMap[$photo->user_id]->file_path ?? null;
+            $photo->profile_type     = $profile->profile_type ?? null;
+            \Log::error('ENRICH', ['uid'=>(string)$photo->user_id,'pt'=>$photo->profile_type]);
 
             return $photo;
         });
@@ -555,3 +557,9 @@ class DashboardController extends Controller
         }
     }
 }
+
+
+
+
+
+
