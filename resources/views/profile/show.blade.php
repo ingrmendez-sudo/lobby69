@@ -4,16 +4,95 @@
 
 {{-- ══ SIDEBAR IZQUIERDO: Stats del perfil ══ --}}
 @push('sidebar-left')
-@php
-    $showName  = $profile->show_name ?? true;
-    $showPName = $profile->show_partner_name ?? true;
-    $mainName  = $showName  ? ($profile->display_name ?? '') : 'Nombre oculto';
-    $partName  = $showPName ? ($profile->partner_name  ?? '') : 'Nombre oculto';
-    $location  = implode(', ', array_filter([
-        $profile->city  ?? null,
-        $profile->state ?? null,
-    ]));
-@endphp
+<div class="l69-sidebar-card">
+    <div style="text-align:center;padding:.5rem 0 1rem;">
+        <img src="{{ $avatarUrl }}"
+             style="width:72px;height:72px;border-radius:50%;object-fit:cover;border:2px solid rgba(180,60,120,.4);margin-bottom:.5rem;"
+             onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
+        <div style="font-weight:700;font-size:.95rem;color:var(--theme-text);">{{ $profile->nickname }}</div>
+        <div style="font-size:.76rem;color:var(--theme-muted);margin-top:.15rem;">
+            {{ ucfirst($profile->profile_type ?? 'single') }}
+            @if($verificationStatus === 'approved')
+                · <span style="color:#3b82f6;">✓ Verificado</span>
+            @endif
+        </div>
+    </div>
+    <div class="l69-stat-grid">
+        <div class="l69-stat">
+            <div class="l69-stat__value">{{ $followersCount }}</div>
+            <div class="l69-stat__label">Seguidores</div>
+        </div>
+        <div class="l69-stat">
+            <div class="l69-stat__value">{{ $followingCount }}</div>
+            <div class="l69-stat__label">Siguiendo</div>
+        </div>
+        <div class="l69-stat">
+            <div class="l69-stat__value">{{ $sbPhotosCount }}</div>
+            <div class="l69-stat__label">Fotos</div>
+        </div>
+        <div class="l69-stat">
+            <div class="l69-stat__value">{{ $likesCount }}</div>
+            <div class="l69-stat__label">Likes</div>
+        </div>
+    </div>
+    @if($sbReviews->count() > 0)
+    <div style="margin-top:.75rem;padding-top:.75rem;border-top:1px solid rgba(180,60,120,.12);">
+        <div style="font-size:.75rem;font-weight:700;color:var(--theme-muted);margin-bottom:.4rem;text-transform:uppercase;letter-spacing:.04em;">Recomendaciones</div>
+        <div style="display:flex;gap:.5rem;">
+            <div style="flex:1;text-align:center;background:rgba(39,174,96,.1);border-radius:8px;padding:.4rem;">
+                <div style="font-size:1rem;font-weight:800;color:#27ae60;">{{ $sbPos }}</div>
+                <div style="font-size:.7rem;color:var(--theme-muted);">👍 Positivas</div>
+            </div>
+            <div style="flex:1;text-align:center;background:rgba(231,76,60,.1);border-radius:8px;padding:.4rem;">
+                <div style="font-size:1rem;font-weight:800;color:#e74c3c;">{{ $sbNeg }}</div>
+                <div style="font-size:.7rem;color:var(--theme-muted);">👎 Negativas</div>
+            </div>
+        </div>
+    </div>
+    @endif
+</div>
+
+@auth
+@if(!$isOwnProfile)
+<div class="l69-sidebar-card" style="margin-top:.6rem;">
+    <div class="l69-sidebar-card__title"><i class="fas fa-bolt"></i> Acciones</div>
+    <div style="display:flex;flex-direction:column;gap:.45rem;">
+        @if($isFollowing)
+            <form method="POST" action="{{ route('unfollow', $profile->user_id) }}" style="margin:0;">
+                @csrf @method('DELETE')
+                <button type="submit" class="prf-sb-btn prf-sb-btn--outline" style="width:100%;">
+                    ✓ Siguiendo
+                </button>
+            </form>
+        @else
+            <form method="POST" action="{{ route('follow', $profile->user_id) }}" style="margin:0;">
+                @csrf
+                <button type="submit" class="prf-sb-btn prf-sb-btn--primary" style="width:100%;">
+                    + Seguir
+                </button>
+            </form>
+        @endif
+        <button class="prf-sb-btn prf-sb-btn--msg"
+                data-partner="{{ $profile->user_id }}"
+                data-name="{{ $profile->nickname }}"
+                id="btn-msg-profile"
+                style="width:100%;">
+            <i class="fas fa-paper-plane"></i> Enviar mensaje
+        </button>
+    </div>
+</div>
+@else
+<div class="l69-sidebar-card" style="margin-top:.6rem;">
+    <div class="l69-sidebar-card__title"><i class="fas fa-cog"></i> Mi Perfil</div>
+    <a href="{{ route('profile.edit') }}" class="prf-sb-btn prf-sb-btn--outline"
+       style="width:100%;text-align:center;display:block;">
+        ✏️ Editar perfil
+    </a>
+</div>
+@endif
+@endauth
+@endpush
+
 
 <div class="l69-sidebar-card">
     <div style="text-align:center;padding:.5rem 0 1rem;">
@@ -110,39 +189,12 @@
 @push('sidebar-right')
 @include('layouts.sidebar-right')
 
-{{-- Amigos en común --}}
 @auth
-@if(!$isOwnProfile)
-@php
-    $meId = (string)auth()->id();
-    $commonFriends = DB::table('friendships as f1')
-        ->join('friendships as f2',
-            DB::raw("CASE WHEN f2.sender_id::text = '{$meId}' THEN f2.receiver_id::text ELSE f2.sender_id::text END"),
-            '=',
-            DB::raw("CASE WHEN f1.sender_id::text = '{$uid}' THEN f1.receiver_id::text ELSE f1.sender_id::text END")
-        )
-        ->join('users as u', DB::raw('u.id::text'), '=',
-            DB::raw("CASE WHEN f1.sender_id::text = '{$uid}' THEN f1.receiver_id::text ELSE f1.sender_id::text END")
-        )
-        ->leftJoin('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('u.id::text'))
-        ->whereRaw('(f1.sender_id::text = ? OR f1.receiver_id::text = ?)', [$uid, $uid])
-        ->whereRaw('(f2.sender_id::text = ? OR f2.receiver_id::text = ?)', [$meId, $meId])
-        ->whereRaw("CASE WHEN f1.sender_id::text = '{$uid}' THEN f1.receiver_id::text ELSE f1.sender_id::text END != ?", [$meId])
-        ->whereRaw("CASE WHEN f1.sender_id::text = '{$uid}' THEN f1.receiver_id::text ELSE f1.sender_id::text END != ?", [$uid])
-        ->where('f1.status', 'accepted')
-        ->where('f2.status', 'accepted')
-        ->select([
-            'u.id AS user_id',
-            DB::raw('COALESCE(pr.display_name, u.username) AS display_name'),
-            'pr.nickname',
-            DB::raw("(SELECT ap.id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = 'approved' LIMIT 1) AS avatar_id"),
-        ])
-        ->limit(6)
-        ->get();
-@endphp
-@if($commonFriends->count() > 0)
+@if(!$isOwnProfile && $commonFriends->count() > 0)
 <div class="l69-sidebar-card" style="margin-top:.6rem;">
-    <div class="l69-sidebar-card__title"><i class="fas fa-users"></i> Amigos en común ({{ $commonFriends->count() }})</div>
+    <div class="l69-sidebar-card__title">
+        <i class="fas fa-users"></i> Amigos en común ({{ $commonFriends->count() }})
+    </div>
     <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
         @foreach($commonFriends as $cf)
         <a href="{{ $cf->nickname ? route('profile.show', $cf->nickname) : '#' }}"
@@ -153,16 +205,18 @@
                      style="width:36px;height:36px;border-radius:50%;object-fit:cover;border:2px solid rgba(180,60,120,.3);"
                      onerror="this.style.display='none'">
             @else
-                <div style="width:36px;height:36px;border-radius:50%;background:rgba(180,60,120,.3);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:#e056a0;">{{ mb_substr($cf->display_name ?? '?',0,1) }}</div>
+                <div style="width:36px;height:36px;border-radius:50%;background:rgba(180,60,120,.3);display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700;color:#e056a0;">
+                    {{ mb_substr($cf->display_name ?? '?', 0, 1) }}
+                </div>
             @endif
         </a>
         @endforeach
     </div>
 </div>
 @endif
-@endif
 @endauth
 @endpush
+
 
 @section('content')
 
