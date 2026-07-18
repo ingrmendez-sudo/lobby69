@@ -54,6 +54,15 @@ Route::middleware('auth')->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     Route::get('/dashboard/feed', [DashboardController::class, 'feedAjax'])->name('dashboard.feed');
+
+    // ── Mensajes / Centro de comunicación ──
+    Route::get('/mensajes', [App\Http\Controllers\MessagesController::class, 'index'])->name('messages.index');
+    Route::get('/mensajes/conversacion/{partnerId}', [App\Http\Controllers\MessagesController::class, 'conversation'])->name('messages.conversation');
+    Route::post('/mensajes/enviar', [App\Http\Controllers\MessagesController::class, 'send'])->name('messages.send');
+    Route::post('/mensajes/amistad/{friendshipId}', [App\Http\Controllers\MessagesController::class, 'friendAction'])->name('messages.friend.action');
+    Route::post('/mensajes/recomendar', [App\Http\Controllers\MessagesController::class, 'review'])->name('messages.review');
+    Route::post('/mensajes/anuncio', [App\Http\Controllers\MessagesController::class, 'storeAnnouncement'])->name('messages.announcement.store');
+    Route::patch('/mensajes/anuncio/{id}/cerrar', [App\Http\Controllers\MessagesController::class, 'closeAnnouncement'])->name('messages.announcement.close');
     Route::get('/dashboard/feed-ajax', [DashboardController::class, 'feedAjax'])->name('dashboard.feedAjax');
 
     // Perfil
@@ -180,6 +189,7 @@ Route::middleware(['auth', 'admin.only'])
     Route::delete('comentarios-articulos/{id}',            [\App\Http\Controllers\Admin\AdminArticleCommentController::class, 'destroy'])->name('article-comments.destroy');
 
 });
+
 
 
 
