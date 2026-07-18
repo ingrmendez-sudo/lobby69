@@ -121,7 +121,7 @@
             <div class="l69-stat__label">Fotos</div>
         </div>
         <div class="l69-stat">
-            <div class="l69-stat__value">{{ $sbLikesCount }}</div>
+            <div class="l69-stat__value">{{ $likesCount }}</div>
             <div class="l69-stat__label">Likes</div>
         </div>
     </div>
@@ -1037,3 +1037,4 @@ convForm?.addEventListener('submit', async e => {
 });
 </script>
 @endpush
+
