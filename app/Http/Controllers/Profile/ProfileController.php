@@ -116,79 +116,125 @@ class ProfileController extends Controller
     }
 
     public function publicShow($nickname)
-    {
-        $profile = \Illuminate\Support\Facades\DB::table('profiles')
-            ->where('nickname', $nickname)
-            ->where('profile_completed', true)
-            ->first();
+{
+    $profile = DB::table('profiles')
+        ->where('nickname', $nickname)
+        ->where('profile_completed', true)
+        ->first();
 
-        if (!$profile) abort(404, 'Perfil no encontrado.');
+    if (!$profile) abort(404, 'Perfil no encontrado.');
 
-        $user = \Illuminate\Support\Facades\DB::table('users')
-            ->whereRaw('id::text = ?', [$profile->user_id])
-            ->first();
+    $user = DB::table('users')
+        ->whereRaw('id::text = ?', [$profile->user_id])
+        ->first();
 
-        if (!$user || in_array($user->membership_type, ['banned', 'suspended'])) {
-            abort(404);
-        }
+    if (!$user || in_array($user->membership_type, ['banned', 'suspended'])) {
+        abort(404);
+    }
 
-        $me = auth()->id();
+    $me = auth()->id();
+    $isOwnProfile = $me && (string)$me === (string)$profile->user_id;
 
-        // ¿Es el propio perfil?
-        $isOwnProfile = $me && (string)$me === (string)$profile->user_id;
-
-        // ¿Ya lo sigue el usuario autenticado?
-        $isFollowing = false;
-        if ($me && !$isOwnProfile) {
-            $isFollowing = \Illuminate\Support\Facades\DB::table('follows')
-                ->where('follower_id', $me)
-                ->where('following_id', $profile->user_id)
-                ->exists();
-        }
-
-        // Contadores
-        $followersCount = \Illuminate\Support\Facades\DB::table('follows')
+    $isFollowing = false;
+    if ($me && !$isOwnProfile) {
+        $isFollowing = DB::table('follows')
+            ->where('follower_id', $me)
             ->where('following_id', $profile->user_id)
-            ->count();
+            ->exists();
+    }
 
-        $followingCount = \Illuminate\Support\Facades\DB::table('follows')
-            ->where('follower_id', $profile->user_id)
-            ->count();
+    $followersCount = DB::table('follows')
+        ->where('following_id', $profile->user_id)
+        ->count();
 
-        // Foto de perfil (avatar)
-        $avatarPhotoId = DB::table('photos')
-            ->whereRaw('user_id::text = ?', [$profile->user_id])
-            ->where('is_profile_photo', true)
-            ->where('status', 'approved')
-            ->value('id');
+    $followingCount = DB::table('follows')
+        ->where('follower_id', $profile->user_id)
+        ->count();
 
-        // Fotos públicas aprobadas
-        $photos = DB::table('photos')
+    // ── Avatar ──
+    $profilePhoto = DB::table('photos')
+        ->whereRaw('user_id::text = ?', [$profile->user_id])
+        ->where('is_profile_photo', true)
+        ->where('status', 'approved')
+        ->first();
+
+    if (!$profilePhoto) {
+        $profilePhoto = DB::table('photos')
             ->whereRaw('user_id::text = ?', [$profile->user_id])
             ->where('album_type', 'public')
             ->where('status', 'approved')
-            ->orderByDesc('created_at')
-            ->get();
-
-        // Contadores de fotos y likes
-        $photosCount = $photos->count();
-        $likesCount  = DB::table('photo_likes')
-            ->whereIn(DB::raw('photo_id::text'), $photos->pluck('photo_uuid')->map(fn($u) => (string)$u)->toArray())
-            ->count();
-
-        return view('profile.show', compact(
-            'profile',
-            'user',
-            'isOwnProfile',
-            'isFollowing',
-            'followersCount',
-            'followingCount',
-            'avatarPhotoId',
-            'photos',
-            'photosCount',
-            'likesCount'
-        ));
+            ->orderBy('sort_order')
+            ->orderBy('created_at')
+            ->first();
     }
+
+    $avatarPhotoId = $profilePhoto?->id ?? null;
+    $avatarUrl     = $avatarPhotoId
+        ? route('photos.serve', $avatarPhotoId)
+        : asset('img/default-avatar.svg');
+
+    // ── Fotos públicas ──
+    $photos = DB::table('photos')
+        ->whereRaw('user_id::text = ?', [$profile->user_id])
+        ->where('album_type', 'public')
+        ->where('status', 'approved')
+        ->orderBy('sort_order')
+        ->orderByDesc('created_at')
+        ->get();
+
+    $photosCount = $photos->count();
+
+    // ── Likes totales ──
+    $photoUuids = $photos->pluck('photo_uuid')
+        ->map(fn($u) => (string)$u)
+        ->filter()
+        ->toArray();
+
+    $likesCount = count($photoUuids)
+        ? DB::table('photo_likes')
+            ->whereIn(DB::raw('photo_id::text'), $photoUuids)
+            ->count()
+        : 0;
+
+    // ── Likes por foto (batch) ──
+    $likeCounts = count($photoUuids)
+        ? DB::table('photo_likes')
+            ->whereIn(DB::raw('photo_id::text'), $photoUuids)
+            ->select(
+                DB::raw('photo_id::text AS puuid'),
+                DB::raw('COUNT(*) AS cnt')
+            )
+            ->groupBy(DB::raw('photo_id::text'))
+            ->pluck('cnt', 'puuid')
+        : collect();
+
+    // ── Fotos que le dio like el usuario autenticado ──
+    $myLikes = collect();
+    if ($me && count($photoUuids)) {
+        $myLikes = DB::table('photo_likes')
+            ->whereRaw('user_id::text = ?', [(string)$me])
+            ->whereIn(DB::raw('photo_id::text'), $photoUuids)
+            ->pluck(DB::raw('photo_id::text'))
+            ->flip();
+    }
+
+    return view('profile.show', compact(
+        'profile',
+        'user',
+        'isOwnProfile',
+        'isFollowing',
+        'followersCount',
+        'followingCount',
+        'avatarPhotoId',
+        'avatarUrl',
+        'photos',
+        'photosCount',
+        'likesCount',
+        'likeCounts',
+        'myLikes'
+    ));
+}
+
 
 }
 

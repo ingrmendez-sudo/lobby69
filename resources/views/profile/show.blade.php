@@ -513,61 +513,6 @@
         'Sexo por separado','Relaciones abiertas','Amistad','Otros',
     ];
 
-    // Avatar
-    $profilePhoto = DB::table('photos')
-        ->whereRaw('user_id::text = ?', [$profile->user_id])
-        ->where('is_profile_photo', true)->where('status', 'approved')->first();
-    if (!$profilePhoto) {
-        $profilePhoto = DB::table('photos')
-            ->whereRaw('user_id::text = ?', [$profile->user_id])
-            ->where('album_type', 'public')->where('status', 'approved')
-            ->orderBy('sort_order')->orderBy('created_at')->first();
-    }
-    $avatarUrl = $profilePhoto
-        ? route('photos.serve', $profilePhoto->id)
-        : asset('img/default-avatar.svg');
-
-    // Fotos públicas aprobadas
-    $photos = DB::table('photos')
-        ->whereRaw('user_id::text = ?', [$profile->user_id])
-        ->where('album_type', 'public')->where('status', 'approved')
-        ->orderBy('sort_order')->orderByDesc('created_at')->get();
-
-    // Likes por foto (batch para no hacer N queries)
-    $photoUuids = $photos->pluck('photo_uuid')->map(fn($u) => (string)$u)->toArray();
-    $likeCounts = count($photoUuids)
-        ? DB::table('photo_likes')
-            ->whereIn(DB::raw('photo_id::text'), $photoUuids)
-            ->select(DB::raw('photo_id::text AS puuid'), DB::raw('COUNT(*) AS cnt'))
-            ->groupBy(DB::raw('photo_id::text'))
-            ->pluck('cnt', 'puuid')
-        : collect();
-
-    // ¿Qué fotos le dio like el usuario autenticado?
-    $myLikes = collect();
-    if (auth()->check() && count($photoUuids)) {
-        $myLikes = DB::table('photo_likes')
-            ->whereRaw('user_id::text = ?', [(string)auth()->id()])
-            ->whereIn(DB::raw('photo_id::text'), $photoUuids)
-            ->pluck(DB::raw('photo_id::text'))
-            ->flip();
-    }
-
-    $verificationStatus = $user->verification_status ?? null;
-    $typeLabel   = match($profile->profile_type ?? '') {
-        'pareja'    => 'Pareja',
-        'unicornio' => 'Unicornio',
-        default     => 'Single',
-    };
-    $memberLabel = ucfirst($user->membership_type ?? 'trial');
-    $memberIcon  = match($user->membership_type ?? 'trial') {
-        'explorer'   => asset('img/membership/explorer.png'),
-        'connectors' => asset('img/membership/connectors.png'),
-        'influencer' => asset('img/membership/influencer.png'),
-        'vip_elite'  => asset('img/membership/vip-elite.png'),
-        'vitalicio'  => asset('img/membership/vitalicio.png'),
-        default      => asset('img/membership/trial.png'),
-    };
 @endphp
 
 <div class="prf-wrap">
