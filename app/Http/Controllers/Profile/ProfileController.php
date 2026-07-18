@@ -281,6 +281,69 @@ return view('profile.show', compact(
     'allInterests'
 ));
 
+// ── Stats para sidebar ──
+$sbPhotosCount = DB::table('photos')
+    ->whereRaw('user_id::text = ?', [$profile->user_id])
+    ->where('status', 'approved')
+    ->where('album_type', 'public')
+    ->count();
+
+$sbReviews = DB::table('profile_reviews')
+    ->whereRaw('reviewed_id::text = ?', [$profile->user_id])
+    ->get();
+
+$sbPos = $sbReviews->where('type', 'positive')->count();
+$sbNeg = $sbReviews->where('type', 'negative')->count();
+
+// ── Amigos en común ──
+$commonFriends = collect();
+if ($me && !$isOwnProfile) {
+    $meId = (string)$me;
+    $uid  = (string)$profile->user_id;
+
+    $profileFriendIds = DB::table('friendships')
+        ->where('status', 'accepted')
+        ->where(function($q) use ($uid) {
+            $q->whereRaw('sender_id::text = ?', [$uid])
+              ->orWhereRaw('receiver_id::text = ?', [$uid]);
+        })
+        ->get()
+        ->map(fn($f) => (string)$f->sender_id === $uid
+            ? (string)$f->receiver_id
+            : (string)$f->sender_id
+        )
+        ->toArray();
+
+    $myFriendIds = DB::table('friendships')
+        ->where('status', 'accepted')
+        ->where(function($q) use ($meId) {
+            $q->whereRaw('sender_id::text = ?', [$meId])
+              ->orWhereRaw('receiver_id::text = ?', [$meId]);
+        })
+        ->get()
+        ->map(fn($f) => (string)$f->sender_id === $meId
+            ? (string)$f->receiver_id
+            : (string)$f->sender_id
+        )
+        ->toArray();
+
+    $commonIds = array_values(array_intersect($profileFriendIds, $myFriendIds));
+
+    if (count($commonIds)) {
+        $commonFriends = DB::table('users as u')
+            ->leftJoin('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('u.id::text'))
+            ->whereIn(DB::raw('u.id::text'), $commonIds)
+            ->select([
+                'u.id AS user_id',
+                DB::raw('COALESCE(pr.display_name, u.username) AS display_name'),
+                'pr.nickname',
+                DB::raw("(SELECT ap.id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = 'approved' LIMIT 1) AS avatar_id"),
+            ])
+            ->limit(6)
+            ->get();
+    }
+}
+
 
     return view('profile.show', compact(
         'profile',
