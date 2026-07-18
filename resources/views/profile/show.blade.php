@@ -521,6 +521,94 @@
     .prf-data-grid      { grid-template-columns: 1fr; }
     .prf-carousel-item  { width: 150px; height: 150px; }
 }
+
+/* ════════════════════════════════
+   SECCIÓN DE DATOS — rediseño
+   ════════════════════════════════ */
+
+/* Card de datos con separador interno */
+.prf-data-section {
+    display: flex;
+    flex-direction: column;
+    gap: .15rem;
+}
+.prf-data-row {
+    display: flex;
+    align-items: baseline;
+    gap: .5rem;
+    padding: .38rem .1rem;
+    border-bottom: 1px solid var(--_border);
+    font-size: .83rem;
+}
+.prf-data-row:last-child { border-bottom: none; }
+.prf-data-label {
+    flex-shrink: 0;
+    width: 42%;
+    color: var(--_muted);
+    font-size: .78rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+}
+.prf-data-label i {
+    width: 14px;
+    text-align: center;
+    color: var(--_pink);
+    font-size: .72rem;
+    opacity: .8;
+}
+.prf-data-value {
+    flex: 1;
+    color: var(--_text);
+    font-weight: 600;
+    font-size: .83rem;
+    word-break: break-word;
+}
+
+/* Tarjeta de pareja con columnas */
+.prf-couple-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+}
+.prf-couple-col-title {
+    font-size: .78rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin: 0 0 .6rem;
+    padding-bottom: .35rem;
+    border-bottom: 2px solid var(--_border);
+    display: flex;
+    align-items: center;
+    gap: .35rem;
+}
+.prf-couple-col-title--main    { color: var(--_purple); border-color: var(--_purple); }
+.prf-couple-col-title--partner { color: var(--_pink);   border-color: var(--_pink); }
+
+/* Nuevo comentario — animación de entrada */
+.prf-modal-comment--new {
+    animation: fadeSlideIn .3s ease;
+}
+@keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Contador de comentarios en modal */
+.prf-comments-header {
+    font-size: .78rem;
+    font-weight: 700;
+    color: var(--_muted);
+    text-transform: uppercase;
+    letter-spacing: .04em;
+    margin-bottom: .5rem;
+    display: flex;
+    align-items: center;
+    gap: .4rem;
+}
+
 </style>
 @endpush
 
@@ -632,25 +720,106 @@
                 <h2 class="prf-card__title">
                     👤 Sobre {{ $isPairing ? 'ellos' : ($isUnicorn ? 'ella/él' : 'mí') }}
                 </h2>
+
                 @if($isPairing)
-                    <div class="prf-data-grid">
+                    <div class="prf-couple-grid">
+                        {{-- Persona principal --}}
                         <div>
-                            <p class="prf-data-col-title prf-data-col-title--main">
-                                {{ $profile->gender === 'masculino' ? '♂️' : '♀️' }} {{ $mainName }}
+                            <p class="prf-couple-col-title prf-couple-col-title--main">
+                                <i class="fas fa-{{ $profile->gender === 'masculino' ? 'mars' : 'venus' }}"></i>
+                                {{ $mainName ?: ($profile->gender === 'masculino' ? 'Él' : 'Ella') }}
                             </p>
-                            @include('profile._physical_data', ['p' => $profile, 'isPartner' => false])
+                            <div class="prf-data-section">
+                                @if($profile->age)
+                                <div class="prf-data-row">
+                                    <span class="prf-data-label"><i class="fas fa-birthday-cake"></i> Edad</span>
+                                    <span class="prf-data-value">{{ $profile->age }} años</span>
+                                </div>
+                                @endif
+                                @if($profile->orientation)
+                                <div class="prf-data-row">
+                                    <span class="prf-data-label"><i class="fas fa-heart"></i> Orientación</span>
+                                    <span class="prf-data-value">{{ ucfirst($profile->orientation) }}</span>
+                                </div>
+                                @endif
+                            </div>
                         </div>
+                        {{-- Pareja --}}
                         @if($profile->partner_age || $profile->partner_name)
                         <div>
-                            <p class="prf-data-col-title prf-data-col-title--partner">
-                                {{ $profile->partner_gender === 'masculino' ? '♂️' : '♀️' }} {{ $partName }}
+                            <p class="prf-couple-col-title prf-couple-col-title--partner">
+                                <i class="fas fa-{{ $profile->partner_gender === 'masculino' ? 'mars' : 'venus' }}"></i>
+                                {{ $partName ?: ($profile->partner_gender === 'masculino' ? 'Él' : 'Ella') }}
                             </p>
-                            @include('profile._physical_data', ['p' => $profile, 'isPartner' => true])
+                            <div class="prf-data-section">
+                                @if($profile->partner_age)
+                                <div class="prf-data-row">
+                                    <span class="prf-data-label"><i class="fas fa-birthday-cake"></i> Edad</span>
+                                    <span class="prf-data-value">{{ $profile->partner_age }} años</span>
+                                </div>
+                                @endif
+                                @if($profile->partner_gender)
+                                <div class="prf-data-row">
+                                    <span class="prf-data-label"><i class="fas fa-venus-mars"></i> Género</span>
+                                    <span class="prf-data-value">{{ ucfirst($profile->partner_gender) }}</span>
+                                </div>
+                                @endif
+                            </div>
                         </div>
                         @endif
                     </div>
                 @else
-                    @include('profile._physical_data', ['p' => $profile, 'isPartner' => false])
+                    {{-- Single / Unicornio --}}
+                    <div class="prf-data-section">
+                        @if($profile->age)
+                        <div class="prf-data-row">
+                            <span class="prf-data-label"><i class="fas fa-birthday-cake"></i> Edad</span>
+                            <span class="prf-data-value">{{ $profile->age }} años</span>
+                        </div>
+                        @endif
+                        @if($profile->gender)
+                        <div class="prf-data-row">
+                            <span class="prf-data-label"><i class="fas fa-venus-mars"></i> Género</span>
+                            <span class="prf-data-value">{{ ucfirst($profile->gender) }}</span>
+                        </div>
+                        @endif
+                        @if($profile->orientation)
+                        <div class="prf-data-row">
+                            <span class="prf-data-label"><i class="fas fa-heart"></i> Orientación</span>
+                            <span class="prf-data-value">{{ ucfirst($profile->orientation) }}</span>
+                        </div>
+                        @endif
+                        @if($profile->nationality ?? null)
+                        <div class="prf-data-row">
+                            <span class="prf-data-label"><i class="fas fa-flag"></i> Nacionalidad</span>
+                            <span class="prf-data-value">{{ $profile->nationality }}</span>
+                        </div>
+                        @endif
+                        @if($profile->tattoos ?? null)
+                        <div class="prf-data-row">
+                            <span class="prf-data-label"><i class="fas fa-pen-nib"></i> Tatuajes</span>
+                            <span class="prf-data-value">{{ $profile->tattoos }}</span>
+                        </div>
+                        @endif
+                        @if($profile->piercings ?? null)
+                        <div class="prf-data-row">
+                            <span class="prf-data-label"><i class="fas fa-circle"></i> Piercings</span>
+                            <span class="prf-data-value">{{ $profile->piercings }}</span>
+                        </div>
+                        @endif
+                        @if($profile->smokes ?? null)
+                        <div class="prf-data-row">
+                            <span class="prf-data-label"><i class="fas fa-smoking"></i> Fuma</span>
+                            <span class="prf-data-value">{{ ucfirst($profile->smokes) }}</span>
+                        </div>
+                        @endif
+                        @if($profile->drinks ?? null)
+                        <div class="prf-data-row">
+                            <span class="prf-data-label"><i class="fas fa-wine-glass-alt"></i> Bebe</span>
+                            <span class="prf-data-value">{{ ucfirst($profile->drinks) }}</span>
+                        </div>
+                        @endif
+                    </div>
                 @endif
             </div>
         </div>
@@ -679,6 +848,7 @@
             </div>
         </div>
     </div>
+
 
     {{-- ── Carrusel de fotos ── --}}
     @if($photos->isNotEmpty())
@@ -755,6 +925,15 @@
             <div class="prf-modal-comments" id="pm-comments">
                 <p class="prf-comment-empty">Cargando comentarios…</p>
             </div>
+            {{-- Comentarios --}}
+            <div class="prf-comments-header">
+                <i class="fas fa-comments" style="color:var(--_pink);"></i>
+                Comentarios
+            </div>
+            <div class="prf-modal-comments" id="pm-comments">
+                <p class="prf-comment-empty">Cargando comentarios…</p>
+            </div>
+
             @auth
             <form class="prf-comment-form" id="pm-comment-form">
                 <textarea id="pm-comment-body"
@@ -797,7 +976,9 @@
 const CSRF = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
 const ME   = '{{ Auth::id() }}';
 
-/* ── Helpers ── */
+/* ════════════════════════════════
+   HELPERS
+   ════════════════════════════════ */
 async function postJson(url, data) {
     const r = await fetch(url, {
         method: 'POST',
@@ -813,20 +994,22 @@ async function postJson(url, data) {
 
 function escHtml(s) {
     return String(s ?? '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
 
 function fmtTime(iso) {
     if (!iso) return '';
-    return new Date(iso).toLocaleTimeString('es-MX', {
-        hour: '2-digit', minute: '2-digit',
-    });
+    try {
+        return new Date(iso).toLocaleTimeString('es-MX', {
+            hour: '2-digit', minute: '2-digit',
+        });
+    } catch { return ''; }
 }
 
-/* ── Carrusel ── */
+/* ════════════════════════════════
+   CARRUSEL
+   ════════════════════════════════ */
 const track   = document.getElementById('carousel-track');
 const btnPrev = document.getElementById('carousel-prev');
 const btnNext = document.getElementById('carousel-next');
@@ -839,7 +1022,9 @@ btnNext?.addEventListener('click', () =>
     track?.scrollBy({ left: STEP * 2, behavior: 'smooth' })
 );
 
-/* ── Modal foto ── */
+/* ════════════════════════════════
+   MODAL FOTO
+   ════════════════════════════════ */
 const photoModal  = document.getElementById('photo-modal');
 const pmImg       = document.getElementById('pm-img');
 const pmCaption   = document.getElementById('pm-caption');
@@ -859,28 +1044,129 @@ function openPhoto(idx) {
     const photoId   = el.dataset.photoId;
     const photoUuid = el.dataset.photoUuid;
     const caption   = el.dataset.caption;
-    const likes     = parseInt(el.dataset.likes ?? '0');
-    const iLiked    = el.dataset.iliked === '1';
 
     pmImg.src = `/fotos/${photoId}/ver`;
-    pmCaption.textContent = caption || `Foto ${currentIdx + 1} de ${photoItems.length}`;
+    pmImg.alt = caption || '';
+    if (pmCaption) pmCaption.textContent = caption || `Foto ${currentIdx + 1} de ${photoItems.length}`;
 
+    // Resetear like — se actualiza al cargar los datos del servidor
     if (pmLikeBtn) {
+        pmLikeBtn.dataset.photoId   = photoId;
         pmLikeBtn.dataset.photoUuid = photoUuid;
-        if (pmLikeCount) pmLikeCount.textContent = likes;
-        pmLikeBtn.classList.toggle('liked', iLiked);
+        pmLikeBtn.classList.remove('liked');
+        pmLikeBtn.disabled = false;
     }
+    if (pmLikeCount) pmLikeCount.textContent = el.dataset.likes ?? '0';
+    if (el.dataset.iliked === '1') pmLikeBtn?.classList.add('liked');
 
-    loadComments(photoUuid);
-    photoModal.classList.remove('hidden');
+    // Cargar comentarios desde el servidor (fuente de verdad)
+    loadPhotoData(photoId, photoUuid);
+    photoModal?.classList.remove('hidden');
 }
 
+// Cargar datos completos de la foto: comentarios aprobados + like count real
+async function loadPhotoData(photoId, photoUuid) {
+    if (!pmComments) return;
+    pmComments.innerHTML = '<p class="prf-comment-empty">Cargando comentarios…</p>';
+    try {
+        const r    = await fetch(`/fotos/${photoId}/info`, {
+            headers: { Accept: 'application/json' },
+        });
+        if (!r.ok) throw new Error(`HTTP ${r.status}`);
+        const data = await r.json();
+
+        // Actualizar like count y estado con el valor real del servidor
+        if (data.photo && pmLikeCount) {
+            pmLikeCount.textContent = data.photo.likes_count ?? 0;
+            // Actualizar dataset del carousel item
+            const item = photoItems.find(el => el.dataset.photoId === photoId);
+            if (item) item.dataset.likes = data.photo.likes_count ?? 0;
+        }
+        if (data.photo?.user_liked !== undefined && pmLikeBtn) {
+            pmLikeBtn.classList.toggle('liked', !!data.photo.user_liked);
+            const item = photoItems.find(el => el.dataset.photoId === photoId);
+            if (item) item.dataset.iliked = data.photo.user_liked ? '1' : '0';
+        }
+
+        // Renderizar comentarios
+        // El servidor retorna: user_nick, display_name, avatar_photo_id, body, created_at
+        renderComments(data.comments ?? []);
+    } catch(e) {
+        pmComments.innerHTML = '<p class="prf-comment-empty">Error al cargar comentarios.</p>';
+    }
+}
+
+/* Construye la URL del avatar desde avatar_photo_id */
+function avatarUrl(avatarPhotoId) {
+    if (!avatarPhotoId) return null;
+    return `/fotos/${avatarPhotoId}/ver`;
+}
+
+function renderComments(comments) {
+    if (!pmComments) return;
+    if (!comments.length) {
+        pmComments.innerHTML = '<p class="prf-comment-empty">Sin comentarios aprobados aún. ¡Sé el primero!</p>';
+        return;
+    }
+    // Campos reales del servidor: user_nick, display_name, avatar_photo_id, body, created_at
+    pmComments.innerHTML = comments.map(c => {
+        const name   = c.user_nick ?? c.display_name ?? 'Usuario';
+        const avUrl  = avatarUrl(c.avatar_photo_id);
+        const avHtml = avUrl
+            ? `<img class="prf-modal-comment__avatar"
+                    src="${escHtml(avUrl)}"
+                    alt="${escHtml(name)}"
+                    onerror="this.style.display='none'">`
+            : `<div class="prf-modal-comment__ph">${escHtml(name[0]?.toUpperCase() ?? '?')}</div>`;
+        return `
+            <div class="prf-modal-comment">
+                ${avHtml}
+                <div class="prf-modal-comment__body">
+                    <div class="prf-modal-comment__author">${escHtml(name)}</div>
+                    <div class="prf-modal-comment__text">${escHtml(c.body)}</div>
+                </div>
+                <span class="prf-modal-comment__time">${fmtTime(c.created_at)}</span>
+            </div>`;
+    }).join('');
+    pmComments.scrollTop = pmComments.scrollHeight;
+}
+
+/* Agregar un comentario recién enviado al DOM sin recargar */
+function appendComment(c) {
+    if (!pmComments) return;
+    // Quitar el mensaje de "sin comentarios" si existe
+    const empty = pmComments.querySelector('.prf-comment-empty');
+    if (empty) empty.remove();
+
+    const name   = c.user_nick ?? c.display_name ?? 'Usuario';
+    const avUrl  = avatarUrl(c.avatar_photo_id);
+    const avHtml = avUrl
+        ? `<img class="prf-modal-comment__avatar"
+                src="${escHtml(avUrl)}"
+                alt="${escHtml(name)}"
+                onerror="this.style.display='none'">`
+        : `<div class="prf-modal-comment__ph">${escHtml(name[0]?.toUpperCase() ?? '?')}</div>`;
+
+    const div = document.createElement('div');
+    div.className = 'prf-modal-comment prf-modal-comment--new';
+    div.innerHTML = `
+        ${avHtml}
+        <div class="prf-modal-comment__body">
+            <div class="prf-modal-comment__author">${escHtml(name)}</div>
+            <div class="prf-modal-comment__text">${escHtml(c.body)}</div>
+        </div>
+        <span class="prf-modal-comment__time">${fmtTime(c.created_at)}</span>`;
+    pmComments.appendChild(div);
+    pmComments.scrollTop = pmComments.scrollHeight;
+}
+
+/* Navegar entre fotos */
 photoItems.forEach((el, i) =>
     el.addEventListener('click', () => openPhoto(i))
 );
 
 document.getElementById('pm-close')
-    ?.addEventListener('click', () => photoModal.classList.add('hidden'));
+    ?.addEventListener('click', () => photoModal?.classList.add('hidden'));
 document.getElementById('pm-prev')
     ?.addEventListener('click', () => openPhoto(currentIdx - 1));
 document.getElementById('pm-next')
@@ -899,98 +1185,81 @@ document.addEventListener('keydown', e => {
 
 /* ── Like ── */
 pmLikeBtn?.addEventListener('click', async () => {
-    const uuid = pmLikeBtn.dataset.photoUuid;
-    if (!uuid) return;
-    const item = photoItems.find(el => el.dataset.photoUuid === uuid);
-    if (!item) return;
+    if (pmLikeBtn.disabled) return;
+    const photoId = pmLikeBtn.dataset.photoId;
+    if (!photoId) return;
 
     pmLikeBtn.disabled = true;
     try {
-        const data = await postJson(`/fotos/${item.dataset.photoId}/like`, {});
-        if (data.liked !== undefined) {
-            const liked    = data.liked;
-            const newCount = Math.max(0, parseInt(pmLikeCount.textContent) + (liked ? 1 : -1));
-            pmLikeBtn.classList.toggle('liked', liked);
-            pmLikeCount.textContent = newCount;
-            item.dataset.iliked = liked ? '1' : '0';
-            item.dataset.likes  = newCount;
-            const overlay = item.querySelector('.prf-carousel-item-meta span:first-child');
-            if (overlay) overlay.textContent = (liked ? '❤️' : '🤍') + ' ' + newCount;
+        // El servidor retorna: { liked: bool, likes_count: int }
+        const data = await postJson(`/fotos/${photoId}/like`, {});
+        if (typeof data.liked !== 'undefined') {
+            pmLikeBtn.classList.toggle('liked', data.liked);
+            if (pmLikeCount) pmLikeCount.textContent = data.likes_count ?? 0;
+
+            // Sincronizar el carrusel
+            const item = photoItems.find(el => el.dataset.photoId === photoId);
+            if (item) {
+                item.dataset.iliked = data.liked ? '1' : '0';
+                item.dataset.likes  = data.likes_count ?? 0;
+                const overlay = item.querySelector('.prf-carousel-item-meta span:first-child');
+                if (overlay) overlay.textContent = (data.liked ? '❤️' : '🤍') + ' ' + (data.likes_count ?? 0);
+            }
         }
+    } catch(e) {
+        console.error('Error al dar like:', e);
     } finally {
         pmLikeBtn.disabled = false;
     }
 });
 
-/* ── Comentarios ── */
-async function loadComments(photoUuid) {
-    if (!pmComments) return;
-    pmComments.innerHTML = '<p class="prf-comment-empty">Cargando…</p>';
-    const item = photoItems.find(el => el.dataset.photoUuid === photoUuid);
-    if (!item) {
-        pmComments.innerHTML = '<p class="prf-comment-empty">Sin comentarios.</p>';
-        return;
-    }
-    try {
-        const r    = await fetch(`/fotos/${item.dataset.photoId}/info`, {
-            headers: { Accept: 'application/json' },
-        });
-        const data = await r.json();
-        renderComments(data.comments ?? []);
-    } catch {
-        pmComments.innerHTML = '<p class="prf-comment-empty">Error al cargar comentarios.</p>';
-    }
-}
-
-function renderComments(comments) {
-    if (!comments.length) {
-        pmComments.innerHTML = '<p class="prf-comment-empty">Sin comentarios aún. ¡Sé el primero!</p>';
-        return;
-    }
-    pmComments.innerHTML = comments.map(c => `
-        <div class="prf-modal-comment">
-            ${c.avatar_url
-                ? `<img class="prf-modal-comment__avatar"
-                        src="${escHtml(c.avatar_url)}"
-                        onerror="this.style.display='none'">`
-                : `<div class="prf-modal-comment__ph">
-                       ${escHtml((c.commenter_name ?? '?')[0].toUpperCase())}
-                   </div>`
-            }
-            <div class="prf-modal-comment__body">
-                <div class="prf-modal-comment__author">
-                    ${escHtml(c.commenter_nick ?? c.commenter_name ?? 'Usuario')}
-                </div>
-                <div class="prf-modal-comment__text">${escHtml(c.body)}</div>
-            </div>
-            <span class="prf-modal-comment__time">${fmtTime(c.created_at)}</span>
-        </div>
-    `).join('');
-    pmComments.scrollTop = pmComments.scrollHeight;
-}
-
+/* ── Enviar comentario ── */
 pmForm?.addEventListener('submit', async e => {
     e.preventDefault();
     const body = pmBody?.value.trim();
     if (!body) return;
+
     const item = photoItems[currentIdx];
     if (!item) return;
-    const btn = pmForm.querySelector('button');
-    btn.disabled = true;
+    const photoId = item.dataset.photoId;
+
+    const btn = pmForm.querySelector('button[type="submit"]');
+    const originalText = btn.textContent;
+    btn.disabled    = true;
+    btn.textContent = 'Enviando…';
+
     try {
-        const data = await postJson(`/fotos/${item.dataset.photoId}/comentar`, { body });
-        if (data.ok || data.comment) {
+        // El servidor retorna: { success: true, comment: { id, body, user_nick, avatar_photo_id, created_at } }
+        const data = await postJson(`/fotos/${photoId}/comentar`, { body });
+
+        if (data.success && data.comment) {
             pmBody.value = '';
-            loadComments(item.dataset.photoUuid);
+            appendComment(data.comment);
+            // Feedback visual breve
+            btn.textContent = '✓ Enviado';
+            setTimeout(() => { btn.textContent = originalText; }, 1500);
+        } else if (data.error) {
+            alert(data.error);
+            btn.textContent = originalText;
         } else {
-            alert(data.error ?? 'Error al comentar.');
+            // Si el servidor no retorna el comentario, recargamos desde servidor
+            pmBody.value = '';
+            btn.textContent = '✓ Enviado';
+            setTimeout(() => { btn.textContent = originalText; }, 1500);
+            loadPhotoData(photoId, item.dataset.photoUuid);
         }
+    } catch(err) {
+        console.error('Error al comentar:', err);
+        alert('Error de conexión. Intenta de nuevo.');
+        btn.textContent = originalText;
     } finally {
         btn.disabled = false;
     }
 });
 
-/* ── Modal conversación ── */
+/* ════════════════════════════════
+   MODAL CONVERSACIÓN
+   ════════════════════════════════ */
 const convModal  = document.getElementById('conv-modal');
 const convName   = document.getElementById('conv-modal-name');
 const convMsgs   = document.getElementById('conv-modal-messages');
@@ -1002,14 +1271,17 @@ function renderMessages(msgs) {
     if (!convMsgs) return;
     convMsgs.innerHTML = '';
     if (!msgs.length) {
-        convMsgs.innerHTML = '<p style="text-align:center;font-size:.8rem;color:var(--text-muted,#999)">Sin mensajes. ¡Escribe el primero!</p>';
+        convMsgs.innerHTML = `<p style="text-align:center;font-size:.8rem;
+            color:var(--text-muted,#999);padding:1rem 0;">
+            Sin mensajes aún. ¡Escribe el primero!</p>`;
         return;
     }
     msgs.forEach(m => {
         const mine = String(m.sender_id) === ME;
         const d    = document.createElement('div');
         d.className = `l69-msg-bubble ${mine ? 'mine' : 'theirs'}`;
-        d.innerHTML = `${escHtml(m.body)}<span class="l69-msg-time">${fmtTime(m.created_at)}</span>`;
+        d.innerHTML = `${escHtml(m.body)}
+            <span class="l69-msg-time">${fmtTime(m.created_at)}</span>`;
         convMsgs.appendChild(d);
     });
     convMsgs.scrollTop = convMsgs.scrollHeight;
@@ -1017,26 +1289,30 @@ function renderMessages(msgs) {
 
 async function openConversation(partnerId, name) {
     if (!partnerId || !convModal) return;
-    if (convName)   convName.textContent = name;
+    if (convName)   convName.textContent = name ?? '';
     if (convRecvId) convRecvId.value     = partnerId;
     convModal.classList.remove('hidden');
-    if (convMsgs) convMsgs.innerHTML = '<p style="text-align:center;font-size:.8rem;color:var(--text-muted,#999)">Cargando…</p>';
+    if (convMsgs) convMsgs.innerHTML = `<p style="text-align:center;font-size:.8rem;
+        color:var(--text-muted,#999);padding:1rem 0;">Cargando…</p>`;
     try {
         const data = await fetch(`/mensajes/conversacion/${partnerId}`, {
             headers: { Accept: 'application/json' },
         }).then(r => r.json());
         renderMessages(data.messages ?? []);
     } catch {
-        if (convMsgs) convMsgs.innerHTML = '<p style="text-align:center;color:#e74c3c;font-size:.8rem">Error al cargar.</p>';
+        if (convMsgs) convMsgs.innerHTML = `<p style="text-align:center;
+            color:#e74c3c;font-size:.8rem">Error al cargar mensajes.</p>`;
     }
 }
 
-document.getElementById('btn-msg-profile')?.addEventListener('click', function () {
-    openConversation(this.dataset.partner, this.dataset.name);
-});
-document.getElementById('btn-msg-profile-header')?.addEventListener('click', function () {
-    openConversation(this.dataset.partner, this.dataset.name);
-});
+document.getElementById('btn-msg-profile')
+    ?.addEventListener('click', function () {
+        openConversation(this.dataset.partner, this.dataset.name);
+    });
+document.getElementById('btn-msg-profile-header')
+    ?.addEventListener('click', function () {
+        openConversation(this.dataset.partner, this.dataset.name);
+    });
 
 document.getElementById('conv-modal-close')
     ?.addEventListener('click', () => convModal?.classList.add('hidden'));
@@ -1048,7 +1324,7 @@ convForm?.addEventListener('submit', async e => {
     e.preventDefault();
     const body = convBody?.value.trim();
     if (!body || !convRecvId?.value) return;
-    const btn  = convForm.querySelector('button');
+    const btn = convForm.querySelector('button[type="submit"]');
     btn.disabled = true;
     try {
         const data = await postJson('/mensajes/enviar', {
@@ -1065,3 +1341,4 @@ convForm?.addEventListener('submit', async e => {
 });
 </script>
 @endpush
+
