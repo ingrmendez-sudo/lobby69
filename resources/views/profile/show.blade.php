@@ -5,16 +5,16 @@
 {{-- ══ SIDEBAR IZQUIERDO: Stats del perfil ══ --}}
 @push('sidebar-left')
 @php
-    $uid = (string)$profile->user_id;
-    $sbPhotosCount = DB::table('photos')->whereRaw('user_id::text = ?', [$uid])->where('status','approved')->where('album_type','public')->count();
-    $sbLikesCount  = DB::table('photo_likes')
-        ->whereIn(DB::raw('photo_id::text'),
-            DB::table('photos')->whereRaw('user_id::text = ?', [$uid])->where('status','approved')->pluck('photo_uuid')->map(fn($u)=>(string)$u)->toArray() ?: ['__none__']
-        )->count();
-    $sbReviews = DB::table('profile_reviews')->whereRaw('reviewed_id::text = ?', [$uid])->get();
-    $sbPos = $sbReviews->where('type','positive')->count();
-    $sbNeg = $sbReviews->where('type','negative')->count();
+    $showName  = $profile->show_name ?? true;
+    $showPName = $profile->show_partner_name ?? true;
+    $mainName  = $showName  ? ($profile->display_name ?? '') : 'Nombre oculto';
+    $partName  = $showPName ? ($profile->partner_name  ?? '') : 'Nombre oculto';
+    $location  = implode(', ', array_filter([
+        $profile->city  ?? null,
+        $profile->state ?? null,
+    ]));
 @endphp
+
 <div class="l69-sidebar-card">
     <div style="text-align:center;padding:.5rem 0 1rem;">
         <img src="{{ $avatarUrl }}"
@@ -512,7 +512,6 @@
         'Compartir fetiches','Cybersexo','Intercambio de fotos',
         'Sexo por separado','Relaciones abiertas','Amistad','Otros',
     ];
-
 @endphp
 
 <div class="prf-wrap">

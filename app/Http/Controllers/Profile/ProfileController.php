@@ -197,26 +197,90 @@ class ProfileController extends Controller
         : 0;
 
     // ── Likes por foto (batch) ──
-    $likeCounts = count($photoUuids)
-        ? DB::table('photo_likes')
-            ->whereIn(DB::raw('photo_id::text'), $photoUuids)
-            ->select(
-                DB::raw('photo_id::text AS puuid'),
-                DB::raw('COUNT(*) AS cnt')
-            )
-            ->groupBy(DB::raw('photo_id::text'))
-            ->pluck('cnt', 'puuid')
-        : collect();
+$likeCounts = count($photoUuids)
+    ? DB::table('photo_likes')
+        ->whereIn(DB::raw('photo_id::text'), $photoUuids)
+        ->selectRaw('photo_id::text AS puuid, COUNT(*) AS cnt')
+        ->groupByRaw('photo_id::text')
+        ->pluck('cnt', 'puuid')
+    : collect();
 
-    // ── Fotos que le dio like el usuario autenticado ──
-    $myLikes = collect();
-    if ($me && count($photoUuids)) {
-        $myLikes = DB::table('photo_likes')
-            ->whereRaw('user_id::text = ?', [(string)$me])
-            ->whereIn(DB::raw('photo_id::text'), $photoUuids)
-            ->pluck(DB::raw('photo_id::text'))
-            ->flip();
-    }
+// ── Fotos que le dio like el usuario autenticado ──
+$myLikes = collect();
+if ($me && count($photoUuids)) {
+    $myLikes = DB::table('photo_likes')
+        ->whereRaw('user_id::text = ?', [(string)$me])
+        ->whereIn(DB::raw('photo_id::text'), $photoUuids)
+        ->selectRaw('photo_id::text AS puuid')
+        ->pluck('puuid')
+        ->flip();
+}
+
+// ── Variables de presentación ──
+$verificationStatus = $user->verification_status ?? null;
+
+$typeLabel = match($profile->profile_type ?? '') {
+    'pareja'    => 'Pareja',
+    'unicornio' => 'Unicornio',
+    default     => 'Single',
+};
+
+$memberLabel = ucfirst($user->membership_type ?? 'trial');
+
+$memberIcon = match($user->membership_type ?? 'trial') {
+    'explorer'   => asset('img/membership/explorer.png'),
+    'connectors' => asset('img/membership/connectors.png'),
+    'influencer' => asset('img/membership/influencer.png'),
+    'vip_elite'  => asset('img/membership/vip-elite.png'),
+    'vitalicio'  => asset('img/membership/vitalicio.png'),
+    default      => asset('img/membership/trial.png'),
+};
+
+$isPairing = $profile->profile_type === 'pareja';
+$isUnicorn = $profile->profile_type === 'unicornio';
+
+$lookingFor = json_decode($profile->looking_for ?? '[]', true) ?? [];
+$interests  = json_decode($profile->interests   ?? '[]', true) ?? [];
+
+$allLookingFor = [
+    'Parejas heterosexuales', 'Parejas bisexuales', 'Parejas (ella bisexual)',
+    'Parejas (él bisexual)',  'Hombres heterosexuales', 'Hombres bisexuales',
+    'Mujeres heterosexuales', 'Mujeres bisexuales',
+];
+
+$allInterests = [
+    'Intercambio completo', 'Intercambio light', 'Sexo en grupo', 'Tríos',
+    'Sólo ellas', 'Mirar y ser vistos', 'Cuckold', 'Prácticas BDSM',
+    'Compartir fetiches', 'Cybersexo', 'Intercambio de fotos',
+    'Sexo por separado', 'Relaciones abiertas', 'Amistad', 'Otros',
+];
+
+return view('profile.show', compact(
+    'profile',
+    'user',
+    'isOwnProfile',
+    'isFollowing',
+    'followersCount',
+    'followingCount',
+    'avatarPhotoId',
+    'avatarUrl',
+    'photos',
+    'photosCount',
+    'likesCount',
+    'likeCounts',
+    'myLikes',
+    'verificationStatus',
+    'typeLabel',
+    'memberLabel',
+    'memberIcon',
+    'isPairing',
+    'isUnicorn',
+    'lookingFor',
+    'interests',
+    'allLookingFor',
+    'allInterests'
+));
+
 
     return view('profile.show', compact(
         'profile',
