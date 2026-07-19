@@ -44,7 +44,7 @@ class PhotoInteractionController extends Controller
             'photo_id' => $photoId,
             'user_id'  => $user->id,
             'body'     => $request->body,
-            'status'   => 'pending', // moderación admin
+            'status'   => 'approved',
         ]);
 
         return response()->json([
@@ -97,3 +97,4 @@ class PhotoInteractionController extends Controller
         ]);
     }
 }
+
