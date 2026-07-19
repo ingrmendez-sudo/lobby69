@@ -61,48 +61,6 @@
     @endif
 </div>
 
-{{-- Ultimos perfiles visitados --}}
-@auth
-@if($recentlyVisited->count() > 0)
-<div class="l69-sidebar-card" style="margin-top:.6rem;">
-    <div class="l69-sidebar-card__title">
-        <i class="fas fa-history"></i> Visitados recientemente
-    </div>
-    @foreach($recentlyVisited as $rv)
-    <a href="{{ $rv->nickname ? route('profile.show', $rv->nickname) : '#' }}"
-       style="display:flex;align-items:center;gap:.5rem;padding:.4rem 0;
-              text-decoration:none;border-bottom:1px solid rgba(255,255,255,.05);">
-        @if($rv->avatar_id)
-            <img src="{{ route('photos.serve', $rv->avatar_id) }}"
-                 style="width:32px;height:32px;border-radius:50%;object-fit:cover;
-                        flex-shrink:0;border:1px solid rgba(180,60,120,.3);"
-                 onerror="this.style.display='none'">
-        @else
-            <div style="width:32px;height:32px;border-radius:50%;flex-shrink:0;
-                        background:rgba(108,63,197,.3);display:flex;
-                        align-items:center;justify-content:center;
-                        font-size:.75rem;font-weight:700;color:#a78bfa;">
-                {{ mb_substr($rv->display_name ?? '?', 0, 1) }}
-            </div>
-        @endif
-        <div style="min-width:0;">
-            <div style="font-size:.78rem;font-weight:600;color:var(--theme-text);
-                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
-                {{ $rv->display_name }}
-                @if($rv->verified_profile)
-                    <i class="fas fa-check-circle" style="color:#22c55e;font-size:.6rem;"></i>
-                @endif
-            </div>
-            <div style="font-size:.68rem;color:var(--theme-muted);">
-                {{ ucfirst($rv->profile_type ?? '') }}
-            </div>
-        </div>
-    </a>
-    @endforeach
-</div>
-@endif
-
-@endauth
 
 {{-- Tarjeta: acciones --}}
 @auth
@@ -165,6 +123,49 @@
         </a>
     </div>
     @endif
+@endauth
+
+{{-- Ultimos perfiles visitados --}}
+@auth
+@if($recentlyVisited->count() > 0)
+<div class="l69-sidebar-card" style="margin-top:.6rem;">
+    <div class="l69-sidebar-card__title">
+        <i class="fas fa-history"></i> Visitados recientemente
+    </div>
+    @foreach($recentlyVisited as $rv)
+    <a href="{{ $rv->nickname ? route('profile.show', $rv->nickname) : '#' }}"
+       style="display:flex;align-items:center;gap:.5rem;padding:.4rem 0;
+              text-decoration:none;border-bottom:1px solid rgba(255,255,255,.05);">
+        @if($rv->avatar_id)
+            <img src="{{ route('photos.serve', $rv->avatar_id) }}"
+                 style="width:32px;height:32px;border-radius:50%;object-fit:cover;
+                        flex-shrink:0;border:1px solid rgba(180,60,120,.3);"
+                 onerror="this.style.display='none'">
+        @else
+            <div style="width:32px;height:32px;border-radius:50%;flex-shrink:0;
+                        background:rgba(108,63,197,.3);display:flex;
+                        align-items:center;justify-content:center;
+                        font-size:.75rem;font-weight:700;color:#a78bfa;">
+                {{ mb_substr($rv->display_name ?? '?', 0, 1) }}
+            </div>
+        @endif
+        <div style="min-width:0;">
+            <div style="font-size:.78rem;font-weight:600;color:var(--theme-text);
+                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                {{ $rv->display_name }}
+                @if($rv->verified_profile)
+                    <i class="fas fa-check-circle" style="color:#22c55e;font-size:.6rem;"></i>
+                @endif
+            </div>
+            <div style="font-size:.68rem;color:var(--theme-muted);">
+                {{ ucfirst($rv->profile_type ?? '') }}
+            </div>
+        </div>
+    </a>
+    @endforeach
+</div>
+@endif
+
 @endauth
 
 {{-- Tarjeta: amigos en comun --}}
