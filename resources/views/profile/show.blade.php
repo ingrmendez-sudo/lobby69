@@ -228,8 +228,6 @@
 {{-- Ocultar Mi Actividad y Accesos Rapidos en perfil ajeno --}}
 <style>
 /* Ocultar por titulo exacto */
-.l69-sidebar-card__title:has(.fa-bolt) ~ *,
-.l69-sidebar-card__title:has(.fa-bolt) { display:none!important; }
 
         /* ── Replies de comentarios ── */
         .prf-comment-reply {
