@@ -61,201 +61,6 @@
     @endif
 </div>
 
-
-{{-- Tarjeta: acciones --}}
-@auth
-    @if(!$isOwnProfile)
-    <div class="l69-sidebar-card" style="margin-top:.6rem;">
-        <div class="l69-sidebar-card__title">
-            <i class="fas fa-bolt"></i> Acciones
-        </div>
-        <div style="display:flex;flex-direction:column;gap:.45rem;">
-            @if($isFollowing)
-                <form method="POST" action="{{ route('unfollow', $profile->nickname) }}" style="margin:0;">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="prf-sb-btn prf-sb-btn--outline" style="width:100%;">
-                        &#10003; Siguiendo
-                    </button>
-                </form>
-            @else
-                <form method="POST" action="{{ route('follow', $profile->nickname) }}" style="margin:0;">
-                    @csrf
-                    <button type="submit" class="prf-sb-btn prf-sb-btn--primary" style="width:100%;">
-                        + Seguir
-                    </button>
-                </form>
-            @endif
-            <button class="prf-sb-btn prf-sb-btn--msg"
-                    data-partner="{{ $profile->user_id }}"
-                    data-name="{{ $profile->nickname }}"
-                    id="btn-msg-profile"
-                    style="width:100%;">
-                <i class="fas fa-paper-plane"></i> Enviar mensaje
-            </button>
-
-            {{-- Botón amistad --}}
-            @php $fStatus = $friendshipStatus ?? null; @endphp
-            @if($fStatus === 'accepted')
-                <button class="prf-sb-btn prf-sb-btn--outline" disabled style="width:100%;opacity:.7;cursor:default;">
-                    <i class="fas fa-user-check"></i> Amigos
-                </button>
-            @elseif($fStatus === 'pending')
-                <button class="prf-sb-btn prf-sb-btn--outline" disabled style="width:100%;opacity:.7;cursor:default;">
-                    <i class="fas fa-clock"></i> Solicitud enviada
-                </button>
-            @else
-                <button class="prf-sb-btn prf-sb-btn--primary"
-                        id="btn-add-friend"
-                        data-target="{{ $profile->user_id }}"
-                        style="width:100%;">
-                    <i class="fas fa-user-plus"></i> Agregar amigo
-                </button>
-            @endif
-        </div>
-    </div>
-    @else
-    <div class="l69-sidebar-card" style="margin-top:.6rem;">
-        <div class="l69-sidebar-card__title"><i class="fas fa-cog"></i> Mi Perfil</div>
-        <a href="{{ route('profile.edit') }}"
-           class="prf-sb-btn prf-sb-btn--outline"
-           style="width:100%;text-align:center;display:block;">
-            &#9999;&#65039; Editar perfil
-        </a>
-    </div>
-    @endif
-@endauth
-
-
-{{-- Tarjeta: acciones --}}
-@auth
-    @if(!$isOwnProfile)
-    <div class="l69-sidebar-card" style="margin-top:.6rem;">
-        <div class="l69-sidebar-card__title">
-            <i class="fas fa-bolt"></i> Acciones
-        </div>
-        <div style="display:flex;flex-direction:column;gap:.45rem;">
-            @if($isFollowing)
-                <form method="POST" action="{{ route('unfollow', $profile->nickname) }}" style="margin:0;">
-                    @csrf @method('DELETE')
-                    <button type="submit" class="prf-sb-btn prf-sb-btn--outline" style="width:100%;">
-                        &#10003; Siguiendo
-                    </button>
-                </form>
-            @else
-                <form method="POST" action="{{ route('follow', $profile->nickname) }}" style="margin:0;">
-                    @csrf
-                    <button type="submit" class="prf-sb-btn prf-sb-btn--primary" style="width:100%;">
-                        + Seguir
-                    </button>
-                </form>
-            @endif
-            <button class="prf-sb-btn prf-sb-btn--msg"
-                    data-partner="{{ $profile->user_id }}"
-                    data-name="{{ $profile->nickname }}"
-                    id="btn-msg-profile"
-                    style="width:100%;">
-                <i class="fas fa-paper-plane"></i> Enviar mensaje
-            </button>
-
-            {{-- Botón amistad --}}
-            @php $fStatus = $friendshipStatus ?? null; @endphp
-            @if($fStatus === 'accepted')
-                <button class="prf-sb-btn prf-sb-btn--outline" disabled style="width:100%;opacity:.7;cursor:default;">
-                    <i class="fas fa-user-check"></i> Amigos
-                </button>
-            @elseif($fStatus === 'pending')
-                <button class="prf-sb-btn prf-sb-btn--outline" disabled style="width:100%;opacity:.7;cursor:default;">
-                    <i class="fas fa-clock"></i> Solicitud enviada
-                </button>
-            @else
-                <button class="prf-sb-btn prf-sb-btn--primary"
-                        id="btn-add-friend"
-                        data-target="{{ $profile->user_id }}"
-                        style="width:100%;">
-                    <i class="fas fa-user-plus"></i> Agregar amigo
-                </button>
-            @endif
-        </div>
-    </div>
-    @else
-    <div class="l69-sidebar-card" style="margin-top:.6rem;">
-        <div class="l69-sidebar-card__title"><i class="fas fa-cog"></i> Mi Perfil</div>
-        <a href="{{ route('profile.edit') }}"
-           class="prf-sb-btn prf-sb-btn--outline"
-           style="width:100%;text-align:center;display:block;">
-            &#9999;&#65039; Editar perfil
-        </a>
-    </div>
-    @endif
-@endauth
-
-{{-- Ultimos perfiles visitados --}}
-
-@endauth
-    @endif
-    </div>
-        </a>
-            &#9999;&#65039; Editar perfil
-           style="width:100%;text-align:center;display:block;">
-           class="prf-sb-btn prf-sb-btn--outline"
-        <a href="{{ route('profile.edit') }}"
-        <div class="l69-sidebar-card__title"><i class="fas fa-cog"></i> Mi Perfil</div>
-    <div class="l69-sidebar-card" style="margin-top:.6rem;">
-    @else
-    </div>
-        </div>
-            @endif
-                </button>
-                    <i class="fas fa-user-plus"></i> Agregar amigo
-                        style="width:100%;">
-                        data-target="{{ $profile->user_id }}"
-                        id="btn-add-friend"
-                <button class="prf-sb-btn prf-sb-btn--primary"
-            @else
-                </button>
-                    <i class="fas fa-clock"></i> Solicitud enviada
-                <button class="prf-sb-btn prf-sb-btn--outline" disabled style="width:100%;opacity:.7;cursor:default;">
-            @elseif($fStatus === 'pending')
-                </button>
-                    <i class="fas fa-user-check"></i> Amigos
-                <button class="prf-sb-btn prf-sb-btn--outline" disabled style="width:100%;opacity:.7;cursor:default;">
-            @if($fStatus === 'accepted')
-            @php $fStatus = $friendshipStatus ?? null; @endphp
-            {{-- Botón amistad --}}
-
-            </button>
-                <i class="fas fa-paper-plane"></i> Enviar mensaje
-                    style="width:100%;">
-                    id="btn-msg-profile"
-                    data-name="{{ $profile->nickname }}"
-                    data-partner="{{ $profile->user_id }}"
-            <button class="prf-sb-btn prf-sb-btn--msg"
-            @endif
-                </form>
-                    </button>
-                        + Seguir
-                    <button type="submit" class="prf-sb-btn prf-sb-btn--primary" style="width:100%;">
-                    @csrf
-                <form method="POST" action="{{ route('follow', $profile->nickname) }}" style="margin:0;">
-            @else
-                </form>
-                    </button>
-                        &#10003; Siguiendo
-                    <button type="submit" class="prf-sb-btn prf-sb-btn--outline" style="width:100%;">
-                    @csrf @method('DELETE')
-                <form method="POST" action="{{ route('unfollow', $profile->nickname) }}" style="margin:0;">
-            @if($isFollowing)
-        <div style="display:flex;flex-direction:column;gap:.45rem;">
-        </div>
-            <i class="fas fa-bolt"></i> Acciones
-        <div class="l69-sidebar-card__title">
-    <div class="l69-sidebar-card" style="margin-top:.6rem;">
-    @if(!$isOwnProfile)
-@auth
-{{-- Tarjeta: acciones --}}
-
-
-
 {{-- Ultimos perfiles visitados --}}
 @auth
 @if($recentlyVisited->count() > 0)
@@ -297,6 +102,69 @@
 </div>
 @endif
 
+@endauth
+
+{{-- Tarjeta: acciones --}}
+@auth
+    @if(!$isOwnProfile)
+    <div class="l69-sidebar-card" style="margin-top:.6rem;">
+        <div class="l69-sidebar-card__title">
+            <i class="fas fa-bolt"></i> Acciones
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.45rem;">
+            @if($isFollowing)
+                <form method="POST" action="{{ route('unfollow', $profile->nickname) }}" style="margin:0;">
+                    @csrf @method('DELETE')
+                    <button type="submit" class="prf-sb-btn prf-sb-btn--outline" style="width:100%;">
+                        &#10003; Siguiendo
+                    </button>
+                </form>
+            @else
+                <form method="POST" action="{{ route('follow', $profile->nickname) }}" style="margin:0;">
+                    @csrf
+                    <button type="submit" class="prf-sb-btn prf-sb-btn--primary" style="width:100%;">
+                        + Seguir
+                    </button>
+                </form>
+            @endif
+            <button class="prf-sb-btn prf-sb-btn--msg"
+                    data-partner="{{ $profile->user_id }}"
+                    data-name="{{ $profile->nickname }}"
+                    id="btn-msg-profile"
+                    style="width:100%;">
+                <i class="fas fa-paper-plane"></i> Enviar mensaje
+            </button>
+
+            {{-- Botón amistad --}}
+            @php $fStatus = $friendshipStatus ?? null; @endphp
+            @if($fStatus === 'accepted')
+                <button class="prf-sb-btn prf-sb-btn--outline" disabled style="width:100%;opacity:.7;cursor:default;">
+                    <i class="fas fa-user-check"></i> Amigos
+                </button>
+            @elseif($fStatus === 'pending')
+                <button class="prf-sb-btn prf-sb-btn--outline" disabled style="width:100%;opacity:.7;cursor:default;">
+                    <i class="fas fa-clock"></i> Solicitud enviada
+                </button>
+            @else
+                <button class="prf-sb-btn prf-sb-btn--primary"
+                        id="btn-add-friend"
+                        data-target="{{ $profile->user_id }}"
+                        style="width:100%;">
+                    <i class="fas fa-user-plus"></i> Agregar amigo
+                </button>
+            @endif
+        </div>
+    </div>
+    @else
+    <div class="l69-sidebar-card" style="margin-top:.6rem;">
+        <div class="l69-sidebar-card__title"><i class="fas fa-cog"></i> Mi Perfil</div>
+        <a href="{{ route('profile.edit') }}"
+           class="prf-sb-btn prf-sb-btn--outline"
+           style="width:100%;text-align:center;display:block;">
+            &#9999;&#65039; Editar perfil
+        </a>
+    </div>
+    @endif
 @endauth
 
 {{-- Tarjeta: amigos en comun --}}
