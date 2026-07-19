@@ -310,8 +310,6 @@
     @endforeach
 </div>
 @endif
-@endauth
-
 @endpush
 
 {{-- ════════════════════════════════════════════
