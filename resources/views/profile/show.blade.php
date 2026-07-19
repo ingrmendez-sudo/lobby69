@@ -877,6 +877,24 @@
                                 id="btn-msg-profile-header">
                             <i class="fas fa-paper-plane"></i> Mensaje
                         </button>
+                        {{-- Botón amistad header --}}
+                        @php $fStatusH = $friendshipStatus ?? null; @endphp
+                        @if($fStatusH === 'accepted')
+                            <button class="prf-sb-btn prf-sb-btn--outline" disabled style="opacity:.7;cursor:default;">
+                                <i class="fas fa-user-check"></i> Amigos
+                            </button>
+                        @elseif($fStatusH === 'pending')
+                            <button class="prf-sb-btn prf-sb-btn--outline" disabled style="opacity:.7;cursor:default;">
+                                <i class="fas fa-clock"></i> Solicitud enviada
+                            </button>
+                        @else
+                            <button class="prf-sb-btn prf-sb-btn--primary"
+                                    id="btn-add-friend-header"
+                                    data-target="{{ $profile->user_id }}"
+                                    style="">
+                                <i class="fas fa-user-plus"></i> Agregar amigo
+                            </button>
+                        @endif
                     @else
                         <a href="{{ route('profile.edit') }}" class="prf-sb-btn prf-sb-btn--outline">
                             &#9999;&#65039; Editar perfil

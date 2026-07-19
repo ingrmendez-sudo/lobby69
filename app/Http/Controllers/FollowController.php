@@ -14,9 +14,11 @@ class FollowController extends Controller
      */
     public function follow(string $nickname)
     {
-        $target = DB::table('users')
-            ->where('username', $nickname)
-            ->first();
+        // Buscar por nickname en profiles, luego obtener el user
+        $profile = DB::table('profiles')->where('nickname', $nickname)->first();
+        $target  = $profile
+            ? DB::table('users')->whereRaw('id::text = ?', [$profile->user_id])->first()
+            : null;
 
         if (!$target) {
             return back()->with('error', 'Usuario no encontrado.');
@@ -51,9 +53,10 @@ class FollowController extends Controller
      */
     public function unfollow(string $nickname)
     {
-        $target = DB::table('users')
-            ->where('username', $nickname)
-            ->first();
+        $profile = DB::table('profiles')->where('nickname', $nickname)->first();
+        $target  = $profile
+            ? DB::table('users')->whereRaw('id::text = ?', [$profile->user_id])->first()
+            : null;
 
         if (!$target) {
             return back()->with('error', 'Usuario no encontrado.');
