@@ -108,6 +108,25 @@ class DashboardController extends Controller
 
         $avatarPhotoId = $photo->avatar_photo_id ?? null;
 
+        // Quienes dieron like (máx. 20, más recientes primero)
+        $likers = DB::table('photo_likes')
+            ->leftJoin('profiles as lp', function ($j) {
+                $j->on(DB::raw('lp.user_id::text'), '=', DB::raw('photo_likes.user_id::text'));
+            })
+            ->leftJoin('users as lu', function ($j) {
+                $j->on(DB::raw('lu.id::text'), '=', DB::raw('photo_likes.user_id::text'));
+            })
+            ->whereRaw('photo_likes.photo_id::text = ?', [(string) $photo->photo_uuid])
+            ->orderByDesc('photo_likes.created_at')
+            ->limit(20)
+            ->select([
+                DB::raw('COALESCE(lp.nickname, lu.username) as nick'),
+                DB::raw('(SELECT id FROM photos ap WHERE ap.user_id::text = photo_likes.user_id::text AND ap.is_profile_photo = true AND ap.status = \'approved\' LIMIT 1) as avatar_id'),
+            ])
+            ->get()
+            ->map(fn($l) => ['nick' => $l->nick ?? 'Usuario', 'avatar_id' => $l->avatar_id])
+            ->toArray();
+
         return response()->json([
             'photo' => [
                 'id'             => $photo->photo_uuid,
@@ -117,6 +136,7 @@ class DashboardController extends Controller
                 'comments_count' => (int) $photo->comments_count,
                 'user_liked'     => (bool) $photo->user_liked,
                 'comments'       => $comments,
+                'likers'         => $likers,
             ],
             'owner' => [
                 'name'            => $photo->display_name ?? 'Usuario',
@@ -272,7 +292,8 @@ class DashboardController extends Controller
 
         $followingIds = DB::table('follows')
             ->whereRaw('follower_id::text = ?', [$userId])
-            ->pluck(DB::raw('following_id::text'))
+            ->pluck('following_id')
+            ->map(fn($id) => (string) $id)
             ->toArray();
 
         $cityClause = $userCity
@@ -397,4 +418,7 @@ class DashboardController extends Controller
         ]);
     }
 }
+
+
+
 

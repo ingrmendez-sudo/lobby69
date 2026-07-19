@@ -834,12 +834,6 @@ if (elLoadMore) {
         self.disabled  = true;
 
         fetch('/dashboard/feed?tab=' + tab + '&page=' + page, {
-            headers: {
-                'Accept': 'application/json',
-                'X-Requested-With': 'XMLHttpRequest'
-            }
-        })
-        fetch('/dashboard/feed?tab=' + tab + '&page=' + page, {
         headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
     })
     .then(function(r) {
@@ -869,6 +863,34 @@ if (elLoadMore) {
 
     });
 }
+
+    // ── Auto-abrir modal si se llegó desde /notificaciones con ?photo=UUID ──
+    (function() {
+        var params  = new URLSearchParams(window.location.search);
+        var photoId = params.get('photo');
+        if (!photoId) return;
+
+        // Limpiar query param inmediatamente para no mostrar ?photo= en la URL
+        var cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete('photo');
+        window.history.replaceState({}, '', cleanUrl.toString());
+
+        // dsbOpenModal necesita que el DOM esté listo y el modal exista
+        function tryOpen(attempts) {
+            var modal = document.getElementById('photoModal');
+            if (modal && typeof dsbOpenModal === 'function') {
+                dsbOpenModal(photoId);
+            } else if (attempts < 30) {
+                setTimeout(function() { tryOpen(attempts + 1); }, 100);
+            }
+        }
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', function() { tryOpen(0); });
+        } else {
+            tryOpen(0);
+        }
+    })();
 </script>
 @endpush
 

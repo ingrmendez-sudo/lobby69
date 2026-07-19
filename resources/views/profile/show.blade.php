@@ -1261,10 +1261,32 @@
                 <span class="prf-photo-modal__caption" id="pm-caption"></span>
                 <div class="prf-photo-modal__actions">
                     @auth
-                    <button class="prf-like-btn" id="pm-like-btn" data-photo-uuid="">
-                        <span class="prf-like-icon">&#9829;</span>
-                        <span id="pm-like-count">0</span>
-                    </button>
+                    <div class="prf-like-wrap" id="pm-like-wrap" style="position:relative;display:inline-flex;align-items:center;">
+                        <button class="prf-like-btn" id="pm-like-btn" data-photo-uuid=""
+                                style="display:flex;align-items:center;gap:.35rem;">
+                            <span class="prf-like-icon">&#9829;</span>
+                            <span id="pm-like-count">0</span>
+                        </button>
+                        <div id="pm-likers-tooltip"
+                             style="display:none;position:absolute;top:calc(100% + 6px);left:50%;
+                                    transform:translateX(-50%);min-width:170px;max-width:260px;
+                                    background:var(--theme-card,#1e1e2e);
+                                    border:1px solid var(--theme-border,rgba(255,255,255,.15));
+                                    border-radius:12px;padding:.65rem .8rem;z-index:9999;
+                                    box-shadow:0 8px 28px rgba(0,0,0,.4);">
+                            <div id="pm-likers-list"
+                                 style="display:flex;flex-direction:column;gap:.35rem;
+                                        max-height:200px;overflow-y:auto;">
+                                <span style="font-size:.75rem;color:var(--theme-muted);">Cargando...</span>
+                            </div>
+                            <div style="position:absolute;top:-6px;left:50%;
+                                        width:10px;height:10px;
+                                        background:var(--theme-card,#1e1e2e);
+                                        border-left:1px solid var(--theme-border,rgba(255,255,255,.15));
+                                        border-top:1px solid var(--theme-border,rgba(255,255,255,.15));
+                                        transform:translateX(-50%) rotate(45deg);"></div>
+                        </div>
+                    </div>
                     @endauth
                     <button class="prf-photo-modal__close" id="pm-close" aria-label="Cerrar">&#10005;</button>
                 </div>
@@ -1613,6 +1635,114 @@ function contieneContacto(txt) {
                 .finally(function(){ if (btn) btn.disabled = false; });
         });
     }
+
+
+    // ── Tooltip likers al hover sobre el corazón ──
+    (function() {
+        var likeWrap    = document.getElementById('pm-like-wrap');
+        var tooltip     = document.getElementById('pm-likers-tooltip');
+        var likersList  = document.getElementById('pm-likers-list');
+        if (!likeWrap || !tooltip) return;
+
+        var hideTimer   = null;
+        var likerCache  = {};   // cache por photoId para no re-fetchar
+
+        function showTooltip() {
+            if (!currentId) return;
+            clearTimeout(hideTimer);
+            tooltip.style.display = 'block';
+
+            // Si ya tenemos los datos en cache, renderizar directo
+            if (likerCache[currentId]) {
+                renderLikers(likerCache[currentId]);
+                return;
+            }
+
+            // Mostrar loading y fetchar
+            likersList.innerHTML = '<span style="color:var(--theme-muted);font-size:.75rem;">Cargando...</span>';
+
+            fetch('/fotos/' + currentId + '/info', {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                var likers = (d.photo && d.photo.likers) ? d.photo.likers : [];
+                likerCache[currentId] = likers;
+                renderLikers(likers);
+            })
+            .catch(function() {
+                likersList.innerHTML = '<span style="color:#e74c3c;font-size:.75rem;">Error al cargar</span>';
+            });
+        }
+
+        function hideTooltip() {
+            hideTimer = setTimeout(function() {
+                tooltip.style.display = 'none';
+            }, 200);
+        }
+
+        function renderLikers(likers) {
+            if (!likers || !likers.length) {
+                likersList.innerHTML = '<span style="color:var(--theme-muted);font-size:.75rem;font-style:italic;">Sin likes aún</span>';
+                return;
+            }
+            likersList.innerHTML = likers.map(function(l) {
+                var avatarHtml = l.avatar_id
+                    ? '<img src="/fotos/' + l.avatar_id + '/ver" '
+                      + 'style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0;" '
+                      + 'onerror="this.style.display=\'none\'">'
+                    : '<div style="width:24px;height:24px;border-radius:50%;background:rgba(180,60,120,.3);'
+                      + 'display:flex;align-items:center;justify-content:center;flex-shrink:0;'
+                      + 'font-size:.65rem;color:#e056a0;font-weight:700;">'
+                      + (l.nick ? l.nick.charAt(0).toUpperCase() : '?')
+                      + '</div>';
+
+                return '<a href="/u/' + encodeURIComponent(l.nick) + '" '
+                    + 'style="display:flex;align-items:center;gap:.5rem;text-decoration:none;'
+                    + 'padding:.2rem .1rem;border-radius:6px;transition:background .1s;" '
+                    + 'onmouseover="this.style.background=\'rgba(180,60,120,.12)\'" '
+                    + 'onmouseout="this.style.background=\'transparent\'">'
+                    + avatarHtml
+                    + '<span style="font-size:.8rem;color:var(--theme-text);font-weight:500;">'
+                    + escHtml(l.nick)
+                    + '</span></a>';
+            }).join('');
+        }
+
+        // Limpiar cache al abrir nueva foto
+        var _origAbrir = abrir;
+        abrir = function(idx) {
+            _origAbrir(idx);
+            tooltip.style.display = 'none';
+        };
+
+        likeWrap.addEventListener('mouseenter', showTooltip);
+        likeWrap.addEventListener('mouseleave', hideTooltip);
+        tooltip.addEventListener('mouseenter',  function() { clearTimeout(hideTimer); });
+        tooltip.addEventListener('mouseleave',  hideTooltip);
+    })();
+
+        // ── Auto-abrir foto si se llegó desde notificaciones con ?photo=UUID ──
+    (function() {
+        var params    = new URLSearchParams(window.location.search);
+        var photoUuid = params.get('photo');
+        if (!photoUuid) return;
+
+        // Limpiar ?photo= de la URL sin recargar la página
+        var cleanUrl = new URL(window.location.href);
+        cleanUrl.searchParams.delete('photo');
+        window.history.replaceState({}, '', cleanUrl.toString());
+
+        // Buscar el item del carousel cuyo data-photo-uuid coincida
+        var idx = items.findIndex(function(el) {
+            return el.dataset.photoUuid === photoUuid;
+        });
+
+        if (idx !== -1) {
+            // Pequeño delay para que el DOM del carousel esté pintado
+            setTimeout(function() { abrir(idx); }, 200);
+        }
+    })();
 })();
 
 /* ── 4. Modal conversación / mensajes ── */
@@ -1750,3 +1880,6 @@ function contieneContacto(txt) {
 })();
 </script>
 @endpush
+
+
+

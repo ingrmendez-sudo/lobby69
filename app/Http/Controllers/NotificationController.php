@@ -28,7 +28,11 @@ class NotificationController extends Controller
             ->whereNull('read_at')
             ->update(['read_at' => Carbon::now()]);
 
-        return view('notifications.index', compact('notifs'));
+                $myNick = DB::table('profiles')
+            ->whereRaw('user_id::text = ?', [(string) $user->id])
+            ->value('nickname') ?? '';
+
+        return view('notifications.index', compact('notifs', 'myNick'));
     }
 
     public function unreadCount()
@@ -53,6 +57,18 @@ class NotificationController extends Controller
         return response()->json(['success' => true]);
     }
 
+        public function markOne(Request $request, string $id): \Illuminate\Http\JsonResponse
+    {
+        $user = auth()->user();
+        DB::table('notifications')
+            ->whereRaw('id::text = ?', [$id])
+            ->whereRaw('user_id::text = ?', [(string) $user->id])
+            ->whereNull('read_at')
+            ->update(['read_at' => Carbon::now()]);
+
+        return response()->json(['success' => true]);
+    }
+
     // ── Helper estático para crear notificaciones desde otros controladores ──
     public static function create(string $userId, string $type, array $data): void
     {
@@ -70,3 +86,6 @@ class NotificationController extends Controller
         }
     }
 }
+
+
+
