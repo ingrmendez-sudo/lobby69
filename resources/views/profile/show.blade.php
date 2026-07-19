@@ -102,6 +102,8 @@
 </div>
 @endif
 
+@endauth
+
 {{-- Tarjeta: acciones --}}
 @auth
     @if(!$isOwnProfile)
