@@ -227,11 +227,6 @@
 {{-- Stats propios del usuario logueado (layout base) --}}
 {{-- Ocultar Mi Actividad y Accesos Rapidos en perfil ajeno --}}
 <style>
-.l69-sidebar .l69-sidebar-card:has(.fa-bolt),
-.l69-sidebar .l69-sidebar-card:has(.fa-flash),
-[class*="sidebar"] .l69-sidebar-card:first-child,
-.prf-sidebar-activity,
-.prf-sidebar-accesos {display:none!important;}
 /* Ocultar por titulo exacto */
 .l69-sidebar-card__title:has(.fa-bolt) ~ *,
 .l69-sidebar-card__title:has(.fa-bolt) { display:none!important; }
