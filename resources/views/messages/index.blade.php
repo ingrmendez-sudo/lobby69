@@ -211,7 +211,15 @@
         <div class="l69-card-info">
           <div class="l69-card-name">{{ $pc->commenter_nick ?? $pc->commenter_name }}</div>
           <div class="l69-card-preview">{{ $pc->body }}</div>
-          <div class="l69-card-sub">En: <em>{{ $pc->caption ?? 'Sin título' }}</em></div>
+          <div class="l69-card-sub">En:
+              <a href="#"
+                 class="l69-comment-photo-link"
+                 data-photo-id="{{ $pc->photo_uuid }}"
+                 style="color:var(--theme-pink,#e056a0);text-decoration:none;font-style:italic;">
+                  {{ $pc->caption ?? 'Sin título' }}
+                  <i class="fas fa-external-link-alt" style="font-size:.65rem;margin-left:.2rem;"></i>
+              </a>
+            </div>
         </div>
         <div class="l69-card-meta">
           <span class="l69-card-time">{{ \Carbon\Carbon::parse($pc->created_at)->diffForHumans() }}</span>
@@ -877,6 +885,54 @@
 </style>
 @endpush
 
+
+{{-- ══ MODAL FOTO desde comentarios ══ --}}
+<style>
+#msg-photo-modal                { display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,.9);align-items:center;justify-content:center;padding:1rem }
+#msg-photo-inner                { position:relative;max-width:96vw;width:640px;max-height:92vh;background:var(--theme-card,#1a1028);border-radius:16px;overflow:hidden;display:flex;flex-direction:column }
+#msg-photo-close                { position:absolute;top:.6rem;right:.6rem;z-index:20;background:rgba(0,0,0,.55);border:none;color:#fff;width:30px;height:30px;border-radius:50%;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center }
+#msg-photo-img                  { width:100%;max-height:55vh;object-fit:contain;display:block;background:#000 }
+#msg-photo-meta                 { padding:.5rem 1rem;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--theme-border,rgba(255,255,255,.08)) }
+#msg-photo-caption              { font-size:.82rem;color:var(--theme-muted,#9ca3af);flex:1 }
+#msg-photo-profile-link         { color:var(--theme-pink,#e056a0);font-size:.78rem;text-decoration:none;margin-left:.75rem;white-space:nowrap }
+#msg-photo-likes                { display:flex;align-items:center;gap:.35rem;font-size:.82rem;color:var(--theme-muted,#aaa);margin-left:.75rem }
+#msg-photo-like-btn             { background:none;border:none;cursor:pointer;font-size:1.1rem;padding:0;line-height:1;transition:transform .15s }
+#msg-photo-like-btn:active      { transform:scale(1.3) }
+#msg-photo-comments-list        { flex:1;overflow-y:auto;padding:.6rem 1rem;display:flex;flex-direction:column;gap:.5rem;max-height:22vh }
+.msg-cmt-row                    { display:flex;gap:.5rem;align-items:flex-start }
+.msg-cmt-avatar                 { width:28px;height:28px;border-radius:50%;overflow:hidden;flex-shrink:0;background:var(--theme-pink,#e056a0);display:flex;align-items:center;justify-content:center;font-size:.7rem;color:#fff;font-weight:700 }
+.msg-cmt-avatar img             { width:100%;height:100%;object-fit:cover }
+.msg-cmt-bubble                 { background:rgba(255,255,255,.06);border-radius:10px;padding:.35rem .6rem;font-size:.8rem;color:var(--theme-text,#e5e7eb);line-height:1.4;flex:1 }
+.msg-cmt-nick                   { font-weight:600;color:var(--theme-pink,#e056a0);margin-right:.35rem;font-size:.75rem }
+.msg-cmt-time                   { font-size:.68rem;color:var(--theme-muted,#6b7280);margin-left:.4rem }
+#msg-photo-comment-form         { display:flex;gap:.4rem;padding:.5rem .75rem;border-top:1px solid var(--theme-border,rgba(255,255,255,.08)) }
+#msg-photo-comment-input        { flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:.35rem .85rem;color:var(--theme-text,#e5e7eb);font-size:.82rem;outline:none }
+#msg-photo-comment-input:focus  { border-color:var(--theme-pink,#e056a0) }
+#msg-photo-comment-send         { background:var(--theme-pink,#e056a0);border:none;color:#fff;border-radius:20px;padding:.35rem .9rem;cursor:pointer;font-size:.8rem;font-weight:600;white-space:nowrap }
+#msg-photo-comment-send:disabled{ opacity:.5;cursor:default }
+#msg-photo-no-comments          { text-align:center;font-size:.78rem;color:var(--theme-muted,#6b7280);padding:.5rem 0 }
+</style>
+<div id="msg-photo-modal">
+  <div id="msg-photo-inner">
+    <button id="msg-photo-close">✕</button>
+    <img id="msg-photo-img" src="" alt="Foto">
+    <div id="msg-photo-meta">
+      <span id="msg-photo-caption"></span>
+      <div id="msg-photo-likes">
+        <button id="msg-photo-like-btn" title="Me gusta">🤍</button>
+        <span id="msg-photo-like-count">0</span>
+      </div>
+      <a id="msg-photo-profile-link" href="#" style="display:none">Ver perfil →</a>
+    </div>
+    <div id="msg-photo-comments-list">
+      <p id="msg-photo-no-comments">Sin comentarios aún.</p>
+    </div>
+    <form id="msg-photo-comment-form" autocomplete="off">
+      <input id="msg-photo-comment-input" type="text" placeholder="Escribe un comentario…" maxlength="500">
+      <button id="msg-photo-comment-send" type="submit">Enviar</button>
+    </form>
+  </div>
+</div>
 @push('scripts')
 <script>
 const CSRF = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
@@ -1016,5 +1072,167 @@ document.querySelectorAll('.btn-close-ann').forEach(btn =>
     if (data.ok) { btn.closest('.l69-ann-card').classList.add('is-expired'); btn.remove(); }
   })
 );
+
+    // ── Modal foto rico desde comentarios recibidos ──────────
+    (function() {
+        var fotoModal    = document.getElementById('msg-photo-modal');
+        var fotoImg      = document.getElementById('msg-photo-img');
+        var fotoCaption  = document.getElementById('msg-photo-caption');
+        var fotoClose    = document.getElementById('msg-photo-close');
+        var fotoLikeBtn  = document.getElementById('msg-photo-like-btn');
+        var fotoLikeCount= document.getElementById('msg-photo-like-count');
+        var fotoList     = document.getElementById('msg-photo-comments-list');
+        var fotoNoComm   = document.getElementById('msg-photo-no-comments');
+        var fotoForm     = document.getElementById('msg-photo-comment-form');
+        var fotoInput    = document.getElementById('msg-photo-comment-input');
+        var fotoSend     = document.getElementById('msg-photo-comment-send');
+        var fotoProfileLink = document.getElementById('msg-photo-profile-link');
+
+        if (!fotoModal) return;
+
+        var currentPhotoId = null;
+        var currentLiked   = false;
+
+        // ── helpers ──
+        function escH(s) {
+            return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+        }
+        function timeAgo(iso) {
+            if (!iso) return '';
+            var diff = Math.floor((Date.now() - new Date(iso)) / 1000);
+            if (diff < 60)   return 'ahora';
+            if (diff < 3600) return Math.floor(diff/60) + ' min';
+            if (diff < 86400)return Math.floor(diff/3600) + ' h';
+            return Math.floor(diff/86400) + ' d';
+        }
+        function avatarHtml(c) {
+            if (c.avatar_photo_id) {
+                return '<img src="/fotos/' + c.avatar_photo_id + '/ver" alt="" loading="lazy">';
+            }
+            var letter = (c.user_nick || c.display_name || '?').charAt(0).toUpperCase();
+            return escH(letter);
+        }
+        function renderComments(comments) {
+            if (!comments || !comments.length) {
+                fotoList.innerHTML = '';
+                fotoList.appendChild(fotoNoComm);
+                fotoNoComm.style.display = 'block';
+                return;
+            }
+            fotoNoComm.style.display = 'none';
+            fotoList.innerHTML = '';
+            comments.forEach(function(c) {
+                var row = document.createElement('div');
+                row.className = 'msg-cmt-row';
+                row.innerHTML =
+                    '<div class="msg-cmt-avatar">' + avatarHtml(c) + '</div>' +
+                    '<div class="msg-cmt-bubble">' +
+                        '<span class="msg-cmt-nick">' + escH(c.user_nick || c.display_name) + '</span>' +
+                        escH(c.body) +
+                        '<span class="msg-cmt-time">' + timeAgo(c.created_at) + '</span>' +
+                    '</div>';
+                fotoList.appendChild(row);
+            });
+            fotoList.scrollTop = fotoList.scrollHeight;
+        }
+        function setLike(liked, count) {
+            currentLiked      = liked;
+            fotoLikeBtn.textContent = liked ? '❤️' : '🤍';
+            fotoLikeCount.textContent = count;
+        }
+        function openModal(photoId) {
+            currentPhotoId = photoId;
+            fotoImg.src    = '';
+            fotoCaption.textContent = '';
+            fotoList.innerHTML = '<p id="msg-photo-no-comments" style="text-align:center;font-size:.78rem;color:var(--theme-muted,#6b7280)">Cargando…</p>';
+            fotoProfileLink.style.display = 'none';
+            setLike(false, 0);
+            fotoModal.style.display = 'flex';
+
+            fetch('/fotos/' + photoId + '/info', {
+                headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': CSRF }
+            })
+            .then(function(r) { return r.json(); })
+            .then(function(d) {
+                if (!d.photo) return;
+                fotoImg.src = '/fotos/' + photoId + '/ver';
+                fotoCaption.textContent = d.photo.caption || '';
+                setLike(d.photo.user_liked, d.photo.likes_count);
+                renderComments(d.photo.comments);
+                if (d.owner && d.owner.url) {
+                    fotoProfileLink.href        = d.owner.url;
+                    fotoProfileLink.textContent = 'Ver perfil de ' + escH(d.owner.nickname || d.owner.name) + ' →';
+                    fotoProfileLink.style.display = 'inline';
+                }
+            })
+            .catch(function() {
+                fotoImg.src = '/fotos/' + photoId + '/ver';
+                renderComments([]);
+            });
+        }
+        function closeModal() {
+            fotoModal.style.display = 'none';
+            fotoImg.src = '';
+            currentPhotoId = null;
+            fotoInput.value = '';
+        }
+
+        // ── Abrir desde links de comentarios ──
+        document.querySelectorAll('.l69-comment-photo-link').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                var pid = link.dataset.photoId;
+                if (pid) openModal(pid);
+            });
+        });
+
+        // ── Like ──
+        fotoLikeBtn.addEventListener('click', function() {
+            if (!currentPhotoId) return;
+            fotoLikeBtn.disabled = true;
+            postJson('/fotos/' + currentPhotoId + '/like', {})
+            .then(function(res) {
+                setLike(res.liked ?? !currentLiked, res.likes_count ?? (parseInt(fotoLikeCount.textContent)||0));
+            })
+            .catch(function() {})
+            .finally(function() { fotoLikeBtn.disabled = false; });
+        });
+
+        // ── Enviar comentario ──
+        fotoForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            var body = fotoInput.value.trim();
+            if (!body || !currentPhotoId) return;
+            fotoSend.disabled = true;
+            postJson('/fotos/' + currentPhotoId + '/comentar', { body: body })
+            .then(function(res) {
+                if (res.comment || res.id || res.body) {
+                    var c = res.comment || res;
+                    fotoNoComm && (fotoNoComm.style.display = 'none');
+                    var row = document.createElement('div');
+                    row.className = 'msg-cmt-row';
+                    row.innerHTML =
+                        '<div class="msg-cmt-avatar">' + escH((c.user_nick||'Tú').charAt(0).toUpperCase()) + '</div>' +
+                        '<div class="msg-cmt-bubble">' +
+                            '<span class="msg-cmt-nick">' + escH(c.user_nick || 'Tú') + '</span>' +
+                            escH(c.body) +
+                            '<span class="msg-cmt-time">ahora</span>' +
+                        '</div>';
+                    fotoList.appendChild(row);
+                    fotoList.scrollTop = fotoList.scrollHeight;
+                    fotoInput.value = '';
+                }
+            })
+            .catch(function() {})
+            .finally(function() { fotoSend.disabled = false; });
+        });
+
+        // ── Cerrar ──
+        fotoClose.addEventListener('click', closeModal);
+        fotoModal.addEventListener('click', function(e) { if (e.target === fotoModal) closeModal(); });
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && fotoModal.style.display === 'flex') closeModal();
+        });
+    })();
 </script>
 @endpush

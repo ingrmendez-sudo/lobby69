@@ -302,6 +302,67 @@ class DashboardController extends Controller
 
         return $query;
     }
+    /**
+     * El dueño de la foto responde un comentario.
+     */
+    public function replyComment(Request $request, $photoId, $commentId)
+    {
+        $request->validate(['body' => 'required|string|min:1|max:500']);
+
+        $user   = auth()->user();
+        $userId = (string) $user->id;
+
+        $photo = DB::table('photos')
+            ->where(function($q) use ($photoId) {
+                $q->whereRaw('photo_uuid::text = ?', [$photoId])
+                  ->orWhereRaw('id::text = ?', [$photoId]);
+            })
+            ->select(['photo_uuid', 'user_id'])
+            ->first();
+
+        if (!$photo) {
+            return response()->json(['error' => 'Foto no encontrada.'], 404);
+        }
+
+        if ($userId !== (string) $photo->user_id) {
+            return response()->json(['error' => 'Solo el dueño de la foto puede responder.'], 403);
+        }
+
+        // Verificar que el comentario padre existe
+        $parent = DB::table('photo_comments')
+            ->whereRaw('id::text = ?', [$commentId])
+            ->whereRaw('photo_id::text = ?', [(string) $photo->photo_uuid])
+            ->first();
+
+        if (!$parent) {
+            return response()->json(['error' => 'Comentario no encontrado.'], 404);
+        }
+
+        $replyId = (string) Str::uuid();
+
+        DB::table('photo_comments')->insert([
+            'id'         => $replyId,
+            'photo_id'   => (string) $photo->photo_uuid,
+            'user_id'    => $userId,
+            'parent_id'  => $commentId,
+            'body'       => strip_tags($request->input('body')),
+            'status'     => 'approved',
+            'created_at' => Carbon::now(),
+            'updated_at' => Carbon::now(),
+        ]);
+
+        $profile = DB::table('profiles')
+            ->whereRaw('user_id::text = ?', [$userId])
+            ->select(['display_name', 'nickname'])
+            ->first();
+
+        return response()->json([
+            'success' => true,
+            'reply'   => [
+                'id'       => $replyId,
+                'body'     => strip_tags($request->input('body')),
+                'user_nick'=> $profile?->nickname ?? $profile?->display_name ?? 'Usuario',
+            ]
+        ]);
+    }
 }
-
-

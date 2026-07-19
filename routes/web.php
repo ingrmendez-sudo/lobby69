@@ -86,6 +86,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/fotos/{id}/info',              [DashboardController::class, 'photoModal'])->name('photos.info');
     Route::post('/fotos/{id}/like',             [DashboardController::class, 'toggleLike'])->name('photos.like');
     Route::post('/fotos/{id}/comentar',         [DashboardController::class, 'storeComment'])->name('photos.comment');
+    Route::post('/fotos/{photoId}/comentarios/{commentId}/reply', [DashboardController::class, 'replyComment'])->name('photos.comment.reply');
 
     // Videos
     Route::get('/mis-videos',     [VideoController::class, 'index'])->name('videos.index');
@@ -189,6 +190,7 @@ Route::middleware(['auth', 'admin.only'])
     Route::delete('comentarios-articulos/{id}',            [\App\Http\Controllers\Admin\AdminArticleCommentController::class, 'destroy'])->name('article-comments.destroy');
 
 });
+
 
 
 

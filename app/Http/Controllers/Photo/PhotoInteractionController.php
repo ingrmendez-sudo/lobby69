@@ -96,5 +96,54 @@ class PhotoInteractionController extends Controller
             ]),
         ]);
     }
-}
+    /**
+     * El dueño de la foto responde un comentario.
+     */
+    public function replyComment(Request $request, $photoId, $commentId)
+    {
+        $request->validate(['body' => 'required|string|max:500']);
 
+        if (self::contieneContacto($request->body)) {
+            return response()->json(
+                ['error' => 'La respuesta no puede contener datos de contacto.'], 422
+            );
+        }
+
+        $photo = DB::table('photos')
+            ->where(function($q) use ($photoId) {
+                $q->whereRaw('photo_uuid::text = ?', [$photoId])
+                  ->orWhereRaw('id::text = ?', [$photoId]);
+            })
+            ->select(['photo_uuid', 'user_id'])
+            ->first();
+
+        if (!$photo) {
+            return response()->json(['error' => 'Foto no encontrada.'], 404);
+        }
+
+        if ((string) auth()->id() !== (string) $photo->user_id) {
+            return response()->json(['error' => 'Solo el dueño de la foto puede responder.'], 403);
+        }
+
+        $reply = \App\Models\PhotoComment::create([
+            'id'        => (string) \Illuminate\Support\Str::uuid(),
+            'photo_id'  => (string) $photo->photo_uuid,
+            'user_id'   => (string) auth()->id(),
+            'parent_id' => $commentId,
+            'body'      => strip_tags($request->body),
+            'status'    => 'approved',
+        ]);
+
+        $user = auth()->user();
+
+        return response()->json([
+            'success' => true,
+            'reply'   => [
+                'id'       => $reply->id,
+                'body'     => $reply->body,
+                'nickname' => $user->profile->nickname ?? $user->name,
+                'avatar_photo_id' => null,
+            ]
+        ]);
+    }
+}
