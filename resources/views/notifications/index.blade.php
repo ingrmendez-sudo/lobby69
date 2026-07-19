@@ -35,13 +35,13 @@
                 $icon    = 'fa-heart';
                 $color   = '#e056a0';
                 $message = ($d['from_nick'] ?? 'Alguien') . ' le dio like a tu foto';
-                $url     = $d['photo_id'] ? '/dashboard' : '#';
+                $url     = isset($d['photo_id']) ? '/dashboard' : '#';
                 break;
             case 'comment':
                 $icon    = 'fa-comment';
                 $color   = '#8b5cf6';
-                $message = ($d['from_nick'] ?? 'Alguien') . ' comentó tu foto';
-                $url     = '/dashboard';
+                $message = ($d['from_nick'] ?? 'Alguien') . ' comentó en tu foto';
+                $url     = isset($d['photo_id']) ? '/dashboard' : '#';
                 break;
             case 'follow':
                 $icon    = 'fa-user-plus';
@@ -49,11 +49,41 @@
                 $message = ($d['from_nick'] ?? 'Alguien') . ' empezó a seguirte';
                 $url     = isset($d['from_nick']) ? '/u/' . $d['from_nick'] : '#';
                 break;
+            case 'new_message':
+                $icon    = 'fa-envelope';
+                $color   = '#3b82f6';
+                $preview = isset($d['preview']) ? ': "' . \Illuminate\Support\Str::limit($d['preview'], 40) . '"' : '';
+                $senderNick = '';
+                if (isset($d['sender_id'])) {
+                    $sProf = DB::table('profiles')->whereRaw('user_id::text = ?', [$d['sender_id']])->first();
+                    $senderNick = $sProf ? ($sProf->nickname ?? '') : '';
+                }
+                $message = ($senderNick ?: 'Alguien') . ' te envió un mensaje' . $preview;
+                $url     = route('messages.index', ['tab' => 'inbox']);
+                break;
+            case 'friend_request':
+                $icon    = 'fa-user-friends';
+                $color   = '#f59e0b';
+                $message = ($d['from_nick'] ?? 'Alguien') . ' te envió una solicitud de amistad';
+                $url     = route('messages.index', ['tab' => 'friends']);
+                break;
+            case 'friend_accepted':
+                $icon    = 'fa-handshake';
+                $color   = '#22c55e';
+                $message = ($d['from_nick'] ?? 'Alguien') . ' aceptó tu solicitud de amistad';
+                $url     = isset($d['from_nick']) ? '/u/' . $d['from_nick'] : '#';
+                break;
             case 'article_like':
                 $icon    = 'fa-newspaper';
                 $color   = '#f59e0b';
                 $message = ($d['from_nick'] ?? 'Alguien') . ' le dio like a un artículo';
+                $url     = '#';
                 break;
+            default:
+                $icon    = 'fa-bell';
+                $color   = '#e056a0';
+                $message = 'Nueva notificación';
+                $url     = '#';
         }
     @endphp
     <div style="display:flex;align-items:flex-start;gap:1rem;padding:1rem 1.25rem;
@@ -80,3 +110,4 @@
     @endif
 </div>
 @endsection
+

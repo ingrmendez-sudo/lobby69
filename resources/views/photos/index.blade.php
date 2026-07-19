@@ -250,7 +250,10 @@
     @else
     <div class="mf-photo-grid">
       @foreach($grouped[$type] as $photo)
-      <div class="mf-photo-item">
+      <div class="mf-photo-item mf-photo-clickable"
+         data-photo-id="{{ $photo->photo_uuid }}"
+         data-photo-status="{{ $photo->status }}"
+         style="cursor:pointer;">
         <img src="{{ route('photos.serve', $photo->id) }}"
              alt="Foto"
              onerror="this.parentElement.style.background='var(--theme-input,#f1f5f9)';this.remove()">
@@ -303,6 +306,33 @@
   </div>
   @endforeach
 
+</div>
+
+{{-- ══ MODAL DE FOTO (mis fotos) ══ --}}
+<div id="mf-photo-modal" style="
+    display:none; position:fixed; inset:0; z-index:9999;
+    background:rgba(0,0,0,.88); align-items:center; justify-content:center;">
+    <div style="position:relative; max-width:92vw; max-height:92vh;
+                background:var(--theme-card,#1a1028); border-radius:16px;
+                overflow:hidden; display:flex; flex-direction:column;
+                width:560px;">
+        <button id="mf-modal-close" style="
+            position:absolute; top:.75rem; right:.75rem; z-index:10;
+            background:rgba(0,0,0,.5); border:none; color:#fff;
+            width:32px; height:32px; border-radius:50%; cursor:pointer;
+            font-size:1.1rem; display:flex; align-items:center; justify-content:center;">
+            ✕
+        </button>
+        <img id="mf-modal-img" src="" alt="Foto"
+             style="width:100%; max-height:70vh; object-fit:contain; display:block;">
+        <div style="padding:.75rem 1rem; display:flex; gap:.75rem; align-items:center;
+                    border-top:1px solid var(--theme-border,rgba(255,255,255,.1));">
+            <span id="mf-modal-caption" style="flex:1; font-size:.85rem;
+                  color:var(--theme-text,#f0e8ff); opacity:.8;"></span>
+            <span id="mf-modal-status" style="font-size:.75rem; font-weight:700;
+                  padding:.2rem .6rem; border-radius:20px;"></span>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -382,6 +412,70 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
     xhr.setRequestHeader('X-Requested-With', 'XMLHttpRequest');
     xhr.send(formData);
 });
+
+    // ── Modal mis fotos ─────────────────────────────────────
+    var mfModal    = document.getElementById('mf-photo-modal');
+    var mfImg      = document.getElementById('mf-modal-img');
+    var mfCaption  = document.getElementById('mf-modal-caption');
+    var mfStatus   = document.getElementById('mf-modal-status');
+    var mfClose    = document.getElementById('mf-modal-close');
+
+    var statusColors = {
+        approved : { bg:'#10b981', text:'✅ Aprobada' },
+        pending  : { bg:'#f59e0b', text:'⏳ En revisión' },
+        rejected : { bg:'#ef4444', text:'❌ Rechazada' },
+    };
+
+    document.querySelectorAll('.mf-photo-clickable').forEach(function(card) {
+        card.addEventListener('click', function(e) {
+            // No abrir si click fue en botón de acción
+            if (e.target.closest('.mf-actions')) return;
+
+            var photoId = card.dataset.photoId;
+            var status  = card.dataset.photoStatus || 'pending';
+            if (!photoId) return;
+
+            mfImg.src     = '';
+            mfCaption.textContent = '';
+            mfModal.style.display = 'flex';
+
+            // Cargar imagen
+            mfImg.src = '/fotos/' + photoId + '/ver';
+            mfImg.onerror = function() {
+                mfImg.alt = 'No se pudo cargar la imagen.';
+            };
+
+            // Status badge
+            var sc = statusColors[status] || statusColors['pending'];
+            mfStatus.textContent        = sc.text;
+            mfStatus.style.background   = sc.bg;
+            mfStatus.style.color        = '#fff';
+
+            // Caption desde alt o data
+            var imgEl = card.querySelector('img');
+            mfCaption.textContent = imgEl ? (imgEl.title || imgEl.alt || '') : '';
+        });
+    });
+
+    // Cerrar modal
+    if (mfClose) mfClose.addEventListener('click', function() {
+        mfModal.style.display = 'none';
+        mfImg.src = '';
+    });
+    mfModal.addEventListener('click', function(e) {
+        if (e.target === mfModal) {
+            mfModal.style.display = 'none';
+            mfImg.src = '';
+        }
+    });
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && mfModal.style.display === 'flex') {
+            mfModal.style.display = 'none';
+            mfImg.src = '';
+        }
+    });
 </script>
 @endpush
+
+
 

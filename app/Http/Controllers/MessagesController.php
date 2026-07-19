@@ -18,7 +18,8 @@ class MessagesController extends Controller
 
         // ── Tab 1: Conversaciones ──
         $conversations = collect();
-        $unreadTotal   = 0;
+        $unreadTotal      = 0;
+        $unreadComments   = 0;
         if ($tab === 'inbox') {
             $conversations = DB::select("
                 SELECT
@@ -70,6 +71,14 @@ class MessagesController extends Controller
                 ->count();
         }
 
+        // ── Contador global de comentarios no leídos (para badge) ──
+        $unreadComments = DB::table('photo_comments as pc')
+            ->join('photos as ph', DB::raw('ph.photo_uuid::text'), '=', DB::raw('pc.photo_id::text'))
+            ->whereRaw('ph.user_id::text = ?', [$userId])
+            ->whereNull('pc.read_at')
+            ->where('pc.status', 'approved')
+            ->count();
+
         // ── Tab 2: Comentarios recibidos ──
         $photoComments = collect();
         $videoComments = collect();
@@ -82,7 +91,7 @@ class MessagesController extends Controller
                 ->where('pc.status', 'approved')
                 ->orderByDesc('pc.created_at')
                 ->select([
-                    'pc.id', 'pc.body', 'pc.created_at',
+                    'pc.id', 'pc.body', 'pc.created_at', 'pc.read_at',
                     'ph.photo_uuid', 'ph.caption',
                     DB::raw('COALESCE(pr.display_name, u.username) AS commenter_name'),
                     DB::raw('pr.nickname AS commenter_nick'),
@@ -91,6 +100,19 @@ class MessagesController extends Controller
                 ])
                 ->limit(50)
                 ->get();
+
+            // Marcar como leídos DESPUÉS de capturar el estado para la vista
+            $unreadCommentIds = $photoComments
+                ->filter(fn($c) => is_null($c->read_at))
+                ->pluck('id')
+                ->map(fn($v) => (string) $v)
+                ->toArray();
+
+            if (!empty($unreadCommentIds)) {
+                DB::table('photo_comments')
+                    ->whereIn(DB::raw('id::text'), $unreadCommentIds)
+                    ->update(['read_at' => now()]);
+            }
 
             try {
                 $videoComments = DB::table('video_comments as vc')
@@ -390,6 +412,15 @@ class MessagesController extends Controller
             'updated_at'  => now(),
         ]);
 
+
+        // Notificar al receptor de la solicitud de amistad
+        $senderNick = DB::table('profiles')
+            ->whereRaw('user_id::text = ?', [$userId])
+            ->value('nickname');
+        \App\Http\Controllers\NotificationController::create($targetId, 'friend_request', [
+            'from_nick' => $senderNick ?? 'Alguien',
+            'sender_id' => $userId,
+        ]);
         return response()->json(['ok' => true, 'friendship_id' => $id]);
     }
 
@@ -412,6 +443,15 @@ class MessagesController extends Controller
             DB::table('friendships')
                 ->whereRaw('id::text = ?', [$friendshipId])
                 ->update(['status' => 'accepted', 'updated_at' => now()]);
+
+            // Notificar al que envió la solicitud
+            $acceptedFriendship = DB::table('friendships')->whereRaw('id::text = ?', [$friendshipId])->first();
+            if ($acceptedFriendship) {
+                $accepterNick = DB::table('profiles')->whereRaw('user_id::text = ?', [$userId])->value('nickname');
+                \App\Http\Controllers\NotificationController::create((string)$acceptedFriendship->sender_id, 'friend_accepted', [
+                    'from_nick' => $accepterNick ?? 'Alguien',
+                ]);
+            }
         } else {
             DB::table('friendships')
                 ->whereRaw('id::text = ?', [$friendshipId])
@@ -509,4 +549,10 @@ class MessagesController extends Controller
         return response()->json(['ok' => true]);
     }
 }
+
+
+
+
+
+
 

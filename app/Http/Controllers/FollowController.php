@@ -42,6 +42,15 @@ class FollowController extends Controller
                 'following_id' => $target->id,
                 'created_at'   => now(),
             ]);
+
+            // Notificar al usuario seguido
+            $followerNick = DB::table('profiles')
+                ->whereRaw('user_id::text = ?', [(string)$me])
+                ->value('nickname');
+            NotificationController::create((string)$target->id, 'follow', [
+                'from_nick'   => $followerNick ?? 'Alguien',
+                'follower_id' => (string)$me,
+            ]);
         }
 
         return back()->with('success', 'Ahora sigues a @' . $nickname . '.');
@@ -184,3 +193,4 @@ class FollowController extends Controller
         return view('follows.index', compact('following', 'followersCount'));
     }
 }
+

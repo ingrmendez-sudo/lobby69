@@ -171,6 +171,22 @@ class DashboardController extends Controller
             ->whereRaw('photo_id::text = ?', [$photoUuid])
             ->count();
 
+
+        // Notificar al dueño si se dio like (no al quitar)
+        if ($liked) {
+            $likeOwner = DB::table('photos')
+                ->whereRaw('photo_uuid::text = ?', [$photoUuid])
+                ->value('user_id');
+            $likerNick = DB::table('profiles')
+                ->whereRaw('user_id::text = ?', [(string) auth()->id()])
+                ->value('nickname');
+            if ($likeOwner && (string)$likeOwner !== (string)auth()->id()) {
+                \App\Http\Controllers\NotificationController::create((string)$likeOwner, 'like', [
+                    'from_nick' => $likerNick ?? 'Alguien',
+                    'photo_id'  => $photoUuid,
+                ]);
+            }
+        }
         return response()->json([
             'liked'       => $liked,
             'likes_count' => $count,
@@ -220,6 +236,18 @@ class DashboardController extends Controller
             ->where('is_profile_photo', true)
             ->where('status', 'approved')
             ->value('id');
+
+
+        // Notificar al dueño de la foto cuando alguien comenta
+        $photoOwner = DB::table('photos')
+            ->whereRaw('photo_uuid::text = ?', [(string) $photo->photo_uuid])
+            ->value('user_id');
+        if ($photoOwner && (string)$photoOwner !== $userId) {
+            \App\Http\Controllers\NotificationController::create((string)$photoOwner, 'comment', [
+                'from_nick' => $profile?->nickname ?? 'Alguien',
+                'photo_id'  => (string) $photo->photo_uuid,
+            ]);
+        }
 
         return response()->json([
             'success' => true,
@@ -369,3 +397,4 @@ class DashboardController extends Controller
         ]);
     }
 }
+
