@@ -132,6 +132,29 @@
                     style="width:100%;">
                 <i class="fas fa-paper-plane"></i> Enviar mensaje
             </button>
+
+            {{-- Botón amistad --}}
+            @auth
+            @if(!$isOwnProfile)
+            @php $fStatus = $friendshipStatus ?? null; @endphp
+            @if($fStatus === 'accepted')
+                <button class="prf-sb-btn prf-sb-btn--outline" disabled style="width:100%;opacity:.7;cursor:default;">
+                    <i class="fas fa-user-check"></i> Amigos
+                </button>
+            @elseif($fStatus === 'pending')
+                <button class="prf-sb-btn prf-sb-btn--outline" disabled style="width:100%;opacity:.7;cursor:default;">
+                    <i class="fas fa-clock"></i> Solicitud enviada
+                </button>
+            @else
+                <button class="prf-sb-btn prf-sb-btn--primary"
+                        id="btn-add-friend"
+                        data-target="{{ $profile->user_id }}"
+                        style="width:100%;">
+                    <i class="fas fa-user-plus"></i> Agregar amigo
+                </button>
+            @endif
+            @endif
+            @endauth
         </div>
     </div>
     @else
@@ -214,7 +237,39 @@
 /* Ocultar por titulo exacto */
 .l69-sidebar-card__title:has(.fa-bolt) ~ *,
 .l69-sidebar-card__title:has(.fa-bolt) { display:none!important; }
-</style>
+
+        /* ── Replies de comentarios ── */
+        .prf-comment-reply {
+            display: flex;
+            align-items: flex-start;
+            gap: .5rem;
+            margin: .3rem 0 .3rem 2.2rem;
+            padding: .4rem .6rem;
+            background: rgba(255,255,255,.04);
+            border-left: 2px solid var(--_pink, #c0392b);
+            border-radius: 0 6px 6px 0;
+        }
+        .prf-comment-reply__ph {
+            width: 22px !important;
+            height: 22px !important;
+            font-size: .65rem !important;
+            flex-shrink: 0;
+        }
+        .prf-comment-reply__body { flex: 1; min-width: 0; }
+        .prf-btn-reply {
+            background: none;
+            border: none;
+            color: var(--_pink, #c0392b);
+            font-size: .72rem;
+            cursor: pointer;
+            padding: .15rem .3rem;
+            margin-top: .25rem;
+            opacity: .8;
+            transition: opacity .2s;
+        }
+        .prf-btn-reply:hover { opacity: 1; }
+        .prf-btn-reply:disabled { opacity: .4; cursor: default; }
+    </style>
 @include('layouts.sidebar-right')
 
 
@@ -724,7 +779,39 @@
 /* Filas extra colapsables en "Sobre ellos" pareja */
 .prf-row-extra { display: none; }
 .prf-sobre-expanded .prf-row-extra { display: flex; }
-</style>
+
+        /* ── Replies de comentarios ── */
+        .prf-comment-reply {
+            display: flex;
+            align-items: flex-start;
+            gap: .5rem;
+            margin: .3rem 0 .3rem 2.2rem;
+            padding: .4rem .6rem;
+            background: rgba(255,255,255,.04);
+            border-left: 2px solid var(--_pink, #c0392b);
+            border-radius: 0 6px 6px 0;
+        }
+        .prf-comment-reply__ph {
+            width: 22px !important;
+            height: 22px !important;
+            font-size: .65rem !important;
+            flex-shrink: 0;
+        }
+        .prf-comment-reply__body { flex: 1; min-width: 0; }
+        .prf-btn-reply {
+            background: none;
+            border: none;
+            color: var(--_pink, #c0392b);
+            font-size: .72rem;
+            cursor: pointer;
+            padding: .15rem .3rem;
+            margin-top: .25rem;
+            opacity: .8;
+            transition: opacity .2s;
+        }
+        .prf-btn-reply:hover { opacity: 1; }
+        .prf-btn-reply:disabled { opacity: .4; cursor: default; }
+    </style>
 @endpush
 
 {{-- ════════════════════════════════════════════
@@ -1380,8 +1467,32 @@ function contieneContacto(txt) {
             commWrap.innerHTML = '<p class="prf-comment-empty">Sin comentarios a&uacute;n.</p>';
             return;
         }
+        const PROFILE_OWNER = '{{ $profile->user_id ?? "" }}';
+        const isOwner = ME && PROFILE_OWNER && ME === PROFILE_OWNER;
+
         commWrap.innerHTML = list.map(function(c){
-            return '<div class="prf-modal-comment">'
+            // Replies anidadas bajo este comentario
+            var repliesHtml = '';
+            if (c.replies && c.replies.length) {
+                repliesHtml = c.replies.map(function(r){
+                    return '<div class="prf-comment-reply">'
+                        + '<div class="prf-modal-comment__ph prf-comment-reply__ph">'
+                        + escHtml((r.user_nick||'?').charAt(0).toUpperCase())
+                        + '</div>'
+                        + '<div class="prf-comment-reply__body">'
+                        + '<span class="prf-modal-comment__author">' + escHtml(r.user_nick||'') + '</span>'
+                        + '<div class="prf-modal-comment__text">' + escHtml(r.body) + '</div>'
+                        + '</div></div>';
+                }).join('');
+            }
+
+            // Botón reply solo para el dueño del perfil
+            var replyBtn = isOwner && !c.parent_id
+                ? '<button class="prf-btn-reply" data-comment-id="' + escHtml(c.id) + '">'
+                  + '<i class="fas fa-reply"></i> Responder</button>'
+                : '';
+
+            return '<div class="prf-modal-comment" data-id="' + escHtml(c.id) + '">'
                 + '<div class="prf-modal-comment__avatar">'
                 + '<div class="prf-modal-comment__ph">'
                 + escHtml((c.user_nick||'?').charAt(0).toUpperCase())
@@ -1390,9 +1501,43 @@ function contieneContacto(txt) {
                 + '<span class="prf-modal-comment__author">' + escHtml(c.user_nick||'Anónimo') + '</span>'
                 + ' <span class="prf-modal-comment__time">' + escHtml(c.created_at||'') + '</span>'
                 + '<div class="prf-modal-comment__text">' + escHtml(c.body) + '</div>'
-                + '</div></div>';
+                + replyBtn
+                + '</div>'
+                + repliesHtml
+                + '</div>';
         }).join('');
         commWrap.scrollTop = commWrap.scrollHeight;
+
+        // Listener botón reply
+        commWrap.querySelectorAll('.prf-btn-reply').forEach(function(btn){
+            btn.addEventListener('click', function(){
+                var commentId = btn.dataset.commentId;
+                var texto = prompt('Escribe tu respuesta:');
+                if (!texto || !texto.trim()) return;
+                if (typeof contieneContacto === 'function' && contieneContacto(texto)) {
+                    alert('⚠️ No puedes incluir emails, teléfonos ni redes sociales.');
+                    return;
+                }
+                btn.disabled = true;
+                postJson('/fotos/' + currentId + '/comentarios/' + commentId + '/reply', { body: texto.trim() })
+                    .then(function(res){
+                        if (res.success) {
+                            // Insertar reply visualmente sin recargar
+                            var replyHtml = '<div class="prf-comment-reply">'
+                                + '<div class="prf-modal-comment__ph prf-comment-reply__ph">'
+                                + escHtml((res.reply.user_nick||'?').charAt(0).toUpperCase())
+                                + '</div>'
+                                + '<div class="prf-comment-reply__body">'
+                                + '<span class="prf-modal-comment__author">' + escHtml(res.reply.user_nick||'') + '</span>'
+                                + '<div class="prf-modal-comment__text">' + escHtml(res.reply.body) + '</div>'
+                                + '</div></div>';
+                            btn.closest('.prf-modal-comment').insertAdjacentHTML('afterend', replyHtml);
+                            btn.remove();
+                        }
+                    })
+                    .catch(function(){ btn.disabled = false; });
+            });
+        });
     }
 
     // Clicks en carrusel
@@ -1553,8 +1698,48 @@ function contieneContacto(txt) {
     }
 })();
 </script>
+<script>
+// ── Botón Agregar amigo ──────────────────────────────────
+(function() {
+    var btn = document.getElementById('btn-add-friend');
+    if (!btn) return;
+    var CSRF = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+
+    btn.addEventListener('click', function() {
+        var targetId = btn.dataset.target;
+        if (!targetId) return;
+        btn.disabled    = true;
+        btn.textContent = 'Enviando…';
+
+        fetch('/amigos/solicitud', {
+            method: 'POST',
+            headers: {
+                'Content-Type':  'application/json',
+                'Accept':        'application/json',
+                'X-CSRF-TOKEN':  CSRF
+            },
+            body: JSON.stringify({ target_id: targetId })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(d) {
+            if (d.ok) {
+                btn.innerHTML   = '<i class="fas fa-clock"></i> Solicitud enviada';
+                btn.disabled    = true;
+                btn.classList.remove('prf-sb-btn--primary');
+                btn.classList.add('prf-sb-btn--outline');
+                btn.style.opacity = '.7';
+                btn.style.cursor  = 'default';
+            } else {
+                btn.disabled    = false;
+                btn.innerHTML   = '<i class="fas fa-user-plus"></i> Agregar amigo';
+                alert(d.error ?? 'Error al enviar solicitud');
+            }
+        })
+        .catch(function() {
+            btn.disabled  = false;
+            btn.innerHTML = '<i class="fas fa-user-plus"></i> Agregar amigo';
+        });
+    });
+})();
+</script>
 @endpush
-
-
-
-

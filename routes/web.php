@@ -60,6 +60,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/mensajes/conversacion/{partnerId}', [App\Http\Controllers\MessagesController::class, 'conversation'])->name('messages.conversation');
     Route::post('/mensajes/enviar', [App\Http\Controllers\MessagesController::class, 'send'])->name('messages.send');
     Route::post('/mensajes/amistad/{friendshipId}', [App\Http\Controllers\MessagesController::class, 'friendAction'])->name('messages.friend.action');
+    Route::post('/amigos/solicitud',               [App\Http\Controllers\MessagesController::class, 'sendFriendRequest'])->name('friends.request');
     Route::post('/mensajes/recomendar', [App\Http\Controllers\MessagesController::class, 'review'])->name('messages.review');
     Route::post('/mensajes/anuncio', [App\Http\Controllers\MessagesController::class, 'storeAnnouncement'])->name('messages.announcement.store');
     Route::patch('/mensajes/anuncio/{id}/cerrar', [App\Http\Controllers\MessagesController::class, 'closeAnnouncement'])->name('messages.announcement.close');

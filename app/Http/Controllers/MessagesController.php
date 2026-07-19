@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
+use App\Http\Controllers\Photo\PhotoInteractionController;
 
 class MessagesController extends Controller
 {
@@ -350,6 +351,48 @@ class MessagesController extends Controller
         return response()->json(['ok' => true]);
     }
 
+    // ── Amistad: enviar solicitud ──
+    public function sendFriendRequest(Request $request)
+    {
+        $request->validate(['target_id' => 'required|uuid']);
+        $userId   = (string) Auth::id();
+        $targetId = (string) $request->target_id;
+
+        if ($userId === $targetId) {
+            return response()->json(['error' => 'No puedes agregarte a ti mismo'], 422);
+        }
+
+        $exists = DB::table('friendships')
+            ->where(function($q) use ($userId, $targetId) {
+                $q->whereRaw('sender_id::text = ?',   [$userId])
+                  ->whereRaw('receiver_id::text = ?', [$targetId]);
+            })
+            ->orWhere(function($q) use ($userId, $targetId) {
+                $q->whereRaw('sender_id::text = ?',   [$targetId])
+                  ->whereRaw('receiver_id::text = ?', [$userId]);
+            })
+            ->first();
+
+        if ($exists) {
+            return response()->json([
+                'error'  => 'Ya existe una solicitud o amistad',
+                'status' => $exists->status,
+            ], 409);
+        }
+
+        $id = (string) \Illuminate\Support\Str::uuid();
+        DB::table('friendships')->insert([
+            'id'          => $id,
+            'sender_id'   => $userId,
+            'receiver_id' => $targetId,
+            'status'      => 'pending',
+            'created_at'  => now(),
+            'updated_at'  => now(),
+        ]);
+
+        return response()->json(['ok' => true, 'friendship_id' => $id]);
+    }
+
     // ── Amistad: aceptar / rechazar ──
     public function friendAction(Request $request, string $friendshipId)
     {
@@ -466,3 +509,4 @@ class MessagesController extends Controller
         return response()->json(['ok' => true]);
     }
 }
+

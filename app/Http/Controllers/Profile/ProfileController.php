@@ -30,9 +30,9 @@ class ProfileController extends Controller
             'orientation'  => 'nullable|string|max:50',
         ], [
             'nickname.required'     => 'El nick es obligatorio.',
-            'nickname.alpha_dash'   => 'El nick solo puede contener letras, números, guiones y guiones bajos.',
+            'nickname.alpha_dash'   => 'El nick solo puede contener letras, numeros, guiones y guiones bajos.',
             'nickname.min'          => 'El nick debe tener al menos 3 caracteres.',
-            'age.min'               => 'Debes tener al menos 18 años.',
+            'age.min'               => 'Debes tener al menos 18 anos.',
             'display_name.required' => 'El nombre es obligatorio.',
         ]);
 
@@ -46,7 +46,7 @@ class ProfileController extends Controller
                 ->where('user_id', '!=', $userId)
                 ->exists();
             if ($nickExists) {
-                return back()->withErrors(['nickname' => 'Este nick ya está en uso. Elige otro.'])->withInput();
+                return back()->withErrors(['nickname' => 'Este nick ya esta en uso. Elige otro.'])->withInput();
             }
         }
 
@@ -64,7 +64,7 @@ class ProfileController extends Controller
             'bio'                  => $request->bio ?? '',
             'state'                => $request->state ?? '',
             'city'                 => $request->city ?? '',
-            'country'              => $request->country ?? 'México',
+            'country'              => $request->country ?? 'Mexico',
             'orientation'          => $request->orientation ?? '',
             'looking_for'          => json_encode($lookingFor),
             'interests'            => json_encode($interests),
@@ -97,7 +97,7 @@ class ProfileController extends Controller
         }
 
         return redirect()->route('dashboard')
-            ->with('success', '✅ Perfil guardado correctamente.');
+            ->with('success', 'Perfil guardado correctamente.');
     }
 
     public function edit()
@@ -133,7 +133,7 @@ class ProfileController extends Controller
         $me           = auth()->id();
         $isOwnProfile = $me && (string)$me === (string)$profile->user_id;
 
-        // ── Follows ──
+        // Follows
         $isFollowing = false;
         if ($me && !$isOwnProfile) {
             $isFollowing = DB::table('follows')
@@ -150,7 +150,7 @@ class ProfileController extends Controller
             ->where('follower_id', $profile->user_id)
             ->count();
 
-        // ── Avatar ──
+        // Avatar
         $profilePhoto = DB::table('photos')
             ->whereRaw('user_id::text = ?', [$profile->user_id])
             ->where('is_profile_photo', true)
@@ -172,7 +172,7 @@ class ProfileController extends Controller
             ? route('photos.serve', $avatarPhotoId)
             : asset('img/default-avatar.svg');
 
-        // ── Fotos públicas ──
+        // Fotos publicas
         $photos = DB::table('photos')
             ->whereRaw('user_id::text = ?', [$profile->user_id])
             ->where('album_type', 'public')
@@ -183,7 +183,7 @@ class ProfileController extends Controller
 
         $photosCount = $photos->count();
 
-        // ── Likes ──
+        // Likes
         $photoUuids = $photos->pluck('photo_uuid')
             ->map(fn($u) => (string)$u)
             ->filter()
@@ -213,7 +213,7 @@ class ProfileController extends Controller
                 ->flip();
         }
 
-        // ── Stats sidebar ──
+        // Stats sidebar
         $sbPhotosCount = $photosCount;
 
         $sbReviews = DB::table('profile_reviews')
@@ -223,7 +223,7 @@ class ProfileController extends Controller
         $sbPos = $sbReviews->where('type', 'positive')->count();
         $sbNeg = $sbReviews->where('type', 'negative')->count();
 
-        // ── Amigos en común ──
+        // Amigos en comun
         $commonFriends = collect();
         if ($me && !$isOwnProfile) {
             $meId = (string)$me;
@@ -276,7 +276,110 @@ class ProfileController extends Controller
             }
         }
 
-        // ── Variables de presentación ──
+        // Estado de amistad con el perfil visitado
+        $friendshipStatus = null;
+        $friendshipId     = null;
+        if ($me && !$isOwnProfile) {
+            $meId = (string)$me;
+            $uid  = (string)$profile->user_id;
+            $fr   = DB::table('friendships')
+                ->where(function($q) use ($meId, $uid) {
+                    $q->whereRaw('sender_id::text = ?',   [$meId])
+                      ->whereRaw('receiver_id::text = ?', [$uid]);
+                })
+                ->orWhere(function($q) use ($meId, $uid) {
+                    $q->whereRaw('sender_id::text = ?',   [$uid])
+                      ->whereRaw('receiver_id::text = ?', [$meId]);
+                })
+                ->select(['id', 'status', 'sender_id'])
+                ->first();
+            if ($fr) {
+                $friendshipStatus = $fr->status;
+                $friendshipId     = (string)$fr->id;
+            }
+        }
+
+        // Registrar visita
+        if ($me && !$isOwnProfile) {
+            try {
+                DB::table('profile_views')->insert([
+                    'id'        => (string) Str::uuid(),
+                    'viewer_id' => (string) $me,
+                    'viewed_id' => (string) $profile->user_id,
+                    'viewed_at' => Carbon::now(),
+                ]);
+            } catch (\Exception $e) {}
+        }
+
+        // Ultimos perfiles visitados por el usuario logueado
+        $recentlyVisited = collect();
+        if ($me) {
+            try {
+                $recentlyVisited = DB::table('profile_views as pv')
+                    ->join('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('pv.viewed_id::text'))
+                    ->join('users as u',     DB::raw('u.id::text'),       '=', DB::raw('pv.viewed_id::text'))
+                    ->whereRaw('pv.viewer_id::text = ?', [(string)$me])
+                    ->whereRaw('pv.viewed_id::text != ?', [(string)$profile->user_id])
+                    ->where('u.active', true)
+                    ->select([
+                        DB::raw('DISTINCT ON (pv.viewed_id) pv.viewed_id'),
+                        'pr.nickname',
+                        DB::raw('COALESCE(pr.display_name, u.username) AS display_name'),
+                        'pr.profile_type',
+                        'pr.verified_profile',
+                        DB::raw("(SELECT ap.id FROM photos ap
+                                  WHERE ap.user_id::text = pv.viewed_id::text
+                                    AND ap.is_profile_photo = true
+                                    AND ap.status = 'approved'
+                                  LIMIT 1) AS avatar_id"),
+                        'pv.viewed_at',
+                    ])
+                    ->orderByRaw('pv.viewed_id, pv.viewed_at DESC')
+                    ->limit(6)
+                    ->get();
+            } catch (\Exception $e) {}
+        }
+
+        // Perfiles recomendados
+        $recommendedProfiles = collect();
+        if ($me) {
+            try {
+                $meCity = DB::table('profiles')
+                    ->whereRaw('user_id::text = ?', [(string)$me])
+                    ->value('city');
+
+                $alreadyFollowing = DB::table('follows')
+                    ->whereRaw('follower_id::text = ?', [(string)$me])
+                    ->pluck(DB::raw('following_id::text'))
+                    ->toArray();
+                $alreadyFollowing[] = (string)$me;
+                $alreadyFollowing[] = (string)$profile->user_id;
+
+                $recommendedProfiles = DB::table('profiles as pr')
+                    ->join('users as u', DB::raw('u.id::text'), '=', DB::raw('pr.user_id::text'))
+                    ->where('pr.profile_completed', true)
+                    ->where('u.active', true)
+                    ->whereNotIn(DB::raw('pr.user_id::text'), $alreadyFollowing)
+                    ->when($meCity, fn($q) => $q->where('pr.city', 'ilike', '%'.$meCity.'%'))
+                    ->select([
+                        'pr.nickname',
+                        DB::raw('COALESCE(pr.display_name, u.username) AS display_name'),
+                        'pr.profile_type',
+                        'pr.city',
+                        'pr.verified_profile',
+                        DB::raw("(SELECT ap.id FROM photos ap
+                                  WHERE ap.user_id::text = pr.user_id::text
+                                    AND ap.is_profile_photo = true
+                                    AND ap.status = 'approved'
+                                  LIMIT 1) AS avatar_id"),
+                    ])
+                    ->orderByDesc('pr.last_active_at')
+                    ->limit(5)
+                    ->get();
+            } catch (\Exception $e) {}
+        }
+
+        // Variables de presentacion
         $verificationStatus = $user->verification_status ?? null;
 
         $typeLabel = match($profile->profile_type ?? '') {
@@ -304,47 +407,30 @@ class ProfileController extends Controller
 
         $allLookingFor = [
             'Parejas heterosexuales', 'Parejas bisexuales', 'Parejas (ella bisexual)',
-            'Parejas (él bisexual)',  'Hombres heterosexuales', 'Hombres bisexuales',
+            'Parejas (el bisexual)',  'Hombres heterosexuales', 'Hombres bisexuales',
             'Mujeres heterosexuales', 'Mujeres bisexuales',
         ];
 
         $allInterests = [
-            'Intercambio completo', 'Intercambio light', 'Sexo en grupo', 'Tríos',
-            'Sólo ellas', 'Mirar y ser vistos', 'Cuckold', 'Prácticas BDSM',
+            'Intercambio completo', 'Intercambio light', 'Sexo en grupo', 'Trios',
+            'Solo ellas', 'Mirar y ser vistos', 'Cuckold', 'Practicas BDSM',
             'Compartir fetiches', 'Cybersexo', 'Intercambio de fotos',
             'Sexo por separado', 'Relaciones abiertas', 'Amistad', 'Otros',
         ];
 
-        // ── Único return al final ──
         return view('profile.show', compact(
-            'profile',
-            'user',
-            'isOwnProfile',
-            'isFollowing',
-            'followersCount',
-            'followingCount',
-            'avatarPhotoId',
-            'avatarUrl',
-            'photos',
-            'photosCount',
-            'likesCount',
-            'likeCounts',
-            'myLikes',
-            'sbPhotosCount',
-            'sbReviews',
-            'sbPos',
-            'sbNeg',
+            'profile', 'user', 'isOwnProfile', 'isFollowing',
+            'friendshipStatus', 'friendshipId',
+            'followersCount', 'followingCount',
+            'avatarPhotoId', 'avatarUrl',
+            'photos', 'photosCount',
+            'likesCount', 'likeCounts', 'myLikes',
+            'sbPhotosCount', 'sbReviews', 'sbPos', 'sbNeg',
             'commonFriends',
-            'verificationStatus',
-            'typeLabel',
-            'memberLabel',
-            'memberIcon',
-            'isPairing',
-            'isUnicorn',
-            'lookingFor',
-            'interests',
-            'allLookingFor',
-            'allInterests'
+            'recentlyVisited', 'recommendedProfiles',
+            'verificationStatus', 'typeLabel', 'memberLabel', 'memberIcon',
+            'isPairing', 'isUnicorn',
+            'lookingFor', 'interests', 'allLookingFor', 'allInterests'
         ));
     }
 }
