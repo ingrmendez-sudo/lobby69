@@ -134,8 +134,6 @@
             </button>
 
             {{-- Botón amistad --}}
-            @auth
-            @if(!$isOwnProfile)
             @php $fStatus = $friendshipStatus ?? null; @endphp
             @if($fStatus === 'accepted')
                 <button class="prf-sb-btn prf-sb-btn--outline" disabled style="width:100%;opacity:.7;cursor:default;">
@@ -153,8 +151,6 @@
                     <i class="fas fa-user-plus"></i> Agregar amigo
                 </button>
             @endif
-            @endif
-            @endauth
         </div>
     </div>
     @else
@@ -1480,7 +1476,7 @@ function contieneContacto(txt) {
                         + escHtml((r.user_nick||'?').charAt(0).toUpperCase())
                         + '</div>'
                         + '<div class="prf-comment-reply__body">'
-                        + '<span class="prf-modal-comment__author">' + escHtml(r.user_nick||'') + '</span>'
+                        + '<a class="prf-modal-comment__author" href="' + (r.commenter_nick ? '/u/' + encodeURIComponent(r.commenter_nick) : '#') + '" style="color:inherit;text-decoration:none;font-weight:600;" target="_self">' + escHtml(r.user_nick||'') + '</a>'
                         + '<div class="prf-modal-comment__text">' + escHtml(r.body) + '</div>'
                         + '</div></div>';
                 }).join('');
@@ -1498,7 +1494,7 @@ function contieneContacto(txt) {
                 + escHtml((c.user_nick||'?').charAt(0).toUpperCase())
                 + '</div></div>'
                 + '<div class="prf-modal-comment__body">'
-                + '<span class="prf-modal-comment__author">' + escHtml(c.user_nick||'Anónimo') + '</span>'
+                + '<a class="prf-modal-comment__author" href="' + (c.commenter_nick ? '/u/' + encodeURIComponent(c.commenter_nick) : '#') + '" style="color:inherit;text-decoration:none;font-weight:600;" target="_self">' + escHtml(c.user_nick||'Anónimo') + '</a>'
                 + ' <span class="prf-modal-comment__time">' + escHtml(c.created_at||'') + '</span>'
                 + '<div class="prf-modal-comment__text">' + escHtml(c.body) + '</div>'
                 + replyBtn
@@ -1528,7 +1524,7 @@ function contieneContacto(txt) {
                                 + escHtml((res.reply.user_nick||'?').charAt(0).toUpperCase())
                                 + '</div>'
                                 + '<div class="prf-comment-reply__body">'
-                                + '<span class="prf-modal-comment__author">' + escHtml(res.reply.user_nick||'') + '</span>'
+                        + '<a class="prf-modal-comment__author" href="' + (res.reply.commenter_nick ? '/u/' + encodeURIComponent(res.reply.commenter_nick) : '#') + '" style="color:inherit;text-decoration:none;font-weight:600;">' + escHtml(res.reply.user_nick||'') + '</a>'
                                 + '<div class="prf-modal-comment__text">' + escHtml(res.reply.body) + '</div>'
                                 + '</div></div>';
                             btn.closest('.prf-modal-comment').insertAdjacentHTML('afterend', replyHtml);
@@ -1594,7 +1590,7 @@ function contieneContacto(txt) {
                         var div = document.createElement('div');
                         div.className = 'prf-modal-comment prf-modal-comment--new';
                         div.innerHTML = '<div class="prf-modal-comment__body">'
-                            + '<span class="prf-modal-comment__author">' + escHtml(res.comment.user_nick) + '</span>'
+                    + '<a class="prf-modal-comment__author" href="' + (res.comment.commenter_nick ? '/u/' + encodeURIComponent(res.comment.commenter_nick) : '#') + '" style="color:inherit;text-decoration:none;font-weight:600;">' + escHtml(res.comment.user_nick) + '</a>'
                             + '<div class="prf-modal-comment__text">' + escHtml(res.comment.body) + '</div>'
                             + '</div>';
                         if (commWrap) { commWrap.appendChild(div); commWrap.scrollTop = commWrap.scrollHeight; }

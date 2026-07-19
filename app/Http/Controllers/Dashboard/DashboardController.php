@@ -100,6 +100,7 @@ class DashboardController extends Controller
                 'photo_comments.body',
                 'photo_comments.created_at',
                 DB::raw('COALESCE(p.nickname, u.username) as user_nick'),
+                DB::raw('p.nickname as commenter_nick'),
                 DB::raw('COALESCE(p.display_name, u.username) as display_name'),
                 DB::raw('(SELECT id FROM photos ap WHERE ap.user_id::text = photo_comments.user_id::text AND ap.is_profile_photo = true AND ap.status = \'approved\' LIMIT 1) as avatar_photo_id'),
             ])
@@ -226,6 +227,7 @@ class DashboardController extends Controller
                 'id'              => $commentId,
                 'body'            => $request->input('body'),
                 'user_nick'       => $profile?->nickname ?? $profile?->display_name ?? 'Usuario',
+                'commenter_nick'  => $profile?->nickname ?? null,
                 'avatar_photo_id' => $avatarPhotoId,
                 'created_at'      => Carbon::now()->toISOString(),
             ],
@@ -362,6 +364,7 @@ class DashboardController extends Controller
                 'id'       => $replyId,
                 'body'     => strip_tags($request->input('body')),
                 'user_nick'=> $profile?->nickname ?? $profile?->display_name ?? 'Usuario',
+                'commenter_nick'  => $profile?->nickname ?? null,
             ]
         ]);
     }
