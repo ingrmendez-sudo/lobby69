@@ -1420,10 +1420,10 @@ function contieneContacto(txt) {
             if (!currentId) return;
             postJson('/fotos/' + currentId + '/like', {})
                 .then(function(res){
-                    if (likeCountEl) likeCountEl.textContent = res.count || 0;
+                    if (likeCountEl) likeCountEl.textContent = res.likes_count || 0;
                     likeBtn.classList.toggle('liked', !!res.liked);
                     if (items[currentIdx]) {
-                        items[currentIdx].dataset.likes  = res.count || 0;
+                        items[currentIdx].dataset.likes = res.likes_count || 0;
                         items[currentIdx].dataset.iliked = res.liked ? '1' : '0';
                     }
                 });
@@ -1554,6 +1554,7 @@ function contieneContacto(txt) {
 })();
 </script>
 @endpush
+
 
 
 
