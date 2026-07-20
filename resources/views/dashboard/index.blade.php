@@ -386,6 +386,21 @@
                     <i class="far fa-heart"></i>
                     <span class="like-count">0</span>
                 </button>
+
+                {{-- Tooltip likers --}}
+                <div id="dsb-likers-wrap" style="position:relative;display:inline-block;margin-left:.35rem;">
+                    <span id="dsb-likers-count"
+                          style="font-size:.72rem;color:#f472b6;cursor:pointer;user-select:none;font-weight:500;"
+                          title="Ver quiénes dieron like"></span>
+                    <div id="dsb-likers-tooltip"
+                         style="display:none;position:fixed;z-index:99999;background:#1e1e2e;border:1px solid rgba(224,86,160,.35);border-radius:8px;padding:.5rem .65rem;min-width:160px;max-width:230px;box-shadow:0 4px 20px rgba(0,0,0,.7);pointer-events:none;">
+                        <div style="font-size:.65rem;color:#f472b6;font-weight:600;
+                                    margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.04em;">
+                            Les gustó
+                        </div>
+                        <div id="dsb-likers-list"></div>
+                    </div>
+                </div>
             </div>
 
             <div id="commentSpinner">
@@ -580,6 +595,62 @@ function dsbOpenModal(photoId) {
         }
 
 
+
+
+        /* ── Likers tooltip ── */
+        /* Asegurar tooltip oculto al abrir modal */
+        var dsbLikersTooltipReset = document.getElementById('dsb-likers-tooltip');
+        if (dsbLikersTooltipReset) dsbLikersTooltipReset.style.display = 'none';
+
+        var dsbLikersCount   = document.getElementById('dsb-likers-count');
+        var dsbLikersTooltip = document.getElementById('dsb-likers-tooltip');
+        var dsbLikersList    = document.getElementById('dsb-likers-list');
+        var dsbLikersWrap    = document.getElementById('dsb-likers-wrap');
+
+        if (dsbLikersCount && dsbLikersList) {
+            var likers = d.photo.likers || [];
+            if (likers.length > 0) {
+                dsbLikersCount.textContent = likers.length === 1
+                    ? '1 like'
+                    : likers.length + ' likes';
+                dsbLikersCount.style.display = 'inline';
+
+                /* Construir lista */
+                dsbLikersList.innerHTML = likers.map(function(lk) {
+                    var avatarHtml = lk.avatar_id
+                        ? '<img src="/fotos/' + lk.avatar_id + '/ver" '
+                          + 'style="width:22px;height:22px;border-radius:50%;object-fit:cover;'
+                          + 'flex-shrink:0;margin-right:.4rem;" '
+                          + 'onerror="this.src=\'/img/default-avatar.svg\'">'
+                        : '<div style="width:22px;height:22px;border-radius:50%;'
+                          + 'background:rgba(224,86,160,.2);display:flex;align-items:center;'
+                          + 'justify-content:center;flex-shrink:0;margin-right:.4rem;">'
+                          + '<i class="fas fa-user" style="font-size:.55rem;color:#f472b6;"></i></div>';
+                    return '<div style="display:flex;align-items:center;padding:.2rem 0;'
+                        + 'font-size:.75rem;color:#e2e8f0;">'
+                        + avatarHtml
+                        + '<span style="color:#e2e8f0!important;font-size:.75rem;">' + escapeHtml(lk.nick || 'Usuario') + '</span></div>';
+                }).join('');
+
+                /* Hover para mostrar/ocultar tooltip */
+                if (dsbLikersWrap) {
+                    dsbLikersWrap.onmouseenter = function() {
+                        if (dsbLikersTooltip) dsbLikersTooltip.style.display = 'block';
+                    };
+                    dsbLikersWrap.onmouseleave = function() {
+                        if (dsbLikersTooltip) dsbLikersTooltip.style.display = 'none';
+                    };
+                }
+            } else {
+                dsbLikersCount.textContent = '';
+                dsbLikersCount.style.display = 'none';
+                if (dsbLikersTooltip) dsbLikersTooltip.style.display = 'none';
+                if (dsbLikersWrap) {
+                    dsbLikersWrap.onmouseenter = null;
+                    dsbLikersWrap.onmouseleave = null;
+                }
+            }
+        }
 
         /* caption */
         var cap = document.getElementById('modalCaption');
@@ -893,6 +964,12 @@ if (elLoadMore) {
     })();
 </script>
 @endpush
+
+
+
+
+
+
 
 
 
