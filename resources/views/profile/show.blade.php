@@ -1242,6 +1242,73 @@
         </div>
         @endif
 
+        {{-- Sección Videos --}}
+        @if(isset($videos) && $videos->isNotEmpty())
+        <div class="prf-card" style="margin-top:1.25rem;">
+            <h2 class="prf-card__title">
+                &#127916; Videos públicos
+                <span style="font-weight:400;color:var(--_muted);font-size:.8rem;margin-left:.25rem;">
+                    ({{ $videosCount ?? $videos->count() }})
+                </span>
+            </h2>
+            <div class="prf-carousel-wrap">
+                <button class="prf-carousel-btn prf-carousel-btn--prev"
+                        id="vid-carousel-prev" aria-label="Anterior">&#8249;</button>
+                <div class="prf-carousel-track" id="vid-carousel-track">
+                    @foreach($videos as $video)
+                    <div class="prf-carousel-item prf-video-item"
+                         data-video-id="{{ $video->id }}"
+                         style="cursor:pointer;position:relative;"
+                         onclick="openVideoModal({{ $video->id }}, '{{ addslashes($video->caption ?? '') }}', {{ $video->views_count ?? 0 }}, {{ $video->duration_seconds ?? 0 }})">
+
+                        {{-- Thumbnail o placeholder --}}
+                        @if($video->thumbnail_path)
+                        <img src="{{ route('videos.serve.public', $video->id) }}?thumb=1"
+                             alt="{{ $video->caption ?? 'Video' }}"
+                             loading="lazy"
+                             style="width:100%;height:100%;object-fit:cover;"
+                             onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
+                        <div style="display:none;width:100%;height:100%;background:rgba(0,0,0,.6);
+                                    align-items:center;justify-content:center;">
+                            <i class="fas fa-film" style="font-size:2rem;color:#f472b6;"></i>
+                        </div>
+                        @else
+                        <div style="width:100%;height:100%;background:rgba(0,0,0,.55);
+                                    display:flex;align-items:center;justify-content:center;
+                                    flex-direction:column;gap:.4rem;">
+                            <i class="fas fa-film" style="font-size:2rem;color:#f472b6;"></i>
+                            @if($video->caption)
+                            <span style="font-size:.7rem;color:#e2e8f0;text-align:center;
+                                         padding:0 .5rem;max-width:120px;
+                                         overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">
+                                {{ $video->caption }}
+                            </span>
+                            @endif
+                        </div>
+                        @endif
+
+                        {{-- Overlay play + duración --}}
+                        <div class="prf-carousel-item-overlay">
+                            <div class="prf-carousel-item-meta"
+                                 style="display:flex;align-items:center;justify-content:center;gap:.5rem;">
+                                <i class="fas fa-play-circle" style="font-size:1.4rem;color:#fff;"></i>
+                                @if($video->duration_seconds)
+                                <span style="font-size:.7rem;color:#e2e8f0;">
+                                    {{ gmdate('i:s', $video->duration_seconds) }}
+                                </span>
+                                @endif
+                            </div>
+                        </div>
+                    </div>
+                    @endforeach
+                </div>
+                <button class="prf-carousel-btn prf-carousel-btn--next"
+                        id="vid-carousel-next" aria-label="Siguiente">&#8250;</button>
+            </div>
+        </div>
+        @endif
+
+
     </div>{{-- /.prf-central --}}
 
 </div>{{-- /.prf-wrap --}}
@@ -1335,7 +1402,91 @@
 {{-- ════════════════════════════════════════════
      SCRIPTS
      ════════════════════════════════════════════ --}}
+
+{{-- ═══════════════ MODAL DE VIDEO ═══════════════ --}}
+<div id="video-modal"
+     style="display:none;position:fixed;inset:0;z-index:10000;
+            background:rgba(0,0,0,.92);align-items:center;justify-content:center;">
+    <button onclick="closeVideoModal()"
+            style="position:absolute;top:1rem;right:1rem;background:none;border:none;
+                   color:#fff;font-size:1.5rem;cursor:pointer;z-index:10001;">
+        <i class="fas fa-times"></i>
+    </button>
+    <div style="position:relative;width:90vw;max-width:860px;max-height:90vh;">
+        <video id="video-modal-player"
+               controls autoplay
+               style="width:100%;max-height:80vh;border-radius:10px;background:#000;display:block;">
+            <source id="video-modal-src" src="" type="video/mp4">
+            Tu navegador no soporta video HTML5.
+        </video>
+        <p id="video-modal-caption"
+           style="color:#e2e8f0;text-align:center;margin-top:.6rem;font-size:.85rem;"></p>
+    </div>
+</div>
+
 @push('scripts')
+
+<script>
+/* ── Carrusel de videos (reutiliza lógica del carrusel de fotos) ── */
+(function() {
+    var track = document.getElementById('vid-carousel-track');
+    var prev  = document.getElementById('vid-carousel-prev');
+    var next  = document.getElementById('vid-carousel-next');
+    if (!track) return;
+
+    var scrollAmt = 200;
+    if (prev) prev.addEventListener('click', function() {
+        track.scrollBy({ left: -scrollAmt, behavior: 'smooth' });
+    });
+    if (next) next.addEventListener('click', function() {
+        track.scrollBy({ left: scrollAmt, behavior: 'smooth' });
+    });
+})();
+
+/* ── Modal de video ── */
+function openVideoModal(videoId, caption, views, duration) {
+    var modal   = document.getElementById('video-modal');
+    var player  = document.getElementById('video-modal-player');
+    var src     = document.getElementById('video-modal-src');
+    var capEl   = document.getElementById('video-modal-caption');
+    var viewsEl  = document.getElementById('video-modal-views');
+    var durEl    = document.getElementById('video-modal-duration');
+    if (!modal || !player || !src) return;
+
+    src.src    = '/videos/' + videoId + '/ver';
+    player.load();
+    player.play().catch(function(){});
+    if (capEl) capEl.textContent = caption || '';
+    if (viewsEl) viewsEl.textContent = views || '0';
+    if (durEl) {
+        if (duration && duration > 0) {
+            var m = Math.floor(duration / 60);
+            var s = duration % 60;
+            durEl.textContent = m + ':' + (s < 10 ? '0' : '') + s;
+        } else { durEl.textContent = '-'; }
+    }
+
+    modal.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeVideoModal() {
+    var modal  = document.getElementById('video-modal');
+    var player = document.getElementById('video-modal-player');
+    if (player) { player.pause(); player.src = ''; }
+    if (modal)  modal.style.display = 'none';
+    document.body.style.overflow = '';
+}
+
+/* Cerrar con click en overlay o tecla Escape */
+document.getElementById('video-modal').addEventListener('click', function(e) {
+    if (e.target === this) closeVideoModal();
+});
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') closeVideoModal();
+});
+</script>
+
 <script>
 /* ═══════════════════════════════════════════════
    LOBBY69 — Profile JS
@@ -1880,6 +2031,11 @@ function contieneContacto(txt) {
 })();
 </script>
 @endpush
+
+
+
+
+
 
 
 
