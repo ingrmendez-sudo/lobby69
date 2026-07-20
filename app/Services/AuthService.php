@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 
 class AuthService
 {
-    public function attemptLogin(string $email, string $password): array
+    public function attemptLogin(string $email, string $password, bool $remember = false): array
     {
         try {
             $user = User::where('email', $email)->first();
@@ -27,7 +27,7 @@ class AuthService
                 return ['success' => false, 'message' => 'Credenciales inv├ílidas.'];
             }
 
-            Auth::login($user, true);
+            Auth::login($user, $remember);
 
             $user->update([
                 'last_login_at' => Carbon::now(),
@@ -46,3 +46,4 @@ class AuthService
         Auth::logout();
     }
 }
+

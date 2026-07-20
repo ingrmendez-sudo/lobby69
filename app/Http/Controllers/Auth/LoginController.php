@@ -25,11 +25,12 @@ class LoginController extends Controller
     {
         $credentials = $request->validated();
 
+        $remember = $request->boolean('remember');
+
         $result = $this->authService->attemptLogin(
             $credentials['email'],
             $credentials['password'],
-            $request->ip(),
-            $request->userAgent()
+            $remember
         );
 
         if ($result['success']) {
@@ -51,3 +52,4 @@ class LoginController extends Controller
         return redirect()->route('landing');
     }
 }
+
