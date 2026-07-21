@@ -213,6 +213,16 @@ class ProfileController extends Controller
                 ->flip();
         }
 
+        // Videos publicos
+        $videos = DB::table('videos')
+            ->whereRaw('user_id::text = ?', [$profile->user_id])
+            ->where('album_type', 'public')
+            ->where('status', 'approved')
+            ->orderBy('sort_order')
+            ->orderByDesc('created_at')
+            ->get();
+        $videosCount = $videos->count();
+
         // Stats sidebar
         $sbPhotosCount = $photosCount;
 
@@ -424,6 +434,7 @@ class ProfileController extends Controller
             'followersCount', 'followingCount',
             'avatarPhotoId', 'avatarUrl',
             'photos', 'photosCount',
+            'videos', 'videosCount',
             'likesCount', 'likeCounts', 'myLikes',
             'sbPhotosCount', 'sbReviews', 'sbPos', 'sbNeg',
             'commonFriends',

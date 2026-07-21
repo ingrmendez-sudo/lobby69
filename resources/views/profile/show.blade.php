@@ -1259,7 +1259,7 @@
                     <div class="prf-carousel-item prf-video-item"
                          data-video-id="{{ $video->id }}"
                          style="cursor:pointer;position:relative;"
-                         onclick="openVideoModal({{ $video->id }}, '{{ addslashes($video->caption ?? '') }}', {{ $video->views_count ?? 0 }}, {{ $video->duration_seconds ?? 0 }})">
+                         data-caption="{{ addslashes($video->caption ?? '') }}" data-views="{{ $video->views_count ?? 0 }}" data-duration="{{ $video->duration_seconds ?? 0 }}" data-owner="{{ $video->user_id }}">
 
                         {{-- Thumbnail o placeholder --}}
                         @if($video->thumbnail_path)
@@ -1287,6 +1287,13 @@
                         </div>
                         @endif
 
+                        {{-- Preview hover --}}
+                        <video class="prf-video-preview"
+                               data-src="{{ route('videos.serve.public', $video->id) }}"
+                               muted playsinline preload="none"
+                               style="position:absolute;inset:0;width:100%;height:100%;
+                                      object-fit:cover;display:none;border-radius:inherit;">
+                        </video>
                         {{-- Overlay play + duración --}}
                         <div class="prf-carousel-item-overlay">
                             <div class="prf-carousel-item-meta"
@@ -1404,59 +1411,199 @@
      ════════════════════════════════════════════ --}}
 
 {{-- ═══════════════ MODAL DE VIDEO ═══════════════ --}}
+{{-- ═══════════════ MODAL DE VIDEO ═══════════════ --}}
 <div id="video-modal"
      style="display:none;position:fixed;inset:0;z-index:10000;
-            background:rgba(0,0,0,.92);align-items:center;justify-content:center;">
+            background:rgba(0,0,0,.92);align-items:center;justify-content:center;
+            flex-direction:row;gap:0;">
+
+    {{-- Botón cerrar --}}
     <button onclick="closeVideoModal()"
             style="position:absolute;top:1rem;right:1rem;background:none;border:none;
                    color:#fff;font-size:1.5rem;cursor:pointer;z-index:10001;">
         <i class="fas fa-times"></i>
     </button>
-    <div style="position:relative;width:90vw;max-width:860px;max-height:90vh;">
-        <video id="video-modal-player"
-               controls autoplay
-               style="width:100%;max-height:80vh;border-radius:10px;background:#000;display:block;">
+
+    {{-- Columna izquierda: video --}}
+    <div style="flex:0 0 auto;width:60vw;max-width:780px;display:flex;flex-direction:column;
+                align-items:center;padding:1.5rem 1rem;">
+        <video id="video-modal-player" controls muted
+               style="width:100%;max-height:75vh;border-radius:10px;background:#000;display:block;">
             <source id="video-modal-src" src="" type="video/mp4">
-            Tu navegador no soporta video HTML5.
         </video>
         <p id="video-modal-caption"
-           style="color:#e2e8f0;text-align:center;margin-top:.6rem;font-size:.85rem;"></p>
+           style="color:#e2e8f0;text-align:center;margin-top:.5rem;font-size:.85rem;max-width:100%;"></p>
+        <div style="display:flex;gap:1.5rem;margin-top:.5rem;color:#cbd5e1;font-size:.85rem;">
+            <span><i class="fas fa-eye"></i> <span id="video-modal-views">0</span></span>
+            <span><i class="fas fa-clock"></i> <span id="video-modal-duration">-</span></span>
+        </div>
+    </div>
+
+    {{-- Columna derecha: likes + comentarios --}}
+    <div style="flex:1 1 0;min-width:280px;max-width:360px;height:80vh;
+                display:flex;flex-direction:column;background:#1e293b;border-radius:12px;
+                margin:1.5rem 1rem;overflow:hidden;">
+
+        {{-- Cabecera likes --}}
+        {{-- Cabecera likes --}}
+        <div style="padding:.75rem 1rem;border-bottom:1px solid #334155;">
+            <div style="display:flex;align-items:center;gap:.75rem;">
+                <button id="vm-like-btn" onclick="vmToggleLike()"
+                        style="background:none;border:none;cursor:pointer;font-size:1.3rem;
+                               color:#94a3b8;transition:color .2s;">
+                    <i id="vm-like-icon" class="far fa-heart"></i>
+                </button>
+                <button onclick="vmToggleLikersPanel()"
+                        style="background:none;border:none;cursor:pointer;display:flex;
+                               align-items:center;gap:.4rem;padding:0;">
+                    <span id="vm-like-count" style="color:#e2e8f0;font-size:.9rem;font-weight:600;">0</span>
+                    <span style="color:#64748b;font-size:.8rem;">me gusta</span>
+                    <i class="fas fa-chevron-down" style="color:#64748b;font-size:.7rem;"></i>
+                </button>
+            </div>
+            {{-- Panel desplegable de likers --}}
+            <div id="vm-likes-panel" style="display:none;margin-top:.5rem;max-height:120px;
+                 overflow-y:auto;background:#0f172a;border-radius:6px;padding:.25rem 0;">
+                <div id="vm-likes-list"></div>
+            </div>
+        </div>
+
+        {{-- Lista de comentarios --}}
+        <div id="vm-comments-list"
+             style="flex:1;overflow-y:auto;padding:.75rem 1rem;display:flex;
+                    flex-direction:column;gap:.75rem;">
+            <p id="vm-no-comments" style="color:#64748b;font-size:.85rem;text-align:center;
+                                          margin-top:2rem;">Sin comentarios aún.</p>
+        </div>
+
+        {{-- Input nuevo comentario --}}
+        @auth
+        <div style="padding:.75rem 1rem;border-top:1px solid #334155;display:flex;gap:.5rem;">
+            <input id="vm-comment-input" type="text" maxlength="500"
+                   placeholder="Escribe un comentario..."
+                   style="flex:1;background:#0f172a;border:1px solid #334155;border-radius:8px;
+                          color:#e2e8f0;padding:.45rem .75rem;font-size:.85rem;outline:none;"
+                   onkeydown="if(event.key==='Enter'){vmSubmitComment();}" />
+            <button onclick="vmSubmitComment()"
+                    style="background:#e11d48;border:none;border-radius:8px;color:#fff;
+                           padding:.45rem .9rem;cursor:pointer;font-size:.85rem;">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+        @endauth
+        @guest
+        <div style="padding:.75rem 1rem;border-top:1px solid #334155;text-align:center;">
+            <a href="{{ route('login') }}" style="color:#e11d48;font-size:.8rem;">
+                Inicia sesión para comentar
+            </a>
+        </div>
+        @endguest
     </div>
 </div>
 
 @push('scripts')
-
 <script>
-/* ── Carrusel de videos (reutiliza lógica del carrusel de fotos) ── */
+/* ── Carrusel de videos ── */
 (function() {
     var track = document.getElementById('vid-carousel-track');
     var prev  = document.getElementById('vid-carousel-prev');
     var next  = document.getElementById('vid-carousel-next');
     if (!track) return;
-
-    var scrollAmt = 200;
+    var scrollAmt = 220;
     if (prev) prev.addEventListener('click', function() {
         track.scrollBy({ left: -scrollAmt, behavior: 'smooth' });
     });
     if (next) next.addEventListener('click', function() {
         track.scrollBy({ left: scrollAmt, behavior: 'smooth' });
     });
+
+    /* Event delegation — evita onclick inline */
+    track.addEventListener('click', function(e) {
+        var item = e.target.closest('.prf-video-item');
+        if (!item) return;
+        var id       = item.dataset.videoId;
+        var caption  = item.dataset.caption  || '';
+        var views    = item.dataset.views    || 0;
+        var duration = item.dataset.duration || 0;
+        var owner    = item.dataset.owner    || '';
+        openVideoModal(id, caption, views, duration, owner);
+    });
 })();
 
-/* ── Modal de video ── */
-function openVideoModal(videoId, caption, views, duration) {
+/* ── Hover preview de videos en carrusel ── */
+(function() {
+    var track = document.getElementById('vid-carousel-track');
+    if (!track) return;
+    var _hoverTimer = null;
+    var _activePreview = null;
+
+    function stopPreview(item) {
+        if (_hoverTimer) { clearTimeout(_hoverTimer); _hoverTimer = null; }
+        if (_activePreview) {
+            _activePreview.pause();
+            _activePreview.currentTime = 0;
+            _activePreview.style.display = 'none';
+            _activePreview = null;
+        }
+        if (item) {
+            var overlay = item.querySelector('.prf-carousel-item-overlay');
+            if (overlay) overlay.style.opacity = '1';
+        }
+    }
+
+    track.addEventListener('mouseover', function(e) {
+        var item = e.target.closest('.prf-video-item');
+        if (!item) return;
+        if (_activePreview) return;
+        _hoverTimer = setTimeout(function() {
+            var vid = item.querySelector('.prf-video-preview');
+            if (!vid) return;
+            if (!vid.src && vid.dataset.src) {
+                vid.src = vid.dataset.src;
+            }
+            vid.style.display = 'block';
+            vid.currentTime = 0;
+            vid.play().catch(function(){});
+            _activePreview = vid;
+            var overlay = item.querySelector('.prf-carousel-item-overlay');
+            if (overlay) overlay.style.opacity = '0';
+            /* Detener después de 3 segundos */
+            setTimeout(function() { stopPreview(item); }, 3000);
+        }, 300);
+    });
+
+    track.addEventListener('mouseout', function(e) {
+        var item = e.target.closest('.prf-video-item');
+        if (!item) return;
+        var related = e.relatedTarget;
+        if (related && item.contains(related)) return;
+        stopPreview(item);
+    });
+})();
+
+/* ── Estado del modal ── */
+var _vmVideoId  = null;
+var _vmOwnerId  = null;
+
+/* ── Abrir modal ── */
+function openVideoModal(videoId, caption, views, duration, ownerId) {
+    _vmVideoId = videoId;
+    _vmOwnerId = ownerId || null;
+
     var modal   = document.getElementById('video-modal');
     var player  = document.getElementById('video-modal-player');
     var src     = document.getElementById('video-modal-src');
     var capEl   = document.getElementById('video-modal-caption');
-    var viewsEl  = document.getElementById('video-modal-views');
-    var durEl    = document.getElementById('video-modal-duration');
+    var viewsEl = document.getElementById('video-modal-views');
+    var durEl   = document.getElementById('video-modal-duration');
     if (!modal || !player || !src) return;
 
-    src.src    = '/videos/' + videoId + '/ver';
+    src.setAttribute('src', '/videos/' + videoId + '/ver');
     player.load();
+    player.muted = true;
     player.play().catch(function(){});
-    if (capEl) capEl.textContent = caption || '';
+
+    if (capEl)   capEl.textContent = caption || '';
     if (viewsEl) viewsEl.textContent = views || '0';
     if (durEl) {
         if (duration && duration > 0) {
@@ -1466,25 +1613,300 @@ function openVideoModal(videoId, caption, views, duration) {
         } else { durEl.textContent = '-'; }
     }
 
+    document.getElementById('vm-comments-list').innerHTML = '';
+    document.getElementById('vm-likes-panel').style.display = 'none';
+    document.getElementById('vm-likes-list').innerHTML = '';
+
     modal.style.display = 'flex';
     document.body.style.overflow = 'hidden';
+    vmLoadLikes(videoId);
+    vmLoadComments(videoId);
 }
 
+/* ── Cerrar modal ── */
 function closeVideoModal() {
     var modal  = document.getElementById('video-modal');
     var player = document.getElementById('video-modal-player');
     if (player) { player.pause(); player.src = ''; }
     if (modal)  modal.style.display = 'none';
     document.body.style.overflow = '';
+    _vmVideoId = null;
+    _vmOwnerId = null;
+    document.getElementById('vm-comments-list').innerHTML = '';
+    document.getElementById('vm-like-count').textContent = '0';
+    document.getElementById('vm-like-icon').className = 'far fa-heart';
+    document.getElementById('vm-like-btn').style.color = '#94a3b8';
+    document.getElementById('vm-likes-panel').style.display = 'none';
+    document.getElementById('vm-likes-list').innerHTML = '';
 }
 
-/* Cerrar con click en overlay o tecla Escape */
+/* Cerrar con overlay o Escape */
 document.getElementById('video-modal').addEventListener('click', function(e) {
     if (e.target === this) closeVideoModal();
 });
 document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') closeVideoModal();
 });
+
+/* ── LIKES ── */
+function vmLoadLikes(videoId) {
+    fetch('/videos/' + videoId + '/likes', { headers: { 'Accept': 'application/json' } })
+        .then(function(r){ return r.json(); })
+        .then(function(d){
+            document.getElementById('vm-like-count').textContent = d.count || 0;
+            var icon = document.getElementById('vm-like-icon');
+            var btn  = document.getElementById('vm-like-btn');
+            if (d.liked) {
+                icon.className = 'fas fa-heart';
+                btn.style.color = '#e11d48';
+            } else {
+                icon.className = 'far fa-heart';
+                btn.style.color = '#94a3b8';
+            }
+            /* Cargar lista de likers */
+            if (d.likers && d.likers.length) {
+                vmRenderLikers(d.likers);
+            }
+        }).catch(function(){});
+}
+
+function vmToggleLike() {
+    if (!_vmVideoId) return;
+    var csrf = document.querySelector('meta[name="csrf-token"]');
+    if (!csrf) { window.location = '/login'; return; }
+    fetch('/videos/' + _vmVideoId + '/like', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrf.content
+        },
+        body: JSON.stringify({})
+    }).then(function(r){
+        if (r.status === 401) { window.location = '/login'; return null; }
+        return r.json();
+    }).then(function(d){
+        if (!d) return;
+        document.getElementById('vm-like-count').textContent = d.count || 0;
+        var icon = document.getElementById('vm-like-icon');
+        var btn  = document.getElementById('vm-like-btn');
+        if (d.liked) {
+            icon.className = 'fas fa-heart';
+            btn.style.color = '#e11d48';
+        } else {
+            icon.className = 'far fa-heart';
+            btn.style.color = '#94a3b8';
+        }
+        if (d.likers) vmRenderLikers(d.likers);
+        /* Recargar lista completa */
+        vmLoadLikes(_vmVideoId);
+    }).catch(function(){});
+}
+
+function vmToggleLikersPanel() {
+    var panel = document.getElementById('vm-likes-panel');
+    panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+}
+
+function vmRenderLikers(likers) {
+    var list = document.getElementById('vm-likes-list');
+    list.innerHTML = '';
+    likers.forEach(function(u) {
+        var nick = u.nickname || u.username || u.name;
+        var a = document.createElement('a');
+        a.href = '/u/' + vmEsc(nick);
+        a.style.cssText = 'display:block;padding:.3rem .5rem;color:#e11d48;font-size:.8rem;text-decoration:none;border-radius:4px;';
+        a.style.cssText += 'transition:background .15s;';
+        a.onmouseover = function(){ this.style.background='#1e293b'; };
+        a.onmouseout  = function(){ this.style.background=''; };
+        a.textContent = '@' + nick;
+        list.appendChild(a);
+    });
+}
+
+/* ── COMENTARIOS ── */
+function vmLoadComments(videoId) {
+    fetch('/videos/' + videoId + '/comments', { headers: { 'Accept': 'application/json' } })
+        .then(function(r){ return r.json(); })
+        .then(function(comments){
+            var list = document.getElementById('vm-comments-list');
+            list.innerHTML = '';
+            if (!comments || !comments.length) {
+                list.innerHTML = '<p style="color:#64748b;font-size:.85rem;text-align:center;margin-top:2rem;">Sin comentarios aún.</p>';
+                return;
+            }
+            comments.forEach(function(c){ list.appendChild(vmBuildComment(c)); });
+            list.scrollTop = list.scrollHeight;
+        }).catch(function(){});
+}
+
+function vmBuildComment(c) {
+    var div = document.createElement('div');
+    div.id = 'vm-comment-' + c.id;
+    var isOwnerComment = (_vmOwnerId && String(c.user_id) === String(_vmOwnerId));
+    var canDelete = (String(c.user_id) === String(ME));
+    var ownerBadge = isOwnerComment
+        ? '<span style="background:#e11d48;color:#fff;font-size:.65rem;padding:.1rem .35rem;border-radius:4px;margin-left:.4rem;">Dueño</span>'
+        : '';
+    var deleteBtn = canDelete
+        ? '<button onclick="vmDeleteComment(' + c.id + ')" title="Eliminar"'
+          + ' style="background:none;border:none;color:#475569;cursor:pointer;font-size:.75rem;padding:0;">'
+          + '<i class="fas fa-trash"></i></button>'
+        : '';
+
+    div.style.cssText = 'border-radius:8px;padding:.6rem .75rem;font-size:.82rem;'
+        + (isOwnerComment ? 'background:#1e1030;border-left:3px solid #e11d48;' : 'background:#0f172a;');
+
+    var nick = c.nickname || c.username || c.name;
+    var header = '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.25rem;">'
+        + '<span><a href="/u/' + vmEsc(nick) + '" style="color:#e11d48;font-weight:600;text-decoration:none;">@' + vmEsc(nick) + '</a>' + ownerBadge + '</span>'
+        + '<div style="display:flex;gap:.5rem;align-items:center;">'
+        + '<span style="color:#475569;font-size:.75rem;">' + vmFmtTime(c.created_at) + '</span>'
+        + deleteBtn
+        + '</div></div>';
+
+    var body = '<p style="color:#cbd5e1;margin:0 0 .35rem;">' + vmEsc(c.body) + '</p>';
+
+    var replies = '';
+    if (c.replies && c.replies.length) {
+        c.replies.forEach(function(r){
+            var rNick = r.nickname || r.username || r.name;
+            replies += '<div id="vm-comment-' + r.id + '" style="margin-left:1rem;margin-top:.4rem;'
+                + 'background:#1e293b;border-radius:6px;padding:.4rem .6rem;">'
+                + '<a href="/u/' + vmEsc(rNick) + '" style="color:#e11d48;font-weight:600;font-size:.78rem;text-decoration:none;">@' + vmEsc(rNick) + '</a>'
+                + ' <span style="color:#94a3b8;font-size:.78rem;">' + vmEsc(r.body) + '</span>'
+                + '</div>';
+        });
+    }
+
+    /* Botón para abrir/cerrar campo de respuesta */
+    var replyToggle = '<button onclick="vmToggleReply(' + c.id + ')"'
+        + ' style="background:none;border:none;color:#64748b;cursor:pointer;font-size:.75rem;padding:0;margin-top:.2rem;">'
+        + '<i class="fas fa-reply"></i> Responder</button>';
+
+    var replyForm = '<div id="vm-reply-form-' + c.id + '" style="display:none;margin-top:.4rem;display:none;gap:.4rem;flex-direction:row;">'
+        + '<input id="vm-reply-' + c.id + '" type="text" maxlength="500" placeholder="Escribe tu respuesta..."'
+        + ' style="flex:1;background:#1e293b;border:1px solid #334155;border-radius:6px;'
+        + 'color:#e2e8f0;padding:.3rem .6rem;font-size:.78rem;outline:none;"'
+        + ' onkeydown="if(event.key===\'Enter\'){vmSubmitReply(' + c.id + ');}" />'
+        + '<button onclick="vmSubmitReply(' + c.id + ')"'
+        + ' style="background:#334155;border:none;border-radius:6px;color:#e2e8f0;'
+        + 'padding:.3rem .6rem;cursor:pointer;font-size:.75rem;">'
+        + '<i class="fas fa-paper-plane"></i></button></div>';
+
+    div.innerHTML = header + body + replies + replyToggle + replyForm;
+    return div;
+}
+
+function vmToggleReply(commentId) {
+    var form = document.getElementById('vm-reply-form-' + commentId);
+    if (!form) return;
+    var isVisible = form.style.display === 'flex';
+    form.style.display = isVisible ? 'none' : 'flex';
+    if (!isVisible) {
+        var input = document.getElementById('vm-reply-' + commentId);
+        if (input) input.focus();
+    }
+}
+
+function vmSubmitComment() {
+    if (!_vmVideoId) return;
+    var input = document.getElementById('vm-comment-input');
+    var body  = (input ? input.value : '').trim();
+    if (!body) return;
+    var csrf = document.querySelector('meta[name="csrf-token"]');
+    if (!csrf) { window.location = '/login'; return; }
+
+    fetch('/videos/' + _vmVideoId + '/comments', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrf.content
+        },
+        body: JSON.stringify({ body: body })
+    }).then(function(r){
+        if (r.status === 401) { window.location = '/login'; return null; }
+        return r.json();
+    }).then(function(c){
+        if (!c || c.error) return;
+        input.value = '';
+        var list = document.getElementById('vm-comments-list');
+        var noMsg = list.querySelector('p');
+        if (noMsg && noMsg.style && !noMsg.id) noMsg.remove();
+        c.replies = [];
+        list.appendChild(vmBuildComment(c));
+        list.scrollTop = list.scrollHeight;
+    }).catch(function(){});
+}
+
+function vmSubmitReply(commentId) {
+    if (!_vmVideoId) return;
+    var input = document.getElementById('vm-reply-' + commentId);
+    var body  = (input ? input.value : '').trim();
+    if (!body) return;
+    var csrf = document.querySelector('meta[name="csrf-token"]');
+    if (!csrf) { window.location = '/login'; return; }
+
+    fetch('/videos/' + _vmVideoId + '/comments/' + commentId + '/reply', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json',
+            'X-CSRF-TOKEN': csrf.content
+        },
+        body: JSON.stringify({ body: body })
+    }).then(function(r){
+        if (r.status === 401) { window.location = '/login'; return null; }
+        return r.json();
+    }).then(function(r){
+        if (!r || r.error) return;
+        input.value = '';
+        var form = document.getElementById('vm-reply-form-' + commentId);
+        if (form) form.style.display = 'none';
+        var parentDiv = document.getElementById('vm-comment-' + commentId);
+        if (!parentDiv) return;
+        var rNick = r.nickname || r.username || r.name;
+        var replyEl = document.createElement('div');
+        replyEl.id = 'vm-comment-' + r.id;
+        replyEl.style.cssText = 'margin-left:1rem;margin-top:.4rem;background:#1e293b;border-radius:6px;padding:.4rem .6rem;';
+        replyEl.innerHTML = '<a href="/u/' + vmEsc(rNick) + '" style="color:#e11d48;font-weight:600;font-size:.78rem;text-decoration:none;">@' + vmEsc(rNick) + '</a>'
+            + ' <span style="color:#94a3b8;font-size:.78rem;">' + vmEsc(r.body) + '</span>';
+        var toggleBtn = parentDiv.querySelector('button[onclick^="vmToggleReply"]');
+        if (toggleBtn) toggleBtn.before(replyEl);
+        else parentDiv.appendChild(replyEl);
+    }).catch(function(){});
+}
+
+function vmDeleteComment(commentId) {
+    if (!_vmVideoId) return;
+    if (!confirm('¿Eliminar comentario?')) return;
+    var csrf = document.querySelector('meta[name="csrf-token"]');
+    if (!csrf) return;
+    fetch('/videos/' + _vmVideoId + '/comments/' + commentId, {
+        method: 'DELETE',
+        headers: { 'Accept': 'application/json', 'X-CSRF-TOKEN': csrf.content }
+    }).then(function(r){ return r.json(); })
+    .then(function(d){
+        if (d.deleted) {
+            var el = document.getElementById('vm-comment-' + commentId);
+            if (el) el.remove();
+        }
+    }).catch(function(){});
+}
+
+function vmEsc(s) {
+    return String(s || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function vmFmtTime(iso) {
+    if (!iso) return '';
+    try {
+        var d = new Date(iso.replace(' ', 'T'));
+        if (isNaN(d.getTime())) return '';
+        return d.toLocaleString('es-MX',{month:'short',day:'numeric',hour:'2-digit',minute:'2-digit'});
+    } catch(e) { return ''; }
+}
 </script>
 
 <script>

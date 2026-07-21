@@ -193,16 +193,12 @@ Route::middleware(['auth', 'admin.only'])
     Route::delete('comentarios-articulos/{id}',            [\App\Http\Controllers\Admin\AdminArticleCommentController::class, 'destroy'])->name('article-comments.destroy');
 
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
+// -- Interacciones de video (likes, comentarios) --
+Route::get('videos/{id}/likes', [App\Http\Controllers\Video\VideoInteractionController::class, 'likers']);
+Route::get('videos/{id}/comments', [App\Http\Controllers\Video\VideoInteractionController::class, 'comments']);
+Route::middleware('auth')->group(function () {
+    Route::post('videos/{id}/like', [App\Http\Controllers\Video\VideoInteractionController::class, 'toggleLike']);
+    Route::post('videos/{id}/comments', [App\Http\Controllers\Video\VideoInteractionController::class, 'storeComment']);
+    Route::post('videos/{id}/comments/{cid}/reply', [App\Http\Controllers\Video\VideoInteractionController::class, 'storeReply']);
+    Route::delete('videos/{id}/comments/{cid}', [App\Http\Controllers\Video\VideoInteractionController::class, 'deleteComment']);
+});
