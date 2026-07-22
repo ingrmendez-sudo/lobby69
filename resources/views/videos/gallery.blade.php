@@ -52,6 +52,7 @@
 }
 .vg-meta { font-size:.78rem; color:var(--text-muted,#888); display:flex; align-items:center; gap:.4rem; }
 .vg-meta img { width:22px; height:22px; border-radius:50%; object-fit:cover; }
+.vg-act-views { display:flex; align-items:center; gap:.25rem; font-size:.75rem; color:var(--text-muted,#888); padding:0 .2rem; }
 .vg-actions {
     display:flex; align-items:center; gap:.7rem;
     padding:.4rem .8rem .6rem;
@@ -102,6 +103,12 @@
 .vgm-comment-body b { display:block; font-size:.82rem; margin-bottom:2px; }
 .vgm-comment-del { margin-left:auto; background:none; border:none; cursor:pointer; color:#ccc; font-size:.9rem; }
 .vgm-comment-del:hover { color:#e91e8c; }
+.vgm-reply-btn { background:none; border:none; cursor:pointer; font-size:.72rem; color:var(--text-muted,#888); padding:2px 6px; border-radius:6px; transition:color .15s; }
+.vgm-reply-btn:hover { color:var(--bs-pink,#e91e8c); }
+.vgm-replies { margin-left:36px; border-left:2px solid var(--border-light,#f0f0f0); padding-left:.6rem; margin-top:.3rem; }
+.vgm-reply-form { display:flex; gap:.4rem; margin-top:.4rem; margin-left:36px; }
+.vgm-reply-form input { flex:1; border:1px solid var(--border-light,#ddd); border-radius:16px; padding:4px 12px; font-size:.8rem; background:var(--input-bg,#f8f8f8); }
+.vgm-reply-form button { background:var(--bs-pink,#e91e8c); color:#fff; border:none; border-radius:16px; padding:4px 12px; font-size:.8rem; cursor:pointer; }
 .vgm-comment-form { display:flex; gap:.5rem; margin-top:.5rem; }
 .vgm-comment-form input {
     flex:1; border:1px solid var(--border-light,#ddd); border-radius:20px;
@@ -127,19 +134,24 @@
 @php
     $sideNick  = $userProfile->nickname    ?? ($user->name ?? 'Usuario');
     $sidePtype = ucfirst($userProfile->profile_type ?? '');
-    $sideAv    = !empty($userProfile->avatar_url)
-        ? (str_starts_with($userProfile->avatar_url,'http')
-            ? $userProfile->avatar_url
-            : asset('storage/'.ltrim($userProfile->avatar_url,'/')))
-        : 'https://ui-avatars.com/api/?name='.urlencode($sideNick).'&background=e91e8c&color=fff&size=80&bold=true';
+    $sideAv    = !empty($userProfile->avatar_photo_id)
+        ? url('/fotos/'.$userProfile->avatar_photo_id.'/ver')
+        : null;
+    $sideInit  = strtoupper(substr($sideNick, 0, 1));
+    $sideClrs  = ['#e91e8c','#9c27b0','#3f51b5','#00bcd4','#ff5722'];
+    $sideColor = $sideClrs[abs(crc32($sideNick)) % count($sideClrs)];
 @endphp
 
 {{-- Tarjeta usuario --}}
 <div style="background:var(--card-bg,#fff);border-radius:14px;padding:1.1rem;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:1rem">
     <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.9rem">
+        @if($sideAv)
         <img src="{{ $sideAv }}"
-             onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($sideNick) }}&background=e91e8c&color=fff&size=80'"
+             onerror="this.outerHTML='<div style=&quot;width:52px;height:52px;border-radius:50%;background:{{ $sideColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.3rem;color:#fff;flex-shrink:0;border:2px solid var(--bs-pink,#e91e8c)&quot;>{{ $sideInit }}</div>'"
              style="width:52px;height:52px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--bs-pink,#e91e8c)">
+        @else
+        <div style="width:52px;height:52px;border-radius:50%;background:{{ $sideColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.3rem;color:#fff;flex-shrink:0;border:2px solid var(--bs-pink,#e91e8c)">{{ $sideInit }}</div>
+        @endif
         <div>
             <div style="font-weight:700;font-size:.95rem;color:var(--text-main,#222)">{{ $sideNick }}</div>
             <div style="font-size:.78rem;color:var(--text-muted,#888)">{{ $sidePtype }}</div>
@@ -177,7 +189,7 @@
             ? (str_starts_with($lw->avatar_url,'http') ? $lw->avatar_url : asset('storage/'.ltrim($lw->avatar_url,'/')))
             : null;
     @endphp
-    <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem">
+    <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem;cursor:pointer" onclick="vgOpenById({{ $lw->id }}, this.dataset.cap, this.dataset.src)" data-cap="{{ e($lw->caption ?? chr(45)) }}" data-src="{{ route('videos.stream', $lw->id) }}">
         <div style="width:52px;height:30px;border-radius:5px;overflow:hidden;flex-shrink:0;background:#111">
             @if($lwThumb)
             <img src="{{ $lwThumb }}" style="width:100%;height:100%;object-fit:cover">
@@ -219,8 +231,8 @@
             $pvInitial = strtoupper(substr($pvNick, 0, 1));
             $pvColors  = ["#e91e8c","#9c27b0","#3f51b5","#00bcd4","#ff5722"];
             $pvColor   = $pvColors[abs(crc32($pvNick)) % count($pvColors)];
-            $pvAv      = !empty($pvAvatar)
-                ? (str_starts_with($pvAvatar,"http") ? $pvAvatar : asset("storage/".ltrim($pvAvatar,"/")))
+            $pvAv      = !empty($pv->avatar_photo_id)
+                ? url('/fotos/'.$pv->avatar_photo_id.'/ver')
                 : null;
             $pvBadge = match($pvType) {
                 "pareja"    => "&#x1F46B;",
@@ -231,12 +243,12 @@
                 default     => "&#x1F464;",
             };
         @endphp
-        <div style="display:flex;align-items:center;gap:.55rem;padding:.4rem .5rem;border-radius:8px;transition:background .15s"
+        <a href="{{ route('profile.show', $pvNick) }}" style="display:flex;align-items:center;gap:.55rem;padding:.4rem .5rem;border-radius:8px;transition:background .15s;text-decoration:none;color:inherit"
              onmouseover="this.style.background=&apos;rgba(233,30,140,.08)&apos;"
              onmouseout="this.style.background=&apos;transparent&apos;">
             @if($pvAv)
                 <img src="{{ $pvAv }}"
-                     onerror="this.style.display=&apos;none&apos;"
+                     onerror="this.outerHTML='<div style=&quot;width:34px;height:34px;border-radius:50%;background:{{ $pvColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0&quot;>{{ $pvInitial }}</div>'"
                      style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0">
             @else
                 <div style="width:34px;height:34px;border-radius:50%;background:{{ $pvColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0">
@@ -251,7 +263,7 @@
                     {{ $pvDate }}
                 </div>
             </div>
-        </div>
+        </a>
         @endforeach
     </div>
 </div>
@@ -260,125 +272,72 @@
 
 @push('sidebar-right')
 
-{{-- Mi actividad --}}
-@if($myActivity->count())
+{{-- ── Top 5 Videos Populares ── --}}
 <div style="background:var(--card-bg,#fff);border-radius:14px;padding:1rem;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:1rem">
-    <div style="font-weight:700;font-size:.85rem;margin-bottom:.7rem;color:var(--text-main,#222)">
-        ⚡ Mi actividad
-    </div>
-    @foreach($myActivity as $act)
+    <div style="font-weight:700;font-size:.85rem;margin-bottom:.7rem;color:var(--text-main,#222)">🔥 Videos populares</div>
+    @forelse($topVideos as $tv)
     @php
-        $actAv   = !empty($act->avatar_url)
-            ? (str_starts_with($act->avatar_url,'http') ? $act->avatar_url : asset('storage/'.ltrim($act->avatar_url,'/')))
-            : null;
-        $actInit  = strtoupper(substr($act->nickname ?? 'U', 0, 1));
-        $actClrs  = ['#e91e8c','#9c27b0','#3f51b5','#00bcd4','#ff5722'];
-        $actColor = $actClrs[abs(crc32($act->nickname ?? 'x')) % count($actClrs)];
-        $actIcon = $act->type === 'like' ? '❤️' : '💬';
-        $actText = $act->type === 'like' ? 'le dio like a' : 'comentó en';
+        $tvThumb = $tv->thumbnail_path ? 'https://kjhaquimghhejqznleyn.supabase.co/storage/v1/object/public/gallery/'.$tv->thumbnail_path : null;
     @endphp
-    <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.55rem">
-        <img src="{{ $actAv }}"
-             onerror="this.src='https://ui-avatars.com/api/?name=U&background=888&color=fff&size=32'"
-             style="width:28px;height:28px;border-radius:50%;object-fit:cover;flex-shrink:0">
-        <div style="flex:1;min-width:0;font-size:.75rem;color:var(--text-muted,#888)">
-            <span style="font-weight:600;color:var(--text-main,#222)">{{ $act->nickname }}</span>
-            {{ $actIcon }} {{ $actText }}
-            <span style="color:var(--bs-pink,#e91e8c)">"{{ Str::limit($act->caption ?? 'un video', 20) }}"</span>
-        </div>
-    </div>
-    @endforeach
-</div>
-@endif
-
-{{-- Mis últimos 5 videos --}}
-<div style="background:var(--card-bg,#fff);border-radius:14px;padding:1rem;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:1rem">
-    <div style="font-weight:700;font-size:.85rem;margin-bottom:.7rem;color:var(--text-main,#222)">
-        📹 Mis últimos videos
-    </div>
-    @forelse($myLatestVideos as $mv)
-    @php
-        $mvThumb = !empty($mv->thumbnail_path)
-            ? (str_starts_with($mv->thumbnail_path,'http') ? $mv->thumbnail_path : asset('storage/'.ltrim($mv->thumbnail_path,'/')))
-            : null;
-    @endphp
-    <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem">
-        <div style="width:56px;height:34px;border-radius:6px;overflow:hidden;flex-shrink:0;background:#111">
-            @if($mvThumb)
-            <img src="{{ $mvThumb }}" style="width:100%;height:100%;object-fit:cover">
-            @else
-            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center">
-                <svg width="14" height="14" fill="none" stroke="#666" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-            </div>
-            @endif
-        </div>
+    <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem">
+        @if($tvThumb)
+        <img src="{{ $tvThumb }}" style="width:48px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0" alt="">
+        @else
+        <div style="width:48px;height:36px;background:var(--input-bg,#eee);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.9rem">🎬</div>
+        @endif
         <div style="flex:1;min-width:0">
-            <div style="font-size:.78rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-main,#222)">
-                {{ $mv->caption ?? 'Sin título' }}
-            </div>
-            <div style="font-size:.7rem;color:var(--text-muted,#888)">
-                <svg width="11" height="11" fill="currentColor" viewBox="0 0 24 24" style="vertical-align:middle"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5C21.3 7.6 17 4.5 12 4.5zm0 12.5a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z"/></svg>
-                {{ number_format($mv->views_count ?? 0) }} vistas
-            </div>
+            <div style="font-size:.75rem;font-weight:600;color:var(--text-main,#222);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ Str::limit($tv->caption ?? 'Sin título', 22) }}</div>
+            <div style="font-size:.7rem;color:var(--text-muted,#888)">👁 {{ number_format($tv->views_count ?? 0) }} · {{ $tv->nickname }}</div>
         </div>
     </div>
     @empty
-    <p style="font-size:.8rem;color:var(--text-muted,#888);margin:0">Sin videos publicados aún.</p>
+    <p style="font-size:.8rem;color:var(--text-muted,#888);margin:0">Sin videos aún.</p>
     @endforelse
 </div>
 
-{{-- Globo verificación pendiente --}}
+{{-- ── Verificación pendiente ── --}}
 @if(!$isVerified)
 <div style="background:linear-gradient(135deg,#fff8e1,#fff3cd);border:1px solid #ffc107;border-radius:14px;padding:1rem;box-shadow:0 2px 10px rgba(255,193,7,.15);margin-bottom:1rem">
     <div style="font-weight:700;font-size:.85rem;margin-bottom:.4rem;color:#856404">
-        @if($pendingVerification)
-        ⏳ Verificación en proceso
-        @else
-        ✅ Verifica tu perfil
+        @if($pendingVerification)⏳ Verificación en proceso
+        @else✅ Verifica tu perfil
         @endif
     </div>
     <p style="font-size:.78rem;color:#856404;margin:0 0 .6rem">
-        @if($pendingVerification)
-        Tu solicitud está siendo revisada. Te notificaremos cuando esté lista.
-        @else
-        Los perfiles verificados generan más confianza y visibilidad en la comunidad.
+        @if($pendingVerification)Tu solicitud está siendo revisada. Te notificaremos cuando esté lista.
+        @elseLos perfiles verificados generan más confianza y visibilidad en la comunidad.
         @endif
     </p>
     @if(!$pendingVerification)
-    <a href="/verificacion" style="display:inline-block;background:#ffc107;color:#212529;border-radius:8px;padding:4px 12px;font-size:.78rem;font-weight:600;text-decoration:none">
-        Verificar ahora →
-    </a>
+    <a href="/verificacion" style="display:inline-block;background:#ffc107;color:#212529;border-radius:8px;padding:4px 12px;font-size:.78rem;font-weight:600;text-decoration:none">Verificar ahora →</a>
     @endif
 </div>
 @endif
 
-{{-- Globo anuncios --}}
-@if($announcements->count())
+{{-- ── Anuncios (solo verificados) ── --}}
+@if($isVerified && $announcements->count())
 <div style="background:var(--card-bg,#fff);border-radius:14px;padding:1rem;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:1rem">
-    <div style="font-weight:700;font-size:.85rem;margin-bottom:.7rem;color:var(--text-main,#222)">
-        📢 Anuncios recientes
-    </div>
+    <div style="font-weight:700;font-size:.85rem;margin-bottom:.7rem;color:var(--text-main,#222)">📢 Anuncios recientes</div>
     @foreach($announcements as $ann)
     @php
-        $annAv    = !empty($ann->avatar_url)
-            ? (str_starts_with($ann->avatar_url,'http') ? $ann->avatar_url : asset('storage/'.ltrim($ann->avatar_url,'/')))
-            : null;
-        $annInit  = strtoupper(substr($ann->nickname ?? 'U', 0, 1));
-        $annClrs  = ['#e91e8c','#9c27b0','#3f51b5','#00bcd4','#ff5722'];
-        $annColor = $annClrs[abs(crc32($ann->nickname ?? 'x')) % count($annClrs)];
+        $annAv    = $ann->avatar_photo_id ? url('/fotos/'.$ann->avatar_photo_id.'/ver') : null;
+        $annInit  = strtoupper(substr($ann->nickname ?? '?', 0, 1));
+        $annClrs  = ['#e74c3c','#8e44ad','#2980b9','#27ae60','#e67e22','#16a085'];
+        $annColor = $annClrs[abs(crc32($ann->nickname ?? '')) % count($annClrs)];
     @endphp
-    <div style="border-bottom:1px solid var(--border-light,#f0f0f0);padding-bottom:.6rem;margin-bottom:.6rem">
-        <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.3rem">
-            <img src="{{ $annAv }}"
-                 onerror="this.src='https://ui-avatars.com/api/?name=U&background=e91e8c&color=fff&size=32'"
-                 style="width:24px;height:24px;border-radius:50%;object-fit:cover">
+    <div style="background:var(--input-bg,#f7f7f7);border-radius:10px;padding:.6rem;margin-bottom:.6rem">
+        <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem">
+            @if($annAv)
+            <img src="{{ $annAv }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="">
+            <div style="width:24px;height:24px;border-radius:50%;background:{{ $annColor }};display:none;align-items:center;justify-content:center;font-weight:700;font-size:.7rem;color:#fff;flex-shrink:0">{{ $annInit }}</div>
+            @else
+            <div style="width:24px;height:24px;border-radius:50%;background:{{ $annColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.7rem;color:#fff;flex-shrink:0">{{ $annInit }}</div>
+            @endif
             <span style="font-size:.78rem;font-weight:600;color:var(--text-main,#222)">{{ $ann->nickname }}</span>
             <span style="font-size:.7rem;color:var(--text-muted,#888);margin-left:auto">{{ \Carbon\Carbon::parse($ann->event_date)->format('d M') }}</span>
         </div>
-        <div style="font-size:.8rem;font-weight:600;color:var(--text-main,#222)">{{ $ann->title }}</div>
-        <div style="font-size:.75rem;color:var(--text-muted,#888);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
-            {{ Str::limit($ann->proposal, 60) }}
-        </div>
+        <a href="{{ route('profile.show', $ann->nickname) }}" style="font-size:.8rem;font-weight:600;color:var(--text-main,#222);text-decoration:none;display:block">{{ $ann->title }}</a>
+        <div style="font-size:.75rem;color:var(--text-muted,#888);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ Str::limit($ann->proposal ?? '', 60) }}</div>
     </div>
     @endforeach
 </div>
@@ -405,9 +364,12 @@
     $durFmt = $dur > 0 ? sprintf('%d:%02d', intdiv($dur,60), $dur%60) : '0:00';
     $cap = $video->caption ?? 'Sin título';
     $nick = $video->nickname ?? 'Usuario';
-    $avSrc = !empty($video->avatar_url)
-        ? (str_starts_with($video->avatar_url,'http') ? $video->avatar_url : asset('storage/'.ltrim($video->avatar_url,'/')))
-        : 'https://ui-avatars.com/api/?name='.urlencode($nick).'&size=40&background=e91e8c&color=fff';
+    $avSrc   = !empty($video->avatar_photo_id)
+        ? url('/fotos/'.$video->avatar_photo_id.'/ver')
+        : null;
+    $avInit  = strtoupper(substr($nick, 0, 1));
+    $avClrs  = ['#e91e8c','#9c27b0','#3f51b5','#00bcd4','#ff5722'];
+    $avColor = $avClrs[abs(crc32($nick)) % count($avClrs)];
     $isLiked = in_array($video->id, $likedIds ?? []);
     $likes = $video->likes_count ?? 0;
     $comms = $video->comments_count ?? 0;
@@ -415,6 +377,7 @@
 @endphp
 <div class="vg-vcard"
      data-vid="{{ $video->id }}"
+     data-owner="{{ $video->user_id ?? 0 }}"
      data-vsrc="{{ route('videos.stream', $video->id) }}"
      data-cap="{{ e($cap) }}"
      data-nick="{{ e($nick) }}"
@@ -431,6 +394,13 @@
             <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
         </div>
         <span class="vg-duration">{{ $durFmt }}</span>
+        @if($views >= 1000)
+            <span class="vg-badge vg-badge--viral">💎 Viral</span>
+        @elseif($views >= 500)
+            <span class="vg-badge vg-badge--popular">⭐ Popular</span>
+        @elseif($views >= 100)
+            <span class="vg-badge vg-badge--hot">🔥 Hot</span>
+        @endif
         <span class="vg-views">
             <svg width="13" height="13" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5C21.3 7.6 17 4.5 12 4.5zm0 12.5a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z"/></svg>
             {{ number_format($views) }}
@@ -439,15 +409,24 @@
     <div class="vg-info" onclick="vgOpen(this.closest('.vg-vcard'))">
         <div class="vg-caption">{{ $cap }}</div>
         <div class="vg-meta">
+            @if($avSrc)
             <img src="{{ $avSrc }}"
-                 onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($nick) }}&size=40&background=e91e8c&color=fff'"
-                 alt="{{ e($nick) }}">
+                 onerror="this.outerHTML='<div style=&quot;width:28px;height:28px;border-radius:50%;background:{{ $avColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#fff&quot;>{{ $avInit }}</div>'"
+                 alt="{{ e($nick) }}" style="width:28px;height:28px;border-radius:50%;object-fit:cover">
+            @else
+            <div style="width:28px;height:28px;border-radius:50%;background:{{ $avColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#fff">{{ $avInit }}</div>
+            @endif
             <span>{{ $nick }}</span>
         </div>
     </div>
     <div class="vg-actions">
+        <span class="vg-act-views">
+            <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24"><path d="M12 4.5C7 4.5 2.7 7.6 1 12c1.7 4.4 6 7.5 11 7.5s9.3-3.1 11-7.5C21.3 7.6 17 4.5 12 4.5zm0 12.5a5 5 0 110-10 5 5 0 010 10zm0-8a3 3 0 100 6 3 3 0 000-6z"/></svg>
+            {{ number_format($views) }}
+        </span>
         <button class="vg-btn-action{{ $isLiked ? ' liked' : '' }}"
                 data-vid="{{ $video->id }}"
+     data-owner="{{ $video->user_id ?? 0 }}"
                 onclick="event.stopPropagation();vgLike(this)">
             <svg viewBox="0 0 24 24" fill="{{ $isLiked ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2">
                 <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
@@ -539,6 +518,8 @@ function vgOpen(card, focusComment) {
     var src = card.dataset.vsrc;
     var cap = card.dataset.cap;
     VG.vid = vid;
+    VG.ownerId = card.dataset.owner || '';
+    VG.authId  = (document.querySelector('meta[name="auth-id"]') || {}).content || '';
     document.getElementById('vgm-title').textContent = cap;
     var v = document.getElementById('vgm-video');
     v.src = src;
@@ -556,6 +537,22 @@ function vgClose() {
     v.pause(); v.src = '';
     document.getElementById('vgm').classList.remove('open');
     VG.vid = null;
+}
+
+function vgOpenById(vid, cap, src) {
+    VG.vid = String(vid);
+    VG.ownerId = "";
+    VG.authId  = (document.querySelector('meta[name="auth-id"]') || {}).content || "";
+    document.getElementById("vgm-title").textContent = cap;
+    var nkEl = document.getElementById("vgm-author-nick");
+    var avEl = document.getElementById("vgm-author-av");
+    if (nkEl) nkEl.textContent = "";
+    if (avEl) avEl.innerHTML = "";
+    var v = document.getElementById("vgm-video");
+    v.src = src; v.load(); v.play().catch(function(){});
+    document.getElementById("vgm").classList.add("open");
+    vgLoadLikes(); vgLoadComments();
+    fetch("/videos/" + vid + "/view", { method: "POST", headers: { "X-CSRF-TOKEN": VG.csrf, "Accept": "application/json" }}).catch(function(){});
 }
 
 document.getElementById('vgm').addEventListener('click', function(e) {
@@ -623,25 +620,111 @@ function vgLoadComments() {
     }).catch(function(){});
 }
 
+function vgMkAvatar(nick, avatarUrl) {
+    var clrs = ['#e91e8c','#9c27b0','#3f51b5','#00bcd4','#ff5722'];
+    var hsh  = nick.split('').reduce(function(a,b){return a+b.charCodeAt(0);},0);
+    var clr  = clrs[Math.abs(hsh) % clrs.length];
+    var ini  = nick.charAt(0).toUpperCase();
+    var sz   = '30px';
+    return avatarUrl
+        ? '<img src="' + vgE(avatarUrl) + '" style="width:' + sz + ';height:' + sz + ';border-radius:50%;object-fit:cover;flex-shrink:0">'
+        : '<div style="width:' + sz + ';height:' + sz + ';border-radius:50%;background:' + clr + ';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#fff;flex-shrink:0">' + ini + '</div>';
+}
+
 function vgMkComment(c) {
     var w = document.createElement('div');
     w.className = 'vgm-comment-item';
-    var nick   = c.nickname || 'Usuario';
-    var clrs   = ['#e91e8c','#9c27b0','#3f51b5','#00bcd4','#ff5722'];
-    var hsh    = nick.split('').reduce(function(a,b){return a+b.charCodeAt(0);},0);
-    var clr    = clrs[Math.abs(hsh) % clrs.length];
-    var ini    = nick.charAt(0).toUpperCase();
-    var avHtml = c.avatar_url
-        ? '<img src="' + vgE(c.avatar_url) + '" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0">'
-        : '<div style="width:30px;height:30px;border-radius:50%;background:' + clr + ';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#fff;flex-shrink:0">' + ini + '</div>';
+    w.dataset.cid = c.id;
+    var nick   = c.nickname || c.name || 'Usuario';
     var canDel = c.can_delete ? '<button class="vgm-comment-del" onclick="vgDelComment(' + c.id + ')">&#x2715;</button>' : '';
-    w.innerHTML = avHtml
+    w.innerHTML = vgMkAvatar(nick, c.avatar_url)
         + '<div class="vgm-comment-body" style="flex:1">'
         + '<b>' + vgE(nick) + '</b>'
         + '<p style="margin:0;line-height:1.5;font-size:.77rem">' + vgE(c.body) + '</p>'
+        + '<div style="display:flex;align-items:center;gap:.5rem;margin-top:2px">'
         + '<span style="opacity:.4;font-size:.65rem">' + vgT(c.created_at) + '</span>'
+        + (VG.ownerId && VG.ownerId === VG.authId ? '<button class="vgm-reply-btn" onclick="vgToggleReplyForm(' + c.id + ', this)">&#x21A9; Responder</button>' : '')
+        + '</div>'
         + '</div>' + canDel;
+    // Replies existentes
+    var repliesDiv = document.createElement('div');
+    repliesDiv.className = 'vgm-replies';
+    repliesDiv.id = 'replies-' + c.id;
+    if (c.replies && c.replies.length > 0) {
+        c.replies.forEach(function(r) {
+            var rw = document.createElement('div');
+            rw.className = 'vgm-comment-item';
+            rw.style.paddingTop = '.3rem';
+            var rnick = r.nickname || r.name || 'Usuario';
+            var rDel  = r.can_delete ? '<button class="vgm-comment-del" onclick="vgDelComment(' + r.id + ')">&#x2715;</button>' : '';
+            rw.innerHTML = vgMkAvatar(rnick, r.avatar_url)
+                + '<div class="vgm-comment-body" style="flex:1">'
+                + '<b style="font-size:.78rem">' + vgE(rnick) + '</b>'
+                + '<p style="margin:0;line-height:1.4;font-size:.75rem">' + vgE(r.body) + '</p>'
+                + '<span style="opacity:.4;font-size:.63rem">' + vgT(r.created_at) + '</span>'
+                + '</div>' + rDel;
+            repliesDiv.appendChild(rw);
+        });
+    } else {
+        repliesDiv.style.display = 'none';
+    }
+    w.appendChild(repliesDiv);
     return w;
+}
+
+function vgToggleReplyForm(cid, btn) {
+    var existing = document.getElementById('reply-form-' + cid);
+    if (existing) { existing.remove(); return; }
+    var repliesDiv = document.getElementById('replies-' + cid);
+    if (repliesDiv) repliesDiv.style.display = '';
+    var form = document.createElement('div');
+    form.className = 'vgm-reply-form';
+    form.id = 'reply-form-' + cid;
+    var inp = document.createElement('input');
+    inp.type = 'text'; inp.placeholder = 'Escribe una respuesta...';
+    inp.maxLength = 500; inp.id = 'reply-inp-' + cid;
+    var rbtn = document.createElement('button');
+    rbtn.innerHTML = '&#x27A4;';
+    rbtn.onclick = function(){ vgSendReply(cid); };
+    form.appendChild(inp); form.appendChild(rbtn);
+    btn.closest('.vgm-comment-item').after(form);
+    inp.focus();
+}
+
+function vgSendReply(cid) {
+    var inp  = document.getElementById('reply-inp-' + cid);
+    var body = inp ? inp.value.trim() : '';
+    if (!body || !VG.vid) return;
+    var rbtn = inp.nextElementSibling;
+    rbtn.disabled = true; inp.disabled = true;
+    fetch('/videos/' + VG.vid + '/comments/' + cid + '/reply', {
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': VG.csrf, 'Content-Type': 'application/json', 'Accept': 'application/json' },
+        body: JSON.stringify({ body: body })
+    }).then(function(r){ return r.json(); })
+    .then(function(reply) {
+        var repliesDiv = document.getElementById('replies-' + cid);
+        if (repliesDiv) {
+            repliesDiv.style.display = '';
+            var rw = document.createElement('div');
+            rw.className = 'vgm-comment-item';
+            rw.style.paddingTop = '.3rem';
+            var rnick = reply.nickname || reply.name || 'Usuario';
+            rw.innerHTML = vgMkAvatar(rnick, reply.avatar_url)
+                + '<div class="vgm-comment-body" style="flex:1">'
+                + '<b style="font-size:.78rem">' + vgE(rnick) + '</b>'
+                + '<p style="margin:0;line-height:1.4;font-size:.75rem">' + vgE(reply.body) + '</p>'
+                + '<span style="opacity:.4;font-size:.63rem">Ahora mismo</span>'
+                + '</div>';
+            repliesDiv.appendChild(rw);
+        }
+        var form = document.getElementById('reply-form-' + cid);
+        if (form) form.remove();
+    }).catch(function(){
+        rbtn.disabled = false; inp.disabled = false;
+        inp.style.borderColor = '#ef4444';
+        setTimeout(function(){ inp.style.borderColor = ''; }, 2000);
+    });
 }
 
 function vgComment() {

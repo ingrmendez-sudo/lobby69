@@ -15,19 +15,26 @@ class VideoGalleryController extends Controller
         $videos = DB::table('videos')
             ->join('users',    DB::raw('videos.user_id::text'), '=', DB::raw('users.id::text'))
             ->join('profiles', DB::raw('users.id::text'),       '=', DB::raw('profiles.user_id::text'))
+            ->leftJoin('photos', function($j) {
+                $j->on(DB::raw('photos.user_id::text'), '=', DB::raw('videos.user_id::text'))
+                   ->where('photos.is_profile_photo', true);
+            })
             ->where('videos.status', 'approved')
-            ->select(
-                'videos.id',
-                'videos.caption',
-                'videos.thumbnail_path',
-                'videos.file_path',
-                'videos.views_count',
-                'videos.duration_seconds',
-                'videos.user_id',
-                'videos.created_at',
-                'profiles.nickname',
-                'profiles.avatar_url'
-            )
+            ->selectRaw("
+                videos.id,
+                videos.caption,
+                videos.thumbnail_path,
+                videos.file_path,
+                videos.views_count,
+                videos.duration_seconds,
+                videos.user_id,
+                videos.created_at,
+                profiles.nickname,
+                profiles.avatar_url,
+                photos.id AS avatar_photo_id,
+                (SELECT COUNT(*) FROM video_likes  WHERE video_likes.video_id  = videos.id) AS likes_count,
+                (SELECT COUNT(*) FROM video_comments WHERE video_comments.video_id = videos.id AND video_comments.parent_id IS NULL) AS comments_count
+            ")
             ->orderByDesc('videos.created_at')
             ->paginate(24);
 
@@ -45,13 +52,19 @@ class VideoGalleryController extends Controller
         $myCommentsReceived  = 0;
         $likedIds            = [];
         $totalVisitors       = 0;
+        $topVideos           = collect();
 
         if ($user) {
             $uid = (string) $user->id;
 
             // Perfil del usuario sesión
             $userProfile = DB::table('profiles')
-                ->where(DB::raw('user_id::text'), $uid)
+                ->leftJoin('photos as ph_side', function($j) {
+                    $j->on(DB::raw('ph_side.user_id::text'), '=', DB::raw('profiles.user_id::text'))
+                       ->where('ph_side.is_profile_photo', true);
+                })
+                ->where(DB::raw('profiles.user_id::text'), $uid)
+                ->select('profiles.*', 'ph_side.id as avatar_photo_id')
                 ->first();
 
             // Verificación
@@ -82,24 +95,31 @@ class VideoGalleryController extends Controller
 
             // Visitantes al perfil del usuario
             // Visitantes únicos: 1 entrada por viewer, la más reciente, máx 5
-            $profileVisitors = DB::table('profile_views as pv')
-                ->join('profiles', DB::raw('pv.viewer_id::text'), '=', DB::raw('profiles.user_id::text'))
-                ->where(DB::raw('pv.viewed_id::text'), $uid)
-                ->where(DB::raw('pv.viewer_id::text'), '!=', $uid)
-                ->whereRaw('pv.viewed_at = (SELECT MAX(pv2.viewed_at) FROM profile_views pv2 WHERE pv2.viewer_id = pv.viewer_id AND pv2.viewed_id = pv.viewed_id)')
-                ->select(
-                    'profiles.nickname',
-                    'profiles.avatar_url',
-                    'profiles.profile_type',
-                    'pv.viewed_at'
-                )
-                ->orderByDesc('pv.viewed_at')
-                ->limit(5)
-                ->get();
+            // Visitantes unicos: DISTINCT ON viewer_id, la visita mas reciente, max 5
+            $profileVisitors = collect(DB::select("
+                SELECT DISTINCT ON (pv.viewer_id)
+                    pv.viewer_id,
+                    pv.viewed_at,
+                    COALESCE(p.nickname, u.name, u.email, 'Anonimo') AS nickname,
+                    COALESCE(p.avatar_url, '')                        AS avatar_url,
+                    COALESCE(p.profile_type, '')                      AS profile_type,
+                    ph.id                                              AS avatar_photo_id
+                FROM profile_views pv
+                LEFT JOIN photos   ph ON ph.user_id::text = pv.viewer_id::text AND ph.is_profile_photo = true
+                LEFT JOIN users    u ON u.id::text       = pv.viewer_id::text
+                LEFT JOIN profiles p ON p.user_id::text  = pv.viewer_id::text
+                WHERE pv.viewed_id::text = ?
+                  AND pv.viewer_id::text != ?
+                ORDER BY pv.viewer_id, pv.viewed_at DESC
+            ", [$uid, $uid]))
+                ->sortByDesc('viewed_at')
+                ->take(5)
+                ->values();
+
             $totalVisitors = DB::table('profile_views')
                 ->where(DB::raw('viewed_id::text'), $uid)
                 ->where(DB::raw('viewer_id::text'), '!=', $uid)
-                ->distinct()
+                ->distinct('viewer_id')
                 ->count('viewer_id');
 
             // Mis últimos 5 videos
@@ -108,6 +128,15 @@ class VideoGalleryController extends Controller
                 ->where('status', 'approved')
                 ->select('id','caption','thumbnail_path','views_count','created_at')
                 ->orderByDesc('created_at')
+                ->limit(5)
+                ->get();
+
+            // Top 5 videos más populares
+            $topVideos = DB::table('videos')
+                ->join('profiles', DB::raw('videos.user_id::text'), '=', DB::raw('profiles.user_id::text'))
+                ->where('videos.status', 'approved')
+                ->select('videos.id','videos.caption','videos.thumbnail_path','videos.views_count','profiles.nickname')
+                ->orderByDesc('videos.views_count')
                 ->limit(5)
                 ->get();
 
@@ -120,11 +149,16 @@ class VideoGalleryController extends Controller
                 $recentLikes = DB::table('video_likes')
                     ->join('videos',   'video_likes.video_id', '=', 'videos.id')
                     ->join('profiles', DB::raw('video_likes.user_id::text'), '=', DB::raw('profiles.user_id::text'))
+                    ->leftJoin('photos as ph_lk', function($j) {
+                        $j->on(DB::raw('ph_lk.user_id::text'), '=', DB::raw('video_likes.user_id::text'))
+                           ->where('ph_lk.is_profile_photo', true);
+                    })
                     ->whereIn('video_likes.video_id', $myVideoIds)
                     ->select(
                         DB::raw("'like' as type"),
                         'profiles.nickname',
                         'profiles.avatar_url',
+                        'ph_lk.id as avatar_photo_id',
                         'videos.caption',
                         'video_likes.created_at'
                     )
@@ -135,11 +169,16 @@ class VideoGalleryController extends Controller
                 $recentComments = DB::table('video_comments')
                     ->join('videos',   'video_comments.video_id', '=', 'videos.id')
                     ->join('profiles', DB::raw('video_comments.user_id::text'), '=', DB::raw('profiles.user_id::text'))
+                    ->leftJoin('photos as ph_cm', function($j) {
+                        $j->on(DB::raw('ph_cm.user_id::text'), '=', DB::raw('video_comments.user_id::text'))
+                           ->where('ph_cm.is_profile_photo', true);
+                    })
                     ->whereIn('video_comments.video_id', $myVideoIds)
                     ->select(
                         DB::raw("'comment' as type"),
                         'profiles.nickname',
                         'profiles.avatar_url',
+                        'ph_cm.id as avatar_photo_id',
                         'videos.caption',
                         'video_comments.created_at'
                     )
@@ -183,7 +222,7 @@ class VideoGalleryController extends Controller
                     'announcements.created_at',
                     'profiles.nickname',
                     'profiles.avatar_url',
-                    'profiles.profile_type'
+                    DB::raw('(SELECT id FROM photos WHERE photos.user_id::text = announcements.user_id::text AND photos.is_profile_photo = true ORDER BY id DESC LIMIT 1) as avatar_photo_id')
                 )
                 ->orderByDesc('announcements.created_at')
                 ->limit(3)
@@ -193,7 +232,7 @@ class VideoGalleryController extends Controller
         return view('videos.gallery', compact(
             'user', 'userProfile', 'videos',
             'lastWatched', 'profileVisitors',
-            'myLatestVideos', 'myActivity',
+            'myLatestVideos', 'myActivity', 'topVideos',
             'isVerified', 'pendingVerification', 'announcements',
             'myVideoCount', 'myLikesReceived', 'myCommentsReceived', 'likedIds', 'totalVisitors'
         ));

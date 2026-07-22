@@ -150,6 +150,12 @@ class VideoInteractionController extends Controller
         $videoId   = (int) $videoId;
         $commentId = (int) $commentId;
 
+        // Solo el dueno del video puede responder
+        $video = DB::table('videos')->where('id', $videoId)->first();
+        if (!$video || (string)$video->user_id !== (string)Auth::id()) {
+            return response()->json(['error' => 'Solo el dueno puede responder'], 403);
+        }
+
         $id = DB::table('video_comments')->insertGetId([
             'video_id'   => $videoId,
             'user_id'    => Auth::id(),
