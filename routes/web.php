@@ -202,3 +202,100 @@ Route::middleware('auth')->group(function () {
     Route::post('videos/{id}/comments/{cid}/reply', [App\Http\Controllers\Video\VideoInteractionController::class, 'storeReply']);
     Route::delete('videos/{id}/comments/{cid}', [App\Http\Controllers\Video\VideoInteractionController::class, 'deleteComment']);
 });
+
+Route::get('/videos', [App\Http\Controllers\Video\VideoGalleryController::class, 'index'])->name('videos.gallery');
+
+Route::get('/videos', [App\Http\Controllers\Video\VideoGalleryController::class, 'index'])->name('videos.gallery');
+
+
+// ── Video stream privado + contadores ──────────────────────────
+Route::get('/videos/{id}/stream', function($id) {
+    $video = DB::table('videos')->where('id', $id)->first();
+    if (!$video) abort(404);
+    if (!auth()->check()) abort(403);
+    $path = storage_path('app/private/' . ltrim($video->file_path, '/'));
+    if (!file_exists($path)) abort(404);
+    $mime = mime_content_type($path) ?: 'video/mp4';
+    $size = filesize($path);
+    $headers = [
+        'Content-Type'   => $mime,
+        'Content-Length' => $size,
+        'Accept-Ranges'  => 'bytes',
+        'Cache-Control'  => 'no-store',
+    ];
+    if (request()->hasHeader('Range')) {
+        preg_match('/bytes=(\d+)-(\d*)/', request()->header('Range'), $m);
+        $start  = (int)$m[1];
+        $end    = isset($m[2]) && $m[2] !== '' ? (int)$m[2] : $size - 1;
+        $length = $end - $start + 1;
+        $headers['Content-Range']  = "bytes $start-$end/$size";
+        $headers['Content-Length'] = $length;
+        return response()->stream(function() use ($path, $start, $length) {
+            $f = fopen($path, 'rb'); fseek($f, $start);
+            $rem = $length;
+            while (!feof($f) && $rem > 0) {
+                $chunk = min(8192, $rem); echo fread($f, $chunk);
+                $rem -= $chunk; ob_flush(); flush();
+            }
+            fclose($f);
+        }, 206, $headers);
+    }
+    return response()->stream(function() use ($path) {
+        $f = fopen($path, 'rb');
+        while (!feof($f)) { echo fread($f, 8192); ob_flush(); flush(); }
+        fclose($f);
+    }, 200, $headers);
+})->middleware('auth')->name('videos.stream');
+
+Route::post('/videos/{id}/view', function($id) {
+    if (!auth()->check()) return response()->json(['ok' => false], 403);
+    DB::table('videos')->where('id', $id)->increment('views_count');
+    return response()->json(['ok' => true]);
+})->middleware('auth');
+
+Route::post('/videos/{id}/likes', function($id) {
+    if (!auth()->check()) return response()->json(['ok' => false], 403);
+    $uid = auth()->id();
+    $exists = DB::table('video_likes')
+        ->where('video_id', $id)->where('user_id', $uid)->exists();
+    if ($exists) {
+        DB::table('video_likes')->where('video_id', $id)->where('user_id', $uid)->delete();
+        $liked = false;
+    } else {
+        DB::table('video_likes')->insertOrIgnore(['video_id'=>$id,'user_id'=>$uid,'created_at'=>now(),'updated_at'=>now()]);
+        $liked = true;
+    }
+    $count = DB::table('video_likes')->where('video_id', $id)->count();
+    return response()->json(['liked' => $liked, 'count' => $count]);
+})->middleware('auth');
+
+Route::get('/videos/{id}/likes', function($id) {
+    $count = DB::table('video_likes')->where('video_id', $id)->count();
+    $liked = false;
+    if (auth()->check()) {
+        $liked = DB::table('video_likes')
+            ->where('video_id', $id)->where('user_id', auth()->id())->exists();
+    }
+    $views = DB::table('videos')->where('id', $id)->value('views_count') ?? 0;
+    return response()->json(['liked' => $liked, 'count' => $count, 'views' => $views]);
+});
+
+Route::get('/perfil/visitantes', function() {
+    $user = auth()->user();
+    if(!$user) return redirect('/login');
+    $uid = (string)$user->id;
+    $userProfile = DB::table('profiles')->where(DB::raw('user_id::text'), $uid)->first();
+    $totalVisitors = DB::table('profile_views')
+        ->where(DB::raw('viewed_id::text'), $uid)
+        ->where(DB::raw('viewer_id::text'), '!=', $uid)
+        ->distinct()->count('viewer_id');
+    $visitors = DB::table('profile_views as pv')
+        ->join('profiles', DB::raw('pv.viewer_id::text'), '=', DB::raw('profiles.user_id::text'))
+        ->where(DB::raw('pv.viewed_id::text'), $uid)
+        ->where(DB::raw('pv.viewer_id::text'), '!=', $uid)
+        ->whereRaw('pv.viewed_at = (SELECT MAX(pv2.viewed_at) FROM profile_views pv2 WHERE pv2.viewer_id = pv.viewer_id AND pv2.viewed_id = pv.viewed_id)')
+        ->select('profiles.nickname','profiles.avatar_url','profiles.profile_type','pv.viewed_at')
+        ->orderByDesc('pv.viewed_at')
+        ->paginate(30);
+    return view('profiles.visitors', compact('userProfile','visitors','totalVisitors'));
+})->middleware('auth')->name('profile.visitors');
