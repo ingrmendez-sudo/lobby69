@@ -42,6 +42,10 @@
     position:absolute; bottom:.5rem; left:.6rem;
 }
 .vg-info { padding:.65rem .8rem .4rem; display:flex; flex-direction:column; gap:.25rem; }
+.vg-card { position:relative; border-radius:10px; overflow:hidden; background:#111; cursor:pointer; aspect-ratio:16/9; }
+.vg-card video { width:100%; height:100%; object-fit:cover; display:block; }
+.vg-card-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 50%); pointer-events:none; }
+.vg-card-info { position:absolute; bottom:0; left:0; right:0; padding:.5rem .7rem; }
 .vg-caption {
     font-size:.9rem; font-weight:600; color:var(--text-main,#222);
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
@@ -73,6 +77,9 @@
 #vgm { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.75); align-items:center; justify-content:center; }
 #vgm.open { display:flex; }
 .vgm-box {
+    background:#1a1a2e; color:#eee; border-radius:12px;
+    width:min(92vw,780px); max-height:92vh;
+    display:flex; flex-direction:column; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,.7);
     background:var(--card-bg,#fff); border-radius:16px; overflow:hidden;
     width:min(760px,94vw); max-height:88vh;
     display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,.4);
@@ -104,7 +111,15 @@
 .vgm-comment-form button {
     background:var(--bs-pink,#e91e8c); color:#fff; border:none;
     border-radius:20px; padding:6px 16px; cursor:pointer; font-size:.85rem;
+    min-width:72px; display:flex; align-items:center; justify-content:center; gap:4px;
 }
+@keyframes vg-spin { to { transform: rotate(360deg); } }
+.vgm-feedback {
+    font-size:.78rem; padding:.35rem .7rem; border-radius:8px; margin-top:.3rem;
+    display:flex; align-items:center; gap:.4rem;
+}
+.vgm-feedback.ok  { background:#e8f5e9; color:#2e7d32; }
+.vgm-feedback.err { background:#fce4ec; color:#c62828; }
 </style>
 @endpush
 
@@ -160,7 +175,7 @@
             : null;
         $lwAv = !empty($lw->avatar_url)
             ? (str_starts_with($lw->avatar_url,'http') ? $lw->avatar_url : asset('storage/'.ltrim($lw->avatar_url,'/')))
-            : 'https://ui-avatars.com/api/?name='.urlencode($lw->nickname ?? 'U').'&background=e91e8c&color=fff&size=30';
+            : null;
     @endphp
     <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem">
         <div style="width:52px;height:30px;border-radius:5px;overflow:hidden;flex-shrink:0;background:#111">
@@ -194,19 +209,47 @@
         </a>
         @endif
     </div>
-    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:.4rem">
+    <div style="display:flex;flex-direction:column;gap:.2rem">
         @foreach($profileVisitors as $pv)
         @php
-            $pvAv = !empty($pv->avatar_url)
-                ? (str_starts_with($pv->avatar_url,'http') ? $pv->avatar_url : asset('storage/'.ltrim($pv->avatar_url,'/')))
-                : 'https://ui-avatars.com/api/?name='.urlencode($pv->nickname ?? 'U').'&background=e91e8c&color=fff&size=40';
+            $pvNick    = $pv->nickname    ?? "Anonimo";
+            $pvAvatar  = $pv->avatar_url  ?? "";
+            $pvType    = $pv->profile_type ?? "";
+            $pvDate    = \Carbon\Carbon::parse($pv->viewed_at)->diffForHumans();
+            $pvInitial = strtoupper(substr($pvNick, 0, 1));
+            $pvColors  = ["#e91e8c","#9c27b0","#3f51b5","#00bcd4","#ff5722"];
+            $pvColor   = $pvColors[abs(crc32($pvNick)) % count($pvColors)];
+            $pvAv      = !empty($pvAvatar)
+                ? (str_starts_with($pvAvatar,"http") ? $pvAvatar : asset("storage/".ltrim($pvAvatar,"/")))
+                : null;
+            $pvBadge = match($pvType) {
+                "pareja"    => "&#x1F46B;",
+                "hombre"    => "&#x1F468;",
+                "mujer"     => "&#x1F469;",
+                "trans"     => "&#x26A7;",
+                "unicornio" => "&#x1F984;",
+                default     => "&#x1F464;",
+            };
         @endphp
-        <div style="text-align:center">
-            <img src="{{ $pvAv }}"
-                 onerror="this.src='https://ui-avatars.com/api/?name={{ urlencode($pv->nickname ?? 'U') }}&background=888&color=fff&size=40'"
-                 style="width:36px;height:36px;border-radius:50%;object-fit:cover;margin-bottom:2px">
-            <div style="font-size:.65rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;color:var(--text-muted,#888)">
-                {{ $pv->nickname ?? '' }}
+        <div style="display:flex;align-items:center;gap:.55rem;padding:.4rem .5rem;border-radius:8px;transition:background .15s"
+             onmouseover="this.style.background=&apos;rgba(233,30,140,.08)&apos;"
+             onmouseout="this.style.background=&apos;transparent&apos;">
+            @if($pvAv)
+                <img src="{{ $pvAv }}"
+                     onerror="this.style.display=&apos;none&apos;"
+                     style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0">
+            @else
+                <div style="width:34px;height:34px;border-radius:50%;background:{{ $pvColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0">
+                    {{ $pvInitial }}
+                </div>
+            @endif
+            <div style="min-width:0;flex:1">
+                <div style="font-size:.78rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">
+                    {!! $pvBadge !!} {{ $pvNick }}
+                </div>
+                <div style="font-size:.65rem;color:var(--text-muted,#888);white-space:nowrap">
+                    {{ $pvDate }}
+                </div>
             </div>
         </div>
         @endforeach
@@ -225,9 +268,12 @@
     </div>
     @foreach($myActivity as $act)
     @php
-        $actAv = !empty($act->avatar_url)
+        $actAv   = !empty($act->avatar_url)
             ? (str_starts_with($act->avatar_url,'http') ? $act->avatar_url : asset('storage/'.ltrim($act->avatar_url,'/')))
-            : 'https://ui-avatars.com/api/?name='.urlencode($act->nickname ?? 'U').'&background=e91e8c&color=fff&size=32';
+            : null;
+        $actInit  = strtoupper(substr($act->nickname ?? 'U', 0, 1));
+        $actClrs  = ['#e91e8c','#9c27b0','#3f51b5','#00bcd4','#ff5722'];
+        $actColor = $actClrs[abs(crc32($act->nickname ?? 'x')) % count($actClrs)];
         $actIcon = $act->type === 'like' ? '❤️' : '💬';
         $actText = $act->type === 'like' ? 'le dio like a' : 'comentó en';
     @endphp
@@ -314,9 +360,12 @@
     </div>
     @foreach($announcements as $ann)
     @php
-        $annAv = !empty($ann->avatar_url)
+        $annAv    = !empty($ann->avatar_url)
             ? (str_starts_with($ann->avatar_url,'http') ? $ann->avatar_url : asset('storage/'.ltrim($ann->avatar_url,'/')))
-            : 'https://ui-avatars.com/api/?name='.urlencode($ann->nickname ?? 'U').'&background=e91e8c&color=fff&size=32';
+            : null;
+        $annInit  = strtoupper(substr($ann->nickname ?? 'U', 0, 1));
+        $annClrs  = ['#e91e8c','#9c27b0','#3f51b5','#00bcd4','#ff5722'];
+        $annColor = $annClrs[abs(crc32($ann->nickname ?? 'x')) % count($annClrs)];
     @endphp
     <div style="border-bottom:1px solid var(--border-light,#f0f0f0);padding-bottom:.6rem;margin-bottom:.6rem">
         <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.3rem">
@@ -577,10 +626,16 @@ function vgLoadComments() {
 function vgMkComment(c) {
     var w = document.createElement('div');
     w.className = 'vgm-comment-item';
-    var av = c.avatar_url || ('https://ui-avatars.com/api/?name=' + encodeURIComponent(c.nickname || 'U') + '&size=40&background=e91e8c&color=fff');
-    var nick = c.nickname || 'Usuario';
+    var nick   = c.nickname || 'Usuario';
+    var clrs   = ['#e91e8c','#9c27b0','#3f51b5','#00bcd4','#ff5722'];
+    var hsh    = nick.split('').reduce(function(a,b){return a+b.charCodeAt(0);},0);
+    var clr    = clrs[Math.abs(hsh) % clrs.length];
+    var ini    = nick.charAt(0).toUpperCase();
+    var avHtml = c.avatar_url
+        ? '<img src="' + vgE(c.avatar_url) + '" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0">'
+        : '<div style="width:30px;height:30px;border-radius:50%;background:' + clr + ';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#fff;flex-shrink:0">' + ini + '</div>';
     var canDel = c.can_delete ? '<button class="vgm-comment-del" onclick="vgDelComment(' + c.id + ')">&#x2715;</button>' : '';
-    w.innerHTML = '<img src="' + vgE(av) + '" onerror="this.src=\'https://ui-avatars.com/api/?name=U&background=e91e8c&color=fff&size=40\'">'
+    w.innerHTML = avHtml
         + '<div class="vgm-comment-body" style="flex:1">'
         + '<b>' + vgE(nick) + '</b>'
         + '<p style="margin:0;line-height:1.5;font-size:.77rem">' + vgE(c.body) + '</p>'
@@ -603,27 +658,40 @@ function vgComment() {
         headers: { 'X-CSRF-TOKEN': VG.csrf, 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ body: body })
     }).then(function(r){ return r.json(); })
-    .then(function() {
-        inp.value = '';
-        btn.textContent = '✓ Publicado';
-        btn.style.background = '#22c55e';
-        setTimeout(function(){
-            btn.textContent = orig;
-            btn.style.background = '';
-            btn.disabled = false;
-            inp.disabled = false;
-        }, 1500);
+    .then(function(d) {
+        inp.value = "";
+        btn.textContent = orig;
+        btn.disabled = false;
+        inp.disabled = false;
+        // Feedback exito
+        var fb = document.getElementById("vgm-comment-feedback");
+        if (fb) fb.remove();
+        fb = document.createElement("div");
+        fb.id = "vgm-comment-feedback";
+        fb.className = "vgm-feedback ok";
+        fb.textContent = "\u2714 Comentario enviado";
+        inp.closest(".vgm-comment-form").insertAdjacentElement("afterend", fb);
+        setTimeout(function(){ if (fb.parentNode) fb.remove(); }, 3000);
+        // Recargar y scroll
         vgLoadComments();
+        setTimeout(function(){
+            var list = document.getElementById("vgm-comments-list");
+            if (list) list.scrollTop = list.scrollHeight;
+        }, 400);
     })
     .catch(function(){
-        btn.textContent = 'Error';
-        btn.style.background = '#ef4444';
-        setTimeout(function(){
-            btn.textContent = orig;
-            btn.style.background = '';
-            btn.disabled = false;
-            inp.disabled = false;
-        }, 2000);
+        btn.textContent = orig;
+        btn.style.background = "";
+        btn.disabled = false;
+        inp.disabled = false;
+        var fb = document.getElementById("vgm-comment-feedback");
+        if (fb) fb.remove();
+        fb = document.createElement("div");
+        fb.id = "vgm-comment-feedback";
+        fb.className = "vgm-feedback err";
+        fb.textContent = "\u2716 Error al enviar. Intenta de nuevo.";
+        inp.closest(".vgm-comment-form").insertAdjacentElement("afterend", fb);
+        setTimeout(function(){ if (fb.parentNode) fb.remove(); }, 4000);
     });
 }
 
@@ -646,3 +714,4 @@ function vgT(ts) {
 }
 </script>
 @endpush
+
