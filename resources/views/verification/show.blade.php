@@ -274,7 +274,7 @@ document.getElementById('verificationForm').addEventListener('submit', function(
                     window.location.href = xhr.responseURL;
                 } else {
                     // Buscar redirección en la respuesta
-                    window.location.href = '/verificar/pendiente';
+                    window.location.href = '{{ route(''verification.pending'') }}';
                 }
             }, 600);
         } else if (xhr.status === 422) {

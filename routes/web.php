@@ -77,6 +77,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/verificacion',        [VerificationController::class, 'show'])->name('verification.show');
     Route::post('/verificacion',       [VerificationController::class, 'store'])->name('verification.store');
     Route::get('/verificacion/estado', [VerificationController::class, 'status'])->name('verification.status');
+    Route::get('/verificacion/pendiente', [VerificationController::class, 'pending'])->name('verification.pending');
 
     // Fotos
     Route::get('/mis-visitas',  [ProfileController::class, 'visitors'])->name('profile.visitors');
@@ -141,10 +142,10 @@ Route::middleware(['auth', 'admin.only'])
     Route::post('invitaciones/{id}/rechazar', [AdminInvitationController::class, 'reject'])->name('invitations.reject');
 
     Route::get('verificaciones',                [AdminVerificationController::class, 'index'])->name('verifications.index');
+    Route::get('verificaciones/imagen/{id}',    [AdminVerificationController::class, 'serveImage'])->name('verifications.image');
     Route::get('verificaciones/{id}',           [AdminVerificationController::class, 'show'])->name('verifications.show');
     Route::post('verificaciones/{id}/aprobar',  [AdminVerificationController::class, 'approve'])->name('verifications.approve');
     Route::post('verificaciones/{id}/rechazar', [AdminVerificationController::class, 'reject'])->name('verifications.reject');
-    Route::get('verificaciones/imagen/{id}',    [AdminVerificationController::class, 'serveImage'])->name('verifications.image');
 
     Route::get('fotos',                [AdminPhotoController::class, 'index'])->name('photos.index');
     Route::post('fotos/{id}/aprobar',  [AdminPhotoController::class, 'approve'])->name('photos.approve');
