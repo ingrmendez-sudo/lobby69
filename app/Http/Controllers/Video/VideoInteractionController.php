@@ -207,4 +207,73 @@ class VideoInteractionController extends Controller
 
         return response()->json(['deleted' => true]);
     }
+
+    /**
+     * GET /videos/{id}/likes
+     * Retorna count + si el usuario autenticado ya dio like.
+     */
+    public function likesStatus($videoId)
+    {
+        $videoId = (int) $videoId;
+        $userId  = Auth::id();
+
+        $count = DB::table('video_likes')
+            ->where('video_id', $videoId)
+            ->count();
+
+        $liked = $userId
+            ? DB::table('video_likes')
+                ->where('video_id', $videoId)
+                ->where('user_id', $userId)
+                ->exists()
+            : false;
+
+        // Top likers (nick + avatar_id) — máx 8
+        $likers = DB::table('video_likes as vl')
+            ->join('users as u',    DB::raw('u.id::text'), '=', DB::raw('vl.user_id::text'))
+            ->leftJoin('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('u.id::text'))
+            ->where('vl.video_id', $videoId)
+            ->orderByDesc('vl.created_at')
+            ->limit(8)
+            ->select([
+                DB::raw('COALESCE(pr.nickname, u.username) AS nick'),
+                DB::raw("(SELECT ap.id FROM photos ap
+                          WHERE ap.user_id::text = u.id::text
+                            AND ap.is_profile_photo = true
+                            AND ap.status = 'approved'
+                          LIMIT 1) AS avatar_id"),
+            ])
+            ->get();
+
+        return response()->json([
+            'count'  => $count,
+            'liked'  => $liked,
+            'likers' => $likers,
+        ]);
+    }
+
+    /**
+     * POST /videos/{id}/view
+     * Registra una vista autenticada (idempotente por sesión).
+     */
+    public function recordView(Request $request, $videoId)
+    {
+        $videoId = (int) $videoId;
+        $userId  = Auth::id();
+
+        $video = DB::table('videos')->where('id', $videoId)->first();
+        if (!$video) {
+            return response()->json(['ok' => false], 404);
+        }
+
+        // Solo incrementar si el video es aprobado y el viewer no es el dueño
+        if ($video->status === 'approved' &&
+            (!$userId || (string)$video->user_id !== (string)$userId)) {
+            DB::table('videos')
+                ->where('id', $videoId)
+                ->increment('views_count');
+        }
+
+        return response()->json(['ok' => true, 'views' => $video->views_count + 1]);
+    }
 }

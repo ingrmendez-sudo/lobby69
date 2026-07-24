@@ -248,38 +248,9 @@ Route::get('/videos/{id}/stream', function($id) {
     }, 200, $headers);
 })->middleware('auth')->name('videos.stream');
 
-Route::post('/videos/{id}/view', function($id) {
-    if (!auth()->check()) return response()->json(['ok' => false], 403);
-    DB::table('videos')->where('id', $id)->increment('views_count');
-    return response()->json(['ok' => true]);
-})->middleware('auth');
+Route::post("/videos/{id}/view", [\App\Http\Controllers\Video\VideoInteractionController::class, "recordView"])->middleware("auth")->name("videos.view");
 
-Route::post('/videos/{id}/likes', function($id) {
-    if (!auth()->check()) return response()->json(['ok' => false], 403);
-    $uid = auth()->id();
-    $exists = DB::table('video_likes')
-        ->where('video_id', $id)->where('user_id', $uid)->exists();
-    if ($exists) {
-        DB::table('video_likes')->where('video_id', $id)->where('user_id', $uid)->delete();
-        $liked = false;
-    } else {
-        DB::table('video_likes')->insertOrIgnore(['video_id'=>$id,'user_id'=>$uid,'created_at'=>now(),'updated_at'=>now()]);
-        $liked = true;
-    }
-    $count = DB::table('video_likes')->where('video_id', $id)->count();
-    return response()->json(['liked' => $liked, 'count' => $count]);
-})->middleware('auth');
-
-Route::get('/videos/{id}/likes', function($id) {
-    $count = DB::table('video_likes')->where('video_id', $id)->count();
-    $liked = false;
-    if (auth()->check()) {
-        $liked = DB::table('video_likes')
-            ->where('video_id', $id)->where('user_id', auth()->id())->exists();
-    }
-    $views = DB::table('videos')->where('id', $id)->value('views_count') ?? 0;
-    return response()->json(['liked' => $liked, 'count' => $count, 'views' => $views]);
-});
+Route::get("/videos/{id}/likes", [\App\Http\Controllers\Video\VideoInteractionController::class, "likesStatus"])->middleware("auth")->name("videos.likes.status");
 
 Route::get('/perfil/visitantes', function() {
     $user = auth()->user();
@@ -299,4 +270,4 @@ Route::get('/perfil/visitantes', function() {
         ->orderByDesc('pv.viewed_at')
         ->paginate(30);
     return view('profiles.visitors', compact('userProfile','visitors','totalVisitors'));
-})->middleware('auth')->name('profile.visitors');
+})->middleware('auth')->name('profile.visitors.alt');

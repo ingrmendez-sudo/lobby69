@@ -122,6 +122,11 @@ class ProfileController extends Controller
 
         if (!$profile) abort(404, 'Perfil no encontrado.');
 
+        // Respetar privacidad: perfil marcado como no-público
+        if (!$profile->public) {
+            abort(404, 'Este perfil no está disponible.');
+        }
+
         $user = DB::table('users')
             ->whereRaw('id::text = ?', [$profile->user_id])
             ->first();
@@ -179,6 +184,7 @@ class ProfileController extends Controller
             ->where('status', 'approved')
             ->orderBy('sort_order')
             ->orderByDesc('created_at')
+            ->limit(24)
             ->get();
 
         $photosCount = $photos->count();
@@ -220,6 +226,7 @@ class ProfileController extends Controller
             ->where('status', 'approved')
             ->orderBy('sort_order')
             ->orderByDesc('created_at')
+            ->limit(24)
             ->get();
         $videosCount = $videos->count();
 
@@ -443,5 +450,61 @@ class ProfileController extends Controller
             'isPairing', 'isUnicorn',
             'lookingFor', 'interests', 'allLookingFor', 'allInterests'
         ));
+    }
+
+    /**
+     * GET /mis-visitas
+     * Lista paginada de usuarios que visitaron el perfil del autenticado.
+     * Avatares via photos.serve (nunca avatar_url legacy).
+     */
+    public function visitors()
+    {
+        $user = auth()->user();
+        $uid  = (string) $user->id;
+
+        $userProfile = DB::table('profiles')
+            ->whereRaw('user_id::text = ?', [$uid])
+            ->first();
+
+        // Total de visitantes únicos (excluye visitas propias)
+        $totalVisitors = DB::table('profile_views')
+            ->whereRaw('viewed_id::text = ?', [$uid])
+            ->whereRaw('viewer_id::text != ?', [$uid])
+            ->distinct()
+            ->count('viewer_id');
+
+        // Una fila por visitante: la visita más reciente de cada uno
+        // avatar_photo_id via subquery correlacionada (evita JOIN + GROUP BY con JSON)
+        $visitors = DB::table('profile_views as pv')
+            ->join('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('pv.viewer_id::text'))
+            ->join('users as u',     DB::raw('u.id::text'),       '=', DB::raw('pv.viewer_id::text'))
+            ->whereRaw('pv.viewed_id::text = ?', [$uid])
+            ->whereRaw('pv.viewer_id::text != ?', [$uid])
+            ->whereRaw('pv.viewed_at = (
+                SELECT MAX(pv2.viewed_at)
+                FROM profile_views pv2
+                WHERE pv2.viewer_id = pv.viewer_id
+                  AND pv2.viewed_id = pv.viewed_id
+            )')
+            ->where('u.active', true)
+            ->select([
+                'pr.nickname',
+                'pr.profile_type',
+                'pr.city',
+                'pr.verified_profile',
+                'pv.viewed_at',
+                DB::raw("(
+                    SELECT ph.id
+                    FROM photos ph
+                    WHERE ph.user_id::text = pv.viewer_id::text
+                      AND ph.is_profile_photo = true
+                      AND ph.status = 'approved'
+                    LIMIT 1
+                ) AS avatar_photo_id"),
+            ])
+            ->orderByDesc('pv.viewed_at')
+            ->paginate(30);
+
+        return view('profiles.visitors', compact('userProfile', 'visitors', 'totalVisitors'));
     }
 }
