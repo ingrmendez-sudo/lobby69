@@ -19,20 +19,20 @@ class VideoInteractionController extends Controller
         $liked = $userId
             ? DB::table('video_likes')
                 ->where('video_id', $videoId)
-                ->whereRaw('user_id::text = ?', [(string)$userId])
+                ->where('user_id', $userId)
                 ->exists()
             : false;
 
         $likers = DB::table('video_likes as vl')
-            ->join('users as u',         DB::raw('u.id::text'), '=', DB::raw('vl.user_id::text'))
-            ->leftJoin('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('u.id::text'))
+            ->join('users as u', 'u.id', '=', 'vl.user_id')
+            ->leftJoin('profiles as pr', 'pr.user_id', '=', 'u.id')
             ->where('vl.video_id', $videoId)
             ->orderByDesc('vl.created_at')
             ->limit(8)
             ->select([
                 DB::raw('COALESCE(pr.nickname, u.username) AS nick'),
                 DB::raw("(SELECT ap.id FROM photos ap
-                          WHERE ap.user_id::text = u.id::text
+                          WHERE ap.user_id = u.id
                             AND ap.is_profile_photo = true
                             AND ap.status = 'approved'
                           LIMIT 1) AS avatar_id"),
@@ -52,13 +52,13 @@ class VideoInteractionController extends Controller
 
         $exists = DB::table('video_likes')
             ->where('video_id', $videoId)
-            ->whereRaw('user_id::text = ?', [(string)$userId])
+            ->where('user_id', $userId)
             ->exists();
 
         if ($exists) {
             DB::table('video_likes')
                 ->where('video_id', $videoId)
-                ->whereRaw('user_id::text = ?', [(string)$userId])
+                ->where('user_id', $userId)
                 ->delete();
             $liked = false;
         } else {
@@ -75,15 +75,15 @@ class VideoInteractionController extends Controller
 
         // Retornar likers actualizados para evitar segundo fetch desde el JS
         $likers = DB::table('video_likes as vl')
-            ->join('users as u',         DB::raw('u.id::text'), '=', DB::raw('vl.user_id::text'))
-            ->leftJoin('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('u.id::text'))
+            ->join('users as u', 'u.id', '=', 'vl.user_id')
+            ->leftJoin('profiles as pr', 'pr.user_id', '=', 'u.id')
             ->where('vl.video_id', $videoId)
             ->orderByDesc('vl.created_at')
             ->limit(8)
             ->select([
                 DB::raw('COALESCE(pr.nickname, u.username) AS nick'),
                 DB::raw("(SELECT ap.id FROM photos ap
-                          WHERE ap.user_id::text = u.id::text
+                          WHERE ap.user_id = u.id
                             AND ap.is_profile_photo = true
                             AND ap.status = 'approved'
                           LIMIT 1) AS avatar_id"),
@@ -113,18 +113,28 @@ class VideoInteractionController extends Controller
             ])
             ->get();
 
-        foreach ($comments as $comment) {
-            $comment->replies = DB::table('video_comments')
+        // Cargar todos los replies en UNA query y agrupar en memoria (evita N+1)
+        $parentIds = $comments->pluck('id')->toArray();
+
+        $allReplies = collect();
+        if (!empty($parentIds)) {
+            $allReplies = DB::table('video_comments')
+
                 ->join('users', 'users.id', '=', 'video_comments.user_id')
                 ->leftJoin('profiles', 'profiles.user_id', '=', 'video_comments.user_id')
                 ->where('video_comments.video_id', $videoId)
-                ->where('video_comments.parent_id', $comment->id)
+
+
+                ->whereIn('video_comments.parent_id', $parentIds)
+
+
                 ->orderBy('video_comments.created_at', 'asc')
                 ->select([
                     'video_comments.id',
                     'video_comments.body',
                     'video_comments.created_at',
                     'video_comments.user_id',
+                    'video_comments.parent_id',
                     'users.username',
                     'users.name',
                     'profiles.nickname',
@@ -132,6 +142,11 @@ class VideoInteractionController extends Controller
                 ->get();
         }
 
+        $repliesByParent = $allReplies->groupBy('parent_id');
+
+        foreach ($comments as $comment) {
+            $comment->replies = $repliesByParent->get($comment->id, collect())->values();
+        }
         return response()->json($comments);
     }
 
@@ -256,21 +271,21 @@ class VideoInteractionController extends Controller
         $liked = $userId
             ? DB::table('video_likes')
                 ->where('video_id', $videoId)
-                ->whereRaw('user_id::text = ?', [(string)$userId])
+            ->where('user_id', $userId)
                 ->exists()
             : false;
 
         // Top likers (nick + avatar_id) — máx 8
         $likers = DB::table('video_likes as vl')
-            ->join('users as u',    DB::raw('u.id::text'), '=', DB::raw('vl.user_id::text'))
-            ->leftJoin('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('u.id::text'))
+            ->join('users as u', 'u.id', '=', 'vl.user_id')
+            ->leftJoin('profiles as pr', 'pr.user_id', '=', 'u.id')
             ->where('vl.video_id', $videoId)
             ->orderByDesc('vl.created_at')
             ->limit(8)
             ->select([
                 DB::raw('COALESCE(pr.nickname, u.username) AS nick'),
                 DB::raw("(SELECT ap.id FROM photos ap
-                          WHERE ap.user_id::text = u.id::text
+                          WHERE ap.user_id = u.id
                             AND ap.is_profile_photo = true
                             AND ap.status = 'approved'
                           LIMIT 1) AS avatar_id"),
