@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 
 @section('title', 'Galería de Videos — LOBBY69')
 
@@ -146,7 +146,7 @@
 <div style="background:var(--card-bg,#fff);border-radius:14px;padding:1.1rem;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:1rem">
     <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.9rem">
         @if($sideAv)
-        <img src="{{ $sideAv }}"
+        <img loading="eager" src="{{ $sideAv }}"
              onerror="this.outerHTML='<div style=&quot;width:52px;height:52px;border-radius:50%;background:{{ $sideColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.3rem;color:#fff;flex-shrink:0;border:2px solid var(--bs-pink,#e91e8c)&quot;>{{ $sideInit }}</div>'"
              style="width:52px;height:52px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--bs-pink,#e91e8c)">
         @else
@@ -192,7 +192,7 @@
     <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem;cursor:pointer" onclick="vgOpenById({{ $lw->id }}, this.dataset.cap, this.dataset.src)" data-cap="{{ e($lw->caption ?? chr(45)) }}" data-src="{{ route('videos.stream', $lw->id) }}">
         <div style="width:52px;height:30px;border-radius:5px;overflow:hidden;flex-shrink:0;background:#111">
             @if($lwThumb)
-            <img src="{{ $lwThumb }}" style="width:100%;height:100%;object-fit:cover">
+            <img loading="lazy" src="{{ $lwThumb }}" style="width:100%;height:100%;object-fit:cover">
             @else
             <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center">
                 <svg width="14" height="14" fill="none" stroke="#666" stroke-width="2" viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
@@ -247,7 +247,7 @@
              onmouseover="this.style.background=&apos;rgba(233,30,140,.08)&apos;"
              onmouseout="this.style.background=&apos;transparent&apos;">
             @if($pvAv)
-                <img src="{{ $pvAv }}"
+                <img loading="lazy" src="{{ $pvAv }}"
                      onerror="this.outerHTML='<div style=&quot;width:34px;height:34px;border-radius:50%;background:{{ $pvColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.85rem;color:#fff;flex-shrink:0&quot;>{{ $pvInitial }}</div>'"
                      style="width:34px;height:34px;border-radius:50%;object-fit:cover;flex-shrink:0">
             @else
@@ -281,7 +281,7 @@
     @endphp
     <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;cursor:pointer;border-radius:8px;padding:.2rem .3rem;transition:background .15s" onmouseover="this.style.background='rgba(233,30,140,.08)'" onmouseout="this.style.background='transparent'" onclick="vgOpenById({{ $tv->id }}, this.dataset.cap, this.dataset.src)" data-cap="{{ addslashes($tv->caption ?? 'Sin título') }}" data-src="{{ route('videos.stream', $tv->id) }}">
         @if($tvThumb)
-        <img src="{{ $tvThumb }}" style="width:48px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0" alt="">
+        <img loading="lazy" src="{{ $tvThumb }}" style="width:48px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0" alt="">
         @else
         <div style="width:48px;height:36px;background:var(--input-bg,#eee);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.9rem">🎬</div>
         @endif
@@ -328,7 +328,7 @@
     <div style="background:var(--input-bg,#f7f7f7);border-radius:10px;padding:.6rem;margin-bottom:.6rem">
         <div style="display:flex;align-items:center;gap:.5rem;margin-bottom:.3rem">
             @if($annAv)
-            <img src="{{ $annAv }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="">
+            <img loading="lazy" src="{{ $annAv }}" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0" alt="">
             <div style="width:24px;height:24px;border-radius:50%;background:{{ $annColor }};display:none;align-items:center;justify-content:center;font-weight:700;font-size:.7rem;color:#fff;flex-shrink:0">{{ $annInit }}</div>
             @else
             <div style="width:24px;height:24px;border-radius:50%;background:{{ $annColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.7rem;color:#fff;flex-shrink:0">{{ $annInit }}</div>
@@ -410,7 +410,7 @@
         <div class="vg-caption">{{ $cap }}</div>
         <div class="vg-meta">
             @if($avSrc)
-            <img src="{{ $avSrc }}"
+            <img loading="lazy" src="{{ $avSrc }}"
                  onerror="this.outerHTML='<div style=&quot;width:28px;height:28px;border-radius:50%;background:{{ $avColor }};display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#fff&quot;>{{ $avInit }}</div>'"
                  alt="{{ e($nick) }}" style="width:28px;height:28px;border-radius:50%;object-fit:cover">
             @else
