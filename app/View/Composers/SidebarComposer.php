@@ -21,7 +21,7 @@ class SidebarComposer
 
         try {
             $viewerIds = DB::table('profile_views')
-                ->whereRaw('viewed_id::text = ?', [$userId])
+                ->where('viewed_id', $userId)
                 ->orderByDesc('viewed_at')
                 ->limit(5)
                 ->pluck('viewer_id')
@@ -29,12 +29,12 @@ class SidebarComposer
                 ->toArray();
 
             $whoViewedMeCount = DB::table('profile_views')
-                ->whereRaw('viewed_id::text = ?', [$userId])
+                ->where('viewed_id', $userId)
                 ->count();
 
             if (!empty($viewerIds)) {
                 $whoViewedMe = User::with('profile')
-                    ->whereIn(DB::raw('id::text'), $viewerIds)
+                    ->whereIn('id', $viewerIds)
                     ->where('role', '!=', 'admin')
                     ->get();
             }
@@ -42,7 +42,7 @@ class SidebarComposer
 
         try {
             $viewedIds = DB::table('profile_views')
-                ->whereRaw('viewer_id::text = ?', [$userId])
+                ->where('viewer_id', $userId)
                 ->orderByDesc('viewed_at')
                 ->limit(5)
                 ->pluck('viewed_id')
@@ -50,12 +50,12 @@ class SidebarComposer
                 ->toArray();
 
             $iViewedCount = DB::table('profile_views')
-                ->whereRaw('viewer_id::text = ?', [$userId])
+                ->where('viewer_id', $userId)
                 ->count();
 
             if (!empty($viewedIds)) {
                 $iViewed = User::with('profile')
-                    ->whereIn(DB::raw('id::text'), $viewedIds)
+                    ->whereIn('id', $viewedIds)
                     ->where('role', '!=', 'admin')
                     ->get();
             }

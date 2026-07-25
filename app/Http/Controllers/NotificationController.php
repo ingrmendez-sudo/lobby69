@@ -13,7 +13,7 @@ class NotificationController extends Controller
     {
         $user  = auth()->user();
         $notifs = DB::table('notifications')
-            ->whereRaw('user_id::text = ?', [(string) $user->id])
+            ->where('user_id', $user->id)
             ->orderByDesc('created_at')
             ->limit(50)
             ->get()
@@ -24,12 +24,12 @@ class NotificationController extends Controller
 
         // Marcar todas como leídas
         DB::table('notifications')
-            ->whereRaw('user_id::text = ?', [(string) $user->id])
+            ->where('user_id', $user->id)
             ->whereNull('read_at')
             ->update(['read_at' => Carbon::now()]);
 
                 $myNick = DB::table('profiles')
-            ->whereRaw('user_id::text = ?', [(string) $user->id])
+            ->where('user_id', $user->id)
             ->value('nickname') ?? '';
 
         return view('notifications.index', compact('notifs', 'myNick'));
@@ -39,7 +39,7 @@ class NotificationController extends Controller
     {
         $user  = auth()->user();
         $count = DB::table('notifications')
-            ->whereRaw('user_id::text = ?', [(string) $user->id])
+            ->where('user_id', $user->id)
             ->whereNull('read_at')
             ->count();
 
@@ -50,7 +50,7 @@ class NotificationController extends Controller
     {
         $user = auth()->user();
         DB::table('notifications')
-            ->whereRaw('user_id::text = ?', [(string) $user->id])
+            ->where('user_id', $user->id)
             ->whereNull('read_at')
             ->update(['read_at' => Carbon::now()]);
 
@@ -61,8 +61,8 @@ class NotificationController extends Controller
     {
         $user = auth()->user();
         DB::table('notifications')
-            ->whereRaw('id::text = ?', [$id])
-            ->whereRaw('user_id::text = ?', [(string) $user->id])
+            ->where('id', $id)
+            ->where('user_id', $user->id)
             ->whereNull('read_at')
             ->update(['read_at' => Carbon::now()]);
 
