@@ -19,22 +19,32 @@ class VideoGalleryController extends Controller
                 $j->on('photos.user_id', '=', 'videos.user_id')
                    ->where('photos.is_profile_photo', true);
             })
+            ->leftJoin(DB::raw('(
+                SELECT video_id, COUNT(*) AS likes_count
+                FROM video_likes
+                GROUP BY video_id
+            ) AS vl'), 'vl.video_id', '=', 'videos.id')
+            ->leftJoin(DB::raw('(
+                SELECT video_id, COUNT(*) AS comments_count
+                FROM video_comments
+                WHERE parent_id IS NULL
+                GROUP BY video_id
+            ) AS vc'), 'vc.video_id', '=', 'videos.id')
             ->where('videos.status', 'approved')
-            ->selectRaw("
-                videos.id,
-                videos.caption,
-                videos.thumbnail_path,
-                videos.file_path,
-                videos.views_count,
-                videos.duration_seconds,
-                videos.user_id,
-                videos.created_at,
-                profiles.nickname,
-                profiles.avatar_url,
-                photos.id AS avatar_photo_id,
-                (SELECT COUNT(*) FROM video_likes  WHERE video_likes.video_id  = videos.id) AS likes_count,
-                (SELECT COUNT(*) FROM video_comments WHERE video_comments.video_id = videos.id AND video_comments.parent_id IS NULL) AS comments_count
-            ")
+            ->select([
+                'videos.id',
+                'videos.caption',
+                'videos.thumbnail_path',
+                'videos.file_path',
+                'videos.views_count',
+                'videos.duration_seconds',
+                'videos.user_id',
+                'videos.created_at',
+                'profiles.nickname',
+                'photos.id AS avatar_photo_id',
+                DB::raw('COALESCE(vl.likes_count, 0) AS likes_count'),
+                DB::raw('COALESCE(vc.comments_count, 0) AS comments_count'),
+            ])
             ->orderByDesc('videos.created_at')
             ->paginate(24);
 
