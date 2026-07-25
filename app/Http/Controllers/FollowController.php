@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-
+use Illuminate\Support\Facades\Cache;
 class FollowController extends Controller
 {
     /**
@@ -17,7 +17,7 @@ class FollowController extends Controller
         // Buscar por nickname en profiles, luego obtener el user
         $profile = DB::table('profiles')->where('nickname', $nickname)->first();
         $target  = $profile
-            ? DB::table('users')->whereRaw('id::text = ?', [$profile->user_id])->first()
+            ? DB::table('users')->where('id', $profile->user_id)->first()
             : null;
 
         if (!$target) {
@@ -45,8 +45,10 @@ class FollowController extends Controller
 
             // Notificar al usuario seguido
             $followerNick = DB::table('profiles')
-                ->whereRaw('user_id::text = ?', [(string)$me])
+                ->where('user_id', $me)
                 ->value('nickname');
+            Cache::forget('followers_' . $target->id);
+            Cache::forget('following_' . $me);
             NotificationController::create((string)$target->id, 'follow', [
                 'from_nick'   => $followerNick ?? 'Alguien',
                 'follower_id' => (string)$me,
@@ -64,7 +66,7 @@ class FollowController extends Controller
     {
         $profile = DB::table('profiles')->where('nickname', $nickname)->first();
         $target  = $profile
-            ? DB::table('users')->whereRaw('id::text = ?', [$profile->user_id])->first()
+            ? DB::table('users')->where('id', $profile->user_id)->first()
             : null;
 
         if (!$target) {
@@ -77,6 +79,9 @@ class FollowController extends Controller
             ->where('follower_id', $me)
             ->where('following_id', $target->id)
             ->delete();
+
+        Cache::forget('followers_' . $target->id);
+        Cache::forget('following_' . $me);
 
         return back()->with('success', 'Dejaste de seguir a @' . $nickname . '.');
     }
