@@ -13,41 +13,45 @@ class VideoGalleryController extends Controller
         $user = Auth::user();
 
         // ── Galería principal ────────────────────────────────────────
-        $videos = DB::table('videos')
-            ->join('users',    'videos.user_id', '=', 'users.id')
-            ->join('profiles', 'users.id',       '=', 'profiles.user_id')
-            ->leftJoin('photos', function($j) {
-                $j->on('photos.user_id', '=', 'videos.user_id')
-                   ->where('photos.is_profile_photo', true);
-            })
-            ->leftJoin(DB::raw('(
-                SELECT video_id, COUNT(*) AS likes_count
-                FROM video_likes
-                GROUP BY video_id
-            ) AS vl'), 'vl.video_id', '=', 'videos.id')
-            ->leftJoin(DB::raw('(
-                SELECT video_id, COUNT(*) AS comments_count
-                FROM video_comments
-                WHERE parent_id IS NULL
-                GROUP BY video_id
-            ) AS vc'), 'vc.video_id', '=', 'videos.id')
-            ->where('videos.status', 'approved')
-            ->select([
-                'videos.id',
-                'videos.caption',
-                'videos.thumbnail_path',
-                'videos.file_path',
-                'videos.views_count',
-                'videos.duration_seconds',
-                'videos.user_id',
-                'videos.created_at',
-                'profiles.nickname',
-                'photos.id AS avatar_photo_id',
-                DB::raw('COALESCE(vl.likes_count, 0) AS likes_count'),
-                DB::raw('COALESCE(vc.comments_count, 0) AS comments_count'),
-            ])
-            ->orderByDesc('videos.created_at')
-            ->simplePaginate(24);
+        $page   = request()->get('page', 1);
+        $videos = Cache::remember("gallery.page.{$page}", 60, function () {
+            return DB::table('videos')
+                ->join('users',    'videos.user_id', '=', 'users.id')
+                ->join('profiles', 'users.id',       '=', 'profiles.user_id')
+                ->leftJoin('photos', function($j) {
+                    $j->on('photos.user_id', '=', 'videos.user_id')
+                       ->where('photos.is_profile_photo', true);
+                })
+                ->leftJoin(DB::raw('(
+                    SELECT video_id, COUNT(*) AS likes_count
+                    FROM video_likes
+                    GROUP BY video_id
+                ) AS vl'), 'vl.video_id', '=', 'videos.id')
+                ->leftJoin(DB::raw('(
+                    SELECT video_id, COUNT(*) AS comments_count
+                    FROM video_comments
+                    WHERE parent_id IS NULL
+                    GROUP BY video_id
+                ) AS vc'), 'vc.video_id', '=', 'videos.id')
+                ->where('videos.status', 'approved')
+                ->select([
+                    'videos.id',
+                    'videos.caption',
+                    'videos.thumbnail_path',
+                    'videos.file_path',
+                    'videos.views_count',
+                    'videos.duration_seconds',
+                    'videos.user_id',
+                    'videos.created_at',
+                    'profiles.nickname',
+                    'photos.id AS avatar_photo_id',
+                    DB::raw('COALESCE(vl.likes_count, 0) AS likes_count'),
+                    DB::raw('COALESCE(vc.comments_count, 0) AS comments_count'),
+                ])
+                ->orderByDesc('videos.created_at')
+                ->simplePaginate(24);
+        });
+
 
         // ── Defaults ─────────────────────────────────────────────────
         $userProfile         = null;
