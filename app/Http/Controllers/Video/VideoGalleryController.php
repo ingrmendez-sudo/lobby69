@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Video;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 
 class VideoGalleryController extends Controller
 {
@@ -142,13 +143,15 @@ class VideoGalleryController extends Controller
                 ->get();
 
             // Top 5 videos más populares
-            $topVideos = DB::table('videos')
-                ->join('profiles', 'videos.user_id', '=', 'profiles.user_id')
-                ->where('videos.status', 'approved')
-                ->select('videos.id','videos.caption','videos.thumbnail_path','videos.views_count','profiles.nickname')
-                ->orderByDesc('videos.views_count')
-                ->limit(5)
-                ->get();
+            $topVideos = Cache::remember('top_videos', 600, function () {
+                return DB::table('videos')
+                    ->join('profiles', 'videos.user_id', '=', 'profiles.user_id')
+                    ->where('videos.status', 'approved')
+                    ->select('videos.id','videos.caption','videos.thumbnail_path','videos.views_count','profiles.nickname')
+                    ->orderByDesc('videos.views_count')
+                    ->limit(5)
+                    ->get();
+            });
 
             // Mi actividad (likes y comentarios recibidos)
             $myVideoIds = DB::table('videos')

@@ -5,6 +5,7 @@ use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class ProfileController extends Controller
@@ -147,13 +148,13 @@ class ProfileController extends Controller
                 ->exists();
         }
 
-        $followersCount = DB::table('follows')
-            ->where('following_id', $profile->user_id)
-            ->count();
+        $followersCount = Cache::remember('followers_' . $profile->user_id, 300, function () use ($profile) {
+            return DB::table('follows')->where('following_id', $profile->user_id)->count();
+        });
 
-        $followingCount = DB::table('follows')
-            ->where('follower_id', $profile->user_id)
-            ->count();
+        $followingCount = Cache::remember('following_' . $profile->user_id, 300, function () use ($profile) {
+            return DB::table('follows')->where('follower_id', $profile->user_id)->count();
+        });
 
         // Avatar
         $profilePhoto = DB::table('photos')
@@ -233,9 +234,9 @@ class ProfileController extends Controller
         // Stats sidebar
         $sbPhotosCount = $photosCount;
 
-        $sbReviews = DB::table('profile_reviews')
-            ->where('reviewed_id', $profile->user_id)
-            ->get();
+        $sbReviews = Cache::remember('reviews_' . $profile->user_id, 300, function () use ($profile) {
+            return DB::table('profile_reviews')->where('reviewed_id', $profile->user_id)->get();
+        });
 
         $sbPos = $sbReviews->where('type', 'positive')->count();
         $sbNeg = $sbReviews->where('type', 'negative')->count();
