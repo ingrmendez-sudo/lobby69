@@ -348,7 +348,7 @@
 @section('content')
 <div class="d-flex align-items-center justify-content-between mb-3">
     <h5 class="mb-0 fw-bold">🎬 Galería de Videos</h5>
-    <span class="text-muted" style="font-size:.85rem">{{ $videos->total() }} videos</span>
+    <span class="text-muted" style="font-size:.85rem">Videos</span>
 </div>
 
 <div class="vg-grid">

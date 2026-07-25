@@ -47,7 +47,7 @@ class VideoGalleryController extends Controller
                 DB::raw('COALESCE(vc.comments_count, 0) AS comments_count'),
             ])
             ->orderByDesc('videos.created_at')
-            ->paginate(24);
+            ->simplePaginate(24);
 
         // ── Defaults ─────────────────────────────────────────────────
         $userProfile         = null;
