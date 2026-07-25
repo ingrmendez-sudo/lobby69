@@ -26,3 +26,6 @@ Thumbs.db
 storage/framework/views/*.php
 
 storage/framework/sessions/
+
+bootstrap/cache/*.php
+audit_routes.txt
