@@ -1156,3 +1156,31 @@ html, body {
 .l69-layout__content { min-width:0; }
 @media(max-width:1100px){ .l69-layout{ grid-template-columns:220px 1fr; } .l69-sidebar--right{ display:none; } }
 @media(max-width:768px){ .l69-layout{ grid-template-columns:1fr; } .l69-sidebar--left{ display:none; } }
+
+/* ============================================================
+   LOBBY69 — ALIASES DE COMPATIBILIDAD v2
+   Valores directos — no dependen de --theme-* contaminado
+   ============================================================ */
+
+/* Modo día — textos oscuros sobre fondos claros */
+[data-theme="light"],
+:root {
+  --card-bg:      #ffffff;
+  --text-main:    #1a1523;
+  --text-muted:   #6b7280;
+  --border-light: rgba(26, 21, 35, 0.10);
+  --input-bg:     #f8f7fc;
+  --hover-bg:     rgba(233, 30, 140, 0.06);
+  --bs-pink:      #e91e8c;
+}
+
+/* Modo noche — textos claros sobre fondos oscuros */
+[data-theme="dark"] {
+  --card-bg:      #1a1728;
+  --text-main:    #f0eaf8;
+  --text-muted:   #8a7fa0;
+  --border-light: rgba(255, 255, 255, 0.08);
+  --input-bg:     #221f33;
+  --hover-bg:     rgba(233, 30, 140, 0.10);
+  --bs-pink:      #e91e8c;
+}

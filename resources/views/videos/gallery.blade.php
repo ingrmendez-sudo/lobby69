@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Galería de Videos — LOBBY69')
 
@@ -41,27 +41,27 @@
     display:flex; align-items:center; gap:3px;
     position:absolute; bottom:.5rem; left:.6rem;
 }
-.vg-info { padding:.65rem .8rem .4rem; display:flex; flex-direction:column; gap:.25rem; }
+.vg-info { padding:.65rem .8rem .4rem; display:flex; flex-direction:column; gap:.25rem; background:var(--card-bg,#fff); }
 .vg-card { position:relative; border-radius:10px; overflow:hidden; background:#111; cursor:pointer; aspect-ratio:16/9; }
 .vg-card video { width:100%; height:100%; object-fit:cover; display:block; }
 .vg-card-overlay { position:absolute; inset:0; background:linear-gradient(to top, rgba(0,0,0,.75) 0%, transparent 50%); pointer-events:none; }
 .vg-card-info { position:absolute; bottom:0; left:0; right:0; padding:.5rem .7rem; }
 .vg-caption {
-    font-size:.9rem; font-weight:600; color:var(--text-main,#222);
+    font-size:.9rem; font-weight:600; color:var(--text-main,#111);
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
 }
-.vg-meta { font-size:.78rem; color:var(--text-muted,#888); display:flex; align-items:center; gap:.4rem; }
+.vg-meta { font-size:.78rem; color:var(--text-main,#333); display:flex; align-items:center; gap:.4rem; }
 .vg-meta img { width:22px; height:22px; border-radius:50%; object-fit:cover; }
-.vg-act-views { display:flex; align-items:center; gap:.25rem; font-size:.75rem; color:var(--text-muted,#888); padding:0 .2rem; }
-.vg-actions {
+.vg-act-views { display:flex; align-items:center; gap:.25rem; font-size:.75rem; color:var(--text-main,#555); padding:0 .2rem; }
+.vg-actions { background:var(--card-bg,#fff);
     display:flex; align-items:center; gap:.7rem;
     padding:.4rem .8rem .6rem;
-    border-top:1px solid var(--border-light,#f0f0f0);
+    border-top:1px solid var(--border-light,rgba(0,0,0,.08));
 }
 .vg-btn-action {
     background:none; border:none; cursor:pointer;
     display:flex; align-items:center; gap:4px;
-    font-size:.82rem; color:var(--text-muted,#888);
+    font-size:.82rem; color:var(--text-main,#444);
     padding:4px 8px; border-radius:8px; transition:background .15s,color .15s;
 }
 .vg-btn-action:hover { background:var(--hover-bg,#f5f5f5); color:var(--bs-pink,#e91e8c); }
@@ -78,7 +78,7 @@
 #vgm { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.75); align-items:center; justify-content:center; }
 #vgm.open { display:flex; }
 .vgm-box {
-    background:#1a1a2e; color:#eee; border-radius:12px;
+    background:var(--card-bg,#fff); color:var(--text-main,#222); border-radius:12px;
     width:min(92vw,780px); max-height:92vh;
     display:flex; flex-direction:column; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,.7);
     background:var(--card-bg,#fff); border-radius:16px; overflow:hidden;
@@ -279,7 +279,7 @@
     @php
         $tvThumb = $tv->thumbnail_path ? 'https://kjhaquimghhejqznleyn.supabase.co/storage/v1/object/public/gallery/'.$tv->thumbnail_path : null;
     @endphp
-    <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem">
+    <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;cursor:pointer;border-radius:8px;padding:.2rem .3rem;transition:background .15s" onmouseover="this.style.background='rgba(233,30,140,.08)'" onmouseout="this.style.background='transparent'" onclick="vgOpenById({{ $tv->id }}, this.dataset.cap, this.dataset.src)" data-cap="{{ addslashes($tv->caption ?? 'Sin título') }}" data-src="{{ route('videos.stream', $tv->id) }}">
         @if($tvThumb)
         <img src="{{ $tvThumb }}" style="width:48px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0" alt="">
         @else
@@ -382,10 +382,10 @@
      data-cap="{{ e($cap) }}"
      data-nick="{{ e($nick) }}"
      data-av="{{ $avSrc }}">
-    <div class="vg-thumb"
-         onmouseenter="vgHover(this,true)"
-         onmouseleave="vgHover(this,false)"
+    <div class="vg-thumb vg-thumb--hoverable"
          onclick="vgOpen(this.closest('.vg-vcard'))">
+
+
         <video preload="none" muted playsinline
                @if($thumbSrc) poster="{{ $thumbSrc }}" @endif
                src="{{ route('videos.stream', $video->id) }}">
@@ -493,6 +493,37 @@ var VG = {
     hoverTimers: new WeakMap()
 };
 
+
+/* ── Event delegation hover preview — reemplaza vgHover inline ── */
+(function() {
+    document.addEventListener('DOMContentLoaded', function() {
+        var grid = document.querySelector('.vg-grid');
+        if (!grid) return;
+        var timers = new WeakMap();
+        grid.addEventListener('mouseover', function(e) {
+            var thumb = e.target.closest('.vg-thumb--hoverable');
+            if (!thumb || timers.has(thumb)) return;
+            var video = thumb.querySelector('video');
+            if (!video) return;
+            video.currentTime = 0;
+            var p = video.play();
+            if (p) p.catch(function(){});
+            var t = setTimeout(function() {
+                video.pause(); video.currentTime = 0; timers.delete(thumb);
+            }, 3000);
+            timers.set(thumb, t);
+        });
+        grid.addEventListener('mouseout', function(e) {
+            var thumb = e.target.closest('.vg-thumb--hoverable');
+            if (!thumb) return;
+            if (e.relatedTarget && thumb.contains(e.relatedTarget)) return;
+            var t = timers.get(thumb);
+            if (t) { clearTimeout(t); timers.delete(thumb); }
+            var video = thumb.querySelector('video');
+            if (video) { video.pause(); video.currentTime = 0; }
+        });
+    });
+})();
 function vgHover(thumb, entering) {
     var video = thumb.querySelector('video');
     if (!video) return;
@@ -576,9 +607,10 @@ function vgLoadLikes() {
 function vgLike(btn) {
     var vid = btn.dataset.vid;
     if (!vid) return;
-    fetch('/videos/' + vid + '/likes', {
+    fetch('/videos/' + vid + '/like', {
         method: 'POST',
-        headers: { 'X-CSRF-TOKEN': VG.csrf, 'Accept': 'application/json' }
+        headers: { 'X-CSRF-TOKEN': VG.csrf, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
     }).then(function(r){ return r.json(); })
     .then(function(d) {
         var countEl = btn.querySelector('.vg-like-count');
@@ -591,9 +623,10 @@ function vgLike(btn) {
 
 function vgLikeModal() {
     if (!VG.vid) return;
-    fetch('/videos/' + VG.vid + '/likes', {
+    fetch('/videos/' + VG.vid + '/like', {
         method: 'POST',
-        headers: { 'X-CSRF-TOKEN': VG.csrf, 'Accept': 'application/json' }
+        headers: { 'X-CSRF-TOKEN': VG.csrf, 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        body: JSON.stringify({})
     }).then(function(r){ return r.json(); })
     .then(function(d) {
         document.getElementById('vgm-like-count').textContent = d.count || 0;

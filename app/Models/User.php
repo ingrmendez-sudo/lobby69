@@ -56,4 +56,29 @@ class User extends Authenticatable
     {
         return $this->role === 'admin';
     }
+
+    public function verification(): \Illuminate\Database\Eloquent\Relations\HasOne
+    {
+        return $this->hasOne(Verification::class, 'user_id', 'id');
+    }
+
+    public function followers(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Follow::class, 'following_id', 'id');
+    }
+
+    public function following(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Follow::class, 'follower_id', 'id');
+    }
+
+    public function announcements(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Announcement::class, 'user_id', 'id');
+    }
+
+    public function notifications(): \Illuminate\Database\Eloquent\Relations\HasMany
+    {
+        return $this->hasMany(Notification::class, 'user_id', 'id');
+    }
 }

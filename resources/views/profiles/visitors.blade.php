@@ -11,16 +11,24 @@
 <div style="background:var(--card-bg,#fff);border-radius:14px;box-shadow:0 2px 10px rgba(0,0,0,.07);overflow:hidden">
     @forelse($visitors as $v)
     @php
-        $vAv = !empty($v->avatar_url)
-            ? (str_starts_with($v->avatar_url,'http') ? $v->avatar_url : asset('storage/'.ltrim($v->avatar_url,'/')))
-            : 'https://ui-avatars.com/api/?name='.urlencode($v->nickname ?? 'U').'&background=e91e8c&color=fff&size=48';
-        $vDate = \Carbon\Carbon::parse($v->viewed_at)->format('d M Y H:i');
-        $vDiff = \Carbon\Carbon::parse($v->viewed_at)->diffForHumans();
+        $vDate  = \Carbon\Carbon::parse($v->viewed_at)->format('d M Y H:i');
+        $vDiff  = \Carbon\Carbon::parse($v->viewed_at)->diffForHumans();
+        $vInit  = strtoupper(substr($v->nickname ?? 'U', 0, 1));
+        $vColor = '#' . substr(md5($v->nickname ?? 'U'), 0, 6);
     @endphp
     <div style="display:flex;align-items:center;gap:.9rem;padding:.9rem 1.1rem;border-bottom:1px solid var(--border-light,#f0f0f0)">
-        <img src="{{ $vAv }}"
-             onerror="this.src='https://ui-avatars.com/api/?name=U&background=888&color=fff&size=48'"
-             style="width:46px;height:46px;border-radius:50%;object-fit:cover;flex-shrink:0">
+        @if(!empty($v->avatar_photo_id))
+            <img src="{{ route('photos.serve', $v->avatar_photo_id) }}"
+                 onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
+                 style="width:46px;height:46px;border-radius:50%;object-fit:cover;flex-shrink:0">
+            <div style="display:none;width:46px;height:46px;border-radius:50%;background:{{ $vColor }};
+                        align-items:center;justify-content:center;flex-shrink:0;
+                        font-weight:700;font-size:1.1rem;color:#fff;">{{ $vInit }}</div>
+        @else
+            <div style="display:flex;width:46px;height:46px;border-radius:50%;background:{{ $vColor }};
+                        align-items:center;justify-content:center;flex-shrink:0;
+                        font-weight:700;font-size:1.1rem;color:#fff;">{{ $vInit }}</div>
+        @endif
         <div style="flex:1">
             <div style="font-weight:600;font-size:.92rem;color:var(--text-main,#222)">{{ $v->nickname ?? 'Usuario' }}</div>
             <div style="font-size:.76rem;color:var(--text-muted,#888);text-transform:capitalize">{{ $v->profile_type ?? '' }}</div>

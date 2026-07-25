@@ -1697,9 +1697,7 @@ function vmToggleLike() {
             icon.className = 'far fa-heart';
             btn.style.color = '#94a3b8';
         }
-        if (d.likers) vmRenderLikers(d.likers);
-        /* Recargar lista completa */
-        vmLoadLikes(_vmVideoId);
+        if (d.likers && d.likers.length) vmRenderLikers(d.likers);
     }).catch(function(){});
 }
 
@@ -2452,6 +2450,50 @@ function contieneContacto(txt) {
     });
 })();
 </script>
+
+/* ── Avatar fallback: inicial + color HSL derivado del nick ── */
+(function() {
+    function l69Hue(str) {
+        var h = 0;
+        for (var i = 0; i < str.length; i++) {
+            h = (h * 31 + str.charCodeAt(i)) & 0xffffffff;
+        }
+        return Math.abs(h) % 360;
+    }
+    window.l69AvatarFallback = function(imgEl, nick) {
+        var initial = (nick || '?').charAt(0).toUpperCase();
+        var hue     = l69Hue(nick || '?');
+        var bg      = 'hsl(' + hue + ',45%,28%)';
+        var color   = 'hsl(' + hue + ',70%,75%)';
+        var size    = imgEl.style.width  || imgEl.getAttribute('width')  || '40px';
+        var div     = document.createElement('div');
+        div.style.cssText = [
+            'width:'           + size,
+            'height:'          + size,
+            'border-radius:50%',
+            'background:'      + bg,
+            'color:'           + color,
+            'display:inline-flex',
+            'align-items:center',
+            'justify-content:center',
+            'font-size:calc('  + size + ' * 0.4)',
+            'font-weight:700',
+            'flex-shrink:0',
+            'border:' + (imgEl.style.border || '1px solid rgba(180,60,120,.3)'),
+        ].join(';');
+        div.textContent = initial;
+        imgEl.parentNode.replaceChild(div, imgEl);
+    };
+
+    /* Aplicar a todas las imágenes de avatar ya en el DOM */
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('img[data-nick]').forEach(function(img) {
+            img.addEventListener('error', function() {
+                window.l69AvatarFallback(img, img.dataset.nick);
+            });
+        });
+    });
+})();
 @endpush
 
 

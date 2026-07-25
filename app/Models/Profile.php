@@ -49,4 +49,16 @@ class Profile extends Model
     {
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
+
+    public function verification(): \Illuminate\Database\Eloquent\Relations\HasOneThrough
+    {
+        return $this->hasOneThrough(
+            Verification::class,
+            User::class,
+            'id',       // users.id
+            'user_id',  // verifications.user_id
+            'user_id',  // profiles.user_id
+            'id'        // users.id
+        );
+    }
 }

@@ -12,21 +12,33 @@ class VideoInteractionController extends Controller
     public function likers($videoId)
     {
         $videoId = (int) $videoId;
+        $userId  = Auth::id();
+
         $count = DB::table('video_likes')->where('video_id', $videoId)->count();
-        $liked = false;
-        if (Auth::check()) {
-            $liked = DB::table('video_likes')
+
+        $liked = $userId
+            ? DB::table('video_likes')
                 ->where('video_id', $videoId)
-                ->where('user_id', Auth::id())
-                ->exists();
-        }
-        $likers = DB::table('video_likes')
-            ->join('users', 'users.id', '=', 'video_likes.user_id')
-            ->leftJoin('profiles', 'profiles.user_id', '=', 'video_likes.user_id')
-            ->where('video_likes.video_id', $videoId)
-            ->orderBy('video_likes.created_at', 'desc')
-            ->select(['users.username', 'users.name', 'profiles.nickname'])
+                ->whereRaw('user_id::text = ?', [(string)$userId])
+                ->exists()
+            : false;
+
+        $likers = DB::table('video_likes as vl')
+            ->join('users as u',         DB::raw('u.id::text'), '=', DB::raw('vl.user_id::text'))
+            ->leftJoin('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('u.id::text'))
+            ->where('vl.video_id', $videoId)
+            ->orderByDesc('vl.created_at')
+            ->limit(8)
+            ->select([
+                DB::raw('COALESCE(pr.nickname, u.username) AS nick'),
+                DB::raw("(SELECT ap.id FROM photos ap
+                          WHERE ap.user_id::text = u.id::text
+                            AND ap.is_profile_photo = true
+                            AND ap.status = 'approved'
+                          LIMIT 1) AS avatar_id"),
+            ])
             ->get();
+
         return response()->json(['count' => $count, 'liked' => $liked, 'likers' => $likers]);
     }
 
@@ -40,13 +52,13 @@ class VideoInteractionController extends Controller
 
         $exists = DB::table('video_likes')
             ->where('video_id', $videoId)
-            ->where('user_id', $userId)
+            ->whereRaw('user_id::text = ?', [(string)$userId])
             ->exists();
 
         if ($exists) {
             DB::table('video_likes')
                 ->where('video_id', $videoId)
-                ->where('user_id', $userId)
+                ->whereRaw('user_id::text = ?', [(string)$userId])
                 ->delete();
             $liked = false;
         } else {
@@ -60,7 +72,25 @@ class VideoInteractionController extends Controller
         }
 
         $count = DB::table('video_likes')->where('video_id', $videoId)->count();
-        return response()->json(['count' => $count, 'liked' => $liked]);
+
+        // Retornar likers actualizados para evitar segundo fetch desde el JS
+        $likers = DB::table('video_likes as vl')
+            ->join('users as u',         DB::raw('u.id::text'), '=', DB::raw('vl.user_id::text'))
+            ->leftJoin('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('u.id::text'))
+            ->where('vl.video_id', $videoId)
+            ->orderByDesc('vl.created_at')
+            ->limit(8)
+            ->select([
+                DB::raw('COALESCE(pr.nickname, u.username) AS nick'),
+                DB::raw("(SELECT ap.id FROM photos ap
+                          WHERE ap.user_id::text = u.id::text
+                            AND ap.is_profile_photo = true
+                            AND ap.status = 'approved'
+                          LIMIT 1) AS avatar_id"),
+            ])
+            ->get();
+
+        return response()->json(['count' => $count, 'liked' => $liked, 'likers' => $likers]);
     }
 
     public function comments($videoId)
@@ -215,6 +245,8 @@ class VideoInteractionController extends Controller
     public function likesStatus($videoId)
     {
         $videoId = (int) $videoId;
+        $video   = DB::table('videos')->where('id', $videoId)->first();
+        if (!$video) return response()->json(['count'=>0,'liked'=>false,'views'=>0,'likers'=>[]]);
         $userId  = Auth::id();
 
         $count = DB::table('video_likes')
@@ -224,7 +256,7 @@ class VideoInteractionController extends Controller
         $liked = $userId
             ? DB::table('video_likes')
                 ->where('video_id', $videoId)
-                ->where('user_id', $userId)
+                ->whereRaw('user_id::text = ?', [(string)$userId])
                 ->exists()
             : false;
 
@@ -248,6 +280,7 @@ class VideoInteractionController extends Controller
         return response()->json([
             'count'  => $count,
             'liked'  => $liked,
+            'views'  => (int)($video->views_count ?? 0),
             'likers' => $likers,
         ]);
     }
@@ -274,6 +307,8 @@ class VideoInteractionController extends Controller
                 ->increment('views_count');
         }
 
-        return response()->json(['ok' => true, 'views' => $video->views_count + 1]);
+        // Releer views_count tras increment() — el objeto en memoria no se refresca
+        $updatedViews = DB::table('videos')->where('id', $videoId)->value('views_count');
+        return response()->json(['ok' => true, 'views' => (int)($updatedViews ?? 0)]);
     }
 }

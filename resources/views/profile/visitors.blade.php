@@ -20,8 +20,8 @@
         <a href="{{ $v->nickname ? route('profile.show', $v->nickname) : '#' }}"
            style="display:flex;align-items:center;gap:.75rem;padding:.65rem 0;
                   text-decoration:none;border-bottom:1px solid rgba(255,255,255,.06);">
-            @if($v->avatar_id)
-            <img src="{{ route('photos.serve', $v->avatar_id) }}"
+            @if($v->avatar_photo_id)
+            <img src="{{ route('photos.serve', $v->avatar_photo_id) }}"
                  style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;"
                  onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
             @else
@@ -32,13 +32,13 @@
             @endif
             <div style="flex:1;min-width:0;">
                 <div style="font-size:.88rem;font-weight:600;color:var(--theme-text);">
-                    {{ $v->display_name ?? $v->nickname ?? 'Usuario' }}
+                    {{ $v->nickname ?? 'Usuario' }}
                     @if($v->verified_profile)
                     <i class="fas fa-check-circle" style="color:#22c55e;font-size:.7rem;"></i>
                     @endif
                 </div>
                 <div style="font-size:.75rem;color:var(--theme-muted);">
-                    {{ $v->profile_type ?? '' }} · {{ \Carbon\Carbon::parse($v->last_visit)->diffForHumans() }}
+                    {{ $v->profile_type ?? '' }} · {{ \Carbon\Carbon::parse($v->viewed_at)->diffForHumans() }}
                 </div>
             </div>
             <i class="fas fa-chevron-right" style="color:var(--theme-muted);font-size:.7rem;"></i>

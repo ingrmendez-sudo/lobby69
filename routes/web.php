@@ -196,17 +196,16 @@ Route::middleware(['auth', 'admin.only'])
 });
 // -- Interacciones de video (likes, comentarios) --
 Route::get('videos/{id}/likes', [App\Http\Controllers\Video\VideoInteractionController::class, 'likers']);
-Route::get('videos/{id}/comments', [App\Http\Controllers\Video\VideoInteractionController::class, 'comments']);
+Route::get('videos/{id}/comments', [App\Http\Controllers\Video\VideoInteractionController::class, 'comments'])->name('videos.comments');
 Route::middleware('auth')->group(function () {
-    Route::post('videos/{id}/like', [App\Http\Controllers\Video\VideoInteractionController::class, 'toggleLike']);
-    Route::post('videos/{id}/comments', [App\Http\Controllers\Video\VideoInteractionController::class, 'storeComment']);
-    Route::post('videos/{id}/comments/{cid}/reply', [App\Http\Controllers\Video\VideoInteractionController::class, 'storeReply']);
-    Route::delete('videos/{id}/comments/{cid}', [App\Http\Controllers\Video\VideoInteractionController::class, 'deleteComment']);
+    Route::post('videos/{id}/like', [App\Http\Controllers\Video\VideoInteractionController::class, 'toggleLike'])->name('videos.like');
+    Route::post('videos/{id}/comments', [App\Http\Controllers\Video\VideoInteractionController::class, 'storeComment'])->name('videos.comments.store');
+    Route::post('videos/{id}/comments/{cid}/reply', [App\Http\Controllers\Video\VideoInteractionController::class, 'storeReply'])->name('videos.comments.reply');
+    Route::delete('videos/{id}/comments/{cid}', [App\Http\Controllers\Video\VideoInteractionController::class, 'deleteComment'])->name('videos.comments.destroy');
 });
 
 Route::get('/videos', [App\Http\Controllers\Video\VideoGalleryController::class, 'index'])->name('videos.gallery');
 
-Route::get('/videos', [App\Http\Controllers\Video\VideoGalleryController::class, 'index'])->name('videos.gallery');
 
 
 // ── Video stream privado + contadores ──────────────────────────
@@ -252,22 +251,3 @@ Route::post("/videos/{id}/view", [\App\Http\Controllers\Video\VideoInteractionCo
 
 Route::get("/videos/{id}/likes", [\App\Http\Controllers\Video\VideoInteractionController::class, "likesStatus"])->middleware("auth")->name("videos.likes.status");
 
-Route::get('/perfil/visitantes', function() {
-    $user = auth()->user();
-    if(!$user) return redirect('/login');
-    $uid = (string)$user->id;
-    $userProfile = DB::table('profiles')->where(DB::raw('user_id::text'), $uid)->first();
-    $totalVisitors = DB::table('profile_views')
-        ->where(DB::raw('viewed_id::text'), $uid)
-        ->where(DB::raw('viewer_id::text'), '!=', $uid)
-        ->distinct()->count('viewer_id');
-    $visitors = DB::table('profile_views as pv')
-        ->join('profiles', DB::raw('pv.viewer_id::text'), '=', DB::raw('profiles.user_id::text'))
-        ->where(DB::raw('pv.viewed_id::text'), $uid)
-        ->where(DB::raw('pv.viewer_id::text'), '!=', $uid)
-        ->whereRaw('pv.viewed_at = (SELECT MAX(pv2.viewed_at) FROM profile_views pv2 WHERE pv2.viewer_id = pv.viewer_id AND pv2.viewed_id = pv.viewed_id)')
-        ->select('profiles.nickname','profiles.avatar_url','profiles.profile_type','pv.viewed_at')
-        ->orderByDesc('pv.viewed_at')
-        ->paginate(30);
-    return view('profiles.visitors', compact('userProfile','visitors','totalVisitors'));
-})->middleware('auth')->name('profile.visitors.alt');
