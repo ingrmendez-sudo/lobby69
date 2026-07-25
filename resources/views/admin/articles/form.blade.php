@@ -126,7 +126,7 @@
 
                     @if(isset($article->cover_path) && $article->cover_path)
                     <div style="margin-bottom:.75rem;">
-                        <img src="{{ Storage::url($article->cover_path) }}"
+                        <img loading="lazy" src="{{ Storage::url($article->cover_path) }}"
                              style="width:100%;border-radius:6px;object-fit:cover;max-height:140px;">
                         <label style="display:flex;align-items:center;gap:.4rem;margin-top:.4rem;font-size:.75rem;color:#ef4444;cursor:pointer;">
                             <input type="checkbox" name="remove_cover" value="1" style="accent-color:#ef4444;">
@@ -147,7 +147,7 @@
                         <div id="coverFileName" style="margin-top:.3rem;font-size:.75rem;color:var(--theme-accent);display:none;"></div>
                     </div>
                     <div id="coverPreview" style="display:none;margin-top:.5rem;">
-                        <img id="coverPreviewImg" style="width:100%;border-radius:6px;object-fit:cover;max-height:140px;">
+                        <img loading="lazy" id="coverPreviewImg" style="width:100%;border-radius:6px;object-fit:cover;max-height:140px;">
                     </div>
                 </div>
 

@@ -374,7 +374,7 @@
         <div class="l69-modal-side">
 
             <div class="l69-modal-owner" id="modalOwnerWrap" style="cursor:pointer;">
-                <img id="modalOwnerAvatar" src="/img/default-avatar.svg" alt="">
+                <img loading="lazy" id="modalOwnerAvatar" src="/img/default-avatar.svg" alt="">
                 <span id="modalOwnerName"></span>
             </div>
 

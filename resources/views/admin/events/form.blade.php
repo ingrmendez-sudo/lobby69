@@ -106,7 +106,7 @@
                 {{-- Preview imagen existente --}}
                 @if(isset($event->image_path) && $event->image_path)
                 <div id="currentImage" style="margin-bottom:.75rem;position:relative;display:inline-block;">
-                    <img src="{{ Storage::url($event->image_path) }}"
+                    <img loading="lazy" src="{{ Storage::url($event->image_path) }}"
                          style="max-height:180px;border-radius:8px;object-fit:cover;max-width:100%;">
                     <label style="display:flex;align-items:center;gap:.4rem;margin-top:.4rem;font-size:.78rem;color:#ef4444;cursor:pointer;">
                         <input type="checkbox" name="remove_image" value="1"
@@ -130,7 +130,7 @@
 
                 {{-- Preview nueva imagen --}}
                 <div id="newImagePreview" style="display:none;margin-top:.75rem;">
-                    <img id="newPreviewImg" style="max-height:180px;border-radius:8px;object-fit:cover;max-width:100%;">
+                    <img loading="lazy" id="newPreviewImg" style="max-height:180px;border-radius:8px;object-fit:cover;max-width:100%;">
                 </div>
             </div>
 

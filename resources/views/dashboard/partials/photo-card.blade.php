@@ -18,7 +18,7 @@
 
     {{-- Imagen principal --}}
     <div class="l69-feed-card__img-wrap">
-        <img src="/foto/{{ $photo->file_path }}"
+        <img loading="lazy" src="/foto/{{ $photo->file_path }}"
              alt="{{ $photo->caption ?? 'Foto' }}"
              class="l69-feed-card__img"
              loading="lazy"
@@ -28,7 +28,7 @@
         <a href="{{ $profileUrl }}"
            class="l69-feed-card__owner-top"
            onclick="event.stopPropagation()">
-            <img src="{{ $avatarUrl }}"
+            <img loading="lazy" src="{{ $avatarUrl }}"
                  alt="{{ $authorName }}"
                  onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
             <span>{{ $authorName }}</span>
