@@ -9,7 +9,7 @@
 {{-- Tarjeta: avatar + stats --}}
 <div class="l69-sidebar-card">
     <div style="text-align:center;padding:.5rem 0 1rem;">
-        <img src="{{ $avatarUrl }}"
+        <img loading="eager" src="{{ $avatarUrl }}"
              style="width:72px;height:72px;border-radius:50%;object-fit:cover;
                     border:2px solid rgba(180,60,120,.4);margin-bottom:.5rem;"
              onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
@@ -73,7 +73,7 @@
        style="display:flex;align-items:center;gap:.5rem;padding:.4rem 0;
               text-decoration:none;border-bottom:1px solid rgba(255,255,255,.05);">
         @if($rv->avatar_id)
-            <img src="{{ route('photos.serve', $rv->avatar_id) }}"
+            <img loading="lazy" src="{{ route('photos.serve', $rv->avatar_id) }}"
                  style="width:32px;height:32px;border-radius:50%;object-fit:cover;
                         flex-shrink:0;border:1px solid rgba(180,60,120,.3);"
                  onerror="this.style.display='none'">
@@ -180,7 +180,7 @@
                title="{{ $cf->nickname ?? $cf->display_name }}"
                style="display:block;">
                 @if($cf->avatar_id)
-                    <img src="{{ route('photos.serve', $cf->avatar_id) }}"
+                    <img loading="lazy" src="{{ route('photos.serve', $cf->avatar_id) }}"
                          style="width:36px;height:36px;border-radius:50%;object-fit:cover;
                                 border:2px solid rgba(180,60,120,.3);"
                          onerror="this.style.display='none'">
@@ -275,7 +275,7 @@
        style="display:flex;align-items:center;gap:.5rem;padding:.4rem 0;
               text-decoration:none;border-bottom:1px solid rgba(255,255,255,.05);">
         @if($rp->avatar_id)
-            <img src="{{ route('photos.serve', $rp->avatar_id) }}"
+            <img loading="lazy" src="{{ route('photos.serve', $rp->avatar_id) }}"
                  style="width:32px;height:32px;border-radius:50%;object-fit:cover;
                         flex-shrink:0;border:1px solid rgba(224,86,160,.3);"
                  onerror="this.style.display='none'">
@@ -823,7 +823,7 @@
     {{-- Header --}}
     <div class="prf-header">
         <div class="prf-avatar-wrap">
-            <img class="prf-avatar"
+            <img loading="lazy" class="prf-avatar"
                  src="{{ $avatarUrl }}"
                  alt="{{ $profile->nickname }}"
                  onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
@@ -839,7 +839,7 @@
                 @endif
                 <span class="prf-badge prf-badge--type">{{ $typeLabel }}</span>
                 <span class="prf-badge prf-badge--member">
-                    <img src="{{ $memberIcon }}" alt="{{ $memberLabel }}"
+                    <img loading="lazy" src="{{ $memberIcon }}" alt="{{ $memberLabel }}"
                          style="width:16px;height:16px;object-fit:contain;">
                     {{ $memberLabel }}
                 </span>
@@ -1223,7 +1223,7 @@
                          data-caption="{{ $photo->caption ?? '' }}"
                          data-likes="{{ $likeCount }}"
                          data-iliked="{{ $iLiked ? '1' : '0' }}">
-                        <img src="{{ route('photos.serve', $photo->id) }}"
+                        <img loading="lazy" src="{{ route('photos.serve', $photo->id) }}"
                              alt="{{ $photo->caption ?? '' }}"
                              loading="lazy"
                              onerror="this.parentElement.style.display='none'">
@@ -1263,7 +1263,7 @@
 
                         {{-- Thumbnail o placeholder --}}
                         @if($video->thumbnail_path)
-                        <img src="{{ route('videos.serve.public', $video->id) }}?thumb=1"
+                        <img loading="lazy" src="{{ route('videos.serve.public', $video->id) }}?thumb=1"
                              alt="{{ $video->caption ?? 'Video' }}"
                              loading="lazy"
                              style="width:100%;height:100%;object-fit:cover;"
@@ -1326,7 +1326,7 @@
         <div class="prf-photo-modal__img-wrap">
             <button class="prf-photo-modal__nav prf-photo-modal__nav--prev"
                     id="pm-prev" aria-label="Anterior">&#8249;</button>
-            <img id="pm-img" class="prf-photo-modal__img" src="" alt="">
+            <img loading="lazy" id="pm-img" class="prf-photo-modal__img" src="" alt="">
             <button class="prf-photo-modal__nav prf-photo-modal__nav--next"
                     id="pm-next" aria-label="Siguiente">&#8250;</button>
         </div>
