@@ -13,10 +13,10 @@ class VideoGalleryController extends Controller
 
         // ── Galería principal ────────────────────────────────────────
         $videos = DB::table('videos')
-            ->join('users',    DB::raw('videos.user_id::text'), '=', DB::raw('users.id::text'))
-            ->join('profiles', DB::raw('users.id::text'),       '=', DB::raw('profiles.user_id::text'))
+            ->join('users',    'videos.user_id', '=', 'users.id')
+            ->join('profiles', 'users.id',       '=', 'profiles.user_id')
             ->leftJoin('photos', function($j) {
-                $j->on(DB::raw('photos.user_id::text'), '=', DB::raw('videos.user_id::text'))
+                $j->on('photos.user_id', '=', 'videos.user_id')
                    ->where('photos.is_profile_photo', true);
             })
             ->where('videos.status', 'approved')
@@ -60,16 +60,16 @@ class VideoGalleryController extends Controller
             // Perfil del usuario sesión
             $userProfile = DB::table('profiles')
                 ->leftJoin('photos as ph_side', function($j) {
-                    $j->on(DB::raw('ph_side.user_id::text'), '=', DB::raw('profiles.user_id::text'))
+                    $j->on('ph_side.user_id', '=', 'profiles.user_id')
                        ->where('ph_side.is_profile_photo', true);
                 })
-                ->where(DB::raw('profiles.user_id::text'), $uid)
+                ->where('profiles.user_id', $uid)
                 ->select('profiles.*', 'ph_side.id as avatar_photo_id')
                 ->first();
 
             // Verificación
             $verification = DB::table('verifications')
-                ->where(DB::raw('user_id::text'), $uid)
+                ->where('user_id', $uid)
                 ->orderByDesc('created_at')
                 ->first();
             $isVerified          = $verification && $verification->status === 'approved';
@@ -78,7 +78,7 @@ class VideoGalleryController extends Controller
             // Últimos videos vistos (usa video_likes como proxy si no hay video_views)
             // Usamos videos con más vistas como "últimos vistos" fallback
             $lastWatched = DB::table('videos')
-                ->join('profiles', DB::raw('videos.user_id::text'), '=', DB::raw('profiles.user_id::text'))
+                ->join('profiles', 'videos.user_id', '=', 'profiles.user_id')
                 ->where('videos.status', 'approved')
                 ->select(
                     'videos.id',
@@ -105,11 +105,11 @@ class VideoGalleryController extends Controller
                     COALESCE(p.profile_type, '')                      AS profile_type,
                     ph.id                                              AS avatar_photo_id
                 FROM profile_views pv
-                LEFT JOIN photos   ph ON ph.user_id::text = pv.viewer_id::text AND ph.is_profile_photo = true
-                LEFT JOIN users    u ON u.id::text       = pv.viewer_id::text
-                LEFT JOIN profiles p ON p.user_id::text  = pv.viewer_id::text
-                WHERE pv.viewed_id::text = ?
-                  AND pv.viewer_id::text != ?
+                LEFT JOIN photos   ph ON ph.user_id = pv.viewer_id AND ph.is_profile_photo = true
+                LEFT JOIN users    u ON u.id = pv.viewer_id
+                LEFT JOIN profiles p ON p.user_id = pv.viewer_id
+                WHERE pv.viewed_id = ?
+                  AND pv.viewer_id != ?
                 ORDER BY pv.viewer_id, pv.viewed_at DESC
             ", [$uid, $uid]))
                 ->sortByDesc('viewed_at')
@@ -117,14 +117,14 @@ class VideoGalleryController extends Controller
                 ->values();
 
             $totalVisitors = DB::table('profile_views')
-                ->where(DB::raw('viewed_id::text'), $uid)
-                ->where(DB::raw('viewer_id::text'), '!=', $uid)
+                ->where('viewed_id', $uid)
+                ->where('viewer_id', '!=', $uid)
                 ->distinct('viewer_id')
                 ->count('viewer_id');
 
             // Mis últimos 5 videos
             $myLatestVideos = DB::table('videos')
-                ->where(DB::raw('user_id::text'), $uid)
+                ->where('user_id', $uid)
                 ->where('status', 'approved')
                 ->select('id','caption','thumbnail_path','views_count','created_at')
                 ->orderByDesc('created_at')
@@ -133,7 +133,7 @@ class VideoGalleryController extends Controller
 
             // Top 5 videos más populares
             $topVideos = DB::table('videos')
-                ->join('profiles', DB::raw('videos.user_id::text'), '=', DB::raw('profiles.user_id::text'))
+                ->join('profiles', 'videos.user_id', '=', 'profiles.user_id')
                 ->where('videos.status', 'approved')
                 ->select('videos.id','videos.caption','videos.thumbnail_path','videos.views_count','profiles.nickname')
                 ->orderByDesc('videos.views_count')
@@ -142,15 +142,15 @@ class VideoGalleryController extends Controller
 
             // Mi actividad (likes y comentarios recibidos)
             $myVideoIds = DB::table('videos')
-                ->where(DB::raw('user_id::text'), $uid)
+                ->where('user_id', $uid)
                 ->pluck('id')->toArray();
 
             if (!empty($myVideoIds)) {
                 $recentLikes = DB::table('video_likes')
                     ->join('videos',   'video_likes.video_id', '=', 'videos.id')
-                    ->join('profiles', DB::raw('video_likes.user_id::text'), '=', DB::raw('profiles.user_id::text'))
+                    ->join('profiles', 'video_likes.user_id', '=', 'profiles.user_id')
                     ->leftJoin('photos as ph_lk', function($j) {
-                        $j->on(DB::raw('ph_lk.user_id::text'), '=', DB::raw('video_likes.user_id::text'))
+                        $j->on('ph_lk.user_id', '=', 'video_likes.user_id')
                            ->where('ph_lk.is_profile_photo', true);
                     })
                     ->whereIn('video_likes.video_id', $myVideoIds)
@@ -168,9 +168,9 @@ class VideoGalleryController extends Controller
 
                 $recentComments = DB::table('video_comments')
                     ->join('videos',   'video_comments.video_id', '=', 'videos.id')
-                    ->join('profiles', DB::raw('video_comments.user_id::text'), '=', DB::raw('profiles.user_id::text'))
+                    ->join('profiles', 'video_comments.user_id', '=', 'profiles.user_id')
                     ->leftJoin('photos as ph_cm', function($j) {
-                        $j->on(DB::raw('ph_cm.user_id::text'), '=', DB::raw('video_comments.user_id::text'))
+                        $j->on('ph_cm.user_id', '=', 'video_comments.user_id')
                            ->where('ph_cm.is_profile_photo', true);
                     })
                     ->whereIn('video_comments.video_id', $myVideoIds)
@@ -196,18 +196,18 @@ class VideoGalleryController extends Controller
             }
 
             $myVideoCount = DB::table('videos')
-                ->where(DB::raw('user_id::text'), $uid)
+                ->where('user_id', $uid)
                 ->where('status', 'approved')
                 ->count();
 
             $likedIds = DB::table('video_likes')
-                ->where(DB::raw('user_id::text'), $uid)
+                ->where('user_id', $uid)
                 ->pluck('video_id')->toArray();
 
             // Anuncios activos dirigidos al tipo de perfil del usuario
             $profileType = $userProfile->profile_type ?? null;
             $announcements = DB::table('announcements')
-                ->join('profiles', DB::raw('announcements.user_id::text'), '=', DB::raw('profiles.user_id::text'))
+                ->join('profiles', 'announcements.user_id', '=', 'profiles.user_id')
                 ->where('announcements.status', 'active')
                 ->where(function($q) {
                     $q->whereNull('announcements.expires_at')
@@ -222,7 +222,7 @@ class VideoGalleryController extends Controller
                     'announcements.created_at',
                     'profiles.nickname',
                     'profiles.avatar_url',
-                    DB::raw('(SELECT id FROM photos WHERE photos.user_id::text = announcements.user_id::text AND photos.is_profile_photo = true ORDER BY id DESC LIMIT 1) as avatar_photo_id')
+                    DB::raw('(SELECT id FROM photos WHERE photos.user_id = announcements.user_id AND photos.is_profile_photo = true ORDER BY id DESC LIMIT 1) as avatar_photo_id')
                 )
                 ->orderByDesc('announcements.created_at')
                 ->limit(3)

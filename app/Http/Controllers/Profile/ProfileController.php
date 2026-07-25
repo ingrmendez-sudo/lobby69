@@ -128,7 +128,7 @@ class ProfileController extends Controller
         }
 
         $user = DB::table('users')
-            ->whereRaw('id::text = ?', [$profile->user_id])
+            ->where('id', $profile->user_id)
             ->first();
 
         if (!$user || in_array($user->membership_type, ['banned', 'suspended'])) {
@@ -157,14 +157,14 @@ class ProfileController extends Controller
 
         // Avatar
         $profilePhoto = DB::table('photos')
-            ->whereRaw('user_id::text = ?', [$profile->user_id])
+            ->where('user_id', $profile->user_id)
             ->where('is_profile_photo', true)
             ->where('status', 'approved')
             ->first();
 
         if (!$profilePhoto) {
             $profilePhoto = DB::table('photos')
-                ->whereRaw('user_id::text = ?', [$profile->user_id])
+                ->where('user_id', $profile->user_id)
                 ->where('album_type', 'public')
                 ->where('status', 'approved')
                 ->orderBy('sort_order')
@@ -179,7 +179,7 @@ class ProfileController extends Controller
 
         // Fotos publicas
         $photos = DB::table('photos')
-            ->whereRaw('user_id::text = ?', [$profile->user_id])
+            ->where('user_id', $profile->user_id)
             ->where('album_type', 'public')
             ->where('status', 'approved')
             ->orderBy('sort_order')
@@ -197,31 +197,31 @@ class ProfileController extends Controller
 
         $likesCount = count($photoUuids)
             ? DB::table('photo_likes')
-                ->whereIn(DB::raw('photo_id::text'), $photoUuids)
+                ->whereIn('photo_id', $photoUuids)
                 ->count()
             : 0;
 
         $likeCounts = count($photoUuids)
             ? DB::table('photo_likes')
-                ->whereIn(DB::raw('photo_id::text'), $photoUuids)
-                ->selectRaw('photo_id::text AS puuid, COUNT(*) AS cnt')
-                ->groupByRaw('photo_id::text')
+                ->whereIn('photo_id', $photoUuids)
+                ->selectRaw('photo_id AS puuid, COUNT(*) AS cnt')
+                ->groupBy('photo_id')
                 ->pluck('cnt', 'puuid')
             : collect();
 
         $myLikes = collect();
         if ($me && count($photoUuids)) {
             $myLikes = DB::table('photo_likes')
-                ->whereRaw('user_id::text = ?', [(string)$me])
-                ->whereIn(DB::raw('photo_id::text'), $photoUuids)
-                ->selectRaw('photo_id::text AS puuid')
+                ->where('user_id', $me)
+                ->whereIn('photo_id', $photoUuids)
+                ->selectRaw('photo_id AS puuid')
                 ->pluck('puuid')
                 ->flip();
         }
 
         // Videos publicos
         $videos = DB::table('videos')
-            ->whereRaw('user_id::text = ?', [$profile->user_id])
+            ->where('user_id', $profile->user_id)
             ->where('album_type', 'public')
             ->where('status', 'approved')
             ->orderBy('sort_order')
@@ -234,7 +234,7 @@ class ProfileController extends Controller
         $sbPhotosCount = $photosCount;
 
         $sbReviews = DB::table('profile_reviews')
-            ->whereRaw('reviewed_id::text = ?', [$profile->user_id])
+            ->where('reviewed_id', $profile->user_id)
             ->get();
 
         $sbPos = $sbReviews->where('type', 'positive')->count();
@@ -249,8 +249,8 @@ class ProfileController extends Controller
             $profileFriendIds = DB::table('friendships')
                 ->where('status', 'accepted')
                 ->where(function ($q) use ($uid) {
-                    $q->whereRaw('sender_id::text = ?', [$uid])
-                      ->orWhereRaw('receiver_id::text = ?', [$uid]);
+                    $q->whereRaw('sender_id = ?', [$uid])
+                      ->orWhereRaw('receiver_id = ?', [$uid]);
                 })
                 ->get()
                 ->map(fn($f) => (string)$f->sender_id === $uid
@@ -262,8 +262,8 @@ class ProfileController extends Controller
             $myFriendIds = DB::table('friendships')
                 ->where('status', 'accepted')
                 ->where(function ($q) use ($meId) {
-                    $q->whereRaw('sender_id::text = ?', [$meId])
-                      ->orWhereRaw('receiver_id::text = ?', [$meId]);
+                    $q->whereRaw('sender_id = ?', [$meId])
+                      ->orWhereRaw('receiver_id = ?', [$meId]);
                 })
                 ->get()
                 ->map(fn($f) => (string)$f->sender_id === $meId
@@ -276,14 +276,14 @@ class ProfileController extends Controller
 
             if (count($commonIds)) {
                 $commonFriends = DB::table('users as u')
-                    ->leftJoin('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('u.id::text'))
-                    ->whereIn(DB::raw('u.id::text'), $commonIds)
+                    ->leftJoin('profiles as pr', 'pr.user_id', '=', 'u.id')
+                    ->whereIn('u.id', $commonIds)
                     ->select([
                         'u.id AS user_id',
                         DB::raw('COALESCE(pr.display_name, u.username) AS display_name'),
                         'pr.nickname',
                         DB::raw("(SELECT ap.id FROM photos ap
-                                  WHERE ap.user_id::text = u.id::text
+                                  WHERE ap.user_id = u.id
                                     AND ap.is_profile_photo = true
                                     AND ap.status = 'approved'
                                   LIMIT 1) AS avatar_id"),
@@ -301,12 +301,12 @@ class ProfileController extends Controller
             $uid  = (string)$profile->user_id;
             $fr   = DB::table('friendships')
                 ->where(function($q) use ($meId, $uid) {
-                    $q->whereRaw('sender_id::text = ?',   [$meId])
-                      ->whereRaw('receiver_id::text = ?', [$uid]);
+                    $q->whereRaw('sender_id = ?', [$meId])
+                      ->whereRaw('receiver_id = ?', [$uid]);
                 })
                 ->orWhere(function($q) use ($meId, $uid) {
-                    $q->whereRaw('sender_id::text = ?',   [$uid])
-                      ->whereRaw('receiver_id::text = ?', [$meId]);
+                    $q->whereRaw('sender_id = ?', [$uid])
+                      ->whereRaw('receiver_id = ?', [$meId]);
                 })
                 ->select(['id', 'status', 'sender_id'])
                 ->first();
@@ -333,10 +333,10 @@ class ProfileController extends Controller
         if ($me) {
             try {
                 $recentlyVisited = DB::table('profile_views as pv')
-                    ->join('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('pv.viewed_id::text'))
-                    ->join('users as u',     DB::raw('u.id::text'),       '=', DB::raw('pv.viewed_id::text'))
-                    ->whereRaw('pv.viewer_id::text = ?', [(string)$me])
-                    ->whereRaw('pv.viewed_id::text != ?', [(string)$profile->user_id])
+                    ->join('profiles as pr', 'pr.user_id', '=', 'pv.viewed_id')
+                    ->join('users as u',     'u.id', '=', 'pv.viewed_id')
+                    ->whereRaw('pv.viewer_id = ?', [$me])
+                    ->whereRaw('pv.viewed_id != ?', [$profile->user_id])
                     ->where('u.active', true)
                     ->select([
                         DB::raw('DISTINCT ON (pv.viewed_id) pv.viewed_id'),
@@ -345,7 +345,7 @@ class ProfileController extends Controller
                         'pr.profile_type',
                         'pr.verified_profile',
                         DB::raw("(SELECT ap.id FROM photos ap
-                                  WHERE ap.user_id::text = pv.viewed_id::text
+                                  WHERE ap.user_id = pv.viewed_id
                                     AND ap.is_profile_photo = true
                                     AND ap.status = 'approved'
                                   LIMIT 1) AS avatar_id"),
@@ -362,21 +362,21 @@ class ProfileController extends Controller
         if ($me) {
             try {
                 $meCity = DB::table('profiles')
-                    ->whereRaw('user_id::text = ?', [(string)$me])
+                    ->where('user_id', $me)
                     ->value('city');
 
                 $alreadyFollowing = DB::table('follows')
-                    ->whereRaw('follower_id::text = ?', [(string)$me])
-                    ->pluck(DB::raw('following_id::text'))
+                    ->where('follower_id', $me)
+                    ->pluck('following_id')
                     ->toArray();
                 $alreadyFollowing[] = (string)$me;
                 $alreadyFollowing[] = (string)$profile->user_id;
 
                 $recommendedProfiles = DB::table('profiles as pr')
-                    ->join('users as u', DB::raw('u.id::text'), '=', DB::raw('pr.user_id::text'))
+                    ->join('users as u', 'u.id', '=', 'pr.user_id')
                     ->where('pr.profile_completed', true)
                     ->where('u.active', true)
-                    ->whereNotIn(DB::raw('pr.user_id::text'), $alreadyFollowing)
+                    ->whereNotIn('pr.user_id', $alreadyFollowing)
                     ->when($meCity, fn($q) => $q->where('pr.city', 'ilike', '%'.$meCity.'%'))
                     ->select([
                         'pr.nickname',
@@ -385,7 +385,7 @@ class ProfileController extends Controller
                         'pr.city',
                         'pr.verified_profile',
                         DB::raw("(SELECT ap.id FROM photos ap
-                                  WHERE ap.user_id::text = pr.user_id::text
+                                  WHERE ap.user_id = pr.user_id
                                     AND ap.is_profile_photo = true
                                     AND ap.status = 'approved'
                                   LIMIT 1) AS avatar_id"),
@@ -463,23 +463,23 @@ class ProfileController extends Controller
         $uid  = (string) $user->id;
 
         $userProfile = DB::table('profiles')
-            ->whereRaw('user_id::text = ?', [$uid])
+            ->where('user_id', $uid)
             ->first();
 
         // Total de visitantes únicos (excluye visitas propias)
         $totalVisitors = DB::table('profile_views')
-            ->whereRaw('viewed_id::text = ?', [$uid])
-            ->whereRaw('viewer_id::text != ?', [$uid])
+            ->where('viewed_id', $uid)
+            ->where('viewer_id', '!=', $uid)
             ->distinct()
             ->count('viewer_id');
 
         // Una fila por visitante: la visita más reciente de cada uno
         // avatar_photo_id via subquery correlacionada (evita JOIN + GROUP BY con JSON)
         $visitors = DB::table('profile_views as pv')
-            ->join('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('pv.viewer_id::text'))
-            ->join('users as u',     DB::raw('u.id::text'),       '=', DB::raw('pv.viewer_id::text'))
-            ->whereRaw('pv.viewed_id::text = ?', [$uid])
-            ->whereRaw('pv.viewer_id::text != ?', [$uid])
+            ->join('profiles as pr', 'pr.user_id', '=', 'pv.viewer_id')
+            ->join('users as u',     'u.id', '=', 'pv.viewer_id')
+            ->whereRaw('pv.viewed_id = ?', [$uid])
+            ->whereRaw('pv.viewer_id != ?', [$uid])
             ->whereRaw('pv.viewed_at = (
                 SELECT MAX(pv2.viewed_at)
                 FROM profile_views pv2
@@ -496,7 +496,7 @@ class ProfileController extends Controller
                 DB::raw("(
                     SELECT ph.id
                     FROM photos ph
-                    WHERE ph.user_id::text = pv.viewer_id::text
+                    WHERE ph.user_id = pv.viewer_id
                       AND ph.is_profile_photo = true
                       AND ph.status = 'approved'
                     LIMIT 1
