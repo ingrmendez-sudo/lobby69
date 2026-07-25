@@ -21,7 +21,7 @@
            style="display:flex;align-items:center;gap:.75rem;padding:.65rem 0;
                   text-decoration:none;border-bottom:1px solid rgba(255,255,255,.06);">
             @if($v->avatar_photo_id)
-            <img src="{{ route('photos.serve', $v->avatar_photo_id) }}"
+            <img loading="lazy" src="{{ route('photos.serve', $v->avatar_photo_id) }}"
                  style="width:42px;height:42px;border-radius:50%;object-fit:cover;flex-shrink:0;"
                  onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
             @else

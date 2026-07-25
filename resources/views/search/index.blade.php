@@ -22,7 +22,7 @@
         @foreach($results as $profile)
         <div class="l69-profile-card">
             <a href="{{ route('profile.show', $profile->nickname) }}">
-                <img src="{{ $profile->avatar_url ?? asset('img/default-avatar.svg') }}"
+                <img loading="lazy" src="{{ $profile->avatar_url ?? asset('img/default-avatar.svg') }}"
                      alt="{{ $profile->nickname }}"
                      class="l69-profile-card__avatar"
                      onerror="this.src='{{ asset('img/default-avatar.svg') }}'">

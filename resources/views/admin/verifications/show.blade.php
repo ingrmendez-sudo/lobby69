@@ -19,7 +19,7 @@
     {{-- Foto de verificación --}}
     <div style="background:white;border-radius:16px;box-shadow:0 4px 16px rgba(0,0,0,.08);padding:1.5rem;">
       <h3 style="font-size:1rem;font-weight:700;margin-bottom:1rem;">📸 Foto enviada</h3>
-      <img src="{{ route('admin.verifications.image', $verification->id) }}"
+      <img loading="lazy" src="{{ route('admin.verifications.image', $verification->id) }}"
            alt="Foto de verificación"
            style="width:100%;border-radius:10px;border:2px solid #f1f5f9;"
            onerror="this.src='';this.alt='No se pudo cargar la imagen'">

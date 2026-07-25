@@ -153,7 +153,7 @@
       <div class="l69-card l69-conv-card" data-partner="{{ $c->partner_id }}">
         <div class="l69-card-avatar">
           @if($c->avatar_photo_id)
-            <img src="{{ route('photos.serve', $c->avatar_photo_id) }}" alt="">
+            <img loading="lazy" src="{{ route('photos.serve', $c->avatar_photo_id) }}" alt="">
           @else
             <div class="l69-avatar-ph">{{ mb_substr($c->display_name ?? '?', 0, 1) }}</div>
           @endif
@@ -216,7 +216,7 @@
         {{-- Avatar --}}
         <div class="l69-inbox-avatar">
             @if($pc->commenter_avatar_id)
-                <img src="{{ route('photos.serve', $pc->commenter_avatar_id) }}" alt="">
+                <img loading="lazy" src="{{ route('photos.serve', $pc->commenter_avatar_id) }}" alt="">
             @else
                 <div class="l69-avatar-ph">{{ mb_substr($pc->commenter_name ?? '?', 0, 1) }}</div>
             @endif
@@ -291,7 +291,7 @@
         <div class="l69-card">
           <div class="l69-card-avatar">
             @if($f->avatar_photo_id)
-              <img src="{{ route('photos.serve', $f->avatar_photo_id) }}" alt="">
+              <img loading="lazy" src="{{ route('photos.serve', $f->avatar_photo_id) }}" alt="">
             @else
               <div class="l69-avatar-ph">{{ mb_substr($f->display_name ?? '?', 0, 1) }}</div>
             @endif
@@ -317,7 +317,7 @@
         <div class="l69-card">
           <div class="l69-card-avatar">
             @if($f->avatar_photo_id)
-              <img src="{{ route('photos.serve', $f->avatar_photo_id) }}" alt="">
+              <img loading="lazy" src="{{ route('photos.serve', $f->avatar_photo_id) }}" alt="">
             @else
               <div class="l69-avatar-ph">{{ mb_substr($f->display_name ?? '?', 0, 1) }}</div>
             @endif
@@ -339,7 +339,7 @@
         @foreach($friendsAccepted as $f)
           <div class="l69-friend-chip">
             @if($f->avatar_photo_id)
-              <img src="{{ route('photos.serve', $f->avatar_photo_id) }}" alt="">
+              <img loading="lazy" src="{{ route('photos.serve', $f->avatar_photo_id) }}" alt="">
             @else
               <div class="l69-avatar-ph sm">{{ mb_substr($f->display_name ?? '?', 0, 1) }}</div>
             @endif
@@ -363,7 +363,7 @@
         <div class="l69-card l69-review-card {{ $r->type }}">
           <div class="l69-card-avatar">
             @if($r->avatar_photo_id)
-              <img src="{{ route('photos.serve', $r->avatar_photo_id) }}" alt="">
+              <img loading="lazy" src="{{ route('photos.serve', $r->avatar_photo_id) }}" alt="">
             @else
               <div class="l69-avatar-ph">{{ mb_substr($r->reviewer_name ?? '?', 0, 1) }}</div>
             @endif
@@ -402,7 +402,7 @@
         <div class="l69-card">
           <div class="l69-card-avatar">
             @if($fr->avatar_photo_id)
-              <img src="{{ route('photos.serve', $fr->avatar_photo_id) }}" alt="">
+              <img loading="lazy" src="{{ route('photos.serve', $fr->avatar_photo_id) }}" alt="">
             @else
               <div class="l69-avatar-ph">{{ mb_substr($fr->display_name ?? '?', 0, 1) }}</div>
             @endif
@@ -535,7 +535,7 @@
           <div class="l69-ann-author-left">
             <div class="l69-card-avatar">
               @if($a->avatar_photo_id)
-                <img src="{{ route('photos.serve', $a->avatar_photo_id) }}" alt="">
+                <img loading="lazy" src="{{ route('photos.serve', $a->avatar_photo_id) }}" alt="">
               @else
                 <div class="l69-avatar-ph">{{ mb_substr($a->display_name ?? '?', 0, 1) }}</div>
               @endif

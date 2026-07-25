@@ -51,7 +51,7 @@
 <div class="l69-sidebar-card" style="padding-top:1.5rem;">
     <div class="l69-mini-profile">
         <div class="l69-mini-profile__avatar-wrap">
-            <img src="{{ $sAvatar }}"
+            <img loading="eager" src="{{ $sAvatar }}"
                  alt="{{ $sNick }}"
                  class="l69-mini-profile__avatar"
                  onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
@@ -83,7 +83,7 @@
             };
         @endphp
         <span class="l69-membership-badge l69-membership-badge--{{ $sMembership }}">
-            <img src="{{ asset('img/membership/' . $iconFile) }}"
+            <img loading="lazy" src="{{ asset('img/membership/' . $iconFile) }}"
                  style="width:14px;height:14px;object-fit:contain;"
                  onerror="this.style.display='none'">
             {{ $sMembershipInfo['label'] }}
@@ -150,7 +150,7 @@
                     : '';
             @endphp
             <div style="display:flex;align-items:center;gap:.6rem;">
-                <img src="{{ $vAvatar ?? asset('img/default-avatar.svg') }}"
+                <img loading="lazy" src="{{ $vAvatar ?? asset('img/default-avatar.svg') }}"
                      style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;"
                      onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
                 <div style="min-width:0;flex:1;">
@@ -228,7 +228,7 @@
                 } catch(\Exception $e) {}
             @endphp
             <div style="display:flex;align-items:center;gap:.6rem;">
-                <img src="{{ $vdAvatar ?? asset('img/default-avatar.svg') }}"
+                <img loading="lazy" src="{{ $vdAvatar ?? asset('img/default-avatar.svg') }}"
                      style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;"
                      onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
                 <div style="min-width:0;flex:1;">

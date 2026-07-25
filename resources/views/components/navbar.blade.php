@@ -308,7 +308,7 @@
 
         {{-- Logo --}}
         <a href="{{ route('dashboard') }}" class="l69-nav__brand">
-            <img src="{{ asset('img/logo-lobby69_.png') }}" alt="Lobby69" style="height:36px;width:auto;object-fit:contain;">
+            <img loading="eager" src="{{ asset('img/logo-lobby69_.png') }}" alt="Lobby69" style="height:36px;width:auto;object-fit:contain;">
         </a>
 
         {{-- Links principales desktop --}}
@@ -379,7 +379,7 @@
             <div class="l69-nav__user" id="navUserDropdown">
                 <button class="l69-nav__user-btn" id="navUserBtn" aria-expanded="false">
                     @php $np = auth()->user()->profile; @endphp
-                    <img src="{{ $np?->avatar_url ? asset('storage/'.$np->avatar_url) : asset('img/default-avatar.svg') }}"
+                    <img loading="lazy" src="{{ $np?->avatar_url ? asset('storage/'.$np->avatar_url) : asset('img/default-avatar.svg') }}"
                          class="l69-nav__user-avatar"
                          onerror="this.src='{{ asset('img/default-avatar.svg') }}'"
                          alt="avatar">

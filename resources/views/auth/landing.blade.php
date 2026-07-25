@@ -8,7 +8,7 @@
     <div class="landing-hero__overlay"></div>
     <div class="container landing-hero__content">
         <div class="landing-hero__logo">
-            <img src="{{ asset('img/logo-lobby69.png') }}" class="landing-hero__logo-img"
+            <img loading="eager" src="{{ asset('img/logo-lobby69.png') }}" class="landing-hero__logo-img"
                  onerror="this.style.display='none'">
             <!--<h1 class="landing-hero__title">LOBBY69</h1>-->
         </div>

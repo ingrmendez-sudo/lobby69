@@ -60,7 +60,7 @@
             <td style="padding:.6rem .8rem;">
                 <div style="display:flex;align-items:center;gap:.75rem;">
                     @if($article->cover_path)
-                    <img src="{{ Storage::url($article->cover_path) }}"
+                    <img loading="lazy" src="{{ Storage::url($article->cover_path) }}"
                          style="width:52px;height:40px;object-fit:cover;border-radius:6px;flex-shrink:0;"
                          onerror="this.style.display='none'">
                     @else

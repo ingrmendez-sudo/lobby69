@@ -47,7 +47,7 @@
 <div style="background:var(--theme-card);border:1px solid var(--theme-border);border-radius:16px;overflow:hidden;margin-bottom:1.5rem;">
     @if($article->cover_path)
     <div style="height:280px;overflow:hidden;">
-        <img src="{{ asset('storage/' . $article->cover_path) }}"
+        <img loading="eager" src="{{ asset('storage/' . $article->cover_path) }}"
              alt="{{ $article->title }}"
              style="width:100%;height:100%;object-fit:cover;">
     </div>
@@ -128,7 +128,7 @@
     <div style="margin-bottom:1.5rem;">
         @foreach($comments as $comment)
         <div class="art-comment-item">
-            <img src="{{ $comment->avatar_photo_id ? route('photos.serve', $comment->avatar_photo_id) : asset('img/default-avatar.svg') }}"
+            <img loading="lazy" src="{{ $comment->avatar_photo_id ? route('photos.serve', $comment->avatar_photo_id) : asset('img/default-avatar.svg') }}"
                  alt="{{ $comment->nickname }}"
                  class="art-comment-avatar"
                  onerror="this.src='{{ asset('img/default-avatar.svg') }}'">

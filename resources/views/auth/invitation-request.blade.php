@@ -7,7 +7,7 @@
     <div class="container">
         <div class="auth-card card">
             <div class="auth-card__header">
-                <img src="{{ asset('img/logo-lobby69.png') }}" alt="LOBBY69" class="auth-card__logo"
+                <img loading="eager" src="{{ asset('img/logo-lobby69.png') }}" alt="LOBBY69" class="auth-card__logo"
                      onerror="this.style.display='none'">
                 <h1>Solicitar Invitación</h1>
                 <p>Completa el formulario para unirte a la comunidad LOBBY69</p>

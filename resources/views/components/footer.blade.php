@@ -1,7 +1,7 @@
 <footer class="footer">
     <div class="container footer__container">
         <div class="footer__brand">
-            <img src="{{ asset('img/logo-lobby69.png') }}" alt="LOBBY69" class="footer__logo"
+            <img loading="eager" src="{{ asset('img/logo-lobby69.png') }}" alt="LOBBY69" class="footer__logo"
                  onerror="this.style.display='none'">
             <p>LOBBY69 — La comunidad swinger más discreta de México</p>
         </div>

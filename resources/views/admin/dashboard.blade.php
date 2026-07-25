@@ -216,7 +216,7 @@
                 <tbody>
                     @forelse($topPhotos as $p)
                         <tr>
-                            <td><img src="{{ route('admin.photos.serve', $p->id) }}" alt="foto"></td>
+                            <td><img loading="lazy" src="{{ route('admin.photos.serve', $p->id) }}" alt="foto"></td>
                             <td>{{ $p->nickname ?? $p->username }}</td>
                             <td><strong>{{ $p->likes_count }}</strong></td>
                         </tr>

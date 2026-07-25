@@ -4,7 +4,7 @@
      style="cursor:pointer;">
 
     <div class="l69-feed-card__img-wrap">
-        <img src="{{ route('photos.serve', $photo->id) }}"
+        <img loading="lazy" src="{{ route('photos.serve', $photo->id) }}"
             alt="{{ $photo->caption ?? 'Foto' }}"
             class="l69-feed-card__img"
             loading="lazy"
@@ -22,7 +22,7 @@
         <a href="{{ $ownerUrl }}"
            class="l69-feed-card__owner-top"
            onclick="event.stopPropagation()">
-            <img src="{{ $ownerAvatar }}"
+            <img loading="lazy" src="{{ $ownerAvatar }}"
                  alt="{{ $ownerName }}"
                  onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
             <span>{{ $ownerName }}</span>

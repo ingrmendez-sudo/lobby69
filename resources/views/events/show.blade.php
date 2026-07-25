@@ -18,7 +18,7 @@
 <div style="background:var(--theme-card);border:1px solid var(--theme-border);border-radius:16px;overflow:hidden;">
     @if($event->image_path)
     <div style="height:280px;overflow:hidden;">
-        <img src="{{ asset('storage/' . $event->image_path) }}"
+        <img loading="eager" src="{{ asset('storage/' . $event->image_path) }}"
              alt="{{ $event->title }}"
              style="width:100%;height:100%;object-fit:cover;">
     </div>

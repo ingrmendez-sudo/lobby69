@@ -338,7 +338,7 @@
 
     <a href="{{ route('profile.show', ['nickname' => $profile->nickname]) }}" class="exp-card">
         <div class="exp-card__avatar-wrap">
-            <img class="exp-card__avatar"
+            <img loading="lazy" class="exp-card__avatar"
                  src="{{ $avatarUrl }}"
                  alt="{{ $profile->nickname }}"
                  loading="lazy"

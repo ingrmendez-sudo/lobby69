@@ -26,7 +26,7 @@
     <div style="background:var(--theme-card);border:1px solid var(--theme-border);border-radius:16px;overflow:hidden;">
         @if($article->cover_path)
         <div style="height:180px;overflow:hidden;">
-            <img src="{{ asset('storage/' . $article->cover_path) }}"
+            <img loading="lazy" src="{{ asset('storage/' . $article->cover_path) }}"
                  alt="{{ $article->title }}"
                  style="width:100%;height:100%;object-fit:cover;"
                  onerror="this.parentElement.style.background='rgba(180,60,120,.1)';this.remove()">

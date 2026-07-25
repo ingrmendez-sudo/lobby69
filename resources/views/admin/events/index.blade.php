@@ -41,7 +41,7 @@
         {{-- Imagen --}}
         @if($event->image_path)
         <div style="height:160px;overflow:hidden;background:var(--theme-border);">
-            <img src="{{ Storage::url($event->image_path) }}" alt="{{ $event->title }}"
+            <img loading="lazy" src="{{ Storage::url($event->image_path) }}" alt="{{ $event->title }}"
                 style="width:100%;height:100%;object-fit:cover;"
                 onerror="this.parentElement.style.display='none'">
         </div>

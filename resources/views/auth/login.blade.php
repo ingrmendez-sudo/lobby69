@@ -7,7 +7,7 @@
     <div class="container">
         <div class="auth-card card">
             <div class="auth-card__header">
-                <img src="{{ asset('img/LOGO LOBBY69 BCO2.jpeg') }}" alt="LOBBY69" class="auth-card__logo"
+                <img loading="eager" src="{{ asset('img/LOGO LOBBY69 BCO2.jpeg') }}" alt="LOBBY69" class="auth-card__logo"
                      onerror="this.style.display='none'">
                 <h1>Iniciar Sesión</h1>
                 <p>Bienvenido de vuelta a LOBBY69</p>

@@ -18,7 +18,7 @@
     @endphp
     <div style="display:flex;align-items:center;gap:.9rem;padding:.9rem 1.1rem;border-bottom:1px solid var(--border-light,#f0f0f0)">
         @if(!empty($v->avatar_photo_id))
-            <img src="{{ route('photos.serve', $v->avatar_photo_id) }}"
+            <img loading="lazy" src="{{ route('photos.serve', $v->avatar_photo_id) }}"
                  onerror="this.style.display='none';this.nextElementSibling.style.display='flex';"
                  style="width:46px;height:46px;border-radius:50%;object-fit:cover;flex-shrink:0">
             <div style="display:none;width:46px;height:46px;border-radius:50%;background:{{ $vColor }};
