@@ -1225,7 +1225,7 @@
                          data-iliked="{{ $iLiked ? '1' : '0' }}">
                         <img loading="lazy" src="{{ route('photos.serve', $photo->id) }}"
                              alt="{{ $photo->caption ?? '' }}"
-                             loading="lazy"
+
                              onerror="this.parentElement.style.display='none'">
                         <div class="prf-carousel-item-overlay">
                             <div class="prf-carousel-item-meta">
@@ -1265,7 +1265,7 @@
                         @if($video->thumbnail_path)
                         <img loading="lazy" src="{{ route('videos.serve.public', $video->id) }}?thumb=1"
                              alt="{{ $video->caption ?? 'Video' }}"
-                             loading="lazy"
+
                              style="width:100%;height:100%;object-fit:cover;"
                              onerror="this.style.display='none';this.nextElementSibling.style.display='flex';">
                         <div style="display:none;width:100%;height:100%;background:rgba(0,0,0,.6);
