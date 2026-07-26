@@ -919,6 +919,69 @@
   font-size: .85rem; font-family: inherit;
 }
 .l69-modal-send textarea:focus { outline: none; border-color: rgba(192,57,43,.4); }
+
+/* ══ TOAST TIEMPO REAL ══ */
+.l69-rt-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    z-index: 10001;
+    background: var(--bg-card, #1e1a2e);
+    border: 1px solid rgba(192,57,43,.45);
+    border-left: 4px solid #c0392b;
+    border-radius: 10px;
+    padding: .7rem 1rem;
+    max-width: 280px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.35);
+    transform: translateX(120%);
+    opacity: 0;
+    transition: transform .28s cubic-bezier(.22,1,.36,1), opacity .28s ease;
+    pointer-events: none;
+}
+.l69-rt-toast--in  { transform: translateX(0); opacity: 1; }
+.l69-rt-toast--out { transform: translateX(120%); opacity: 0; }
+.l69-rt-toast__nick {
+    font-weight: 700;
+    font-size: .78rem;
+    color: #c0392b;
+    margin-bottom: .2rem;
+}
+.l69-rt-toast__body {
+    font-size: .77rem;
+    color: var(--text-primary, #e5e7eb);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+/* ══ TOAST TIEMPO REAL ══ */
+.l69-rt-toast {
+    position: fixed;
+    bottom: 1.5rem; right: 1.5rem;
+    z-index: 10001;
+    background: var(--bg-card, #1e1a2e);
+    border: 1px solid rgba(192,57,43,.45);
+    border-left: 4px solid #c0392b;
+    border-radius: 10px;
+    padding: .7rem 1rem;
+    max-width: 280px;
+    box-shadow: 0 8px 28px rgba(0,0,0,.35);
+    transform: translateX(120%);
+    opacity: 0;
+    transition: transform .28s cubic-bezier(.22,1,.36,1), opacity .28s ease;
+    pointer-events: none;
+}
+.l69-rt-toast--in  { transform: translateX(0);   opacity: 1; }
+.l69-rt-toast--out { transform: translateX(120%); opacity: 0; }
+.l69-rt-toast__nick {
+    font-weight: 700; font-size: .78rem;
+    color: #c0392b; margin-bottom: .2rem;
+}
+.l69-rt-toast__body {
+    font-size: .77rem;
+    color: var(--text-primary, #e5e7eb);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+
 </style>
 @endpush
 
@@ -1303,8 +1366,148 @@ document.querySelectorAll('.btn-close-ann').forEach(btn =>
             if (e.key === 'Escape' && fotoModal.style.display === 'flex') closeModal();
         });
     })();
+
+    /* ══ REVERB — Mensajes en tiempo real ══ */
+    (function () {
+        if (typeof window.Echo === 'undefined') {
+            console.warn('[Lobby69] Echo no está disponible — Reverb deshabilitado');
+            return;
+        }
+
+        try {
+            window.Echo.private(`chat.${ME}`)
+                .listen('.message.sent', function (e) {
+
+                    /* ── 1. Si el modal está abierto con ese remitente → burbuja nueva ── */
+                    if (
+                        modal &&
+                        !modal.classList.contains('hidden') &&
+                        recvId.value === e.sender_id
+                    ) {
+                        const d = document.createElement('div');
+                        d.className = 'l69-msg-bubble theirs';
+                        d.innerHTML = `${escHtml(e.body)}<span class="l69-msg-time">${fmtTime(e.created_at)}</span>`;
+                        modalMsgs.appendChild(d);
+                        modalMsgs.scrollTop = modalMsgs.scrollHeight;
+                    }
+
+                    /* ── 2. Badge de no leídos en la tab Bandeja ── */
+                    const badge = document.querySelector('.l69-msg-tab[href*="inbox"] .l69-tab-badge');
+                    if (badge) {
+                        const n = (parseInt(badge.textContent) || 0) + 1;
+                        badge.textContent = n;
+                        badge.style.display = 'inline';
+                    } else {
+                        /* Si no existe el badge todavía, crearlo */
+                        const tabInbox = document.querySelector('.l69-msg-tab[href*="inbox"]');
+                        if (tabInbox) {
+                            const b = document.createElement('span');
+                            b.className = 'l69-tab-badge';
+                            b.textContent = '1';
+                            tabInbox.appendChild(b);
+                        }
+                    }
+
+                    /* ── 3. Toast discreto ── */
+                    l69ShowMsgToast(e.sender_nick ?? 'Mensaje nuevo', e.body);
+                });
+
+            console.log('[Lobby69] Reverb: escuchando canal chat.' + ME);
+        } catch (err) {
+            console.error('[Lobby69] Error al suscribir canal Reverb:', err);
+        }
+
+        function l69ShowMsgToast(nick, body) {
+            const t = document.createElement('div');
+            t.className = 'l69-rt-toast';
+            t.innerHTML = `
+                <div class="l69-rt-toast__nick">💬 ${escHtml(nick)}</div>
+                <div class="l69-rt-toast__body">${escHtml(String(body).substring(0, 70))}</div>
+            `;
+            document.body.appendChild(t);
+            /* Forzar reflow para que la animación arranque */
+            t.getBoundingClientRect();
+            t.classList.add('l69-rt-toast--in');
+            setTimeout(() => {
+                t.classList.remove('l69-rt-toast--in');
+                t.classList.add('l69-rt-toast--out');
+                setTimeout(() => t.remove(), 350);
+            }, 4500);
+        }
+    })();
+    })();
+
+/* ══════════════════════════════════════════
+   REVERB — Mensajes en tiempo real
+   ══════════════════════════════════════════ */
+(function () {
+    if (typeof window.Echo === 'undefined') {
+        console.warn('[Lobby69] Echo no disponible — Reverb deshabilitado');
+        return;
+    }
+
+    try {
+        window.Echo.private(`chat.${ME}`)
+            .listen('.message.sent', function (e) {
+
+                /* 1. Modal abierto con ese remitente → nueva burbuja */
+                if (
+                    modal &&
+                    !modal.classList.contains('hidden') &&
+                    recvId.value === e.sender_id
+                ) {
+                    const d = document.createElement('div');
+                    d.className = 'l69-msg-bubble theirs';
+                    d.innerHTML =
+                        escHtml(e.body) +
+                        '<span class="l69-msg-time">' + fmtTime(e.created_at) + '</span>';
+                    modalMsgs.appendChild(d);
+                    modalMsgs.scrollTop = modalMsgs.scrollHeight;
+                }
+
+                /* 2. Badge de no leídos en la tab Bandeja */
+                const tabInbox = document.querySelector('.l69-msg-tab[href*="inbox"]');
+                if (tabInbox) {
+                    let badge = tabInbox.querySelector('.l69-tab-badge');
+                    if (!badge) {
+                        badge = document.createElement('span');
+                        badge.className = 'l69-tab-badge';
+                        badge.textContent = '0';
+                        tabInbox.appendChild(badge);
+                    }
+                    badge.textContent = (parseInt(badge.textContent) || 0) + 1;
+                }
+
+                /* 3. Toast discreto */
+                l69MsgToast(e.sender_nick ?? 'Mensaje nuevo', e.body);
+            });
+
+        console.log('[Lobby69] ✅ Reverb escuchando canal chat.' + ME);
+
+    } catch (err) {
+        console.error('[Lobby69] Error Reverb:', err);
+    }
+
+    function l69MsgToast(nick, body) {
+        const t = document.createElement('div');
+        t.className = 'l69-rt-toast';
+        t.innerHTML =
+            '<div class="l69-rt-toast__nick">💬 ' + escHtml(nick) + '</div>' +
+            '<div class="l69-rt-toast__body">' + escHtml(String(body).substring(0, 70)) + '</div>';
+        document.body.appendChild(t);
+        t.getBoundingClientRect(); /* forzar reflow */
+        t.classList.add('l69-rt-toast--in');
+        setTimeout(function () {
+            t.classList.remove('l69-rt-toast--in');
+            t.classList.add('l69-rt-toast--out');
+            setTimeout(function () { t.remove(); }, 350);
+        }, 4500);
+    }
+})();
+
 </script>
 @endpush
+
 
 
 

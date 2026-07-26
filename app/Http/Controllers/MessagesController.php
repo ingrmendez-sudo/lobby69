@@ -344,34 +344,67 @@ class MessagesController extends Controller
 
     // ── Enviar mensaje ──
     public function send(Request $request)
-    {
-        $request->validate([
-            'receiver_id' => 'required|uuid',
-            'body'        => 'required|string|max:1000',
-        ]);
-        $userId = (string) Auth::id();
+        {
+            $request->validate([
+                'receiver_id' => 'required|uuid',
+                'body'        => 'required|string|max:1000',
+            ]);
 
-        DB::table('messages')->insert([
-            'id'          => Str::uuid(),
-            'sender_id'   => $userId,
-            'receiver_id' => $request->receiver_id,
-            'body'        => $request->body,
-            'read'        => false,
-            'created_at'  => now(),
-            'updated_at'  => now(),
-        ]);
+            $user   = Auth::user();
+            $userId = (string) $user->id;
+            $msgId  = (string) \Illuminate\Support\Str::uuid();
+            $now    = now();
 
-        DB::table('notifications')->insert([
-            'id'         => Str::uuid(),
-            'user_id'    => $request->receiver_id,
-            'type'       => 'new_message',
-            'data'       => json_encode(['sender_id' => $userId, 'preview' => substr($request->body, 0, 80)]),
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+            // 1. Guardar mensaje
+            DB::table('messages')->insert([
+                'id'          => $msgId,
+                'sender_id'   => $userId,
+                'receiver_id' => $request->receiver_id,
+                'body'        => $request->body,
+                'read'        => false,
+                'created_at'  => $now,
+                'updated_at'  => $now,
+            ]);
 
-        return response()->json(['ok' => true]);
-    }
+            // 2. Notificación persistente
+            DB::table('notifications')->insert([
+                'id'         => (string) \Illuminate\Support\Str::uuid(),
+                'user_id'    => $request->receiver_id,
+                'type'       => 'new_message',
+                'data'       => json_encode([
+                    'sender_id' => $userId,
+                    'preview'   => substr($request->body, 0, 80),
+                ]),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+
+            // 3. Obtener datos del sender para el broadcast
+            $senderProfile = DB::table('profiles')
+                ->whereRaw('user_id::text = ?', [$userId])
+                ->select('nickname')
+                ->first();
+
+            $avatarPhotoId = DB::table('photos')
+                ->whereRaw('user_id::text = ?', [$userId])
+                ->where('is_profile_photo', true)
+                ->where('status', 'approved')
+                ->value('id');
+
+            // 4. Broadcast en tiempo real al receptor
+            broadcast(new \App\Events\MessageSent(
+                senderId:      $userId,
+                receiverId:    $request->receiver_id,
+                messageId:     $msgId,
+                body:          $request->body,
+                createdAt:     $now->toISOString(),
+                senderNick:    $senderProfile?->nickname,
+                avatarPhotoId: $avatarPhotoId ? (string) $avatarPhotoId : null,
+            ));
+
+            return response()->json(['ok' => true, 'message_id' => $msgId]);
+        }
+
 
     // ── Amistad: enviar solicitud ──
     public function sendFriendRequest(Request $request)
