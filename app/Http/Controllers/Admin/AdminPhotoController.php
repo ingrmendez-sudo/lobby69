@@ -15,16 +15,17 @@ class AdminPhotoController extends Controller
         $status = $request->get('status', 'pending');
 
         $photos = DB::table('photos')
-            ->joinSub(
-                DB::table('users')->selectRaw('"id"::text as uid, "username", "membership_type", "role"'),
-                'u',
-                'photos.user_id', '=', 'u.uid'
-            )
-            ->leftJoinSub(
-                DB::table('profiles')->selectRaw('"user_id"::text as pid, "display_name", "nickname"'),
-                'p',
-                'photos.user_id', '=', 'p.pid'
-            )
+        ->joinSub(
+            DB::table('users')->selectRaw('"id"::text as uid, "username", "membership_type", "role"'),
+            'u',
+            DB::raw('photos.user_id::text'), '=', 'u.uid'   // ← ::text aquí
+        )
+        ->leftJoinSub(
+            DB::table('profiles')->selectRaw('"user_id"::text as pid, "display_name", "nickname"'),
+            'p',
+            DB::raw('photos.user_id::text'), '=', 'p.pid'   // ← ::text aquí
+        )
+
             ->select(
                 'photos.id',
                 'photos.user_id',
@@ -56,14 +57,15 @@ class AdminPhotoController extends Controller
     private function countByStatus(string $status): int
     {
         return DB::table('photos')
-            ->joinSub(
-                DB::table('users')->selectRaw('"id"::text as uid, "role"'),
-                'u',
-                'photos.user_id', '=', 'u.uid'
-            )
-            ->where('photos.status', $status)
-            ->where('u.role', '!=', 'admin')
-            ->count();
+        ->joinSub(
+            DB::table('users')->selectRaw('"id"::text as uid, "role"'),
+            'u',
+            DB::raw('photos.user_id::text'), '=', 'u.uid'   // ← ::text aquí
+        )
+        ->where('photos.status', $status)
+        ->where('u.role', '!=', 'admin')
+        ->count();
+
     }
 
     public function approve(Request $request, $id)

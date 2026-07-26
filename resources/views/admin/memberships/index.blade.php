@@ -240,10 +240,11 @@
                     </label>
                     <select name="requested_membership" required
                             style="width:100%;padding:.45rem .75rem;border-radius:7px;border:1px solid var(--theme-border);background:var(--theme-bg);color:var(--theme-text);font-size:.85rem;">
-                        <option value="basic">Basic</option>
-                        <option value="premium">Premium</option>
-                        <option value="vip">VIP</option>
+                        @foreach($plans as $p)
+                        <option value="{{ $p->slug }}">{{ $p->name }} — ${{ number_format($p->price, 0) }} MXN</option>
+                        @endforeach
                     </select>
+
                 </div>
 
                 <div>

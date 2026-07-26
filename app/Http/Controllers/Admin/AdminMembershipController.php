@@ -1,5 +1,7 @@
 <?php
+
 namespace App\Http\Controllers\Admin;
+
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -7,6 +9,9 @@ use Illuminate\Support\Facades\Storage;
 
 class AdminMembershipController extends Controller
 {
+    // ──────────────────────────────────────────────────────────────────────
+    // Lista de pagos filtrada por status + stats generales
+    // ──────────────────────────────────────────────────────────────────────
     public function index(Request $request)
     {
         $status = $request->get('status', 'pending');
@@ -14,17 +19,20 @@ class AdminMembershipController extends Controller
         $payments = DB::table('membership_payments')
             ->join(
                 DB::raw('(SELECT id::text as uid, username, email, membership_type FROM users) as u'),
-                'membership_payments.user_id', '=', 'u.uid'
+                DB::raw('membership_payments.user_id::text'), '=', 'u.uid'
             )
             ->leftJoin(
                 DB::raw('(SELECT user_id::text as pid, nickname, display_name FROM profiles) as p'),
-                'membership_payments.user_id', '=', 'p.pid'
+                DB::raw('membership_payments.user_id::text'), '=', 'p.pid'
             )
             ->where('membership_payments.status', $status)
             ->select(
                 'membership_payments.*',
-                'u.username', 'u.email', 'u.membership_type',
-                'p.nickname', 'p.display_name'
+                'u.username',
+                'u.email',
+                'u.membership_type',
+                'p.nickname',
+                'p.display_name'
             )
             ->orderByDesc('membership_payments.created_at')
             ->paginate(20);
@@ -40,37 +48,80 @@ class AdminMembershipController extends Controller
                 count(*) as total,
                 coalesce(sum(case when status = 'approved' then amount else 0 end), 0) as total_aprobado,
                 coalesce(sum(case when status = 'pending'  then amount else 0 end), 0) as total_pendiente
-            ")->first();
+            ")
+            ->first();
 
-        return view('admin.memberships.index', compact('payments', 'status', 'counts', 'stats'));
+        $plans = \App\Models\MembershipPlan::where('is_active', true)
+                     ->orderBy('sort_order')
+                     ->get();
+
+        return view('admin.memberships.index', compact(
+            'payments', 'status', 'counts', 'stats', 'plans'
+        ));
     }
 
-    public function approve(Request $request, $id)
+    // ──────────────────────────────────────────────────────────────────────
+    // Aprobar pago → activa membresía via Membership::activateForUser()
+    // ──────────────────────────────────────────────────────────────────────
+    public function approve(Request $request, $id): \Illuminate\Http\RedirectResponse
     {
-        $payment = DB::table('membership_payments')->where('id', $id)->first();
-        abort_if(!$payment, 404);
+        $payment = \App\Models\MembershipPayment::findOrFail($id);
 
-        DB::table('membership_payments')->where('id', $id)->update([
+        if ($payment->status !== 'pending') {
+            return back()->with('error', 'Este pago ya fue procesado.');
+        }
+
+        // 1. Marcar el pago como aprobado
+        $payment->update([
             'status'      => 'approved',
-            'reviewed_by' => (string) auth()->id(),
+            'reviewed_by' => auth()->user()->username ?? auth()->id(),
             'reviewed_at' => now(),
-            'updated_at'  => now(),
         ]);
 
-        $expires = now()->addDays(30)->toDateTimeString();
+        // 2. Resolver datos necesarios
+        $user = \App\Models\User::findOrFail($payment->user_id);
+        $plan = \App\Models\MembershipPlan::where('slug', $payment->requested_membership)->first();
 
-        DB::table('users')->whereRaw('id::text = ?', [$payment->user_id])->update([
-            'membership_type'       => $payment->requested_membership,
-            'membership_expires_at' => $expires,
-            'membership_started_at' => now(),
-        ]);
+        if ($plan) {
+            // Calcular duración en días según el plan
+            $durationDays = ($plan->slug === 'vitalicio') ? null : ($plan->duration_days ?? 30);
 
-        return back()->with('success', 'Pago aprobado y membresía actualizada correctamente.');
+            // Llamar correctamente: (string userId, string tier, ?int days, float price)
+            \App\Models\Membership::activateForUser(
+                (string) $user->id,
+                (string) $plan->slug,
+                $durationDays,
+                (float)  ($payment->amount ?? $plan->price ?? 0),
+                (string) ($payment->payment_method ?? 'manual'),
+                (string) ($payment->payment_reference ?? '')
+            );
+        } else {
+            // Fallback: plan no encontrado en membership_plans
+            $expiry = ($payment->requested_membership === 'vitalicio')
+                ? null
+                : now()->addDays(30);
+
+            $user->update([
+                'membership_type'       => $payment->requested_membership,
+                'membership_expires_at' => $expiry,
+                'membership_started_at' => now(),
+            ]);
+        }
+
+        return redirect()
+            ->route('admin.memberships.index', ['status' => 'pending'])
+            ->with('success', "Membresía de {$user->username} activada como «{$payment->requested_membership}».");
     }
 
-    public function reject(Request $request, $id)
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Rechazar pago con motivo opcional
+    // ──────────────────────────────────────────────────────────────────────
+    public function reject(Request $request, $id): \Illuminate\Http\RedirectResponse
     {
-        $request->validate(['reason' => 'nullable|string|max:500']);
+        $request->validate([
+            'reason' => ['nullable', 'string', 'max:500'],
+        ]);
 
         DB::table('membership_payments')->where('id', $id)->update([
             'status'      => 'rejected',
@@ -83,39 +134,55 @@ class AdminMembershipController extends Controller
         return back()->with('success', 'Pago rechazado.');
     }
 
-    public function store(Request $request)
+    // ──────────────────────────────────────────────────────────────────────
+    // Registrar pago manual desde el panel admin
+    // Acepta UUID, email o username como user_id
+    // ──────────────────────────────────────────────────────────────────────
+    public function store(Request $request): \Illuminate\Http\RedirectResponse
     {
         $request->validate([
-            'user_id'              => 'required|string',
-            'requested_membership' => 'required|string',
-            'amount'               => 'nullable|numeric|min:0',
-            'currency'             => 'nullable|string|max:10',
-            'payment_method'       => 'nullable|string|max:50',
-            'payment_reference'    => 'nullable|string|max:200',
-            'receipt'              => 'nullable|file|mimes:jpg,jpeg,png,pdf|max:5120',
+            'user_id'              => ['required', 'string'],
+            'requested_membership' => ['required', 'string'],
+            'amount'               => ['nullable', 'numeric', 'min:0'],
+            'currency'             => ['required', 'string', 'in:MXN,USD,EUR'],
+            'payment_method'       => ['nullable', 'string'],
+            'payment_reference'    => ['nullable', 'string', 'max:200'],
+            'receipt'              => ['nullable', 'file', 'mimes:jpg,jpeg,png,pdf', 'max:5120'],
         ]);
 
+        // Buscar usuario por UUID, email o username
+        $input = trim($request->user_id);
+        $user  = \App\Models\User::where('email', $input)
+                     ->orWhere('username', $input)
+                     ->orWhereRaw('"id"::text = ?', [$input])
+                     ->first();
+
+        if (! $user) {
+            return back()
+                ->withInput()
+                ->withErrors(['user_id' => 'Usuario no encontrado. Verifica el email, username o UUID.']);
+        }
+
+        // Subir comprobante si se adjuntó
         $receiptPath = null;
-        if ($request->hasFile('receipt') && $request->file('receipt')->isValid()) {
+        if ($request->hasFile('receipt')) {
             $receiptPath = $request->file('receipt')->store('receipts', 'public');
         }
 
-        $user = DB::table('users')->whereRaw('id::text = ?', [$request->user_id])->first();
-
-        DB::table('membership_payments')->insert([
-            'user_id'              => $request->user_id,
+        \App\Models\MembershipPayment::create([
+            'user_id'              => $user->id,
             'requested_membership' => $request->requested_membership,
-            'current_membership'   => $user->membership_type ?? 'free',
+            'current_membership'   => $user->membership_type ?? 'invitado',
             'amount'               => $request->amount,
-            'currency'             => $request->currency ?? 'MXN',
+            'currency'             => $request->currency,
             'payment_method'       => $request->payment_method,
             'payment_reference'    => $request->payment_reference,
             'receipt_path'         => $receiptPath,
             'status'               => 'pending',
-            'created_at'           => now(),
-            'updated_at'           => now(),
         ]);
 
-        return back()->with('success', 'Pago registrado correctamente.');
+        return redirect()
+            ->route('admin.memberships.index', ['status' => 'pending'])
+            ->with('success', "Pago manual registrado para {$user->username}.");
     }
 }

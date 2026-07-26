@@ -146,20 +146,21 @@ class AdminStatsController extends Controller
 
         // ── Top uploaders ──
         $topUploaders = DB::table('photos')
-            ->join(
-                DB::raw('(SELECT id::text as uid, username FROM users) as u'),
-                'photos.user_id', '=', 'u.uid'
-            )
-            ->leftJoin(
-                DB::raw('(SELECT user_id::text as pid, nickname FROM profiles) as p'),
-                'photos.user_id', '=', 'p.pid'
-            )
-            ->where('photos.status', 'approved')
-            ->selectRaw('COALESCE(p.nickname, u.username) as name, count(*) as total')
-            ->groupBy('photos.user_id', 'p.nickname', 'u.username')
-            ->orderByDesc('total')
-            ->limit(10)
-            ->get();
+        ->join(
+            DB::raw('(SELECT id::text as uid, username FROM users) as u'),
+            DB::raw('photos.user_id::text'), '=', 'u.uid'      // ← ::text aquí
+        )
+        ->leftJoin(
+            DB::raw('(SELECT user_id::text as pid, nickname FROM profiles) as p'),
+            DB::raw('photos.user_id::text'), '=', 'p.pid'      // ← ::text aquí
+        )
+        ->where('photos.status', 'approved')
+        ->selectRaw('COALESCE(p.nickname, u.username) as name, count(*) as total')
+        ->groupBy('photos.user_id', 'p.nickname', 'u.username')
+        ->orderByDesc('total')
+        ->limit(10)
+        ->get();
+
 
         // ── Retención: usuarios activos últimos 7/30 días ──
         $activeUsers7d  = DB::table('users')

@@ -65,40 +65,47 @@ class AdminDashboardController extends Controller
         $topPhotos = DB::table('photos')
             ->joinSub(
                 DB::table('users')->selectRaw('"id"::text as uid, "username"'),
-                'u', 'photos.user_id', '=', 'u.uid'
+                'u',
+                DB::raw('photos.user_id::text'), '=', 'u.uid'       // ← ::text aquí
             )
             ->leftJoinSub(
                 DB::table('profiles')->selectRaw('"user_id"::text as pid, "nickname"'),
-                'p', 'photos.user_id', '=', 'p.pid'
+                'p',
+                DB::raw('photos.user_id::text'), '=', 'p.pid'       // ← ::text aquí
             )
             ->leftJoin(
                 DB::raw('(SELECT photo_id::text as lpid, COUNT(*) as lc FROM photo_likes GROUP BY photo_id) as lk'),
                 DB::raw('photos.photo_uuid::text'), '=', 'lk.lpid'
             )
             ->where('photos.status', 'approved')
-            ->select('photos.id', 'photos.file_path', 'u.username', 'p.nickname',
-                     DB::raw('COALESCE(lk.lc, 0) as likes_count'))
+            ->select(
+                'photos.id',
+                'photos.file_path',
+                'u.username',
+                'p.nickname',
+                DB::raw('COALESCE(lk.lc, 0) as likes_count')
+            )
             ->orderByDesc('likes_count')
             ->limit(5)
             ->get();
 
+
         // ── Usuarios más activos ──
         // ── Usuarios más activos ──
         $topUsers = DB::table('profiles')
-            ->join(
-                DB::raw('(SELECT id::text as uid, username, membership_type FROM users WHERE role != \'admin\') as u'),
-                DB::raw('profiles.user_id::text'), '=', 'u.uid'
-            )
-            ->leftJoin(
-                DB::raw('(SELECT user_id::text as fpid, COUNT(*) as fc FROM photos WHERE status = \'approved\' GROUP BY user_id) as ph'),
-                DB::raw('profiles.user_id::text'), '=', 'ph.fpid'
-            )
-            ->selectRaw('profiles.nickname, profiles.display_name, u.username, u.membership_type,
-                        COALESCE(ph.fc, 0) as photos_count')
-            ->orderByDesc('photos_count')
-            ->limit(5)
-            ->get();
-
+        ->join(
+            DB::raw('(SELECT id::text as uid, username, membership_type FROM users WHERE role != \'admin\') as u'),
+            DB::raw('profiles.user_id::text'), '=', 'u.uid'   // ← ::text aquí
+        )
+        ->leftJoin(
+            DB::raw('(SELECT user_id::text as fpid, COUNT(*) as fc FROM photos WHERE status = \'approved\' GROUP BY user_id) as ph'),
+            DB::raw('profiles.user_id::text'), '=', 'ph.fpid'  // ← ::text aquí
+        )
+        ->selectRaw('profiles.nickname, profiles.display_name, u.username, u.membership_type,
+                    COALESCE(ph.fc, 0) as photos_count')
+        ->orderByDesc('photos_count')
+        ->limit(5)
+        ->get();
 
         // ── Últimas acciones pendientes ──
         $recentPending = collect([

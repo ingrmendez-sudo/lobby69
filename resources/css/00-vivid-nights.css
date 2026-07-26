@@ -60,6 +60,48 @@ body { font-family: var(--font-base); font-size: var(--text-base); line-height: 
 img { max-width: 100%; height: auto; display: block; }
 a { text-decoration: none; color: inherit; }
 button, input, select, textarea { font: inherit; }
+/* ── Selects y opciones con tema oscuro ─────────────────────────────────── */
+select {
+    background-color : var(--theme-bg, #0f0f1a);
+    color            : var(--theme-text, #f0e6ff);
+    border           : 1px solid var(--theme-border, rgba(180,60,120,.3));
+    border-radius    : 8px;
+    padding          : .45rem .75rem;
+    appearance       : none;
+    -webkit-appearance: none;
+    background-image : url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath fill='%23b43c78' d='M6 8L0 0h12z'/%3E%3C/svg%3E");
+    background-repeat  : no-repeat;
+    background-position: right .75rem center;
+    padding-right    : 2rem;
+    cursor           : pointer;
+}
+
+select:focus {
+    outline     : none;
+    border-color: var(--theme-accent, #b43c78);
+    box-shadow  : 0 0 0 2px rgba(180,60,120,.25);
+}
+
+select option {
+    background-color: var(--theme-bg, #0f0f1a);
+    color           : var(--theme-text, #f0e6ff);
+    padding         : .4rem .75rem;
+}
+
+select option:checked,
+select option:hover {
+    background-color: rgba(180,60,120,.25);
+    color           : #fff;
+}
+
+/* Fix específico para Firefox que ignora option background */
+@-moz-document url-prefix() {
+    select option {
+        background-color: #0f0f1a;
+        color           : #f0e6ff;
+    }
+}
+
 ul, ol { list-style: none; padding: 0; }
 
 h1, .h1 { font-family: var(--font-display); font-size: var(--text-3xl); font-weight: 700; line-height: 1.2; }

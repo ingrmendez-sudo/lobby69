@@ -187,4 +187,25 @@ class AdminUserController extends Controller
             'Content-Disposition' => 'attachment; filename="usuarios_' . date('Y-m-d') . '.csv"',
         ]);
     }
+
+    public function search(Request $request): \Illuminate\Http\JsonResponse
+    {
+        $q = trim($request->query('q', ''));
+
+        if (strlen($q) < 2) {
+            return response()->json([]);
+        }
+
+        $users = \App\Models\User::where('role', '!=', 'admin')
+            ->where(function ($query) use ($q) {
+                $query->where('email',    'ilike', "%{$q}%")
+                    ->orWhere('username', 'ilike', "%{$q}%");
+            })
+            ->select('id', 'username', 'email', 'membership_type')
+            ->limit(8)
+            ->get();
+
+        return response()->json($users);
+    }
+
 }

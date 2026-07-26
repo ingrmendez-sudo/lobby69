@@ -193,6 +193,9 @@ Route::middleware(['auth', 'admin.only'])
     Route::post('comentarios-articulos/{id}/rechazar',     [\App\Http\Controllers\Admin\AdminArticleCommentController::class, 'reject'])->name('article-comments.reject');
     Route::delete('comentarios-articulos/{id}',            [\App\Http\Controllers\Admin\AdminArticleCommentController::class, 'destroy'])->name('article-comments.destroy');
 
+    Route::get('usuarios/buscar', [\App\Http\Controllers\Admin\AdminUserController::class, 'search'])
+     ->name('admin.users.search');
+
 });
 // -- Interacciones de video (likes, comentarios) --
 Route::get('videos/{id}/likes', [App\Http\Controllers\Video\VideoInteractionController::class, 'likers']);
@@ -251,3 +254,10 @@ Route::post("/videos/{id}/view", [\App\Http\Controllers\Video\VideoInteractionCo
 
 Route::get("/videos/{id}/likes", [\App\Http\Controllers\Video\VideoInteractionController::class, "likesStatus"])->middleware("auth")->name("videos.likes.status");
 
+// ── Membresías (público autenticado) ───────────────────────────────────────────
+Route::middleware('auth')->prefix('membresia')->name('membership.')->group(function () {
+    Route::get('/',           [\App\Http\Controllers\MembershipController::class, 'index'])  ->name('index');
+    Route::get('/solicitar',  [\App\Http\Controllers\MembershipController::class, 'request'])->name('request');
+    Route::post('/solicitar', [\App\Http\Controllers\MembershipController::class, 'submit']) ->name('submit');
+    Route::get('/estado',     [\App\Http\Controllers\MembershipController::class, 'status']) ->name('status');
+});
