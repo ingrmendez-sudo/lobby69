@@ -86,6 +86,7 @@ Route::middleware('auth')->group(function () {
     Route::post('/fotos/{id}/perfil',           [PhotoController::class, 'setProfilePhoto'])->name('photos.setProfile');
     Route::delete('/fotos/{id}',                [PhotoController::class, 'destroy'])->name('photos.destroy');
     Route::get('/fotos/{id}/ver',               [PhotoController::class, 'serve'])->name('photos.serve');
+    Route::get('/fotos/{id}/thumb',             [PhotoController::class, 'serveThumb'])->name('photos.thumb');
     Route::get('/videos/{id}/ver', [VideoController::class, 'serve'])->name('videos.serve.public');
     Route::get('/fotos/{id}/info',              [DashboardController::class, 'photoModal'])->name('photos.info');
     Route::post('/fotos/{id}/like',             [DashboardController::class, 'toggleLike'])->name('photos.like');
@@ -276,4 +277,5 @@ Route::middleware(['auth'])->prefix('video')->name('video.')->group(function () 
     Route::post('/signal',   [\App\Http\Controllers\VideoSessionController::class, 'signal'])->name('signal');
     Route::post('/end',      [\App\Http\Controllers\VideoSessionController::class, 'end'])->name('end');
 });
+
 

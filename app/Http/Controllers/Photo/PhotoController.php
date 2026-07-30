@@ -122,6 +122,27 @@ class PhotoController extends Controller
         return back()->with('success', 'Foto eliminada.');
     }
 
+    public function serveThumb($id)
+    {
+        $photo = DB::table('photos')
+            ->where(function($q) use ($id) {
+                $q->whereRaw('photo_uuid::text = ?', [$id])
+                  ->orWhereRaw('id::text = ?', [$id]);
+            })
+            ->first();
+        if (!$photo) abort(404);
+
+        if ($photo->thumbnail_path && file_exists(storage_path('app/public/' . $photo->thumbnail_path))) {
+            return response()->file(
+                storage_path('app/public/' . $photo->thumbnail_path),
+                ['Cache-Control' => 'public, max-age=86400',
+                 'Content-Type'  => 'image/jpeg']
+            );
+        }
+        // Fallback al serve normal
+        return $this->serve($id);
+    }
+
     public function serve($id)
     {
         $userId = auth()->id();
@@ -180,6 +201,7 @@ class PhotoController extends Controller
         return redirect($url);
     }
 }
+
 
 
 

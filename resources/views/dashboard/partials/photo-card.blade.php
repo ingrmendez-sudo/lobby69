@@ -18,7 +18,7 @@
 
     {{-- Imagen principal --}}
     <div class="l69-feed-card__img-wrap">
-        <img loading="lazy" src="/foto/{{ $photo->file_path }}"
+        <img loading="lazy" src="{{ $photo->thumbnail_path ? asset('storage/' . $photo->thumbnail_path) : route('photos.serve', $photo->id) }}"
              alt="{{ $photo->caption ?? 'Foto' }}"
              class="l69-feed-card__img"
              loading="lazy"
@@ -73,4 +73,6 @@
     </div>
 
 </div>
+
+
 
