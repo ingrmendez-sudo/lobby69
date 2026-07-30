@@ -1,0 +1,20 @@
+  /* ── PRESENCIA GLOBAL ── */
+  window.__onlineUsers = new Set();
+
+  window.Echo.join('presence-lobby')
+    .here(users => {
+      window.__onlineUsers = new Set(users.map(u => String(u.id)));
+      window.__onlineUsers.forEach(id => markOnline(id, true));
+      console.log('[Lobby69] 👥 Online ahora:', window.__onlineUsers.size);
+    })
+    .joining(user => {
+      window.__onlineUsers.add(String(user.id));
+      markOnline(user.id, true);
+      console.log('[Lobby69] ✅ Conectado:', user.name);
+    })
+    .leaving(user => {
+      window.__onlineUsers.delete(String(user.id));
+      markOnline(user.id, false);
+      console.log('[Lobby69] ❌ Desconectado:', user.name);
+    })
+    .error(err => console.error('[Lobby69] Presence error:', err));

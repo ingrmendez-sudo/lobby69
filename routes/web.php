@@ -261,3 +261,12 @@ Route::middleware('auth')->prefix('membresia')->name('membership.')->group(funct
     Route::post('/solicitar', [\App\Http\Controllers\MembershipController::class, 'submit']) ->name('submit');
     Route::get('/estado',     [\App\Http\Controllers\MembershipController::class, 'status']) ->name('status');
 });
+
+
+// ── Video Sessions ──────────────────────────────────────────────
+Route::middleware(['auth'])->prefix('video')->name('video.')->group(function () {
+    Route::post('/initiate', [\App\Http\Controllers\VideoSessionController::class, 'initiate'])->name('initiate');
+    Route::post('/respond',  [\App\Http\Controllers\VideoSessionController::class, 'respond'])->name('respond');
+    Route::post('/signal',   [\App\Http\Controllers\VideoSessionController::class, 'signal'])->name('signal');
+    Route::post('/end',      [\App\Http\Controllers\VideoSessionController::class, 'end'])->name('end');
+});

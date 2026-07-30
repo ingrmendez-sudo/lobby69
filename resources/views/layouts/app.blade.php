@@ -410,7 +410,7 @@
     </style>
     <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body>
+<body class="{{ request()->routeIs('messages.*') ? 'page-mensajes' : '' }}">
     @include('components.navbar')
 
     <main style="width:100%;min-width:0;display:block;">
@@ -436,6 +436,7 @@
                 'admin.invitations.index','admin.invitations.show',
                 'admin.verifications.index','admin.verifications.show',
                 'admin.photos.index',
+                'messages.index',
             ]);
 
         @endphp
@@ -471,7 +472,7 @@
     @include('components.footer')
     @include('components.legal-modals')
 
-    <script src="{{ asset('js/app.js') }}"></script>
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
     @stack('scripts')
 
     <script>
@@ -536,6 +537,8 @@
     </script>
 </body>
 </html>
+
+
 
 
 

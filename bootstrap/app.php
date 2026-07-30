@@ -26,3 +26,10 @@ return Application::configure(basePath: dirname(__DIR__))
         //
     })->create();
 
+
+
+// Scheduler: limpiar sesiones de video huerfanas
+$app->booted(function () {
+    $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
+    $schedule->command('video:clean-orphans')->everyMinute();
+});

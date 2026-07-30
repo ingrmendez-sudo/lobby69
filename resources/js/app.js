@@ -1,3 +1,5 @@
+import './bootstrap';
+
 // LOBBY69 - App.js
 // Funcionalidades base del frontend
 
@@ -38,3 +40,4 @@ function initToasts() {
         }, 5000);
     });
 }
+

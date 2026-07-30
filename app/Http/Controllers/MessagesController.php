@@ -7,20 +7,24 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Http\Controllers\Photo\PhotoInteractionController;
+use App\Services\MembershipAccessService;
 
 class MessagesController extends Controller
 {
+    public function __construct(
+        private MembershipAccessService $access
+    ) {}
+
     public function index(Request $request)
     {
         $user   = Auth::user();
         $userId = (string) $user->id;
-        $tab    = $request->get('tab', 'inbox');
+        $tab    = $request->get('tab', 'chats');
 
-        // ── Tab 1: Conversaciones ──
+        // ── Tab Chats ──
         $conversations = collect();
-        $unreadTotal      = 0;
-        $unreadComments   = 0;
-        if ($tab === 'inbox') {
+        $unreadTotal   = 0;
+        if ($tab === 'chats') {
             $conversations = DB::select("
                 SELECT
                     p.id          AS partner_id,
@@ -33,10 +37,10 @@ class MessagesController extends Controller
                     m.sender_id,
                     COUNT(m2.id) FILTER (WHERE m2.read = false AND m2.receiver_id::text = ?) AS unread_count,
                     (SELECT ap.id FROM photos ap
-                     WHERE ap.user_id::text = p.id::text
-                       AND ap.is_profile_photo = true
-                       AND ap.status = 'approved'
-                     LIMIT 1) AS avatar_photo_id
+                    WHERE ap.user_id::text = p.id::text
+                    AND ap.is_profile_photo = true
+                    AND ap.status = 'approved'
+                    LIMIT 1) AS avatar_photo_id
                 FROM (
                     SELECT DISTINCT ON (
                         LEAST(sender_id::text, receiver_id::text) ||
@@ -57,7 +61,7 @@ class MessagesController extends Controller
                 LEFT JOIN profiles prof ON prof.user_id::text = p.id::text
                 LEFT JOIN messages m2
                     ON m2.sender_id::text = p.id::text
-                   AND m2.receiver_id::text = ?
+                AND m2.receiver_id::text = ?
                 GROUP BY
                     p.id, p.username,
                     prof.nickname, prof.display_name, prof.profile_type, prof.verified_profile,
@@ -71,69 +75,7 @@ class MessagesController extends Controller
                 ->count();
         }
 
-        // ── Contador global de comentarios no leídos (para badge) ──
-        $unreadComments = DB::table('photo_comments as pc')
-            ->join('photos as ph', DB::raw('ph.photo_uuid::text'), '=', DB::raw('pc.photo_id::text'))
-            ->whereRaw('ph.user_id::text = ?', [$userId])
-            ->whereNull('pc.read_at')
-            ->where('pc.status', 'approved')
-            ->count();
-
-        // ── Tab 2: Comentarios recibidos ──
-        $photoComments = collect();
-        $videoComments = collect();
-        if ($tab === 'comments') {
-            $photoComments = DB::table('photo_comments as pc')
-                ->join('photos as ph', DB::raw('ph.photo_uuid::text'), '=', DB::raw('pc.photo_id::text'))
-                ->join('users as u',   DB::raw('u.id::text'),          '=', DB::raw('pc.user_id::text'))
-                ->leftJoin('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('u.id::text'))
-                ->whereRaw('ph.user_id::text = ?', [$userId])
-                ->where('pc.status', 'approved')
-                ->orderByDesc('pc.created_at')
-                ->select([
-                    'pc.id', 'pc.body', 'pc.created_at', 'pc.read_at',
-                    'ph.photo_uuid', 'ph.caption',
-                    DB::raw('COALESCE(pr.display_name, u.username) AS commenter_name'),
-                    DB::raw('pr.nickname AS commenter_nick'),
-                    DB::raw('pr.profile_type AS commenter_type'),
-                    DB::raw("(SELECT ap.id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = 'approved' LIMIT 1) AS commenter_avatar_id"),
-                ])
-                ->limit(50)
-                ->get();
-
-            // Marcar como leídos DESPUÉS de capturar el estado para la vista
-            $unreadCommentIds = $photoComments
-                ->filter(fn($c) => is_null($c->read_at))
-                ->pluck('id')
-                ->map(fn($v) => (string) $v)
-                ->toArray();
-
-            if (!empty($unreadCommentIds)) {
-                DB::table('photo_comments')
-                    ->whereIn(DB::raw('id::text'), $unreadCommentIds)
-                    ->update(['read_at' => now()]);
-            }
-
-            try {
-                $videoComments = DB::table('video_comments as vc')
-                    ->join('videos as v',    DB::raw('v.id::text'),  '=', DB::raw('vc.video_id::text'))
-                    ->join('users as u',     DB::raw('u.id::text'),  '=', DB::raw('vc.user_id::text'))
-                    ->leftJoin('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('u.id::text'))
-                    ->whereRaw('v.user_id::text = ?', [$userId])
-                    ->where('vc.status', 'approved')
-                    ->orderByDesc('vc.created_at')
-                    ->select([
-                        'vc.id', 'vc.body', 'vc.created_at',
-                        'v.id as video_id', 'v.title',
-                        DB::raw('COALESCE(pr.display_name, u.username) AS commenter_name'),
-                        DB::raw('pr.nickname AS commenter_nick'),
-                    ])
-                    ->limit(50)
-                    ->get();
-            } catch (\Throwable $e) {}
-        }
-
-        // ── Tab 3: Amistades ──
+        // ── Tab Amigos ──
         $friendsPending  = collect();
         $friendsSent     = collect();
         $friendsAccepted = collect();
@@ -151,8 +93,7 @@ class MessagesController extends Controller
                     DB::raw("(SELECT ap.id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = 'approved' LIMIT 1) AS avatar_photo_id"),
                     'f.created_at',
                 ])
-                ->orderByDesc('f.created_at')
-                ->get();
+                ->orderByDesc('f.created_at')->get();
 
             $friendsSent = DB::table('friendships as f')
                 ->join('users as u',  DB::raw('u.id::text'), '=', DB::raw('f.receiver_id::text'))
@@ -167,8 +108,7 @@ class MessagesController extends Controller
                     DB::raw("(SELECT ap.id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = 'approved' LIMIT 1) AS avatar_photo_id"),
                     'f.created_at',
                 ])
-                ->orderByDesc('f.created_at')
-                ->get();
+                ->orderByDesc('f.created_at')->get();
 
             $friendsAccepted = DB::table('friendships as f')
                 ->join('users as u',
@@ -186,73 +126,14 @@ class MessagesController extends Controller
                     DB::raw('COALESCE(pr.display_name, u.username) AS display_name'),
                     'pr.nickname', 'pr.profile_type', 'pr.verified_profile', 'pr.city',
                     DB::raw("(SELECT ap.id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = 'approved' LIMIT 1) AS avatar_photo_id"),
-                ])
-                ->get();
+                ])->get();
         }
 
-        // ── Tab 4: Recomendaciones ──
-        $reviewsReceived = collect();
-        $reviewsGiven    = collect();
-        $canReview       = collect();
-        if ($tab === 'reviews') {
-            $reviewsReceived = DB::table('profile_reviews as r')
-                ->join('users as u',  DB::raw('u.id::text'), '=', DB::raw('r.reviewer_id::text'))
-                ->leftJoin('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('u.id::text'))
-                ->whereRaw('r.reviewed_id::text = ?', [$userId])
-                ->select([
-                    'r.id', 'r.type', 'r.body', 'r.created_at',
-                    DB::raw('COALESCE(pr.display_name, u.username) AS reviewer_name'),
-                    'pr.nickname AS reviewer_nick',
-                    DB::raw("(SELECT ap.id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = 'approved' LIMIT 1) AS avatar_photo_id"),
-                ])
-                ->orderByDesc('r.created_at')
-                ->get();
-
-            $reviewsGiven = DB::table('profile_reviews as r')
-                ->join('users as u',  DB::raw('u.id::text'), '=', DB::raw('r.reviewed_id::text'))
-                ->leftJoin('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('u.id::text'))
-                ->whereRaw('r.reviewer_id::text = ?', [$userId])
-                ->select([
-                    'r.id', 'r.type', 'r.body', 'r.created_at',
-                    DB::raw('COALESCE(pr.display_name, u.username) AS reviewed_name'),
-                    'pr.nickname AS reviewed_nick',
-                    DB::raw("(SELECT ap.id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = 'approved' LIMIT 1) AS avatar_photo_id"),
-                ])
-                ->orderByDesc('r.created_at')
-                ->get();
-
-            $reviewedIds = DB::table('profile_reviews')
-                ->whereRaw('reviewer_id::text = ?', [$userId])
-                ->pluck('reviewed_id')
-                ->map(fn($id) => (string) $id)
-                ->toArray();
-
-            $canReview = DB::table('friendships as f')
-                ->join('users as u',
-                    DB::raw('u.id::text'),
-                    '=',
-                    DB::raw("CASE WHEN f.sender_id::text = '{$userId}' THEN f.receiver_id::text ELSE f.sender_id::text END")
-                )
-                ->leftJoin('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('u.id::text'))
-                ->whereRaw('(f.sender_id::text = ? OR f.receiver_id::text = ?)', [$userId, $userId])
-                ->where('f.status', 'accepted')
-                ->whereRaw('u.id::text != ?', [$userId])
-                ->whereNotIn(DB::raw('u.id::text'), count($reviewedIds) ? $reviewedIds : ['__none__'])
-                ->select([
-                    'u.id AS user_id',
-                    DB::raw('COALESCE(pr.display_name, u.username) AS display_name'),
-                    'pr.nickname',
-                    DB::raw("(SELECT ap.id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = 'approved' LIMIT 1) AS avatar_photo_id"),
-                ])
-                ->get();
-        }
-
-        // ── Tab 5: Anuncios ──
+        // ── Tab Anuncios ──
         $announcements   = collect();
         $myAnnouncements = collect();
         if ($tab === 'announcements') {
             $now = Carbon::now();
-
             $announcements = DB::table('announcements as a')
                 ->join('users as u',  DB::raw('u.id::text'), '=', DB::raw('a.user_id::text'))
                 ->leftJoin('profiles as pr', DB::raw('pr.user_id::text'), '=', DB::raw('u.id::text'))
@@ -261,17 +142,15 @@ class MessagesController extends Controller
                 ->orderByDesc('a.created_at')
                 ->select([
                     'a.id', 'a.title', 'a.looking_for', 'a.event_date',
-                    'a.proposal', 'a.created_at', 'a.directed_to', 'a.what_looking',
-                    'a.user_id',
+                    'a.proposal', 'a.created_at', 'a.directed_to', 'a.what_looking', 'a.user_id',
                     DB::raw("COALESCE(a.expires_at, a.created_at + INTERVAL '4 days') AS expires_at"),
                     DB::raw('COALESCE(pr.display_name, u.username) AS display_name'),
                     'pr.nickname', 'pr.profile_type', 'pr.city', 'pr.verified_profile',
                     DB::raw("(SELECT ap.id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = 'approved' LIMIT 1) AS avatar_photo_id"),
                 ])
-                ->limit(30)
-                ->get()
+                ->limit(30)->get()
                 ->map(function ($a) use ($now) {
-                    $a->is_expired = Carbon::parse($a->expires_at)->lt($now);
+                    $a->is_expired   = Carbon::parse($a->expires_at)->lt($now);
                     $a->directed_to  = $a->directed_to  ? json_decode($a->directed_to,  true) : [];
                     $a->what_looking = $a->what_looking ? json_decode($a->what_looking, true) : [];
                     return $a;
@@ -279,8 +158,7 @@ class MessagesController extends Controller
 
             $myAnnouncements = DB::table('announcements')
                 ->whereRaw('user_id::text = ?', [$userId])
-                ->orderByDesc('created_at')
-                ->get()
+                ->orderByDesc('created_at')->get()
                 ->map(function ($a) use ($now) {
                     $expires = $a->expires_at
                         ? Carbon::parse($a->expires_at)
@@ -292,14 +170,25 @@ class MessagesController extends Controller
                 });
         }
 
+        // ── Datos de membresía para la vista ──
+        $userTier      = $this->access->tier($user);
+        $canChat       = $this->access->can($user, 'chat_private');
+        $dailyLimit    = $this->access->limit($user, 'daily_messages');
+        $sentToday     = $canChat ? DB::table('messages')
+            ->whereRaw('sender_id::text = ?', [$userId])
+            ->whereDate('created_at', today())
+            ->count() : 0;
+        $messagesLeft  = $dailyLimit !== null ? max(0, $dailyLimit - $sentToday) : null;
+
+        $userId = (string) Auth::id();
         return view('messages.index', compact(
-            'tab', 'conversations', 'unreadTotal',
-            'photoComments', 'videoComments',
+            'userId', 'tab', 'conversations', 'unreadTotal',
             'friendsPending', 'friendsSent', 'friendsAccepted',
-            'reviewsReceived', 'reviewsGiven', 'canReview',
-            'announcements', 'myAnnouncements'
+            'announcements', 'myAnnouncements',
+            'userTier', 'canChat', 'dailyLimit', 'messagesLeft'
         ));
     }
+
 
     // ── Abrir conversación (AJAX) ──
     public function conversation(Request $request, string $partnerId)
@@ -344,14 +233,43 @@ class MessagesController extends Controller
 
     // ── Enviar mensaje ──
     public function send(Request $request)
-        {
-            $request->validate([
-                'receiver_id' => 'required|uuid',
-                'body'        => 'required|string|max:1000',
-            ]);
+    {
+        $request->validate([
+            'receiver_id' => 'required|uuid',
+            'body'        => 'required|string|max:1000',
+        ]);
 
-            $user   = Auth::user();
-            $userId = (string) $user->id;
+        $user   = Auth::user();
+        $userId = (string) $user->id;
+
+        // ── Control de acceso por membresía ──
+        if (!$this->access->can($user, 'chat_private')) {
+            return response()->json([
+                'error'       => 'membership_required',
+                'message'     => 'Necesitas al menos membresía Explorer para enviar mensajes.',
+                'upgrade_url' => '/membresias',
+                'tier'        => $this->access->tier($user),
+            ], 403);
+        }
+
+        // ── Límite diario de mensajes ──
+        $dailyLimit = $this->access->limit($user, 'daily_messages');
+        if ($dailyLimit !== null) {
+            $sentToday = DB::table('messages')
+                ->whereRaw('sender_id::text = ?', [$userId])
+                ->whereDate('created_at', today())
+                ->count();
+            if ($sentToday >= $dailyLimit) {
+                return response()->json([
+                    'error'       => 'daily_limit_reached',
+                    'message'     => 'Alcanzaste tu límite de ' . $dailyLimit . ' mensajes por día.',
+                    'limit'       => $dailyLimit,
+                    'sent_today'  => $sentToday,
+                    'upgrade_url' => '/membresias',
+                    'tier'        => $this->access->tier($user),
+                ], 429);
+            }
+        }
             $msgId  = (string) \Illuminate\Support\Str::uuid();
             $now    = now();
 
@@ -582,6 +500,8 @@ class MessagesController extends Controller
         return response()->json(['ok' => true]);
     }
 }
+
+
 
 
 
