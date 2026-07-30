@@ -62,10 +62,13 @@ class AdminUserController extends Controller
                 count(*) as total,
                 sum(case when active = true then 1 else 0 end) as activos,
                 sum(case when active = false then 1 else 0 end) as suspendidos,
-                sum(case when membership_type = 'premium' then 1 else 0 end) as premium,
-                sum(case when membership_type = 'vip' then 1 else 0 end) as vip,
-                sum(case when membership_type = 'trial' then 1 else 0 end) as trial,
-                sum(case when membership_type = 'free' then 1 else 0 end) as free,
+                sum(case when membership_type = 'explorer'   then 1 else 0 end) as explorer,
+                sum(case when membership_type = 'connectors' then 1 else 0 end) as connectors,
+                sum(case when membership_type = 'influencer' then 1 else 0 end) as influencer,
+                sum(case when membership_type = 'vip_elite'  then 1 else 0 end) as premium,
+                sum(case when membership_type = 'fundador'   then 1 else 0 end) as vip,
+                sum(case when membership_type = 'invitado'   then 1 else 0 end) as trial,
+                sum(case when active = true then 1 else 0 end) as free,
                 sum(case when created_at >= now() - interval '7 days' then 1 else 0 end) as nuevos_semana
             ")->first();
 
@@ -243,5 +246,6 @@ class AdminUserController extends Controller
     }
 
 }
+
 
 

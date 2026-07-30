@@ -145,7 +145,7 @@ class PhotoController extends Controller
 
     public function serve($id)
     {
-        $userId = auth()->id();
+        $userId = (string) auth()->id();
 
         $photo = DB::table('photos')
             ->where(function($q) use ($id) {
@@ -153,52 +153,32 @@ class PhotoController extends Controller
                   ->orWhereRaw('id::text = ?', [$id]);
             })
             ->first();
+
         if (!$photo) abort(404);
+        if ($photo->status !== 'approved') abort(403, 'Foto no disponible.');
 
-        // El dueño SIEMPRE puede ver sus propias fotos
-        // Comparación como string para evitar fallos de tipo
-        if ((string)$photo->user_id === (string)$userId) {
-            $url = 'https://kjhaquimghhejqznleyn.supabase.co/storage/v1/object/public/gallery/' . $photo->file_path;
-            return redirect($url);
+        // El dueño siempre puede ver sus propias fotos
+        if ((string) $photo->user_id === $userId) {
+            return redirect(
+                'https://kjhaquimghhejqznleyn.supabase.co/storage/v1/object/public/gallery/' . $photo->file_path
+            );
         }
 
+        // Verificar acceso según album_type usando MembershipService
+        $canView = match($photo->album_type) {
+            'public'  => true,
+            'private' => \App\Services\MembershipService::can($userId, 'can_view_private_photos'),
+            'vip'     => \App\Services\MembershipService::hasMinLevel($userId, 'vip_elite'),
+            default   => false,
+        };
 
-
-
-
-
-        // Verificar membresía para terceros
-        $membershipType = DB::table('users')
-            ->whereRaw('id::text = ?', [$userId])
-            ->value('membership_type') ?? 'trial';
-
-        // Todos los usuarios autenticados pueden ver fotos públicas aprobadas
-        // trial = primer mes gratis, tiene acceso a fotos públicas
-        $allMembers = ['trial','trial_verified','explorer','connectors',
-                    'influencer','vip_elite','Fundador','admin'];
-
-        $canView = false;
-        switch ($photo->album_type) {
-            case 'public':
-                $canView = in_array($membershipType, $allMembers)
-                        && $photo->status === 'approved';
-                break;
-            case 'private':
-                $canView = in_array($membershipType,
-                    ['connectors','influencer','vip_elite','Fundador','admin'])
-                        && $photo->status === 'approved';
-                break;
-            case 'vip':
-                $canView = in_array($membershipType,
-                    ['vip_elite','Fundador','admin'])
-                        && $photo->status === 'approved';
-                break;
+        if (!$canView) {
+            abort(403, 'Tu membresía no permite ver este contenido.');
         }
 
-        if (!$canView) abort(403, 'No tienes acceso a esta foto.');
-
-        $url = 'https://kjhaquimghhejqznleyn.supabase.co/storage/v1/object/public/gallery/' . $photo->file_path;
-        return redirect($url);
+        return redirect(
+            'https://kjhaquimghhejqznleyn.supabase.co/storage/v1/object/public/gallery/' . $photo->file_path
+        );
     }
 }
 

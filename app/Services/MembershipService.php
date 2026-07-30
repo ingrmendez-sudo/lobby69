@@ -127,4 +127,24 @@ class MembershipService
             'in_grace_period'         => self::inGracePeriod($userId),
         ];
     }
+
+    /**
+     * Verificar si el usuario tiene al menos el nivel indicado.
+     * Uso: MembershipService::hasMinLevel($userId, 'vip_elite')
+     */
+    public static function hasMinLevel($userId, string $minTier): bool
+    {
+        $levels = [
+            'invitado'   => 0,
+            'explorer'   => 1,
+            'connectors' => 2,
+            'influencer' => 3,
+            'vip_elite'  => 4,
+            'fundador'   => 5,
+        ];
+        $userSlug  = self::getSlug($userId);
+        $userLevel = $levels[$userSlug]  ?? 0;
+        $minLevel  = $levels[$minTier]   ?? 0;
+        return $userLevel >= $minLevel;
+    }
 }
