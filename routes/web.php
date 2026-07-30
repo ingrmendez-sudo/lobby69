@@ -153,7 +153,7 @@ Route::middleware(['auth', 'admin.only'])
     Route::post('fotos/{id}/rechazar', [AdminPhotoController::class, 'reject'])->name('photos.reject');
     Route::get('fotos/{id}/ver',       [AdminPhotoController::class, 'serve'])->name('photos.serve');
 
-    Route::get('videos',                [AdminVideoController::class, 'index'])->name('videos.index');
+    Route::get('videos',                [AdminVideoController::class, 'index'])->name('admin.videos.index');
     Route::post('videos/{id}/aprobar',  [AdminVideoController::class, 'approve'])->name('videos.approve');
     Route::post('videos/{id}/rechazar', [AdminVideoController::class, 'reject'])->name('videos.reject');
     Route::get('videos/{id}/ver',       [AdminVideoController::class, 'serve'])->name('videos.serve');
@@ -220,25 +220,42 @@ Route::get('/videos', [App\Http\Controllers\Video\VideoGalleryController::class,
 
 // ── Video stream privado + contadores ──────────────────────────
 Route::get('/videos/{id}/stream', function($id) {
+    $user  = auth()->user();
     $video = DB::table('videos')->where('id', $id)->first();
     if (!$video) abort(404);
-    if (!auth()->check()) abort(403);
+
+    if ($video->album_type === 'private') {
+        if (!\App\Services\MembershipService::can($user->id, 'can_view_private_photos'))
+            abort(403, 'Necesitas membresía Connectors o superior.');
+    }
+    if ($video->album_type === 'vip') {
+        if (!\App\Services\MembershipService::hasMinLevel($user->id, 'vip_elite'))
+            abort(403, 'Necesitas membresía VIP Elite o superior.');
+    }
+    if ($video->status !== 'approved') {
+        if ((string)$video->user_id !== (string)$user->id) abort(403);
+    }
+
     $path = storage_path('app/private/' . ltrim($video->file_path, '/'));
     if (!file_exists($path)) abort(404);
-    $mime = mime_content_type($path) ?: 'video/mp4';
-    $size = filesize($path);
+
+    $ext     = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+    $mimeMap = ['mp4'=>'video/mp4','mov'=>'video/quicktime','avi'=>'video/x-msvideo','webm'=>'video/webm'];
+    $mime    = $mimeMap[$ext] ?? 'video/mp4';
+    $size    = filesize($path);
+
     $headers = [
-        'Content-Type'   => $mime,
-        'Content-Length' => $size,
-        'Accept-Ranges'  => 'bytes',
-        'Cache-Control'  => 'no-store',
+        'Content-Type'  => $mime,
+        'Accept-Ranges' => 'bytes',
+        'Cache-Control' => 'private, max-age=3600',
     ];
+
     if (request()->hasHeader('Range')) {
         preg_match('/bytes=(\d+)-(\d*)/', request()->header('Range'), $m);
         $start  = (int)$m[1];
         $end    = isset($m[2]) && $m[2] !== '' ? (int)$m[2] : $size - 1;
         $length = $end - $start + 1;
-        $headers['Content-Range']  = "bytes $start-$end/$size";
+        $headers['Content-Range']  = "bytes {$start}-{$end}/{$size}";
         $headers['Content-Length'] = $length;
         return response()->stream(function() use ($path, $start, $length) {
             $f = fopen($path, 'rb'); fseek($f, $start);
@@ -250,6 +267,8 @@ Route::get('/videos/{id}/stream', function($id) {
             fclose($f);
         }, 206, $headers);
     }
+
+    $headers['Content-Length'] = $size;
     return response()->stream(function() use ($path) {
         $f = fopen($path, 'rb');
         while (!feof($f)) { echo fread($f, 8192); ob_flush(); flush(); }
@@ -277,5 +296,7 @@ Route::middleware(['auth'])->prefix('video')->name('video.')->group(function () 
     Route::post('/signal',   [\App\Http\Controllers\VideoSessionController::class, 'signal'])->name('signal');
     Route::post('/end',      [\App\Http\Controllers\VideoSessionController::class, 'end'])->name('end');
 });
+
+
 
 

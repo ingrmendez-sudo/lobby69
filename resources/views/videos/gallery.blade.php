@@ -388,7 +388,7 @@
 
         <video preload="none" muted playsinline
                @if($thumbSrc) poster="{{ $thumbSrc }}" @endif
-               src="{{ route('videos.stream', $video->id) }}">
+              >
         </video>
         <div class="vg-play-icon">
             <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -830,4 +830,5 @@ function vgT(ts) {
 }
 </script>
 @endpush
+
 
