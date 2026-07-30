@@ -125,12 +125,10 @@ class VideoController extends Controller
             if (!\App\Services\MembershipService::can($user->id, 'can_view_private_photos')) {
                 abort(403, 'Necesitas membresía Connectors o superior para ver videos privados.');
             }
-            }
         }
         if ($video->album_type === 'vip') {
             if (!\App\Services\MembershipService::hasMinLevel($user->id, 'vip_elite')) {
                 abort(403, 'Necesitas membresía VIP Elite o superior para ver este contenido.');
-            }
             }
         }
 
