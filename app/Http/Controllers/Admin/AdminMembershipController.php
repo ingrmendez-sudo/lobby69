@@ -208,6 +208,13 @@ class AdminMembershipController extends Controller
             'description'   => ['nullable', 'string', 'max:500'],
         ]);
 
+        $features = $request->input('features', []);
+        $boolKeys = ['can_view_private_photos','can_video_call','can_see_visitors',
+                      'can_send_friend_request','profile_boost','priority_support'];
+        foreach ($boolKeys as $k) {
+            $features[$k] = isset($features[$k]) && $features[$k] == '1';
+        }
+
         \App\Models\MembershipPlan::where('slug', $slug)->update([
             'price_promo'   => $request->price_promo,
             'price_normal'  => $request->price_normal,
@@ -215,8 +222,15 @@ class AdminMembershipController extends Controller
             'is_active'     => $request->boolean('is_active'),
             'promo_active'  => $request->boolean('promo_active'),
             'description'   => $request->description,
+            'features'      => json_encode($features),
             'updated_at'    => now(),
         ]);
+
+        // Invalidar cache de usuarios con este plan
+        $userIds = \DB::table('memberships')->where('tier', $slug)->where('status','active')->pluck('user_id');
+        foreach ($userIds as $uid) {
+            \App\Services\MembershipService::clearCache($uid);
+        }
 
         return back()->with('success', "Plan «{$slug}» actualizado correctamente.");
     }
