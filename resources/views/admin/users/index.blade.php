@@ -68,13 +68,12 @@
         <div style="min-width:130px;">
             <label style="font-size:.72rem;color:var(--theme-muted);display:block;margin-bottom:.2rem;">Membresía</label>
             <select name="membresia" style="width:100%;padding:.4rem .7rem;border-radius:6px;border:1px solid var(--theme-border);background:var(--theme-bg);color:var(--theme-text);font-size:.83rem;">
-                <option value="">Todas</option>
-                <option value="invitado"   {{ $membership==='invitado'   ?'selected':' }}>Invitado</option>
-                <option value="explorer"   {{ $membership==='explorer'   ?'selected':' }}>Explorer</option>
-                <option value="connectors" {{ $membership==='connectors' ?'selected':' }}>Connectors</option>
-                <option value="influencer" {{ $membership==='influencer' ?'selected':' }}>Influencer</option>
-                <option value="vip_elite"  {{ $membership==='vip_elite'  ?'selected':' }}>VIP Elite</option>
-                <option value="Fundador"  {{ $membership==='Fundador'  ?'selected':' }}>Fundador</option>
+                <option value="invitado"   {{ ($membership??'')==='invitado'   ? 'selected' : '' }}>Invitado</option>
+                <option value="explorer"   {{ ($membership??'')==='explorer'   ? 'selected' : '' }}>Explorer</option>
+                <option value="connectors" {{ ($membership??'')==='connectors' ? 'selected' : '' }}>Connectors</option>
+                <option value="influencer" {{ ($membership??'')==='influencer' ? 'selected' : '' }}>Influencer</option>
+                <option value="vip_elite"  {{ ($membership??'')==='vip_elite'  ? 'selected' : '' }}>VIP Elite</option>
+                <option value="fundador"   {{ ($membership??'')==='fundador'   ? 'selected' : '' }}>Fundador</option>
             </select>
         </div>
         <div style="min-width:130px;">
@@ -362,6 +361,7 @@ document.getElementById('modalDetalle').addEventListener('click', function(e) {
 });
 </script>
 @endpush
+
 
 
 
