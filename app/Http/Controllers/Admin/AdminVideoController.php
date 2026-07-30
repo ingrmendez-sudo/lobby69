@@ -18,12 +18,12 @@ class AdminVideoController extends Controller
             ->joinSub(
                 DB::table('users')->selectRaw('"id"::text as uid, "username", "membership_type", "role"'),
                 'u',
-                'videos.user_id', '=', 'u.uid'
+                DB::raw('videos.user_id::text'), '=', 'u.uid'
             )
             ->leftJoinSub(
                 DB::table('profiles')->selectRaw('"user_id"::text as pid, "display_name", "nickname"'),
                 'p',
-                'videos.user_id', '=', 'p.pid'
+                DB::raw('videos.user_id::text'), '=', 'p.pid'
             )
             ->select(
                 'videos.id',
@@ -61,7 +61,7 @@ class AdminVideoController extends Controller
             ->joinSub(
                 DB::table('users')->selectRaw('"id"::text as uid, "role"'),
                 'u',
-                'videos.user_id', '=', 'u.uid'
+                DB::raw('videos.user_id::text'), '=', 'u.uid'
             )
             ->where('videos.status', $status)
             ->where('u.role', '!=', 'admin')
@@ -123,3 +123,4 @@ class AdminVideoController extends Controller
         ]);
     }
 }
+

@@ -188,6 +188,12 @@ Route::middleware(['auth', 'admin.only'])
     Route::post('membresias/{id}/rechazar', [AdminMembershipController::class, 'reject'])->name('memberships.reject');
     Route::post('membresias/registrar',     [AdminMembershipController::class, 'store'])->name('memberships.store');
 
+    // Gestión de planes y precios
+    Route::get('planes',             [\App\Http\Controllers\Admin\AdminMembershipController::class, 'planes'])->name('memberships.planes');
+    Route::put('planes/{slug}',      [\App\Http\Controllers\Admin\AdminMembershipController::class, 'updatePlan'])->name('memberships.plans.update');
+    Route::post('planes/{slug}/toggle-promo', [\App\Http\Controllers\Admin\AdminMembershipController::class, 'togglePromo'])->name('memberships.plans.toggle-promo');
+
+
     Route::get('comentarios-articulos',                    [\App\Http\Controllers\Admin\AdminArticleCommentController::class, 'index'])->name('article-comments.index');
     Route::post('comentarios-articulos/{id}/aprobar',      [\App\Http\Controllers\Admin\AdminArticleCommentController::class, 'approve'])->name('article-comments.approve');
     Route::post('comentarios-articulos/{id}/rechazar',     [\App\Http\Controllers\Admin\AdminArticleCommentController::class, 'reject'])->name('article-comments.reject');
@@ -270,3 +276,4 @@ Route::middleware(['auth'])->prefix('video')->name('video.')->group(function () 
     Route::post('/signal',   [\App\Http\Controllers\VideoSessionController::class, 'signal'])->name('signal');
     Route::post('/end',      [\App\Http\Controllers\VideoSessionController::class, 'end'])->name('end');
 });
+

@@ -15,6 +15,162 @@
 
 @push('styles')
 <style>
+/* ══════════════════════════════════════
+   MODAL UPGRADE — Limite de mensajes
+   ══════════════════════════════════════ */
+#upgradeOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(10, 10, 20, 0.85);
+    backdrop-filter: blur(6px);
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+#upgradeOverlay.is-visible { display: flex; }
+</style>
+{{-- Sin sidebar derecho en esta página — el split-view ocupa todo el ancho --}}
+
+/* ══════════════════════════════════════
+   MODAL UPGRADE — Limite de mensajes
+   ══════════════════════════════════════ */
+#upgradeOverlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: rgba(10, 10, 20, 0.85);
+    backdrop-filter: blur(6px);
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+#upgradeOverlay.is-visible {
+    display: flex;
+}
+.upgrade-card {
+    background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    border-radius: 20px;
+    padding: 2.5rem 2rem;
+    max-width: 520px;
+    width: 100%;
+    text-align: center;
+    box-shadow: 0 25px 60px rgba(0,0,0,0.6), 0 0 0 1px rgba(139,92,246,0.1);
+    animation: upgradeIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+@keyframes upgradeIn {
+    from { opacity: 0; transform: scale(0.85) translateY(20px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0); }
+}
+.upgrade-crown {
+    font-size: 3rem;
+    margin-bottom: 0.5rem;
+    display: block;
+    animation: crownPulse 2s ease-in-out infinite;
+}
+@keyframes crownPulse {
+    0%, 100% { transform: scale(1) rotate(-3deg); }
+    50%       { transform: scale(1.1) rotate(3deg); }
+}
+.upgrade-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #fff;
+    margin-bottom: 0.4rem;
+}
+.upgrade-subtitle {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 1.25rem;
+}
+.upgrade-progress {
+    background: rgba(255,255,255,0.1);
+    border-radius: 999px;
+    height: 8px;
+    margin-bottom: 1.75rem;
+    overflow: hidden;
+}
+.upgrade-progress__bar {
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #8b5cf6, #ec4899);
+    transition: width 0.5s ease;
+}
+.upgrade-plans {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.875rem;
+    margin-bottom: 1.5rem;
+    text-align: left;
+}
+.upgrade-plan {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 1rem;
+}
+.upgrade-plan.is-featured {
+    background: rgba(139,92,246,0.15);
+    border-color: rgba(139,92,246,0.5);
+}
+.upgrade-plan__name {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #a78bfa;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 0.5rem;
+}
+.upgrade-plan.is-featured .upgrade-plan__name { color: #ec4899; }
+.upgrade-plan__perk {
+    font-size: 0.78rem;
+    color: rgba(255,255,255,0.7);
+    display: flex;
+    align-items: flex-start;
+    gap: 0.4rem;
+    margin-bottom: 0.3rem;
+    line-height: 1.3;
+}
+.upgrade-plan__perk::before {
+    content: '✓';
+    color: #a78bfa;
+    font-weight: 700;
+    flex-shrink: 0;
+}
+.upgrade-plan.is-featured .upgrade-plan__perk::before { color: #ec4899; }
+.upgrade-cta {
+    display: block;
+    width: 100%;
+    padding: 0.875rem;
+    border-radius: 12px;
+    background: linear-gradient(135deg, #8b5cf6, #ec4899);
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    text-decoration: none;
+    margin-bottom: 0.75rem;
+    transition: opacity 0.2s, transform 0.2s;
+}
+.upgrade-cta:hover { opacity: 0.9; transform: translateY(-1px); color: #fff; }
+.upgrade-dismiss {
+    font-size: 0.8rem;
+    color: rgba(255,255,255,0.4);
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.25rem;
+    transition: color 0.2s;
+}
+.upgrade-dismiss:hover { color: rgba(255,255,255,0.7); }
+@endpush
+
+@push('styles')
+<style>
 /* ══════════════════════════════════════════════════════════════
    LOBBY69 — DARK HUB · Chat redesign v3
    Layout: sidebar-canales | columna-central | panel-online
@@ -3086,6 +3242,43 @@ body.page-mensajes .l69-sidebar--right {
 
         </div>
 
+
+    {{-- ═══ MODAL UPGRADE ════════════════════════════════════════════════ --}}
+    <div id="upgradeOverlay" role="dialog" aria-modal="true" aria-labelledby="upgradeTitle">
+        <div class="upgrade-card">
+            <span class="upgrade-crown">👑</span>
+            <div class="upgrade-title" id="upgradeTitle">¡Límite de mensajes alcanzado!</div>
+            <div class="upgrade-subtitle">
+                Has usado <strong id="upgradeUsed">5</strong> de <strong id="upgradeLimit">5</strong>
+                mensajes disponibles hoy.<br>Hazte miembro y disfruta sin límites.
+            </div>
+            <div class="upgrade-progress">
+                <div class="upgrade-progress__bar" id="upgradeProgressBar" style="width:100%"></div>
+            </div>
+            <div class="upgrade-plans">
+                <div class="upgrade-plan">
+                    <div class="upgrade-plan__name">Explorer</div>
+                    <div class="upgrade-plan__perk">5 mensajes / día</div>
+                    <div class="upgrade-plan__perk">Fotos privadas</div>
+                    <div class="upgrade-plan__perk">Sala general</div>
+                    <div class="upgrade-plan__perk">Sin publicidad</div>
+                </div>
+                <div class="upgrade-plan is-featured">
+                    <div class="upgrade-plan__name">✨ Influencer</div>
+                    <div class="upgrade-plan__perk">Mensajes ilimitados</div>
+                    <div class="upgrade-plan__perk">Prioridad en búsquedas</div>
+                    <div class="upgrade-plan__perk">Videollamadas privadas</div>
+                    <div class="upgrade-plan__perk">Perfil destacado</div>
+                </div>
+            </div>
+            <a href="/membresias" class="upgrade-cta">
+                🚀 Ver planes y precios
+            </a>
+            <button class="upgrade-dismiss" id="upgradeDismiss">
+                Solo quiero seguir leyendo
+            </button>
+        </div>
+    </div>
     </main>
 
     {{-- PANEL DERECHO --}}
@@ -3460,7 +3653,7 @@ body.page-mensajes .l69-sidebar--right {
         .then(function(res) {
             chatSendBtn.disabled = false;
             if (res.status === 429) {
-                showToast('Limite alcanzado', res.data.message || 'Limite diario de mensajes alcanzado');
+                showUpgradeModal(res.data.sent_today, res.data.limit);
                 return;
             }
             if (res.status === 403) {
@@ -3673,6 +3866,35 @@ body.page-mensajes .l69-sidebar--right {
     }
 
     /* ══ Toast notificacion ══ */
+
+    /* ══ Modal Upgrade ══ */
+    const upgradeOverlay     = document.getElementById('upgradeOverlay');
+    const upgradeUsed        = document.getElementById('upgradeUsed');
+    const upgradeLimit       = document.getElementById('upgradeLimit');
+    const upgradeProgressBar = document.getElementById('upgradeProgressBar');
+    const upgradeDismiss     = document.getElementById('upgradeDismiss');
+
+    if (upgradeDismiss) {
+        upgradeDismiss.addEventListener('click', function() {
+            if (upgradeOverlay) upgradeOverlay.classList.remove('is-visible');
+        });
+    }
+    if (upgradeOverlay) {
+        upgradeOverlay.addEventListener('click', function(e) {
+            if (e.target === upgradeOverlay) upgradeOverlay.classList.remove('is-visible');
+        });
+    }
+
+    function showUpgradeModal(used, limit) {
+        if (!upgradeOverlay) return;
+        if (upgradeUsed)  upgradeUsed.textContent  = used  ?? limit ?? 5;
+        if (upgradeLimit) upgradeLimit.textContent = limit ?? 5;
+        const pct = limit ? Math.min(100, Math.round((used / limit) * 100)) : 100;
+        if (upgradeProgressBar) upgradeProgressBar.style.width = pct + '%';
+        upgradeOverlay.classList.add('is-visible');
+    }
+    window.showUpgradeModal = showUpgradeModal;
+
     function showToast(nick, body) {
         const container = document.getElementById('chToastContainer') ||
             (() => {
@@ -3824,6 +4046,10 @@ body.page-mensajes .l69-sidebar--right {
     </script>
 
 @endpush
+
+
+
+
 
 
 

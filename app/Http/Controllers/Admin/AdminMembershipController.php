@@ -91,7 +91,7 @@ class AdminMembershipController extends Controller
                 (string) $user->id,
                 (string) $plan->slug,
                 $durationDays,
-                (float)  ($payment->amount ?? $plan->price ?? 0),
+                (float)($payment->amount ?? ($plan->promo_active ? $plan->price_promo : $plan->price_normal) ?? 0),
                 (string) ($payment->payment_method ?? 'manual'),
                 (string) ($payment->payment_reference ?? '')
             );
@@ -184,5 +184,54 @@ class AdminMembershipController extends Controller
         return redirect()
             ->route('admin.memberships.index', ['status' => 'pending'])
             ->with('success', "Pago manual registrado para {$user->username}.");
+    }
+    // ──────────────────────────────────────────────────────────────────────
+    // Vista de gestión de planes y precios
+    // ──────────────────────────────────────────────────────────────────────
+    public function planes(): \Illuminate\View\View
+    {
+        $plans = \App\Models\MembershipPlan::orderBy('sort_order')->get();
+        return view('admin.memberships.planes', compact('plans'));
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Actualizar precio y configuración de un plan
+    // ──────────────────────────────────────────────────────────────────────
+    public function updatePlan(Request $request, string $slug): \Illuminate\Http\RedirectResponse
+    {
+        $request->validate([
+            'price_promo'   => ['required', 'numeric', 'min:0'],
+            'price_normal'  => ['required', 'numeric', 'min:0'],
+            'duration_days' => ['nullable', 'integer', 'min:1'],
+            'is_active'     => ['boolean'],
+            'promo_active'  => ['boolean'],
+            'description'   => ['nullable', 'string', 'max:500'],
+        ]);
+
+        \App\Models\MembershipPlan::where('slug', $slug)->update([
+            'price_promo'   => $request->price_promo,
+            'price_normal'  => $request->price_normal,
+            'duration_days' => $request->duration_days,
+            'is_active'     => $request->boolean('is_active'),
+            'promo_active'  => $request->boolean('promo_active'),
+            'description'   => $request->description,
+            'updated_at'    => now(),
+        ]);
+
+        return back()->with('success', "Plan «{$slug}» actualizado correctamente.");
+    }
+
+    // ──────────────────────────────────────────────────────────────────────
+    // Toggle rápido de promoción activa/inactiva
+    // ──────────────────────────────────────────────────────────────────────
+    public function togglePromo(Request $request, string $slug): \Illuminate\Http\JsonResponse
+    {
+        $plan = \App\Models\MembershipPlan::where('slug', $slug)->firstOrFail();
+        $plan->update(['promo_active' => !$plan->promo_active]);
+
+        return response()->json([
+            'ok'          => true,
+            'promo_active' => $plan->fresh()->promo_active,
+        ]);
     }
 }

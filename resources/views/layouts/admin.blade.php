@@ -320,6 +320,12 @@
            class="adm-nav__item {{ request()->routeIs('admin.memberships.*') ? 'active' : '' }}">
             <i class="fas fa-crown"></i> Pagos y membresías
         </a>
+            <a href="{{ route('admin.memberships.planes') }}"
+               class="adm-nav__item {{ request()->routeIs('admin.memberships.planes*') ? 'active' : '' }}"
+               style="padding-left:2.5rem;font-size:.82rem;">
+                <i class="fas fa-tags"></i>
+                <span>Planes y precios</span>
+            </a>
 <div class="adm-nav__section">Contenido</div>
         <a href="{{ route('admin.events.index') }}"
            class="adm-nav__item {{ request()->routeIs('admin.events.*') ? 'active' : '' }}">
@@ -450,6 +456,7 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 </body>
 </html>
+
 
 
 
