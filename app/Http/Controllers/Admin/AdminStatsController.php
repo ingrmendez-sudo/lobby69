@@ -71,7 +71,7 @@ class AdminStatsController extends Controller
             ->where('role', '!=', 'admin')
             ->whereNotNull('membership_started_at')
             ->where('membership_started_at', '>=', now()->subMonths(5))
-            ->whereNotIn('membership_type', ['trial', 'free'])
+            ->whereNotIn('membership_type', ['invitado'])
             ->selectRaw("TO_CHAR(membership_started_at, 'MM/YYYY') as month, count(*) as total")
             ->groupByRaw("TO_CHAR(membership_started_at, 'MM/YYYY'), DATE_TRUNC('month', membership_started_at)")
             ->orderByRaw("DATE_TRUNC('month', membership_started_at)")
@@ -88,18 +88,18 @@ class AdminStatsController extends Controller
             'profile_views'=> DB::table('profile_views')->count(),
         ];
 
-        // ── Conversión trial vs pagados ──
+        // ── Conversión invitado vs pagados ──
         $paidCount  = DB::table('users')->where('role', '!=', 'admin')
-            ->whereNotIn('membership_type', ['trial', 'free'])->count();
-        $trialCount = DB::table('users')->where('role', '!=', 'admin')
-            ->whereIn('membership_type', ['trial', 'free'])->count();
+            ->whereNotIn('membership_type', ['invitado'])->count();
+        $invitadoCount = DB::table('users')->where('role', '!=', 'admin')
+            ->whereIn('membership_type', ['invitado'])->count();
 
         // ── Funnel de conversión ──
         $totalRegistered    = DB::table('users')->where('role', '!=', 'admin')->count();
         $profileCompleted   = DB::table('profiles')->where('profile_completed', true)->count();
         $uploadedPhoto      = DB::table('photos')->distinct('user_id')->count('user_id');
         $paidMembership     = DB::table('users')->where('role', '!=', 'admin')
-            ->whereNotIn('membership_type', ['trial', 'free'])->count();
+            ->whereNotIn('membership_type', ['invitado'])->count();
 
         $funnel = [
             ['label' => 'Registrados',       'value' => $totalRegistered,  'color' => '#6C3FC5'],
@@ -174,7 +174,7 @@ class AdminStatsController extends Controller
             'usersByDay', 'photosByDay', 'viewsByDay', 'viewsByWeek', 'viewsByMonth',
             'viewsThisWeek', 'viewsLastWeek', 'viewsThisMonth', 'viewsLastMonth',
             'membershipStats', 'membershipsByMonth',
-            'totals', 'paidCount', 'trialCount',
+            'totals', 'paidCount', 'invitadoCount',
             'funnel', 'usersByState', 'activityByHour', 'topUploaders',
             'activeUsers7d', 'activeUsers30d', 'totalRegistered'
         ));

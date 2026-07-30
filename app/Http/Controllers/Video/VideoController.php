@@ -121,14 +121,14 @@ class VideoController extends Controller
 
         // Control de acceso por álbum
         $user = auth()->user();
-        if (\->album_type === 'private') {
-            if (!\App\Services\MembershipService::can(\->id, 'can_view_private_photos')) {
+        if ($video->album_type === 'private') {
+            if (!\App\Services\MembershipService::can($user->id, 'can_view_private_photos')) {
                 abort(403, 'Necesitas membresía Connectors o superior para ver videos privados.');
             }
             }
         }
-        if (\->album_type === 'vip') {
-            if (!\App\Services\MembershipService::hasMinLevel(\->id, 'vip_elite')) {
+        if ($video->album_type === 'vip') {
+            if (!\App\Services\MembershipService::hasMinLevel($user->id, 'vip_elite')) {
                 abort(403, 'Necesitas membresía VIP Elite o superior para ver este contenido.');
             }
             }
@@ -194,4 +194,5 @@ class VideoController extends Controller
         }
     }
 }
+
 
