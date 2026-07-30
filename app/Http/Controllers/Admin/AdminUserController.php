@@ -124,17 +124,51 @@ class AdminUserController extends Controller
 
     public function changeMembership(Request $request, $id)
     {
-        $request->validate(['membership_type' => 'required|string']);
-        $expires = null;
-        if (in_array($request->membership_type, ['basic','premium','vip'])) {
-            $expires = now()->addDays(30)->toDateTimeString();
-        }
-        DB::table('users')->whereRaw('id::text = ?', [$id])->update([
-            'membership_type'       => $request->membership_type,
-            'membership_expires_at' => $expires,
-            'membership_started_at' => now(),
+        $request->validate([
+            'tier'          => 'required|string|in:invitado,explorer,connectors,influencer,vip_elite,Fundador',
+            'duration_days' => 'nullable|integer|min:1',
         ]);
-        return back()->with('success', 'Membresía actualizada.');
+
+        $tier         = $request->tier;
+        $durationDays = $request->duration_days ?? 30;
+        $isLifetime   = $tier === 'Fundador';
+        $expires      = $isLifetime ? null : now()->addDays($durationDays)->toDateTimeString();
+
+        // 1. Actualizar users (mantener sincronía)
+        DB::table('users')->whereRaw('id::text = ?', [$id])->update([
+            'membership_type'       => $tier,
+            'membership_expires_at' => $expires,
+            'updated_at'            => now(),
+        ]);
+
+        // 2. Desactivar membresías anteriores
+        DB::table('memberships')
+            ->whereRaw('user_id::text = ?', [$id])
+            ->where('status', 'active')
+            ->update(['status' => 'superseded', 'updated_at' => now()]);
+
+        // 3. Insertar nueva membresía en tabla memberships
+        DB::table('memberships')->insert([
+            'id'             => (string) \Illuminate\Support\Str::uuid(),
+            'user_id'        => $id,
+            'tier'           => $tier,
+            'price'          => 0.00,
+            'currency'       => 'MXN',
+            'payment_method' => 'admin_manual',
+            'transaction_id' => 'ADMIN_' . strtoupper(substr($id, 0, 8)) . '_' . time(),
+            'started_at'     => now(),
+            'expires_at'     => $expires,
+            'auto_renew'     => false,
+            'status'         => 'active',
+            'features'       => null,
+            'created_at'     => now(),
+            'updated_at'     => now(),
+        ]);
+
+        // 4. Invalidar cache de membresía del usuario
+        \App\Services\MembershipService::clearCache($id);
+
+        return back()->with('success', "Membresía actualizada a {$tier}.");
     }
 
     public function resetPassword(Request $request, $id)
@@ -209,3 +243,5 @@ class AdminUserController extends Controller
     }
 
 }
+
+

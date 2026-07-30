@@ -175,7 +175,7 @@ class PhotoController extends Controller
         // Todos los usuarios autenticados pueden ver fotos públicas aprobadas
         // trial = primer mes gratis, tiene acceso a fotos públicas
         $allMembers = ['trial','trial_verified','explorer','connectors',
-                    'influencer','vip_elite','vitalicio','admin'];
+                    'influencer','vip_elite','Fundador','admin'];
 
         $canView = false;
         switch ($photo->album_type) {
@@ -185,12 +185,12 @@ class PhotoController extends Controller
                 break;
             case 'private':
                 $canView = in_array($membershipType,
-                    ['connectors','influencer','vip_elite','vitalicio','admin'])
+                    ['connectors','influencer','vip_elite','Fundador','admin'])
                         && $photo->status === 'approved';
                 break;
             case 'vip':
                 $canView = in_array($membershipType,
-                    ['vip_elite','vitalicio','admin'])
+                    ['vip_elite','Fundador','admin'])
                         && $photo->status === 'approved';
                 break;
         }
@@ -201,6 +201,7 @@ class PhotoController extends Controller
         return redirect($url);
     }
 }
+
 
 
 

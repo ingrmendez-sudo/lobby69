@@ -662,7 +662,7 @@ writeFile($base . '/resources/views/dashboard/index.blade.php', <<<'BLADE'
         'connectors' => ['label'=>'Connectors', 'icon'=>'fa-link',    'color'=>'#34d399'],
         'influencer' => ['label'=>'Influencer', 'icon'=>'fa-star',    'color'=>'#a78bfa'],
         'vip_elite'  => ['label'=>'VIP Elite',  'icon'=>'fa-gem',     'color'=>'#fbbf24'],
-        'vitalicio'  => ['label'=>'Vitalicio',  'icon'=>'fa-crown',   'color'=>'#e056a0'],
+        'Fundador'  => ['label'=>'Fundador',  'icon'=>'fa-crown',   'color'=>'#e056a0'],
     ];
     $mInfo = $memberLabels[$sbMember] ?? $memberLabels['trial'];
     $lastSeen = $sbUser->last_seen_at
@@ -1991,3 +1991,4 @@ echo "  Luego registra el middleware en bootstrap/app.php:\n";
 echo "  'track.seen' => \\App\\Http\\Middleware\\TrackLastSeen::class\n";
 echo "  Y añádelo al grupo 'web' o en las rutas auth.\n";
 echo "════════════════════════════════════════════════════\n";
+

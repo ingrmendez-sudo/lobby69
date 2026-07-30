@@ -64,7 +64,7 @@ class Membership extends Model
      *
      * @param  string       $userId        UUID del usuario (varchar o uuid)
      * @param  string       $tier          Slug del plan
-     * @param  int|null     $durationDays  null = vitalicio
+     * @param  int|null     $durationDays  null = Fundador
      * @param  float        $price
      * @param  string       $paymentMethod
      * @param  string       $transactionId
@@ -135,3 +135,4 @@ class Membership extends Model
         return static::find($newId);
     }
 }
+

@@ -28,7 +28,7 @@ $dashboard = <<<'BLADE'
         'connectors' => ['label'=>'Connectors', 'icon'=>'fa-link',    'color'=>'#34d399', 'bg'=>'rgba(52,211,153,.15)'],
         'influencer' => ['label'=>'Influencer', 'icon'=>'fa-star',    'color'=>'#a78bfa', 'bg'=>'rgba(167,139,250,.15)'],
         'vip_elite'  => ['label'=>'VIP Elite',  'icon'=>'fa-gem',     'color'=>'#fbbf24', 'bg'=>'rgba(251,191,36,.15)'],
-        'vitalicio'  => ['label'=>'Vitalicio',  'icon'=>'fa-crown',   'color'=>'#e056a0', 'bg'=>'rgba(224,86,160,.15)'],
+        'Fundador'  => ['label'=>'Fundador',  'icon'=>'fa-crown',   'color'=>'#e056a0', 'bg'=>'rgba(224,86,160,.15)'],
     ];
     $mCfg = $memberCfg[$sbMember] ?? $memberCfg['trial'];
     $lastSeen = $sbUser->last_seen_at
@@ -1148,3 +1148,4 @@ echo "  Ejecuta:\n";
 echo "  C:\\php\\php.exe artisan view:clear\n";
 echo "  C:\\php\\php.exe artisan serve\n";
 echo "════════════════════════════════════════\n";
+

@@ -42,7 +42,7 @@
         'connectors' => ['label' => 'Connectors', 'icon' => 'fa-link'],
         'influencer' => ['label' => 'Influencer', 'icon' => 'fa-star'],
         'vip_elite'  => ['label' => 'VIP Elite',  'icon' => 'fa-gem'],
-        'vitalicio'  => ['label' => 'Vitalicio',  'icon' => 'fa-crown'],
+        'Fundador'  => ['label' => 'Fundador',  'icon' => 'fa-crown'],
     ];
     $sMembershipInfo = $sMembershipLabels[$sMembership] ?? $sMembershipLabels['trial'];
 @endphp
@@ -78,7 +78,7 @@
                 'connectors'     => 'connectors.png',
                 'influencer'     => 'influencer.png',
                 'vip_elite'      => 'vip-elite.png',
-                'vitalicio'      => 'vitalicio.png',
+                'Fundador'      => 'Fundador.png',
                 default          => 'trial.png',
             };
         @endphp
@@ -410,6 +410,7 @@
         </li>
     </ul>
 </div>
+
 
 
 

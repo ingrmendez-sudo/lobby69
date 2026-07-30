@@ -89,7 +89,7 @@
                     ['code' => 'CONNECTORS', 'name' => 'Connectors', 'desc' => 'Estoy conectado con más gente', 'price' => '299', 'price_normal' => '493', 'duration' => '3 MESES', 'icon' => 'fa-link', 'featured' => false],
                     ['code' => 'INFLUENCER', 'name' => 'Influencer', 'desc' => 'Tengo influencia en la comunidad', 'price' => '599', 'price_normal' => '988', 'duration' => '6 MESES', 'icon' => 'fa-chart-line', 'featured' => false],
                     ['code' => 'VIP_ELITE', 'name' => 'VIP Elite', 'desc' => 'Soy parte de la élite', 'price' => '1,199', 'price_normal' => '1,978', 'duration' => '1 AÑO', 'icon' => 'fa-crown', 'featured' => true],
-                    ['code' => 'VITALICIO', 'name' => 'Vitalicio', 'desc' => 'Fundador de la comunidad Lobby69 (Solo 20 Membresias disponibles)', 'price' => '3,500', 'price_normal' => '5,775', 'duration' => 'PERMANENTE', 'icon' => 'fa-infinity', 'featured' => false],
+                    ['code' => 'Fundador', 'name' => 'Fundador', 'desc' => 'Fundador de la comunidad Lobby69 (Solo 20 Membresias disponibles)', 'price' => '3,500', 'price_normal' => '5,775', 'duration' => 'PERMANENTE', 'icon' => 'fa-infinity', 'featured' => false],
                 ];
             @endphp
 
@@ -128,3 +128,4 @@
     </div>
 </section>
 @endsection
+

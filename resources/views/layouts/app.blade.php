@@ -251,7 +251,7 @@
     .l69-membership-badge--connectors { background: rgba(16,185,129,0.15); color: #34d399; border: 1px solid rgba(16,185,129,0.25); }
     .l69-membership-badge--influencer { background: rgba(139,92,246,0.15); color: #a78bfa; border: 1px solid rgba(139,92,246,0.25); }
     .l69-membership-badge--vip_elite  { background: rgba(245,158,11,0.15); color: #fbbf24; border: 1px solid rgba(245,158,11,0.25); }
-    .l69-membership-badge--vitalicio  { background: linear-gradient(135deg,rgba(192,57,43,0.2),rgba(142,68,173,0.2)); color: #e056a0; border: 1px solid rgba(192,57,43,0.3); }
+    .l69-membership-badge--Fundador  { background: linear-gradient(135deg,rgba(192,57,43,0.2),rgba(142,68,173,0.2)); color: #e056a0; border: 1px solid rgba(192,57,43,0.3); }
 
     /* ── Progress bar de perfil ── */
     .l69-profile-progress {
@@ -537,6 +537,7 @@
     </script>
 </body>
 </html>
+
 
 
 

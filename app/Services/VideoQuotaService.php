@@ -10,7 +10,7 @@ class VideoQuotaService
     /**
      * Duración máxima por sesión según membership_type.
      * Básico / Premium / Premium+ = 30 min
-     * Vitalicio (lifetime)        = 50 min
+     * Fundador (lifetime)        = 50 min
      * Free / null                 = sin acceso
      */
     const SESSION_LIMITS = [
@@ -100,3 +100,4 @@ class VideoQuotaService
         return self::SESSION_LIMITS[$user->membership_type] ?? 0;
     }
 }
+

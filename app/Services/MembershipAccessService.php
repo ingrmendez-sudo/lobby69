@@ -22,7 +22,7 @@ class MembershipAccessService
         'connectors' => 2,
         'influencer' => 3,
         'vip_elite'  => 4,
-        'vitalicio'  => 5,
+        'Fundador'  => 5,
     ];
 
     // Mapa: feature antigua -> key en features JSON de membership_plans
@@ -110,7 +110,7 @@ class MembershipAccessService
             if ($hasAccess) return $plan->slug;
         }
 
-        return 'vitalicio';
+        return 'Fundador';
     }
 
     /** ¿Es un nivel mayor o igual al requerido? */
@@ -161,3 +161,4 @@ class MembershipAccessService
         return array_keys(self::LEVELS);
     }
 }
+

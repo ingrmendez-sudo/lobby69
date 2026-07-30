@@ -33,7 +33,7 @@
                     ${{ number_format($plan->active_price, 0) }} MXN
                 </div>
                 <div style="font-size:.72rem;color:var(--theme-muted);">
-                    {{ $plan->slug === 'vitalicio' ? 'único pago' : 'por mes' }}
+                    {{ $plan->slug === 'Fundador' ? 'único pago' : 'por mes' }}
                 </div>
             </div>
         </div>
@@ -131,3 +131,4 @@
 </div>
 
 @endsection
+

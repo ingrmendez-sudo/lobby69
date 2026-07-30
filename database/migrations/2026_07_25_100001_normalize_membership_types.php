@@ -25,7 +25,7 @@ return new class extends Migration
                 'connectors',
                 'influencer',
                 'vip_elite',
-                'vitalicio'
+                'Fundador'
             ))
         ");
     }
@@ -46,3 +46,4 @@ return new class extends Migration
         ");
     }
 };
+

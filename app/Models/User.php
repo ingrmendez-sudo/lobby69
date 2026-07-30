@@ -113,9 +113,9 @@ class User extends Authenticatable
         return !in_array($this->membershipTier(), ['invitado']);
     }
 
-    public function isVitalicio(): bool
+    public function isFundador(): bool
     {
-        return $this->membershipTier() === 'vitalicio';
+        return $this->membershipTier() === 'Fundador';
     }
 
     public function membershipExpiresSoon(int $days = 7): bool

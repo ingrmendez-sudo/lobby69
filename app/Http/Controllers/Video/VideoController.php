@@ -122,13 +122,13 @@ class VideoController extends Controller
         // Control de acceso por álbum
         $user = auth()->user();
         if ($video->album_type === 'private') {
-            $allowed = ['connectors', 'influencer', 'vip_elite', 'vitalicio'];
+            $allowed = ['connectors', 'influencer', 'vip_elite', 'Fundador'];
             if (!in_array($user->membership_type ?? '', $allowed)) {
                 abort(403, 'Membresía insuficiente.');
             }
         }
         if ($video->album_type === 'vip') {
-            $allowed = ['vip_elite', 'vitalicio'];
+            $allowed = ['vip_elite', 'Fundador'];
             if (!in_array($user->membership_type ?? '', $allowed)) {
                 abort(403, 'Membresía insuficiente.');
             }
@@ -194,3 +194,4 @@ class VideoController extends Controller
         }
     }
 }
+

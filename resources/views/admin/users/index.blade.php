@@ -69,11 +69,12 @@
             <label style="font-size:.72rem;color:var(--theme-muted);display:block;margin-bottom:.2rem;">Membresía</label>
             <select name="membresia" style="width:100%;padding:.4rem .7rem;border-radius:6px;border:1px solid var(--theme-border);background:var(--theme-bg);color:var(--theme-text);font-size:.83rem;">
                 <option value="">Todas</option>
-                <option value="trial"   {{ $membership==='trial'   ?'selected':'' }}>Trial</option>
-                <option value="free"    {{ $membership==='free'    ?'selected':'' }}>Free</option>
-                <option value="basic"   {{ $membership==='basic'   ?'selected':'' }}>Basic</option>
-                <option value="premium" {{ $membership==='premium' ?'selected':'' }}>Premium</option>
-                <option value="vip"     {{ $membership==='vip'     ?'selected':'' }}>VIP</option>
+                <option value="invitado"   {{ $membership==='invitado'   ?'selected':' }}>Invitado</option>
+                <option value="explorer"   {{ $membership==='explorer'   ?'selected':' }}>Explorer</option>
+                <option value="connectors" {{ $membership==='connectors' ?'selected':' }}>Connectors</option>
+                <option value="influencer" {{ $membership==='influencer' ?'selected':' }}>Influencer</option>
+                <option value="vip_elite"  {{ $membership==='vip_elite'  ?'selected':' }}>VIP Elite</option>
+                <option value="Fundador"  {{ $membership==='Fundador'  ?'selected':' }}>Fundador</option>
             </select>
         </div>
         <div style="min-width:130px;">
@@ -152,13 +153,14 @@
                 <td style="padding:.6rem .8rem;">
                     <form method="POST" action="{{ route('admin.users.membership', $user->id) }}">
                         @csrf
-                        <select name="membership_type" onchange="this.form.submit()"
+                        <select name="tier" onchange="this.form.submit()"
                                 style="padding:.22rem .5rem;border-radius:5px;border:1px solid var(--theme-border);background:var(--theme-bg);color:var(--theme-text);font-size:.76rem;cursor:pointer;">
-                            <option value="trial"   {{ $user->membership_type==='trial'   ?'selected':'' }}>Trial</option>
-                            <option value="free"    {{ $user->membership_type==='free'    ?'selected':'' }}>Free</option>
-                            <option value="basic"   {{ $user->membership_type==='basic'   ?'selected':'' }}>Basic</option>
-                            <option value="premium" {{ $user->membership_type==='premium' ?'selected':'' }}>Premium</option>
-                            <option value="vip"     {{ $user->membership_type==='vip'     ?'selected':'' }}>VIP</option>
+                            <option value="invitado"   {{ $user->membership_type==='invitado'   ?'selected':' }}>Invitado</option>
+                            <option value="explorer"   {{ $user->membership_type==='explorer'   ?'selected':' }}>Explorer</option>
+                            <option value="connectors" {{ $user->membership_type==='connectors' ?'selected':' }}>Connectors</option>
+                            <option value="influencer" {{ $user->membership_type==='influencer' ?'selected':' }}>Influencer</option>
+                            <option value="vip_elite"  {{ $user->membership_type==='vip_elite'  ?'selected':' }}>VIP Elite</option>
+                            <option value="Fundador"  {{ $user->membership_type==='Fundador'  ?'selected':' }}>Fundador</option>
                         </select>
                     </form>
                     @if($user->membership_expires_at)
@@ -360,3 +362,6 @@ document.getElementById('modalDetalle').addEventListener('click', function(e) {
 });
 </script>
 @endpush
+
+
+

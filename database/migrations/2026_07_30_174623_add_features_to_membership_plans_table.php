@@ -80,7 +80,7 @@ return new class extends Migration
                 'priority_support'         => false,
                 'grace_period_hours'       => 0,
             ],
-            'vitalicio' => [
+            'Fundador' => [
                 'max_photos'               => 9999,
                 'max_videos'               => 9999,
                 'max_messages_day'         => 9999,
@@ -109,3 +109,4 @@ return new class extends Migration
         });
     }
 };
+

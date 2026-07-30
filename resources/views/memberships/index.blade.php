@@ -62,17 +62,17 @@
 
 @php
     $isCurrent  = ($currentTier === $plan->slug);
-    $isVitalicio = ($plan->slug === 'vitalicio');
+    $isFundador = ($plan->slug === 'Fundador');
     $borderColor = $isCurrent  ? 'rgba(34,197,94,.4)'
-                 : ($isVitalicio ? 'rgba(192,57,43,.5)'
+                 : ($isFundador ? 'rgba(192,57,43,.5)'
                  : 'rgba(180,60,120,.18)');
-    $glowColor   = $isVitalicio ? '0 0 24px rgba(192,57,43,.15)' : 'none';
+    $glowColor   = $isFundador ? '0 0 24px rgba(192,57,43,.15)' : 'none';
 @endphp
 
 <div style="background:var(--theme-surface-2);border:1.5px solid {{ $borderColor }};
             border-radius:14px;padding:1.25rem;position:relative;
             box-shadow:{{ $glowColor }};
-            {{ $isVitalicio ? 'background:linear-gradient(145deg,rgba(192,57,43,.08),rgba(142,68,173,.08));' : '' }}">
+            {{ $isFundador ? 'background:linear-gradient(145deg,rgba(192,57,43,.08),rgba(142,68,173,.08));' : '' }}">
 
     {{-- Badge "Actual" --}}
     @if($isCurrent)
@@ -81,7 +81,7 @@
                 border-radius:20px;font-size:.68rem;font-weight:700;padding:.2rem .55rem;">
         <i class="fas fa-check"></i> Actual
     </div>
-    @elseif($isVitalicio)
+    @elseif($isFundador)
     <div style="position:absolute;top:.75rem;right:.75rem;
                 background:linear-gradient(90deg,rgba(192,57,43,.25),rgba(142,68,173,.25));
                 color:#e056a0;border:1px solid rgba(192,57,43,.3);
@@ -184,7 +184,7 @@
             'connectors' => 'linear-gradient(135deg,#8b5cf6,#a855f7)',
             'influencer' => 'linear-gradient(135deg,#ec4899,#f43f5e)',
             'vip_elite'  => 'linear-gradient(135deg,#f59e0b,#f97316)',
-            'vitalicio'  => 'linear-gradient(135deg,#b43c78,#7c3aed)',
+            'Fundador'  => 'linear-gradient(135deg,#b43c78,#7c3aed)',
         ];
         $ctaGrad = $ctaGradients[$plan->slug] ?? 'linear-gradient(135deg,var(--theme-accent),#7c3aed)';
     @endphp
@@ -227,3 +227,4 @@
 </div>
 
 @endsection
+

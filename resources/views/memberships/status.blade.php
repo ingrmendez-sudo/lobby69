@@ -15,7 +15,7 @@ $tierImages = [
     'connectors' => '/img/membership/connectors.png',
     'influencer' => '/img/membership/influencer.png',
     'vip_elite'  => '/img/membership/vip-elite.png',
-    'vitalicio'  => '/img/membership/vitalicio.png',
+    'Fundador'  => '/img/membership/Fundador.png',
 ];
 
 // Mapa de colores por tier
@@ -25,7 +25,7 @@ $tierColors = [
     'connectors' => '#8b5cf6',
     'influencer' => '#ec4899',
     'vip_elite'  => '#f59e0b',
-    'vitalicio'  => '#ef4444',
+    'Fundador'  => '#ef4444',
 ];
 
 // Membresía activa actual del usuario
@@ -118,7 +118,7 @@ $currentImage    = $tierImages[$currentTier] ?? null;
                             @endif
                         @else
                             <span style="color:{{ $currentColor }};">
-                                <i class="fas fa-infinity"></i> Vitalicio
+                                <i class="fas fa-infinity"></i> Fundador
                             </span>
                         @endif
                     </div>
@@ -249,7 +249,7 @@ $currentImage    = $tierImages[$currentTier] ?? null;
                 @elseif(! auth()->user()->membership_expires_at && $pTier === auth()->user()->membership_type)
                 <span style="font-size:.72rem;color:{{ $pColor }};
                              background:{{ $pColor }}15;padding:.2rem .5rem;border-radius:6px;">
-                    <i class="fas fa-infinity"></i> Vitalicio
+                    <i class="fas fa-infinity"></i> Fundador
                 </span>
                 @endif
             </div>
@@ -307,3 +307,4 @@ $currentImage    = $tierImages[$currentTier] ?? null;
 @endif
 
 @endsection
+

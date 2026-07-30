@@ -156,14 +156,14 @@ class PhotoController extends Controller
         $canView = false;
         switch ($photo->album_type) {
             case 'public':
-                $canView = in_array($membershipType, ['trial_verified','explorer','connectors','influencer','vip_elite','vitalicio','admin']);
+                $canView = in_array($membershipType, ['trial_verified','explorer','connectors','influencer','vip_elite','Fundador','admin']);
                 break;
             case 'private':
-                $canView = in_array($membershipType, ['connectors','influencer','vip_elite','vitalicio','admin']);
+                $canView = in_array($membershipType, ['connectors','influencer','vip_elite','Fundador','admin']);
                 // También si son amigos (fase 9)
                 break;
             case 'vip':
-                $canView = in_array($membershipType, ['vip_elite','vitalicio','admin']);
+                $canView = in_array($membershipType, ['vip_elite','Fundador','admin']);
                 break;
         }
 
@@ -847,3 +847,4 @@ foreach ($files as $path => $content) {
 
 echo "\n📊 Resultado: $ok OK · $fail errores\n";
 echo "\nEjecuta: C:\\php\\php.exe fix_fase6_routes.php\n";
+

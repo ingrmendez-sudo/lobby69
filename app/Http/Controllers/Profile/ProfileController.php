@@ -413,7 +413,7 @@ class ProfileController extends Controller
             'connectors' => asset('img/membership/connectors.png'),
             'influencer' => asset('img/membership/influencer.png'),
             'vip_elite'  => asset('img/membership/vip-elite.png'),
-            'vitalicio'  => asset('img/membership/vitalicio.png'),
+            'Fundador'  => asset('img/membership/Fundador.png'),
             default      => asset('img/membership/trial.png'),
         };
 
@@ -509,3 +509,4 @@ class ProfileController extends Controller
         return view('profiles.visitors', compact('userProfile', 'visitors', 'totalVisitors'));
     }
 }
+

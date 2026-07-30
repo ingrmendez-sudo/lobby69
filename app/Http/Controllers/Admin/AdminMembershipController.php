@@ -84,7 +84,7 @@ class AdminMembershipController extends Controller
 
         if ($plan) {
             // Calcular duración en días según el plan
-            $durationDays = ($plan->slug === 'vitalicio') ? null : ($plan->duration_days ?? 30);
+            $durationDays = ($plan->slug === 'Fundador') ? null : ($plan->duration_days ?? 30);
 
             // Llamar correctamente: (string userId, string tier, ?int days, float price)
             \App\Models\Membership::activateForUser(
@@ -97,7 +97,7 @@ class AdminMembershipController extends Controller
             );
         } else {
             // Fallback: plan no encontrado en membership_plans
-            $expiry = ($payment->requested_membership === 'vitalicio')
+            $expiry = ($payment->requested_membership === 'Fundador')
                 ? null
                 : now()->addDays(30);
 
@@ -235,3 +235,4 @@ class AdminMembershipController extends Controller
         ]);
     }
 }
+
