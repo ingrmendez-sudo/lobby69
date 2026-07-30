@@ -32,15 +32,15 @@
     </div>
     <div class="adm-card" style="text-align:center;padding:.9rem;">
         <div style="font-size:1.5rem;font-weight:700;color:#f59e0b;">{{ $stats->trial }}</div>
-        <div style="font-size:.72rem;color:var(--theme-muted);text-transform:uppercase;">Trial</div>
+        <div style="font-size:.72rem;color:var(--theme-muted);text-transform:uppercase;">Invitado</div>
     </div>
     <div class="adm-card" style="text-align:center;padding:.9rem;">
         <div style="font-size:1.5rem;font-weight:700;color:#a855f7;">{{ $stats->premium }}</div>
-        <div style="font-size:.72rem;color:var(--theme-muted);text-transform:uppercase;">Premium</div>
+        <div style="font-size:.72rem;color:var(--theme-muted);text-transform:uppercase;">VIP Elite</div>
     </div>
     <div class="adm-card" style="text-align:center;padding:.9rem;">
         <div style="font-size:1.5rem;font-weight:700;color:#ec4899;">{{ $stats->vip }}</div>
-        <div style="font-size:.72rem;color:var(--theme-muted);text-transform:uppercase;">VIP</div>
+        <div style="font-size:.72rem;color:var(--theme-muted);text-transform:uppercase;">Fundador</div>
     </div>
     <div class="adm-card" style="text-align:center;padding:.9rem;">
         <div style="font-size:1.5rem;font-weight:700;color:#06b6d4;">{{ $stats->nuevos_semana }}</div>
