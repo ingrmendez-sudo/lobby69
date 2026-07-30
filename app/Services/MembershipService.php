@@ -66,7 +66,7 @@ class MembershipService
 
     /**
      * Verificar si el usuario excedió un límite diario.
-     * Uso: MembershipService::exceededDaily($user->id, 'max_messages_day', $currentCount)
+     * Uso: MembershipService::exceededDaily($user->id, 'max_messages_day')
      */
     public static function exceededDaily($userId, string $limitKey): bool
     {
@@ -82,7 +82,6 @@ class MembershipService
         return $count >= $limit;
     }
 
-        $count = DB::table('messages')
     /**
      * Obtener el slug/tier del plan activo.
      */
