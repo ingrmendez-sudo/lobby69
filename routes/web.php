@@ -29,9 +29,9 @@ use App\Http\Controllers\Admin\AdminMembershipController;
 
 // ── Landing ───────────────────────────────────────────────────────────────────
 Route::get('/', function () {
-    return Auth::check() ? redirect()->route('dashboard') : redirect()->route('login');
+    if (Auth::check()) return redirect()->route('dashboard');
+    return view('auth.landing');
 })->name('landing');
-
 // ── Auth ──────────────────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('/login',  [LoginController::class, 'show'])->name('login');

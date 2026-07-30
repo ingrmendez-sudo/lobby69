@@ -107,59 +107,71 @@ class VideoController extends Controller
     public function serve(int $id)
     {
         $userId = auth()->id();
-
-        $video = DB::table('videos')->where('id', $id)->first();
+        $video  = DB::table('videos')->where('id', $id)->first();
 
         if (!$video) abort(404);
 
-        // Solo el dueño puede ver videos pendientes o rechazados
         if ($video->status !== 'approved') {
-            if ((string)$video->user_id !== (string)$userId) {
-                abort(403);
-            }
+            if ((string)$video->user_id !== (string)$userId) abort(403);
         }
 
-        // Control de acceso por álbum
         $user = auth()->user();
         if ($video->album_type === 'private') {
-            if (!\App\Services\MembershipService::can($user->id, 'can_view_private_photos')) {
-                abort(403, 'Necesitas membresía Connectors o superior para ver videos privados.');
-            }
+            if (!\App\Services\MembershipService::can($user->id, 'can_view_private_photos'))
+                abort(403, 'Necesitas membresia Connectors o superior.');
         }
         if ($video->album_type === 'vip') {
-            if (!\App\Services\MembershipService::hasMinLevel($user->id, 'vip_elite')) {
-                abort(403, 'Necesitas membresía VIP Elite o superior para ver este contenido.');
-            }
+            if (!\App\Services\MembershipService::hasMinLevel($user->id, 'vip_elite'))
+                abort(403, 'Necesitas membresia VIP Elite o superior.');
         }
 
-        if (!Storage::disk('private')->exists($video->file_path)) {
-            abort(404, 'Archivo no encontrado.');
-        }
+        $fullPath = storage_path('app/private/' . $video->file_path);
+        if (!file_exists($fullPath)) abort(404, 'Archivo no encontrado.');
 
-        // Incrementar vistas solo en videos aprobados
         if ($video->status === 'approved') {
             DB::table('videos')->where('id', $id)->increment('views_count');
         }
 
-        $ext      = pathinfo($video->file_path, PATHINFO_EXTENSION);
-        $mimeMap  = [
-            'mp4'  => 'video/mp4',
-            'mov'  => 'video/quicktime',
-            'avi'  => 'video/x-msvideo',
-            'webm' => 'video/webm',
-        ];
-        $mimeType = $mimeMap[strtolower($ext)] ?? 'video/mp4';
+        $ext      = strtolower(pathinfo($video->file_path, PATHINFO_EXTENSION));
+        $mimeMap  = ['mp4'=>'video/mp4','mov'=>'video/quicktime','avi'=>'video/x-msvideo','webm'=>'video/webm'];
+        $mimeType = $mimeMap[$ext] ?? 'video/mp4';
+        $fileSize = filesize($fullPath);
 
-        return response()->stream(function () use ($video) {
-            $stream = Storage::disk('private')->readStream($video->file_path);
-            fpassthru($stream);
-            if (is_resource($stream)) fclose($stream);
-        }, 200, [
+        // HTTP Range Request support (streaming real)
+        $start = 0;
+        $end   = $fileSize - 1;
+        $status = 200;
+        $headers = [
             'Content-Type'        => $mimeType,
             'Content-Disposition' => 'inline',
-            'Cache-Control'       => 'no-store',
             'Accept-Ranges'       => 'bytes',
-        ]);
+            'Cache-Control'       => 'private, max-age=3600',
+        ];
+
+        if (request()->hasHeader('Range')) {
+            $range = request()->header('Range');
+            preg_match('/bytes=(\d+)-(\d*)/', $range, $matches);
+            $start  = (int) $matches[1];
+            $end    = !empty($matches[2]) ? (int)$matches[2] : $fileSize - 1;
+            $status = 206;
+            $headers['Content-Range']  = "bytes {$start}-{$end}/{$fileSize}";
+            $headers['Content-Length'] = $end - $start + 1;
+        } else {
+            $headers['Content-Length'] = $fileSize;
+        }
+
+        return response()->stream(function () use ($fullPath, $start, $end) {
+            $fp = fopen($fullPath, 'rb');
+            fseek($fp, $start);
+            $remaining = $end - $start + 1;
+            while (!feof($fp) && $remaining > 0) {
+                $chunk = min(8192, $remaining);
+                echo fread($fp, $chunk);
+                $remaining -= $chunk;
+                flush();
+            }
+            fclose($fp);
+        }, $status, $headers);
     }
 
     // ── Eliminar video ──
