@@ -50,7 +50,7 @@
         <div>
           <strong>Escribe en un papel:</strong>
           <div style="background:#f8fafc;border:2px dashed #8b5cf6;border-radius:8px;padding:.75rem 1rem;margin-top:.5rem;font-family:monospace;font-size:1rem;text-align:center;color:#6d28d9;">
-            LOBBY69 · @{{ 'TuNick' }} · {{ date('d/m/Y') }}
+            LOBBY69 · {{ $user->nickname ?? $user->username ?? 'Usuario' }} · {{ date('d/m/Y') }}
           </div>
           <p style="font-size:.85rem;color:#6b7280;margin-top:.4rem;">Escribe exactamente ese texto con bolígrafo, letra clara y legible.</p>
         </div>
@@ -88,6 +88,12 @@
       📸 Subir foto de verificación
       @if($attemptNumber > 1)
         <span style="font-size:.8rem;color:#f59e0b;font-weight:400;">(Intento #{{ $attemptNumber }})</span>
+  @else
+  <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:16px;padding:2rem;margin-bottom:1.5rem;text-align:center;">
+    <div style="font-size:2.5rem;margin-bottom:.5rem;">✅</div>
+    <h2 style="font-size:1.1rem;font-weight:700;color:#166534;margin-bottom:.5rem;">Identidad ya verificada</h2>
+    <p style="color:#15803d;font-size:.95rem;margin:0;">Tu cuenta ha sido verificada correctamente. No necesitas subir otra foto.</p>
+  </div>
       @endif
     </h2>
 

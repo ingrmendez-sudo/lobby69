@@ -33,23 +33,7 @@
 </style>
 {{-- Sin sidebar derecho en esta página — el split-view ocupa todo el ancho --}}
 
-/* ══════════════════════════════════════
-   MODAL UPGRADE — Limite de mensajes
-   ══════════════════════════════════════ */
-#upgradeOverlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    z-index: 9999;
-    background: rgba(10, 10, 20, 0.85);
-    backdrop-filter: blur(6px);
-    align-items: center;
-    justify-content: center;
-    padding: 1rem;
-}
-#upgradeOverlay.is-visible {
-    display: flex;
-}
+<style>
 .upgrade-card {
     background: linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
     border: 1px solid rgba(139, 92, 246, 0.3);
@@ -167,6 +151,7 @@
     transition: color 0.2s;
 }
 .upgrade-dismiss:hover { color: rgba(255,255,255,0.7); }
+</style>
 @endpush
 
 @push('styles')
