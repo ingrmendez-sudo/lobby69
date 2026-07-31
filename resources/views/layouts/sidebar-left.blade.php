@@ -3,7 +3,7 @@
     $sProfile = $sUser->profile ?? null;
     $sNick    = $sProfile?->nickname ?? $sUser->name ?? 'Usuario';
     $sMembership = $sUser->membership_type ?? 'trial';
-    $sVerified   = $sUser->identity_verified ?? false;
+    $sVerified   = ($sUser->verification_status ?? '') === 'approved';
     $sRoute      = request()->route()?->getName() ?? '';
     $sActive     = fn(string $r) => str_starts_with($sRoute, $r) ? 'is-active' : '';
 

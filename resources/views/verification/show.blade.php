@@ -88,25 +88,16 @@
       📸 Subir foto de verificación
       @if($attemptNumber > 1)
         <span style="font-size:.8rem;color:#f59e0b;font-weight:400;">(Intento #{{ $attemptNumber }})</span>
-  @else
-  <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:16px;padding:2rem;margin-bottom:1.5rem;text-align:center;">
-    <div style="font-size:2.5rem;margin-bottom:.5rem;">✅</div>
-    <h2 style="font-size:1.1rem;font-weight:700;color:#166534;margin-bottom:.5rem;">Identidad ya verificada</h2>
-    <p style="color:#15803d;font-size:.95rem;margin:0;">Tu cuenta ha sido verificada correctamente. No necesitas subir otra foto.</p>
-  </div>
       @endif
     </h2>
-
     <form method="POST" action="{{ route('verification.store') }}" enctype="multipart/form-data" id="verificationForm">
       @csrf
-
       {{-- Preview de imagen --}}
       <div id="previewContainer" style="display:none;margin-bottom:1rem;text-align:center;">
         <img id="previewImg" src="" alt="Preview"
              style="max-width:100%;max-height:300px;border-radius:10px;border:2px solid #8b5cf6;">
         <p style="font-size:.8rem;color:#6b7280;margin-top:.5rem;">Vista previa de tu foto</p>
       </div>
-
       <div style="border:2px dashed #e5e7eb;border-radius:10px;padding:2rem;text-align:center;cursor:pointer;transition:border-color .2s;"
            id="dropzone"
            onclick="document.getElementById('selfieInput').click()"
@@ -121,12 +112,17 @@
         <input type="file" id="selfieInput" name="selfie" accept="image/jpeg,image/png"
                style="display:none;" onchange="previewImage(this)">
       </div>
-
       <button type="submit" id="submitBtn"
               style="width:100%;margin-top:1.25rem;padding:1rem;background:linear-gradient(135deg,#8b5cf6,#ec4899);color:white;border:none;border-radius:10px;font-size:1rem;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.5rem;">
         🛡️ Enviar para verificación
       </button>
     </form>
+  </div>
+  @else
+  <div style="background:#f0fdf4;border:1.5px solid #86efac;border-radius:16px;padding:2rem;margin-bottom:1.5rem;text-align:center;">
+    <div style="font-size:2.5rem;margin-bottom:.5rem;">✅</div>
+    <h2 style="font-size:1.1rem;font-weight:700;color:#166534;margin-bottom:.5rem;">Identidad ya verificada</h2>
+    <p style="color:#15803d;font-size:.95rem;margin:0;">Tu cuenta ha sido verificada correctamente. No necesitas subir otra foto.</p>
   </div>
   @endif
 

@@ -134,7 +134,7 @@
 
 {{-- Verificación pendiente si aplica --}}
 @php $rUser = auth()->user(); @endphp
-@if(!($rUser->identity_verified ?? false))
+@if(!(($rUser->verification_status ?? '') === 'approved'))
 <div class="l69-sidebar-card" style="margin-top:.75rem;border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.05);">
     <div style="display:flex;align-items:flex-start;gap:.6rem;">
         <i class="fas fa-exclamation-triangle" style="color:#f59e0b;margin-top:.1rem;flex-shrink:0;"></i>

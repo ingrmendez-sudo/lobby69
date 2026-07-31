@@ -47,7 +47,7 @@
         </div>
         <div class="l69-stat">
             <div class="l69-stat__value" style="font-size:1rem;">
-                @if($rUser->identity_verified ?? false)
+                @if(($rUser->verification_status ?? '') === 'approved')
                     <i class="fas fa-check-circle" style="color:#27ae60;"></i>
                 @else
                     <i class="fas fa-clock" style="color:#f59e0b;"></i>
@@ -178,7 +178,7 @@
         <i class="fas fa-bolt"></i> Accesos Rápidos
     </div>
     <div style="display:flex;flex-direction:column;gap:.4rem;">
-        @if(!($rUser->identity_verified ?? false))
+        @if(!(($rUser->verification_status ?? '') === 'approved'))
         <a href="{{ route('verification.show') }}" class="l69-quick-btn"
            style="border-color:rgba(245,158,11,.35);color:#fbbf24;">
             <i class="fas fa-id-card"></i> Verificar identidad
@@ -202,7 +202,7 @@
 </div>
 @endif
 
-@if(!($rUser->identity_verified ?? false))
+@if(!(($rUser->verification_status ?? '') === 'approved'))
 <div class="l69-sidebar-card"
      style="border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.05);">
     <div style="display:flex;align-items:flex-start;gap:.6rem;">
