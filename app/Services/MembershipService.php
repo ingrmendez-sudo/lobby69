@@ -15,7 +15,7 @@ class MembershipService
     {
         return Cache::remember("membership_plan_{$userId}", 300, function () use ($userId) {
 
-            // Buscar membresía activa (usa columna 'tier', no 'plan_slug')
+            // Prioridad 1: tabla memberships (suscripción activa)
             $membership = DB::table('memberships')
                 ->where('user_id', $userId)
                 ->where('status', 'active')
@@ -23,13 +23,16 @@ class MembershipService
                 ->orderByDesc('created_at')
                 ->first();
 
-            $slug = $membership->tier ?? 'invitado';
+            // Prioridad 2: users.membership_type como fallback
+            $userMembership = DB::table('users')->where('id', $userId)->value('membership_type');
 
-            // Obtener features del plan maestro (membership_plans)
-            $plan = DB::table('membership_plans')
-                ->where('slug', $slug)
-                ->first();
+            // Usar el tier más alto entre memberships y users
+            $levels = ['invitado'=>0,'trial'=>0,'explorer'=>1,'connectors'=>2,'influencer'=>3,'vip_elite'=>4,'fundador'=>5];
+            $tierA  = $membership->tier ?? 'invitado';
+            $tierB  = $userMembership ?? 'invitado';
+            $slug   = ($levels[$tierA] ?? 0) >= ($levels[$tierB] ?? 0) ? $tierA : $tierB;
 
+            $plan = DB::table('membership_plans')->where('slug', $slug)->first();
             if (!$plan) {
                 $plan = DB::table('membership_plans')->where('slug', 'invitado')->first();
                 $slug = 'invitado';
@@ -37,10 +40,11 @@ class MembershipService
 
             $features = json_decode($plan->features ?? '{}', true) ?? [];
 
-            return (object) array_merge((array) $plan, [
-                'features'    => $features,
-                'active_slug' => $slug,
-            ]);
+            return (object) [
+                'slug'     => $slug,
+                'features' => $features,
+                'plan'     => $plan,
+            ];
         });
     }
 
@@ -50,8 +54,11 @@ class MembershipService
      */
     public static function can($userId, string $permission): bool
     {
-        $plan = self::getPlan($userId);
-        return (bool) ($plan->features[$permission] ?? false);
+        $plan     = self::getPlan($userId);
+        $features = is_string($plan->features)
+            ? json_decode($plan->features, true)
+            : (array) $plan->features;
+        return (bool) ($features[$permission] ?? false);
     }
 
     /**
