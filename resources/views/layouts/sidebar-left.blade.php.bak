@@ -54,7 +54,7 @@
             <img loading="eager" src="{{ $sAvatar }}"
                  alt="{{ $sNick }}"
                  class="l69-mini-profile__avatar"
-                     onerror="this.src=this.dataset.fallback"
+                 onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
             @if($sVerified)
             <div class="l69-mini-profile__verified" title="Verificado">
                 <i class="fas fa-check"></i>
@@ -126,28 +126,36 @@
         <div style="display:flex;flex-direction:column;gap:.5rem;">
             @foreach($sWhoViewed->take(5) as $visitor)
             @php
-                $vNick   = $visitor->nickname ?? 'Usuario';
-                $vAvatar = null;
-                if (!empty($visitor->avatar_photo_id)) {
-                    try {
-                        $vAvatar = route('photos.serve', $visitor->avatar_photo_id);
-                    } catch(\Exception $e) {}
-                }
-                if (!$vAvatar && !empty($visitor->avatar_url)) {
-                    $vAvatar = $visitor->avatar_url;
-                }
-                $vTime = !empty($visitor->visited_at)
-                    ? \Carbon\Carbon::parse($visitor->visited_at)->diffForHumans()
+                $vProfile = $visitor->profile;
+                $vNick    = $vProfile?->nickname ?? 'Usuario';
+                $vAvatar  = null;
+                try {
+                    $vAvatarPhoto = \Illuminate\Support\Facades\DB::table('photos')
+                        ->whereRaw('user_id::text = ?', [$visitor->id])
+                        ->where('is_profile_photo', true)
+                        ->where('status', 'approved')
+                        ->first();
+                    if (!$vAvatarPhoto) {
+                        $vAvatarPhoto = \Illuminate\Support\Facades\DB::table('photos')
+                            ->whereRaw('user_id::text = ?', [$visitor->id])
+                            ->where('album_type', 'public')
+                            ->where('status', 'approved')
+                            ->orderBy('sort_order')
+                            ->first();
+                    }
+                    $vAvatar = $vAvatarPhoto ? route('photos.serve', $vAvatarPhoto->id) : null;
+                } catch(\Exception $e) {}
+                $vTime = $visitor->last_seen_at
+                    ? \Carbon\Carbon::parse($visitor->last_seen_at)->diffForHumans()
                     : '';
             @endphp
             <div style="display:flex;align-items:center;gap:.6rem;">
-                <img loading="lazy"
-                     src="{{ $vAvatar ?? asset('img/default-avatar.svg') }}" data-fallback="{{ asset('img/default-avatar.svg') }}"
+                <img loading="lazy" src="{{ $vAvatar ?? asset('img/default-avatar.svg') }}"
                      style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;"
-                     onerror="this.src=this.dataset.fallback">
+                     onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
                 <div style="min-width:0;flex:1;">
-                    @if(!empty($visitor->nickname))
-                    <a href="{{ route('profile.show', $visitor->nickname) }}"
+                    @if($vProfile?->nickname)
+                    <a href="{{ route('profile.show', $vProfile->nickname) }}"
                        style="font-size:.82rem;font-weight:600;color:var(--theme-text);
                               text-decoration:none;display:block;
                               white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
@@ -166,6 +174,7 @@
                 </div>
             </div>
             @endforeach
+        </div>
         @if($sWhoViewedCount > 5)
         <a href="#" style="display:block;text-align:center;font-size:.78rem;
                            color:rgba(180,60,120,.8);margin-top:.75rem;
@@ -198,28 +207,33 @@
         <div style="display:flex;flex-direction:column;gap:.5rem;">
             @foreach($sIViewed->take(5) as $visited)
             @php
-                $vdNick   = $visited->nickname ?? 'Usuario';
-                $vdAvatar = null;
-                if (!empty($visited->avatar_photo_id)) {
-                    try {
-                        $vdAvatar = route('photos.serve', $visited->avatar_photo_id);
-                    } catch(\Exception $e) {}
-                }
-                if (!$vdAvatar && !empty($visited->avatar_url)) {
-                    $vdAvatar = $visited->avatar_url;
-                }
-                $vdTime = !empty($visited->visited_at)
-                    ? \Carbon\Carbon::parse($visited->visited_at)->diffForHumans()
-                    : '';
+                $vdProfile = $visited->profile;
+                $vdNick    = $vdProfile?->nickname ?? 'Usuario';
+                $vdAvatar  = null;
+                try {
+                    $vdAvatarPhoto = \Illuminate\Support\Facades\DB::table('photos')
+                        ->whereRaw('user_id::text = ?', [$visited->id])
+                        ->where('is_profile_photo', true)
+                        ->where('status', 'approved')
+                        ->first();
+                    if (!$vdAvatarPhoto) {
+                        $vdAvatarPhoto = \Illuminate\Support\Facades\DB::table('photos')
+                            ->whereRaw('user_id::text = ?', [$visited->id])
+                            ->where('album_type', 'public')
+                            ->where('status', 'approved')
+                            ->orderBy('sort_order')
+                            ->first();
+                    }
+                    $vdAvatar = $vdAvatarPhoto ? route('photos.serve', $vdAvatarPhoto->id) : null;
+                } catch(\Exception $e) {}
             @endphp
             <div style="display:flex;align-items:center;gap:.6rem;">
-                <img loading="lazy"
-                     src="{{ $vdAvatar ?? asset('img/default-avatar.svg') }}" data-fallback="{{ asset('img/default-avatar.svg') }}"
+                <img loading="lazy" src="{{ $vdAvatar ?? asset('img/default-avatar.svg') }}"
                      style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;"
-                     onerror="this.src=this.dataset.fallback">
+                     onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
                 <div style="min-width:0;flex:1;">
-                    @if(!empty($visited->nickname))
-                    <a href="{{ route('profile.show', $visited->nickname) }}"
+                    @if($vdProfile?->nickname)
+                    <a href="{{ route('profile.show', $vdProfile->nickname) }}"
                        style="font-size:.82rem;font-weight:600;color:var(--theme-text);
                               text-decoration:none;display:block;
                               white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
@@ -230,22 +244,17 @@
                         {{ $vdNick }}
                     </span>
                     @endif
-                    @if($vdTime)
-                    <span style="font-size:.72rem;color:var(--theme-muted,#9ca3af);">
-                        {{ $vdTime }}
-                    </span>
-                    @endif
                 </div>
             </div>
             @endforeach
+        </div>
         @if($sIViewedCount > 5)
-        <a href="{{ route('profile.visitors') }}" style="display:block;text-align:center;font-size:.78rem;
+        <a href="#" style="display:block;text-align:center;font-size:.78rem;
                            color:rgba(180,60,120,.8);margin-top:.75rem;
                            text-decoration:none;font-weight:600;">
             Ver historial completo →
         </a>
         @endif
-        </div>
     @endif
 </div>
 

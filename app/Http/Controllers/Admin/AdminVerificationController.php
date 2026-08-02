@@ -75,6 +75,12 @@ class AdminVerificationController extends Controller
             'updated_at'          => Carbon::now(),
         ]);
 
+        // Sincronizar verified_profile en profiles
+        DB::table('profiles')->whereRaw('user_id::text = ?', [(string) $verification->user_id])->update([
+            'verified_profile' => true,
+            'updated_at'       => Carbon::now(),
+        ]);
+
         // Generar código de referido si no tiene
         $user = DB::table('users')->where('id', $verification->user_id)->first();
         if (!$user->referral_code) {
@@ -112,6 +118,12 @@ class AdminVerificationController extends Controller
         DB::table('users')->where('id', $verification->user_id)->update([
             'verification_status' => 'rejected',
             'updated_at'          => Carbon::now(),
+        ]);
+
+        // Limpiar verified_profile en profiles
+        DB::table('profiles')->whereRaw('user_id::text = ?', [(string) $verification->user_id])->update([
+            'verified_profile' => false,
+            'updated_at'       => Carbon::now(),
         ]);
 
         return redirect()->route('admin.verifications.index')

@@ -1,3 +1,4 @@
+
 @extends('layouts.app')
 
 @section('title', 'Galería de Videos — LOBBY69')
@@ -74,9 +75,13 @@
     color:var(--text-main,#444); text-decoration:none; transition:background .15s;
 }
 .vg-pag .active, .vg-pag a:hover { background:var(--bs-pink,#e91e8c); color:#fff; border-color:transparent; }
+/* ── Modal ── */
 #vgm { display:none; position:fixed; inset:0; z-index:9999; background:rgba(0,0,0,.75); align-items:center; justify-content:center; }
 #vgm.open { display:flex; }
 .vgm-box {
+    background:var(--card-bg,#fff); color:var(--text-main,#222); border-radius:12px;
+    width:min(92vw,780px); max-height:92vh;
+    display:flex; flex-direction:column; overflow:hidden; box-shadow:0 8px 40px rgba(0,0,0,.7);
     background:var(--card-bg,#fff); border-radius:16px; overflow:hidden;
     width:min(760px,94vw); max-height:88vh;
     display:flex; flex-direction:column; box-shadow:0 20px 60px rgba(0,0,0,.4);
@@ -116,57 +121,14 @@
     border-radius:20px; padding:6px 16px; cursor:pointer; font-size:.85rem;
     min-width:72px; display:flex; align-items:center; justify-content:center; gap:4px;
 }
+@keyframes vg-spin { to { transform: rotate(360deg); } }
 .vgm-feedback {
     font-size:.78rem; padding:.35rem .7rem; border-radius:8px; margin-top:.3rem;
     display:flex; align-items:center; gap:.4rem;
 }
 .vgm-feedback.ok  { background:#e8f5e9; color:#2e7d32; }
 .vgm-feedback.err { background:#fce4ec; color:#c62828; }
-
-/* ── Hover preview: spinner de carga sobre la tarjeta ── */
-.vg-thumb--hoverable .vg-hover-spinner {
-    display: none;
-    position: absolute; top: 50%; left: 50%;
-    transform: translate(-50%, -50%);
-    width: 28px; height: 28px;
-    border: 3px solid rgba(255,255,255,.3);
-    border-top-color: #fff;
-    border-radius: 50%;
-    animation: vgSpin .6s linear infinite;
-    pointer-events: none; z-index: 2;
-}
-@keyframes vgSpin { to { transform: translate(-50%,-50%) rotate(360deg); } }
-.vg-thumb--hoverable.vg-loading .vg-hover-spinner { display: block; }
-.vg-thumb--hoverable.vg-loading .vg-play-icon { opacity: 0; }
 </style>
-
-{{-- ═══════════════════════════════════════════════════════════
-     SCRIPT STUB — cargado en @push('styles') para estar
-     disponible antes que cualquier @push('sidebar-*')
-     ═══════════════════════════════════════════════════════════ --}}
-<script>
-/* Stubs tempranos: esperan a que window._vgReady sea true */
-function vgOpen(card, fc) {
-    if (window._vgReady) return window.vgOpen(card, fc);
-    setTimeout(function(){ vgOpen(card, fc); }, 80);
-}
-function vgOpenById(vid, cap, src) {
-    if (window._vgReady) return window.vgOpenById(vid, cap, src);
-    setTimeout(function(){ vgOpenById(vid, cap, src); }, 80);
-}
-function vgClose() {
-    if (window._vgReady) return window.vgClose();
-}
-function vgLike(btn) {
-    if (window._vgReady) return window.vgLike(btn);
-}
-function vgLikeModal() {
-    if (window._vgReady) return window.vgLikeModal();
-}
-function vgComment() {
-    if (window._vgReady) return window.vgComment();
-}
-</script>
 @endpush
 
 @push('sidebar-left')
@@ -228,10 +190,7 @@ function vgComment() {
             ? (str_starts_with($lw->avatar_url,'http') ? $lw->avatar_url : asset('storage/'.ltrim($lw->avatar_url,'/')))
             : null;
     @endphp
-    <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem;cursor:pointer"
-         onclick="vgOpenById({{ $lw->id }}, this.dataset.cap, this.dataset.src)"
-         data-cap="{{ e($lw->caption ?? chr(45)) }}"
-         data-src="{{ route('videos.stream', $lw->id) }}">
+    <div style="display:flex;gap:.5rem;align-items:center;margin-bottom:.6rem;cursor:pointer" onclick="vgOpenById({{ $lw->id }}, this.dataset.cap, this.dataset.src)" data-cap="{{ e($lw->caption ?? chr(45)) }}" data-src="{{ route('videos.stream', $lw->id) }}">
         <div style="width:52px;height:30px;border-radius:5px;overflow:hidden;flex-shrink:0;background:#111">
             @if($lwThumb)
             <img loading="lazy" src="{{ $lwThumb }}" style="width:100%;height:100%;object-fit:cover">
@@ -313,6 +272,7 @@ function vgComment() {
 @endpush
 
 @push('sidebar-right')
+
 {{-- ── Top 5 Videos Populares ── --}}
 <div style="background:var(--card-bg,#fff);border-radius:14px;padding:1rem;box-shadow:0 2px 10px rgba(0,0,0,.07);margin-bottom:1rem">
     <div style="font-weight:700;font-size:.85rem;margin-bottom:.7rem;color:var(--text-main,#222)">🔥 Videos populares</div>
@@ -324,17 +284,13 @@ function vgComment() {
             : asset('storage/' . ltrim($tv->thumbnail_path, '/')))
         : null;
     @endphp
-    <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;cursor:pointer;border-radius:8px;padding:.2rem .3rem;transition:background .15s"
-         onmouseover="this.style.background='rgba(233,30,140,.08)'"
-         onmouseout="this.style.background='transparent'"
-         onclick="vgOpenById({{ $tv->id }}, this.dataset.cap, this.dataset.src)"
-         data-cap="{{ addslashes($tv->caption ?? 'Sin título') }}"
-         data-src="{{ route('videos.stream', $tv->id) }}">
+    <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.6rem;cursor:pointer;border-radius:8px;padding:.2rem .3rem;transition:background .15s" onmouseover="this.style.background='rgba(233,30,140,.08)'" onmouseout="this.style.background='transparent'" onclick="vgOpenById({{ $tv->id }}, this.dataset.cap, this.dataset.src)" data-cap="{{ addslashes($tv->caption ?? 'Sin título') }}" data-src="{{ route('videos.stream', $tv->id) }}">
         @if($tvThumb)
         <img loading="lazy" src="{{ $tvThumb }}"
             onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"
             style="width:48px;height:36px;object-fit:cover;border-radius:6px;flex-shrink:0" alt="">
         <div style="width:48px;height:36px;background:var(--input-bg,#eee);border-radius:6px;flex-shrink:0;display:none;align-items:center;justify-content:center;font-size:.9rem">🎬</div>
+
         @else
         <div style="width:48px;height:36px;background:var(--input-bg,#eee);border-radius:6px;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:.9rem">🎬</div>
         @endif
@@ -395,6 +351,7 @@ function vgComment() {
     @endforeach
 </div>
 @endif
+
 @endpush
 
 @section('content')
@@ -408,6 +365,9 @@ function vgComment() {
 @php
     $thumbSrc = !empty($video->thumbnail_path)
         ? (str_starts_with($video->thumbnail_path,'http') ? $video->thumbnail_path : asset('storage/'.ltrim($video->thumbnail_path,'/')))
+        : null;
+    $videoSrc = !empty($video->file_path)
+        ? (str_starts_with($video->file_path,'http') ? $video->file_path : asset('storage/'.ltrim($video->file_path,'/')))
         : null;
     $dur = $video->duration_seconds ?? 0;
     $durFmt = $dur > 0 ? sprintf('%d:%02d', intdiv($dur,60), $dur%60) : '0:00';
@@ -431,12 +391,13 @@ function vgComment() {
      data-cap="{{ e($cap) }}"
      data-nick="{{ e($nick) }}"
      data-av="{{ $avSrc }}">
-    {{-- ── Thumbnail + hover preview ── --}}
-    <div class="vg-thumb vg-thumb--hoverable">
-        {{-- Spinner visible solo mientras carga el hover --}}
-        <div class="vg-hover-spinner"></div>
+    <div class="vg-thumb vg-thumb--hoverable"
+         onclick="vgOpen(this.closest('.vg-vcard'))">
+
+
         <video preload="none" muted playsinline
-               @if($thumbSrc) poster="{{ $thumbSrc }}" @endif>
+               @if($thumbSrc) poster="{{ $thumbSrc }}" @endif
+              >
         </video>
         <div class="vg-play-icon">
             <svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg>
@@ -454,7 +415,7 @@ function vgComment() {
             {{ number_format($views) }}
         </span>
     </div>
-    <div class="vg-info">
+    <div class="vg-info" onclick="vgOpen(this.closest('.vg-vcard'))">
         <div class="vg-caption">{{ $cap }}</div>
         <div class="vg-meta">
             @if($avSrc)
@@ -474,7 +435,7 @@ function vgComment() {
         </span>
         <button class="vg-btn-action{{ $isLiked ? ' liked' : '' }}"
                 data-vid="{{ $video->id }}"
-                data-owner="{{ $video->user_id ?? 0 }}"
+     data-owner="{{ $video->user_id ?? 0 }}"
                 onclick="event.stopPropagation();vgLike(this)">
             <svg viewBox="0 0 24 24" fill="{{ $isLiked ? 'currentColor' : 'none' }}" stroke="currentColor" stroke-width="2">
                 <path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/>
@@ -501,7 +462,6 @@ function vgComment() {
 <div class="vg-pag">
     {{ $videos->links('pagination::simple-bootstrap-5') }}
 </div>
-
 <div id="vgm">
     <div class="vgm-box">
         <div class="vgm-head">
@@ -532,330 +492,221 @@ function vgComment() {
 </div>
 @endsection
 
+{{-- ── Modal reproductor ── --}}
+
 @push('scripts')
 <script>
-/* ── Estado global ── */
 var VG = {
-    vid     : null,
-    ownerId : '',
-    authId  : '',
-    csrf    : (document.querySelector('meta[name="csrf-token"]') || {}).content || ''
-};
-
-/* ══════════════════════════════════════════════════════════════
-   vgLoadVideo — carga limpia garantizada en todos los browsers
-   ══════════════════════════════════════════════════════════════ */
-window.vgLoadVideo = function(v, src) {
-    if (!v || !src) {
-        console.warn('[vgLoadVideo] elemento o src inválido', v, src);
-        return;
-    }
-    console.log('[vgLoadVideo] iniciando carga src=', src);
-
-    /* Cancelar listeners de carga anterior si los hubiera */
-    if (v._vgMetaHandler) {
-        v.removeEventListener('loadedmetadata', v._vgMetaHandler);
-        v._vgMetaHandler = null;
-    }
-    if (v._vgErrHandler) {
-        v.removeEventListener('error', v._vgErrHandler);
-        v._vgErrHandler = null;
-    }
-
-    /* Detener y limpiar completamente */
-    v.pause();
-    v.removeAttribute('src');
-    v.load();
-
-    setTimeout(function() {
-        /* Definir handlers y guardar referencia para poder cancelarlos */
-        v._vgMetaHandler = function() {
-            v._vgMetaHandler = null;
-            console.log('[vgLoadVideo] loadedmetadata OK → play()');
-            v.play().catch(function(e) {
-                console.warn('[vgLoadVideo] autoplay bloqueado:', e.message);
-            });
-        };
-        v._vgErrHandler = function() {
-            v._vgErrHandler = null;
-            var err = v.error;
-            console.error('[vgLoadVideo] error code=',
-                err ? err.code : '?', 'msg=', err ? err.message : 'desconocido');
-        };
-
-        v.addEventListener('loadedmetadata', v._vgMetaHandler, { once: true });
-        v.addEventListener('error',          v._vgErrHandler,  { once: true });
-
-        v.src = src;
-        v.load();
-        console.log('[vgLoadVideo] src asignado=', v.src);
-    }, 0);
+    vid: null,
+    csrf: document.querySelector('meta[name="csrf-token"]')?.content || '',
+    hoverTimers: new WeakMap()
 };
 
 
-/* ══════════════════════════════════════════════════════════════
-   Hover preview — event delegation sobre .vg-grid
-   Solo usa el poster (thumbnail) para el hover visual.
-   El stream completo se carga ÚNICAMENTE al abrir el modal.
-   ══════════════════════════════════════════════════════════════ */
+/* ── Event delegation hover preview — reemplaza vgHover inline ── */
 (function() {
     document.addEventListener('DOMContentLoaded', function() {
         var grid = document.querySelector('.vg-grid');
         if (!grid) return;
-
-        /* WeakMap para timers y listeners de canplay, indexados por thumb */
-        var timers  = new WeakMap();
-        var loaders = new WeakMap();
-
-        /* ── Click en la tarjeta: delegar en grid, prevenir bubbling ── */
-        grid.addEventListener('click', function(e) {
-            /* Ignorar clicks en botones de acción (like/comment) */
-            if (e.target.closest('.vg-btn-action')) return;
-
-            var card = e.target.closest('.vg-vcard');
-            if (!card) return;
-
-            /* Debounce: prevenir doble-disparo */
-            if (grid._vgOpening) return;
-            grid._vgOpening = true;
-            setTimeout(function() { grid._vgOpening = false; }, 400);
-
-            /* Detener hover preview antes de abrir modal */
-            var thumb = card.querySelector('.vg-thumb--hoverable');
-            if (thumb) _stopHover(thumb);
-
-            /* Detectar si el click fue en el botón de comentarios */
-            var focusComment = !!e.target.closest('[data-focus-comment]');
-            vgOpen(card, focusComment);
-        });
-
-        /* ── Mouseover: animar ícono de play (sin tocar el stream) ── */
+        var timers = new WeakMap();
         grid.addEventListener('mouseover', function(e) {
             var thumb = e.target.closest('.vg-thumb--hoverable');
-            if (!thumb) return;
-            /* El efecto visual de hover ya lo maneja CSS (.vg-vcard:hover)
-               No cargamos el stream aquí para no generar peticiones HTTP
-               innecesarias ni problemas de autenticación de sesión */
+            if (!thumb || timers.has(thumb)) return;
+            var video = thumb.querySelector('video');
+            if (!video) return;
+            video.currentTime = 0;
+            var p = video.play();
+            if (p) p.catch(function(){});
+            var t = setTimeout(function() {
+                video.pause(); video.currentTime = 0; timers.delete(thumb);
+            }, 3000);
+            timers.set(thumb, t);
         });
-
-        /* ── Mouseout: sin acción extra necesaria ── */
         grid.addEventListener('mouseout', function(e) {
             var thumb = e.target.closest('.vg-thumb--hoverable');
             if (!thumb) return;
-        });
-
-        /* ── Utilidad interna: _stopHover (usada al abrir modal) ── */
-        function _stopHover(thumb) {
+            if (e.relatedTarget && thumb.contains(e.relatedTarget)) return;
+            var t = timers.get(thumb);
+            if (t) { clearTimeout(t); timers.delete(thumb); }
             var video = thumb.querySelector('video');
-            if (video) {
-                video.pause();
-                video.currentTime = 0;
-            }
-        }
+            if (video) { video.pause(); video.currentTime = 0; }
+        });
     });
 })();
+function vgHover(thumb, entering) {
+    var video = thumb.querySelector('video');
+    if (!video) return;
+    if (entering) {
+        video.currentTime = 0;
+        var p = video.play();
+        if (p) p.catch(function(){});
+        var t = setTimeout(function() {
+            video.pause();
+            video.currentTime = 0;
+        }, 3000);
+        VG.hoverTimers.set(thumb, t);
+    } else {
+        var t = VG.hoverTimers.get(thumb);
+        if (t) clearTimeout(t);
+        video.pause();
+        video.currentTime = 0;
+    }
+}
 
-/* ══════════════════════════════════════════════════════════════
-   vgOpen — abrir modal desde tarjeta del grid
-   ══════════════════════════════════════════════════════════════ */
-window.vgOpen = function(card, focusComment) {
+window.vgOpen = function vgOpen(card, focusComment) {
     var vid = card.dataset.vid;
     var src = card.dataset.vsrc;
     var cap = card.dataset.cap;
-    if (!vid || !src) return;
-
-    VG.vid     = vid;
+    VG.vid = vid;
     VG.ownerId = card.dataset.owner || '';
     VG.authId  = (document.querySelector('meta[name="auth-id"]') || {}).content || '';
-
     document.getElementById('vgm-title').textContent = cap;
-    vgLoadVideo(document.getElementById('vgm-video'), src);
+    var v = document.getElementById('vgm-video');
+    v.pause();
+    v.removeAttribute('src');
+    v.load();
+    v.src = src;
+    v.addEventListener('loadedmetadata', function onMeta() {
+        v.removeEventListener('loadedmetadata', onMeta);
+        v.play().catch(function(e){ console.warn('play() rejected:', e); });
+    }, { once: true });
+    v.addEventListener('error', function onErr(e) {
+        v.removeEventListener('error', onErr);
+        console.error('video error:', v.error);
+    }, { once: true });
     document.getElementById('vgm').classList.add('open');
     vgLoadLikes();
     vgLoadComments();
-
-    if (focusComment) {
-        setTimeout(function() {
-            var inp = document.getElementById('vgm-cinput');
-            if (inp) inp.focus();
-        }, 300);
-    }
-
-    /* Registrar vista (sin bloquear) */
-    fetch('/videos/' + vid + '/view', {
-        method  : 'POST',
-        headers : { 'X-CSRF-TOKEN': VG.csrf, 'Accept': 'application/json' }
-    }).catch(function() {});
-};
-
-/* ══════════════════════════════════════════════════════════════
-   vgClose — cerrar modal y liberar recursos del video
-   ══════════════════════════════════════════════════════════════ */
-window.vgClose = function() {
+    if (focusComment) setTimeout(function(){ document.getElementById('vgm-cinput').focus(); }, 300);
+    fetch('/videos/' + vid + '/view', { method: 'POST', headers: { 'X-CSRF-TOKEN': VG.csrf, 'Accept': 'application/json' }}).catch(function(){});
+}
+window.vgClose = function vgClose() {
     var v = document.getElementById('vgm-video');
-    if (v) { v.pause(); v.removeAttribute('src'); v.load(); }
+    v.pause(); v.src = '';
     document.getElementById('vgm').classList.remove('open');
     VG.vid = null;
-};
+}
 
-/* ══════════════════════════════════════════════════════════════
-   vgOpenById — abrir modal desde sidebar / últimos vistos
-   ══════════════════════════════════════════════════════════════ */
-window.vgOpenById = function(vid, cap, src) {
-    if (!vid || !src) return;
+window.vgOpenById = function vgOpenById(vid, cap, src) {
+    VG.vid = String(vid);
+    VG.ownerId = "";
+    VG.authId  = (document.querySelector('meta[name="auth-id"]') || {}).content || "";
+    document.getElementById("vgm-title").textContent = cap;
+    var nkEl = document.getElementById("vgm-author-nick");
+    var avEl = document.getElementById("vgm-author-av");
+    if (nkEl) nkEl.textContent = "";
+    if (avEl) avEl.innerHTML = "";
+    var v = document.getElementById("vgm-video");
+    v.src = src; v.load(); v.play().catch(function(){});
+    document.getElementById("vgm").classList.add("open");
+    vgLoadLikes(); vgLoadComments();
+    fetch("/videos/" + vid + "/view", { method: "POST", headers: { "X-CSRF-TOKEN": VG.csrf, "Accept": "application/json" }}).catch(function(){});
+}
 
-    VG.vid     = String(vid);
-    VG.ownerId = '';
-    VG.authId  = (document.querySelector('meta[name="auth-id"]') || {}).content || '';
-
-    document.getElementById('vgm-title').textContent = cap;
-    vgLoadVideo(document.getElementById('vgm-video'), src);
-    document.getElementById('vgm').classList.add('open');
-    vgLoadLikes();
-    vgLoadComments();
-
-    fetch('/videos/' + vid + '/view', {
-        method  : 'POST',
-        headers : { 'X-CSRF-TOKEN': VG.csrf, 'Accept': 'application/json' }
-    }).catch(function() {});
-};
-
-/* ── Cerrar modal al hacer click en el backdrop ── */
-document.addEventListener('DOMContentLoaded', function() {
-    var vgm = document.getElementById('vgm');
-    if (vgm) {
-        vgm.addEventListener('click', function(e) {
-            if (e.target === this) vgClose();
-        });
-    }
+document.getElementById('vgm').addEventListener('click', function(e) {
+    if (e.target === this) vgClose();
 });
 
-/* ══════════════════════════════════════════════════════════════
-   Likes
-   ══════════════════════════════════════════════════════════════ */
-window.vgLoadLikes = function() {
+window.vgLoadLikes = function vgLoadLikes() {
     if (!VG.vid) return;
     fetch('/videos/' + VG.vid + '/likes', { headers: { 'Accept': 'application/json' }})
-    .then(function(r) { return r.json(); })
+    .then(function(r){ return r.json(); })
     .then(function(d) {
         document.getElementById('vgm-like-count').textContent = d.count || 0;
-        document.getElementById('vgm-views-label').textContent =
-            (d.views || 0) + ' reproducciones';
+        document.getElementById('vgm-views-label').textContent = (d.views || 0) + ' reproducciones';
         var btn = document.getElementById('vgm-like-btn');
         btn.classList.toggle('liked', !!d.liked);
         var svg = btn.querySelector('svg');
         if (svg) svg.setAttribute('fill', d.liked ? 'currentColor' : 'none');
-    }).catch(function() {});
-};
+    }).catch(function(){});
+}
 
-window.vgLike = function(btn) {
+window.vgLike = function vgLike(btn) {
     var vid = btn.dataset.vid;
     if (!vid) return;
     fetch('/videos/' + vid + '/like', {
-        method  : 'POST',
-        headers : {
-            'X-CSRF-TOKEN'  : VG.csrf,
-            'Accept'        : 'application/json',
-            'Content-Type'  : 'application/json'
-        },
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': VG.csrf, 'Accept': 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify({})
-    }).then(function(r) { return r.json(); })
+    }).then(function(r){ return r.json(); })
     .then(function(d) {
         var countEl = btn.querySelector('.vg-like-count');
         if (countEl) countEl.textContent = d.count || 0;
         btn.classList.toggle('liked', !!d.liked);
         var svg = btn.querySelector('svg');
         if (svg) svg.setAttribute('fill', d.liked ? 'currentColor' : 'none');
-    }).catch(function() {});
-};
+    }).catch(function(){});
+}
 
-window.vgLikeModal = function() {
+window.vgLikeModal = function vgLikeModal() {
     if (!VG.vid) return;
     fetch('/videos/' + VG.vid + '/like', {
-        method  : 'POST',
-        headers : {
-            'X-CSRF-TOKEN'  : VG.csrf,
-            'Accept'        : 'application/json',
-            'Content-Type'  : 'application/json'
-        },
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': VG.csrf, 'Accept': 'application/json', 'Content-Type': 'application/json' },
         body: JSON.stringify({})
-    }).then(function(r) { return r.json(); })
+    }).then(function(r){ return r.json(); })
     .then(function(d) {
         document.getElementById('vgm-like-count').textContent = d.count || 0;
         var btn = document.getElementById('vgm-like-btn');
         btn.classList.toggle('liked', !!d.liked);
         var svg = btn.querySelector('svg');
         if (svg) svg.setAttribute('fill', d.liked ? 'currentColor' : 'none');
-    }).catch(function() {});
-};
+    }).catch(function(){});
+}
 
-/* ══════════════════════════════════════════════════════════════
-   Comentarios
-   ══════════════════════════════════════════════════════════════ */
-window.vgLoadComments = function() {
+window.vgLoadComments = function vgLoadComments() {
     if (!VG.vid) return;
     fetch('/videos/' + VG.vid + '/comments', { headers: { 'Accept': 'application/json' }})
-    .then(function(r) { return r.json(); })
+    .then(function(r){ return r.json(); })
     .then(function(d) {
-        var list     = document.getElementById('vgm-comments-list');
+        var list = document.getElementById('vgm-comments-list');
         var comments = Array.isArray(d) ? d : (d.data || []);
         if (comments.length === 0) {
-            list.innerHTML =
-                '<p style="font-size:.8rem;color:var(--text-muted,#888)">Sin comentarios aún.</p>';
+            list.innerHTML = '<p style="font-size:.8rem;color:var(--text-muted,#888)">Sin comentarios aún.</p>';
             return;
         }
         list.innerHTML = '';
         comments.forEach(function(c) { list.appendChild(vgMkComment(c)); });
-    }).catch(function() {});
-};
+    }).catch(function(){});
+}
 
 function vgMkAvatar(nick, avatarUrl) {
     var clrs = ['#e91e8c','#9c27b0','#3f51b5','#00bcd4','#ff5722'];
-    var hsh  = nick.split('').reduce(function(a, b) { return a + b.charCodeAt(0); }, 0);
+    var hsh  = nick.split('').reduce(function(a,b){return a+b.charCodeAt(0);},0);
     var clr  = clrs[Math.abs(hsh) % clrs.length];
     var ini  = nick.charAt(0).toUpperCase();
+    var sz   = '30px';
     return avatarUrl
-        ? '<img src="' + vgE(avatarUrl) +
-          '" style="width:30px;height:30px;border-radius:50%;object-fit:cover;flex-shrink:0">'
-        : '<div style="width:30px;height:30px;border-radius:50%;background:' + clr +
-          ';display:flex;align-items:center;justify-content:center;font-weight:700;' +
-          'font-size:.75rem;color:#fff;flex-shrink:0">' + ini + '</div>';
+        ? '<img src="' + vgE(avatarUrl) + '" style="width:' + sz + ';height:' + sz + ';border-radius:50%;object-fit:cover;flex-shrink:0">'
+        : '<div style="width:' + sz + ';height:' + sz + ';border-radius:50%;background:' + clr + ';display:flex;align-items:center;justify-content:center;font-weight:700;font-size:.75rem;color:#fff;flex-shrink:0">' + ini + '</div>';
 }
 
 function vgMkComment(c) {
-    var w      = document.createElement('div');
-    w.className    = 'vgm-comment-item';
-    w.dataset.cid  = c.id;
+    var w = document.createElement('div');
+    w.className = 'vgm-comment-item';
+    w.dataset.cid = c.id;
     var nick   = c.nickname || c.name || 'Usuario';
-    var canDel = c.can_delete
-        ? '<button class="vgm-comment-del" onclick="vgDelComment(' + c.id + ')">&#x2715;</button>'
-        : '';
-    var showReply = (VG.ownerId && VG.ownerId === VG.authId)
-        ? '<button class="vgm-reply-btn" onclick="vgToggleReplyForm(' + c.id + ', this)">&#x21A9; Responder</button>'
-        : '';
-
+    var canDel = c.can_delete ? '<button class="vgm-comment-del" onclick="vgDelComment(' + c.id + ')">&#x2715;</button>' : '';
     w.innerHTML = vgMkAvatar(nick, c.avatar_url)
         + '<div class="vgm-comment-body" style="flex:1">'
         + '<b>' + vgE(nick) + '</b>'
         + '<p style="margin:0;line-height:1.5;font-size:.77rem">' + vgE(c.body) + '</p>'
         + '<div style="display:flex;align-items:center;gap:.5rem;margin-top:2px">'
         + '<span style="opacity:.4;font-size:.65rem">' + vgT(c.created_at) + '</span>'
-        + showReply
-        + '</div></div>' + canDel;
-
+        + (VG.ownerId && VG.ownerId === VG.authId ? '<button class="vgm-reply-btn" onclick="vgToggleReplyForm(' + c.id + ', this)">&#x21A9; Responder</button>' : '')
+        + '</div>'
+        + '</div>' + canDel;
+    // Replies existentes
     var repliesDiv = document.createElement('div');
     repliesDiv.className = 'vgm-replies';
-    repliesDiv.id        = 'replies-' + c.id;
-
+    repliesDiv.id = 'replies-' + c.id;
     if (c.replies && c.replies.length > 0) {
         c.replies.forEach(function(r) {
-            var rw     = document.createElement('div');
-            rw.className   = 'vgm-comment-item';
+            var rw = document.createElement('div');
+            rw.className = 'vgm-comment-item';
             rw.style.paddingTop = '.3rem';
-            var rnick  = r.nickname || r.name || 'Usuario';
-            var rDel   = r.can_delete
-                ? '<button class="vgm-comment-del" onclick="vgDelComment(' + r.id + ')">&#x2715;</button>'
-                : '';
+            var rnick = r.nickname || r.name || 'Usuario';
+            var rDel  = r.can_delete ? '<button class="vgm-comment-del" onclick="vgDelComment(' + r.id + ')">&#x2715;</button>' : '';
             rw.innerHTML = vgMkAvatar(rnick, r.avatar_url)
                 + '<div class="vgm-comment-body" style="flex:1">'
                 + '<b style="font-size:.78rem">' + vgE(rnick) + '</b>'
@@ -874,26 +725,18 @@ function vgMkComment(c) {
 function vgToggleReplyForm(cid, btn) {
     var existing = document.getElementById('reply-form-' + cid);
     if (existing) { existing.remove(); return; }
-
     var repliesDiv = document.getElementById('replies-' + cid);
     if (repliesDiv) repliesDiv.style.display = '';
-
-    var form  = document.createElement('div');
+    var form = document.createElement('div');
     form.className = 'vgm-reply-form';
-    form.id        = 'reply-form-' + cid;
-
+    form.id = 'reply-form-' + cid;
     var inp = document.createElement('input');
-    inp.type        = 'text';
-    inp.placeholder = 'Escribe una respuesta...';
-    inp.maxLength   = 500;
-    inp.id          = 'reply-inp-' + cid;
-
+    inp.type = 'text'; inp.placeholder = 'Escribe una respuesta...';
+    inp.maxLength = 500; inp.id = 'reply-inp-' + cid;
     var rbtn = document.createElement('button');
     rbtn.innerHTML = '&#x27A4;';
-    rbtn.onclick   = function() { vgSendReply(cid); };
-
-    form.appendChild(inp);
-    form.appendChild(rbtn);
+    rbtn.onclick = function(){ vgSendReply(cid); };
+    form.appendChild(inp); form.appendChild(rbtn);
     btn.closest('.vgm-comment-item').after(form);
     inp.focus();
 }
@@ -902,121 +745,107 @@ function vgSendReply(cid) {
     var inp  = document.getElementById('reply-inp-' + cid);
     var body = inp ? inp.value.trim() : '';
     if (!body || !VG.vid) return;
-
     var rbtn = inp.nextElementSibling;
-    rbtn.disabled = true;
-    inp.disabled  = true;
-
+    rbtn.disabled = true; inp.disabled = true;
     fetch('/videos/' + VG.vid + '/comments/' + cid + '/reply', {
-        method  : 'POST',
-        headers : {
-            'X-CSRF-TOKEN'  : VG.csrf,
-            'Content-Type'  : 'application/json',
-            'Accept'        : 'application/json'
-        },
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': VG.csrf, 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ body: body })
-    }).then(function(r) { return r.json(); })
+    }).then(function(r){ return r.json(); })
     .then(function(reply) {
         var repliesDiv = document.getElementById('replies-' + cid);
         if (repliesDiv) {
             repliesDiv.style.display = '';
-            var rw     = document.createElement('div');
-            rw.className   = 'vgm-comment-item';
+            var rw = document.createElement('div');
+            rw.className = 'vgm-comment-item';
             rw.style.paddingTop = '.3rem';
-            var rnick  = reply.nickname || reply.name || 'Usuario';
+            var rnick = reply.nickname || reply.name || 'Usuario';
             rw.innerHTML = vgMkAvatar(rnick, reply.avatar_url)
                 + '<div class="vgm-comment-body" style="flex:1">'
                 + '<b style="font-size:.78rem">' + vgE(rnick) + '</b>'
-                + '<p style="margin:0;line-height:1.4;font-size:.75rem">'
-                + vgE(reply.body) + '</p>'
+                + '<p style="margin:0;line-height:1.4;font-size:.75rem">' + vgE(reply.body) + '</p>'
                 + '<span style="opacity:.4;font-size:.63rem">Ahora mismo</span>'
                 + '</div>';
             repliesDiv.appendChild(rw);
         }
         var form = document.getElementById('reply-form-' + cid);
         if (form) form.remove();
-    }).catch(function() {
-        rbtn.disabled = false;
-        inp.disabled  = false;
+    }).catch(function(){
+        rbtn.disabled = false; inp.disabled = false;
         inp.style.borderColor = '#ef4444';
-        setTimeout(function() { inp.style.borderColor = ''; }, 2000);
+        setTimeout(function(){ inp.style.borderColor = ''; }, 2000);
     });
 }
 
-window.vgComment = function() {
-    var inp  = document.getElementById('vgm-cinput');
-    var btn  = inp ? inp.nextElementSibling : null;
-    var body = inp ? inp.value.trim() : '';
-    if (!body || !VG.vid || !btn) return;
-
-    var orig      = btn.textContent;
+window.vgComment = function vgComment() {
+    var inp = document.getElementById('vgm-cinput');
+    var btn = inp.nextElementSibling;
+    var body = inp.value.trim();
+    if (!body || !VG.vid) return;
+    var orig = btn.textContent;
     btn.textContent = 'Enviando...';
-    btn.disabled  = true;
-    inp.disabled  = true;
-
+    btn.disabled = true;
+    inp.disabled = true;
     fetch('/videos/' + VG.vid + '/comments', {
-        method  : 'POST',
-        headers : {
-            'X-CSRF-TOKEN'  : VG.csrf,
-            'Content-Type'  : 'application/json',
-            'Accept'        : 'application/json'
-        },
+        method: 'POST',
+        headers: { 'X-CSRF-TOKEN': VG.csrf, 'Content-Type': 'application/json', 'Accept': 'application/json' },
         body: JSON.stringify({ body: body })
-    }).then(function(r) { return r.json(); })
-    .then(function() {
-        inp.value       = '';
+    }).then(function(r){ return r.json(); })
+    .then(function(d) {
+        inp.value = "";
         btn.textContent = orig;
-        btn.disabled    = false;
-        inp.disabled    = false;
-
-        _vgFeedback('ok', '✔ Comentario enviado', inp);
+        btn.disabled = false;
+        inp.disabled = false;
+        // Feedback exito
+        var fb = document.getElementById("vgm-comment-feedback");
+        if (fb) fb.remove();
+        fb = document.createElement("div");
+        fb.id = "vgm-comment-feedback";
+        fb.className = "vgm-feedback ok";
+        fb.textContent = "\u2714 Comentario enviado";
+        inp.closest(".vgm-comment-form").insertAdjacentElement("afterend", fb);
+        setTimeout(function(){ if (fb.parentNode) fb.remove(); }, 3000);
+        // Recargar y scroll
         vgLoadComments();
-        setTimeout(function() {
-            var list = document.getElementById('vgm-comments-list');
+        setTimeout(function(){
+            var list = document.getElementById("vgm-comments-list");
             if (list) list.scrollTop = list.scrollHeight;
         }, 400);
-    }).catch(function() {
+    })
+    .catch(function(){
         btn.textContent = orig;
-        btn.disabled    = false;
-        inp.disabled    = false;
-        _vgFeedback('err', '✖ Error al enviar. Intenta de nuevo.', inp);
+        btn.style.background = "";
+        btn.disabled = false;
+        inp.disabled = false;
+        var fb = document.getElementById("vgm-comment-feedback");
+        if (fb) fb.remove();
+        fb = document.createElement("div");
+        fb.id = "vgm-comment-feedback";
+        fb.className = "vgm-feedback err";
+        fb.textContent = "\u2716 Error al enviar. Intenta de nuevo.";
+        inp.closest(".vgm-comment-form").insertAdjacentElement("afterend", fb);
+        setTimeout(function(){ if (fb.parentNode) fb.remove(); }, 4000);
     });
-};
-
-function _vgFeedback(type, msg, refEl) {
-    var fb = document.getElementById('vgm-comment-feedback');
-    if (fb) fb.remove();
-    fb            = document.createElement('div');
-    fb.id         = 'vgm-comment-feedback';
-    fb.className  = 'vgm-feedback ' + type;
-    fb.textContent = msg;
-    refEl.closest('.vgm-comment-form').insertAdjacentElement('afterend', fb);
-    setTimeout(function() { if (fb.parentNode) fb.remove(); }, type === 'ok' ? 3000 : 4000);
 }
 
 function vgDelComment(cid) {
-    if (!confirm('¿Eliminar comentario?')) return;
+    if (!confirm('Eliminar comentario?')) return;
     fetch('/videos/' + VG.vid + '/comments/' + cid, {
-        method  : 'DELETE',
-        headers : { 'X-CSRF-TOKEN': VG.csrf, 'Accept': 'application/json' }
-    }).then(function() { vgLoadComments(); }).catch(function() {});
+        method: 'DELETE',
+        headers: { 'X-CSRF-TOKEN': VG.csrf, 'Accept': 'application/json' }
+    }).then(function(){ vgLoadComments(); }).catch(function(){});
 }
 
-/* ── Utilidades ── */
 function vgE(s) {
-    return String(s || '')
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;');
+    return String(s || '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
 }
+
 function vgT(ts) {
     if (!ts) return '';
     var d = new Date(String(ts).replace(' ', 'T'));
     return isNaN(d) ? ts : d.toLocaleDateString('es-MX', { day: '2-digit', month: 'short' });
 }
-
-/* ── Activar stubs ── */
-window._vgReady = true;
 </script>
 @endpush
+
+

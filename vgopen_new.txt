@@ -1,0 +1,18 @@
+function vgOpen(card, focusComment) {
+    var vid = card.dataset.vid;
+    var src = card.dataset.vsrc;
+    var cap = card.dataset.cap;
+    VG.vid = vid;
+    VG.ownerId = card.dataset.owner || '';
+    VG.authId  = (document.querySelector('meta[name="auth-id"]') || {}).content || '';
+    document.getElementById('vgm-title').textContent = cap;
+    var v = document.getElementById('vgm-video');
+    v.pause();
+    v.removeAttribute('src');
+    v.load();
+    v.src = src;
+    v.load();
+    v.addEventListener('canplay', function onCanPlay() {
+        v.removeEventListener('canplay', onCanPlay);
+        v.play().catch(function(){});
+    }, { once: true });

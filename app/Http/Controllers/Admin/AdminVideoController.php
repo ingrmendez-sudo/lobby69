@@ -70,6 +70,9 @@ class AdminVideoController extends Controller
 
     public function approve(Request $request, $id)
     {
+        $video = DB::table('videos')->where('id', $id)->first();
+        if (!$video) return back()->with('error', 'Video no encontrado.');
+
         DB::table('videos')
             ->where('id', $id)
             ->update([
@@ -79,6 +82,29 @@ class AdminVideoController extends Controller
                 'admin_note'  => null,
                 'updated_at'  => now(),
             ]);
+
+        // Generar thumbnail con FFmpeg si no tiene uno
+        if (empty($video->thumbnail_path)) {
+            $srcPath   = storage_path('app/private/' . $video->file_path);
+            $thumbDir  = storage_path('app/public/thumbs/videos');
+            $thumbName = 'thumb_video_' . $video->id . '.jpg';
+            $thumbPath = $thumbDir . '/' . $thumbName;
+            $thumbDB   = 'thumbs/videos/' . $thumbName;
+
+            if (!is_dir($thumbDir)) mkdir($thumbDir, 0755, true);
+
+            if (file_exists($srcPath)) {
+                $cmd = 'ffmpeg -y -i ' . escapeshellarg($srcPath) .
+                       ' -ss 00:00:01 -vframes 1 -vf scale=640:360 ' .
+                       escapeshellarg($thumbPath) . ' 2>&1';
+                exec($cmd, $out, $code);
+
+                if ($code === 0 && file_exists($thumbPath)) {
+                    DB::table('videos')->where('id', $id)
+                        ->update(['thumbnail_path' => $thumbDB]);
+                }
+            }
+        }
 
         return back()->with('success', 'Video aprobado correctamente.');
     }

@@ -14,7 +14,7 @@ class VideoGalleryController extends Controller
 
         // ── Galería principal ────────────────────────────────────────
         $page   = request()->get('page', 1);
-        $videos = Cache::remember("gallery.page.{$page}", 60, function () {
+        $videos = Cache::remember("gallery.page.{$page}", 300, function () {
             return DB::table('videos')
                 ->join('users',    'videos.user_id', '=', 'users.id')
                 ->join('profiles', 'users.id',       '=', 'profiles.user_id')
@@ -34,6 +34,7 @@ class VideoGalleryController extends Controller
                     GROUP BY video_id
                 ) AS vc'), 'vc.video_id', '=', 'videos.id')
                 ->where('videos.status', 'approved')
+                ->where('videos.album_type', 'public')
                 ->select([
                     'videos.id',
                     'videos.caption',
@@ -95,6 +96,7 @@ class VideoGalleryController extends Controller
             $lastWatched = DB::table('videos')
                 ->join('profiles', 'videos.user_id', '=', 'profiles.user_id')
                 ->where('videos.status', 'approved')
+                ->where('videos.album_type', 'public')
                 ->select(
                     'videos.id',
                     'videos.caption',
@@ -147,10 +149,11 @@ class VideoGalleryController extends Controller
                 ->get();
 
             // Top 5 videos más populares
-            $topVideos = Cache::remember('top_videos', 600, function () {
+            $topVideos = Cache::remember('top_videos', 1800, function () {
                 return DB::table('videos')
                     ->join('profiles', 'videos.user_id', '=', 'profiles.user_id')
                     ->where('videos.status', 'approved')
+                    ->where('videos.album_type', 'public')
                     ->select('videos.id','videos.caption','videos.thumbnail_path','videos.views_count','profiles.nickname')
                     ->orderByDesc('videos.views_count')
                     ->limit(5)

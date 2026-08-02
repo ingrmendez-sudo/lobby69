@@ -410,7 +410,7 @@
     </style>
     <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body class="{{ request()->routeIs('messages.*') ? 'page-mensajes' : '' }}">
+<body class="{{ request()->routeIs('messages.*') ? 'page-mensajes overflow-hidden' : '' }}">
     @include('components.navbar')
 
     <main style="width:100%;min-width:0;display:block;">

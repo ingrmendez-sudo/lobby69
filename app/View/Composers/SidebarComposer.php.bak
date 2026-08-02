@@ -25,17 +25,13 @@ class SidebarComposer
                 ->distinct()
                 ->count('viewer_id');
 
-            $whoViewedMe = DB::table(DB::raw('(
-                SELECT DISTINCT ON (viewer_id) *
-                FROM profile_views
-                WHERE viewed_id::text = \'' . $userId . '\'
-                ORDER BY viewer_id, viewed_at DESC
-            ) as pv'))
+            $whoViewedMe = DB::table('profile_views as pv')
                 ->join('users as u', DB::raw('u.id::text'), '=', DB::raw('pv.viewer_id::text'))
                 ->leftJoin('profiles as p', DB::raw('p.user_id::text'), '=', DB::raw('u.id::text'))
-                ->whereRaw('u.id::text != ?', [$userId])
+                ->whereRaw('pv.viewed_id::text = ?', [$userId])
+                ->whereRaw("u.id::text != ?", [$userId])
                 ->where('u.role', '!=', 'admin')
-                ->orderByDesc('pv.viewed_at')
+                ->orderByDesc('pv.created_at')   // <-- ajusta aquí si la columna es viewed_at
                 ->limit(5)
                 ->select([
                     DB::raw('u.id::text as uid'),
@@ -43,17 +39,15 @@ class SidebarComposer
                     DB::raw('p.display_name as display_name'),
                     DB::raw('p.avatar_url as avatar_url'),
                     DB::raw('p.verified_profile as verified_profile'),
-                    DB::raw("(SELECT id FROM photos ap
-                               WHERE ap.user_id::text = u.id::text
-                                 AND ap.is_profile_photo = true
-                                 AND ap.status = 'approved'
-                               LIMIT 1) as avatar_photo_id"),
-                    'pv.viewed_at as visited_at',
+                    DB::raw('(SELECT id FROM photos ap WHERE ap.user_id::text = u.id::text
+                              AND ap.is_profile_photo = true AND ap.status = \'approved\'
+                              LIMIT 1) as avatar_photo_id'),
+                    'pv.created_at as visited_at',   // ajusta si la columna es viewed_at
                 ])
                 ->get();
 
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('SidebarComposer whoViewedMe: ' . $e->getMessage());
+            // Descomenta para depurar: \Log::error('SidebarComposer whoViewedMe: '.$e->getMessage());
         }
 
         try {
@@ -63,17 +57,13 @@ class SidebarComposer
                 ->distinct()
                 ->count('viewed_id');
 
-            $iViewed = DB::table(DB::raw('(
-                SELECT DISTINCT ON (viewed_id) *
-                FROM profile_views
-                WHERE viewer_id::text = \'' . $userId . '\'
-                ORDER BY viewed_id, viewed_at DESC
-            ) as pv'))
+            $iViewed = DB::table('profile_views as pv')
                 ->join('users as u', DB::raw('u.id::text'), '=', DB::raw('pv.viewed_id::text'))
                 ->leftJoin('profiles as p', DB::raw('p.user_id::text'), '=', DB::raw('u.id::text'))
-                ->whereRaw('u.id::text != ?', [$userId])
+                ->whereRaw('pv.viewer_id::text = ?', [$userId])
+                ->whereRaw("u.id::text != ?", [$userId])
                 ->where('u.role', '!=', 'admin')
-                ->orderByDesc('pv.viewed_at')
+                ->orderByDesc('pv.created_at')   // <-- ajusta aquí si la columna es viewed_at
                 ->limit(5)
                 ->select([
                     DB::raw('u.id::text as uid'),
@@ -81,17 +71,15 @@ class SidebarComposer
                     DB::raw('p.display_name as display_name'),
                     DB::raw('p.avatar_url as avatar_url'),
                     DB::raw('p.verified_profile as verified_profile'),
-                    DB::raw("(SELECT id FROM photos ap
-                               WHERE ap.user_id::text = u.id::text
-                                 AND ap.is_profile_photo = true
-                                 AND ap.status = 'approved'
-                               LIMIT 1) as avatar_photo_id"),
-                    'pv.viewed_at as visited_at',
+                    DB::raw('(SELECT id FROM photos ap WHERE ap.user_id::text = u.id::text
+                              AND ap.is_profile_photo = true AND ap.status = \'approved\'
+                              LIMIT 1) as avatar_photo_id'),
+                    'pv.created_at as visited_at',   // ajusta si la columna es viewed_at
                 ])
                 ->get();
 
         } catch (\Throwable $e) {
-            \Illuminate\Support\Facades\Log::error('SidebarComposer iViewed: ' . $e->getMessage());
+            // Descomenta para depurar: \Log::error('SidebarComposer iViewed: '.$e->getMessage());
         }
 
         $view->with(compact(

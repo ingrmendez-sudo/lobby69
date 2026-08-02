@@ -77,7 +77,25 @@ class VideoController extends Controller
 
             Storage::disk('private')->makeDirectory($folder);
 
+
             Storage::disk('private')->putFileAs($folder, $file, $filename);
+
+            // 2. Aplicar faststart DESPUÉS de que el archivo existe en disco
+            $fullPath = storage_path('app/private/' . $filePath);
+            $tmpPath  = $fullPath . '.tmp.mp4';
+            $ffmpeg   = 'ffmpeg';
+            $cmd = sprintf('%s -i %s -c copy -movflags +faststart %s -y -loglevel error 2>&1',
+                $ffmpeg,
+                escapeshellarg($fullPath),
+                escapeshellarg($tmpPath)
+            );
+            exec($cmd, $out, $ret);
+            if ($ret === 0 && file_exists($tmpPath) && filesize($tmpPath) > 0) {
+                @unlink($fullPath);
+                rename($tmpPath, $fullPath);
+            } elseif (file_exists($tmpPath)) {
+                @unlink($tmpPath);
+            }
 
             DB::table('videos')->insert([
                 'video_uuid'      => (string) Str::uuid(),

@@ -285,7 +285,7 @@
                 {{-- Reproductor --}}
                 @if($video->status === 'approved')
                 <video class="mv-video-player" controls preload="metadata"
-                       src="{{ route('videos.serve', $video->id) }}#t=0.5">
+                       route('videos.serve.public', $video->id)
                     Tu navegador no soporta video HTML5.
                 </video>
                 @else

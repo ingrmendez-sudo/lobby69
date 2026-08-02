@@ -5,6 +5,9 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use App\Jobs\SendFollowNotification;
+use Illuminate\Support\Facades\Log;
+
 
 class FollowController extends Controller
 {
@@ -47,14 +50,24 @@ class FollowController extends Controller
             $followerNick = DB::table('profiles')
                 ->where('user_id', $me)
                 ->value('nickname');
-            SendFollowNotification::dispatch(
-                (string)$target->id,
-                'follow',
-                [
-                    'from_nick'   => $followerNick ?? 'Alguien',
-                    'follower_id' => (string)$me,
-                ]
-            );
+            try {
+                DB::table('notifications')->insert([
+                    'id'              => \Illuminate\Support\Str::uuid(),
+                    'type'            => 'follow',
+                    'notifiable_type' => 'App\\Models\\User',
+                    'notifiable_id'   => (string)$target->id,
+                    'data'            => json_encode([
+                        'from_nick'   => $followerNick ?? 'Alguien',
+                        'follower_id' => (string)$me,
+                    ]),
+                    'read_at'    => null,
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
+            } catch (\Throwable $e) {
+                Log::warning('Follow notification failed: ' . $e->getMessage());
+            }
+
         }
 
         return back()->with('success', 'Ahora sigues a @' . $nickname . '.');
