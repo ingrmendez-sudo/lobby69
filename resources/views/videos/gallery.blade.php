@@ -594,22 +594,116 @@ window.vgLoadVideo = function(v, src) {
 
 
 /* ══════════════════════════════════════════════════════════════
-   Hover preview — event delegation sobre .vg-grid
-   Solo usa el poster (thumbnail) para el hover visual.
-   El stream completo se carga ÚNICAMENTE al abrir el modal.
+   Hover preview — preview real de video en tarjetas del grid
+   Estrategia: cargar stream con delay de 400ms tras mouseenter.
+   faststart garantiza que el browser renderiza frames de inmediato
+   sin descargar el archivo completo. Se detiene en mouseleave.
    ══════════════════════════════════════════════════════════════ */
-(function() {
-    document.addEventListener('DOMContentLoaded', function() {
+(function () {
+    document.addEventListener('DOMContentLoaded', function () {
         var grid = document.querySelector('.vg-grid');
         if (!grid) return;
 
-        /* WeakMap para timers y listeners de canplay, indexados por thumb */
-        var timers  = new WeakMap();
-        var loaders = new WeakMap();
+        /* Timer de hover por tarjeta (evita carga en paso rápido del cursor) */
+        var hoverTimers = new WeakMap();
+        /* Flag para saber si ya se inició carga en esta tarjeta */
+        var hoverLoaded = new WeakMap();
 
-        /* ── Click en la tarjeta: delegar en grid, prevenir bubbling ── */
-        grid.addEventListener('click', function(e) {
-            /* Ignorar clicks en botones de acción (like/comment) */
+        /* ── Helpers ── */
+        function _startHover(card) {
+            var thumb = card.querySelector('.vg-thumb--hoverable');
+            var video = thumb ? thumb.querySelector('video') : null;
+            if (!video || !card.dataset.vsrc) return;
+
+            /* Ya cargado en esta sesión de hover: solo hacer play */
+            if (hoverLoaded.get(card)) {
+                video.currentTime = 0;
+                video.play().catch(function () {});
+                return;
+            }
+
+            /* Mostrar spinner */
+            thumb.classList.add('vg-loading');
+
+            /* Remover listeners anteriores si existieran */
+            if (video._hoverCanPlay) {
+                video.removeEventListener('canplay', video._hoverCanPlay);
+                video._hoverCanPlay = null;
+            }
+
+            /* Listener de canplay: arrancar reproducción silenciada */
+            video._hoverCanPlay = function () {
+                thumb.classList.remove('vg-loading');
+                video.play().catch(function () {});
+                hoverLoaded.set(card, true);
+            };
+            video.addEventListener('canplay', video._hoverCanPlay, { once: true });
+
+            /* Listener de error: quitar spinner silenciosamente */
+            video.addEventListener('error', function () {
+                thumb.classList.remove('vg-loading');
+            }, { once: true });
+
+            /* Asignar src y cargar — muted obligatorio para autoplay */
+            video.muted       = true;
+            video.loop        = true;
+            video.preload     = 'auto';
+            video.src         = card.dataset.vsrc;
+            video.load();
+        }
+
+        function _stopHover(card) {
+            var thumb = card.querySelector('.vg-thumb--hoverable');
+            var video = thumb ? thumb.querySelector('video') : null;
+            if (!video) return;
+
+            thumb.classList.remove('vg-loading');
+            video.pause();
+            video.currentTime = 0;
+
+            /* Limpiar src para liberar conexión de red */
+            video.removeAttribute('src');
+            video.load();
+            hoverLoaded.set(card, false);
+
+            /* Cancelar listener pendiente */
+            if (video._hoverCanPlay) {
+                video.removeEventListener('canplay', video._hoverCanPlay);
+                video._hoverCanPlay = null;
+            }
+        }
+
+        /* ── Mouseenter con delay de 400ms ── */
+        grid.addEventListener('mouseover', function (e) {
+            var card = e.target.closest('.vg-vcard');
+            if (!card) return;
+            /* Si ya hay un timer corriendo para esta tarjeta, no hacer nada */
+            if (hoverTimers.get(card)) return;
+
+            var t = setTimeout(function () {
+                hoverTimers.set(card, null);
+                _startHover(card);
+            }, 400);
+            hoverTimers.set(card, t);
+        });
+
+        /* ── Mouseleave: cancelar timer y detener preview ── */
+        grid.addEventListener('mouseout', function (e) {
+            var card = e.target.closest('.vg-vcard');
+            if (!card) return;
+            /* Solo procesar si el cursor salió completamente de la tarjeta */
+            if (card.contains(e.relatedTarget)) return;
+
+            var t = hoverTimers.get(card);
+            if (t) {
+                clearTimeout(t);
+                hoverTimers.set(card, null);
+            }
+            _stopHover(card);
+        });
+
+        /* ── Click en la tarjeta: delegar en grid ── */
+        grid.addEventListener('click', function (e) {
             if (e.target.closest('.vg-btn-action')) return;
 
             var card = e.target.closest('.vg-vcard');
@@ -618,42 +712,17 @@ window.vgLoadVideo = function(v, src) {
             /* Debounce: prevenir doble-disparo */
             if (grid._vgOpening) return;
             grid._vgOpening = true;
-            setTimeout(function() { grid._vgOpening = false; }, 400);
+            setTimeout(function () { grid._vgOpening = false; }, 400);
 
-            /* Detener hover preview antes de abrir modal */
-            var thumb = card.querySelector('.vg-thumb--hoverable');
-            if (thumb) _stopHover(thumb);
+            /* Detener hover preview y limpiar antes de abrir modal */
+            _stopHover(card);
 
-            /* Detectar si el click fue en el botón de comentarios */
             var focusComment = !!e.target.closest('[data-focus-comment]');
             vgOpen(card, focusComment);
         });
-
-        /* ── Mouseover: animar ícono de play (sin tocar el stream) ── */
-        grid.addEventListener('mouseover', function(e) {
-            var thumb = e.target.closest('.vg-thumb--hoverable');
-            if (!thumb) return;
-            /* El efecto visual de hover ya lo maneja CSS (.vg-vcard:hover)
-               No cargamos el stream aquí para no generar peticiones HTTP
-               innecesarias ni problemas de autenticación de sesión */
-        });
-
-        /* ── Mouseout: sin acción extra necesaria ── */
-        grid.addEventListener('mouseout', function(e) {
-            var thumb = e.target.closest('.vg-thumb--hoverable');
-            if (!thumb) return;
-        });
-
-        /* ── Utilidad interna: _stopHover (usada al abrir modal) ── */
-        function _stopHover(thumb) {
-            var video = thumb.querySelector('video');
-            if (video) {
-                video.pause();
-                video.currentTime = 0;
-            }
-        }
     });
 })();
+
 
 /* ══════════════════════════════════════════════════════════════
    vgOpen — abrir modal desde tarjeta del grid
