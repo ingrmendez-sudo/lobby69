@@ -62,102 +62,222 @@ class VideoController extends Controller
         $caption   = $request->input('caption', '');
         $file      = $request->file('video');
 
-        // Verificar tamaño
         if ($file->getSize() > self::MAX_SIZE_BYTES) {
             return back()->with('error', 'El video supera el límite de 100MB.');
         }
 
         try {
-            // Ruta de almacenamiento privado
+            // ── 1. Guardar temporalmente en disco local ──────────────────────
+            $ext      = strtolower($file->getClientOriginalExtension());
+            $basename = 'video_' . $userId . '_' . time();
+            $filename = $basename . '.' . $ext;
             $folder   = 'videos/' . $userId;
-            $filename = 'video_' . $userId . '_' . time() . '.' . $file->getClientOriginalExtension();
             $filePath = $folder . '/' . $filename;
 
-            // Crear carpeta si no existe
-
             Storage::disk('private')->makeDirectory($folder);
-
-
             Storage::disk('private')->putFileAs($folder, $file, $filename);
+            $localPath = storage_path('app/private/' . $filePath);
 
-            // 2. Aplicar faststart DESPUÉS de que el archivo existe en disco
-            $fullPath = storage_path('app/private/' . $filePath);
-            $tmpPath  = $fullPath . '.tmp.mp4';
-            $ffmpeg   = 'ffmpeg';
-            $cmd = sprintf('%s -i %s -c copy -movflags +faststart %s -y -loglevel error 2>&1',
-                $ffmpeg,
-                escapeshellarg($fullPath),
+            // ── 2. FFmpeg: faststart + extracción de duración ────────────────
+            $duration      = null;
+            $thumbnailPath = null;
+            $tmpPath       = $localPath . '.tmp.mp4';
+
+            // faststart (mover moov atom al inicio para streaming inmediato)
+            $cmd = sprintf(
+                'ffmpeg -i %s -c copy -movflags +faststart %s -y -loglevel error 2>&1',
+                escapeshellarg($localPath),
                 escapeshellarg($tmpPath)
             );
             exec($cmd, $out, $ret);
             if ($ret === 0 && file_exists($tmpPath) && filesize($tmpPath) > 0) {
-                @unlink($fullPath);
-                rename($tmpPath, $fullPath);
+                @unlink($localPath);
+                rename($tmpPath, $localPath);
             } elseif (file_exists($tmpPath)) {
                 @unlink($tmpPath);
             }
 
+            // duración con ffprobe
+            $probeCmd = sprintf(
+                'ffprobe -v error -show_entries format=duration -of default=noprint_wrappers=1:nokey=1 %s 2>&1',
+                escapeshellarg($localPath)
+            );
+            exec($probeCmd, $probeOut, $probeRet);
+            if ($probeRet === 0 && !empty($probeOut[0]) && is_numeric(trim($probeOut[0]))) {
+                $duration = (int) round((float) trim($probeOut[0]));
+            }
+
+            // thumbnail: extraer frame del segundo 2 (o el primero disponible)
+            $thumbFilename = $basename . '_thumb.jpg';
+            $thumbLocal    = storage_path('app/private/' . $folder . '/' . $thumbFilename);
+            $thumbCmd = sprintf(
+                'ffmpeg -i %s -ss 00:00:02 -vframes 1 -vf scale=640:-1 -q:v 3 %s -y -loglevel error 2>&1',
+                escapeshellarg($localPath),
+                escapeshellarg($thumbLocal)
+            );
+            exec($thumbCmd, $thumbOut, $thumbRet);
+            // Si el video es muy corto, intentar con el frame 0
+            if ($thumbRet !== 0 || !file_exists($thumbLocal) || filesize($thumbLocal) === 0) {
+                $thumbCmd2 = sprintf(
+                    'ffmpeg -i %s -vframes 1 -vf scale=640:-1 -q:v 3 %s -y -loglevel error 2>&1',
+                    escapeshellarg($localPath),
+                    escapeshellarg($thumbLocal)
+                );
+                exec($thumbCmd2, $thumbOut2, $thumbRet2);
+            }
+
+            // ── 3. Subir video a Supabase Storage ───────────────────────────
+            $supabasePath = $filePath; // videos/{userId}/video_{userId}_{time}.mp4
+            Storage::disk('supabase')->put(
+                $supabasePath,
+                fopen($localPath, 'rb'),
+                ['ContentType' => 'video/' . ($ext === 'mov' ? 'quicktime' : $ext)]
+            );
+
+            // ── 4. Subir thumbnail a Supabase (si se generó) ────────────────
+            $supabaseThumbPath = null;
+            if (file_exists($thumbLocal) && filesize($thumbLocal) > 0) {
+                $supabaseThumbPath = $folder . '/' . $thumbFilename;
+                Storage::disk('supabase')->put(
+                    $supabaseThumbPath,
+                    fopen($thumbLocal, 'rb'),
+                    ['ContentType' => 'image/jpeg']
+                );
+                // URL pública del thumbnail (no necesita firma)
+                $supabaseThumbPath = Storage::disk('supabase')->url($supabaseThumbPath);
+                @unlink($thumbLocal);
+            }
+
+            // ── 5. Eliminar archivo local (ya está en Supabase) ─────────────
+            @unlink($localPath);
+
+            // ── 6. Registrar en base de datos ───────────────────────────────
             DB::table('videos')->insert([
-                'video_uuid'      => (string) Str::uuid(),
-                'user_id'         => (string) $userId,
-                'album_type'      => $albumType,
-                'file_path'       => $filePath,
-                'thumbnail_path'  => null,
-                'duration_seconds'=> null, // se puede calcular con ffprobe si está disponible
-                'file_size_bytes' => $file->getSize(),
-                'caption'         => $caption,
-                'status'          => 'pending',
-                'sort_order'      => 0,
-                'views_count'     => 0,
-                'created_at'      => now(),
-                'updated_at'      => now(),
+                'video_uuid'       => (string) Str::uuid(),
+                'user_id'          => (string) $userId,
+                'album_type'       => $albumType,
+                'file_path'        => $supabasePath,
+                'thumbnail_path'   => $supabaseThumbPath,
+                'duration_seconds' => $duration,
+                'file_size_bytes'  => $file->getSize(),
+                'caption'          => $caption ?: null,
+                'status'           => 'pending',
+                'sort_order'       => 0,
+                'views_count'      => 0,
+                'created_at'       => now(),
+                'updated_at'       => now(),
             ]);
 
             return back()->with('success', 'Video subido correctamente. Será revisado antes de publicarse.');
 
         } catch (\Throwable $e) {
-            Log::error('VideoController@store: ' . $e->getMessage());
-            return back()->with('error', 'Error al subir el video. Intenta de nuevo.');
+            Log::error('VideoController@store error: ' . $e->getMessage(), [
+                'user_id' => $userId,
+                'trace'   => $e->getTraceAsString(),
+            ]);
+            // Limpiar archivos temporales si quedaron
+            if (isset($localPath) && file_exists($localPath)) @unlink($localPath);
+            if (isset($tmpPath)   && file_exists($tmpPath))   @unlink($tmpPath);
+            if (isset($thumbLocal) && file_exists($thumbLocal)) @unlink($thumbLocal);
+
+            return back()->with('error', 'Error al subir el video: ' . $e->getMessage());
         }
     }
 
-    // ── Servir video (streaming privado) ──
+
+
+    // ── Servir video (streaming con soporte Supabase + local) ──
     public function serve(int $id)
     {
-        $userId = auth()->id();
-        $video  = DB::table('videos')->where('id', $id)->first();
-
+        $video = DB::table('videos')->where('id', $id)->first();
         if (!$video) abort(404);
 
+        $userId = auth()->id();
+        $user   = auth()->user();
+
+        // ── Control de acceso ──────────────────────────────────────────────
         if ($video->status !== 'approved') {
-            if ((string)$video->user_id !== (string)$userId) abort(403);
+            if (!$userId || (string)$video->user_id !== (string)$userId) {
+                abort(403, 'Video pendiente de aprobación.');
+            }
         }
 
-        $user = auth()->user();
         if ($video->album_type === 'private') {
-            if (!\App\Services\MembershipService::can($user->id, 'can_view_private_photos'))
-                abort(403, 'Necesitas membresia Connectors o superior.');
+            if (!$user || !\App\Services\MembershipService::can($user->id, 'can_view_private_photos'))
+                abort(403, 'Necesitas membresía Connectors o superior.');
         }
         if ($video->album_type === 'vip') {
-            if (!\App\Services\MembershipService::hasMinLevel($user->id, 'vip_elite'))
-                abort(403, 'Necesitas membresia VIP Elite o superior.');
+            if (!$user || !\App\Services\MembershipService::hasMinLevel($user->id, 'vip_elite'))
+                abort(403, 'Necesitas membresía VIP Elite o superior.');
         }
 
-        $fullPath = storage_path('app/private/' . $video->file_path);
-        if (!file_exists($fullPath)) abort(404, 'Archivo no encontrado.');
+        // ── Servir thumbnail ───────────────────────────────────────────────
+        if (request()->has('thumb')) {
+            // thumbnail_path puede ser URL absoluta (Supabase) o ruta relativa
+            $thumbPath = $video->thumbnail_path ?? null;
+            if ($thumbPath) {
+                if (filter_var($thumbPath, FILTER_VALIDATE_URL)) {
+                    // URL de Supabase — redirigir directamente
+                    return redirect($thumbPath);
+                }
+                $thumbLocal = storage_path('app/private/' . $thumbPath);
+                if (file_exists($thumbLocal)) {
+                    return response()->file($thumbLocal, [
+                        'Content-Type'  => 'image/jpeg',
+                        'Cache-Control' => 'public, max-age=86400',
+                    ]);
+                }
+                // Intentar desde Supabase
+                try {
+                    if (Storage::disk('supabase')->exists($thumbPath)) {
+                        return redirect(Storage::disk('supabase')->url($thumbPath));
+                    }
+                } catch (\Throwable $e) {}
+            }
+            // Fallback: thumbnail placeholder SVG
+            return response(
+                '<svg xmlns="http://www.w3.org/2000/svg" width="640" height="360" viewBox="0 0 640 360">
+                    <rect width="640" height="360" fill="#1f2937"/>
+                    <text x="320" y="190" font-family="sans-serif" font-size="48"
+                          fill="#6b7280" text-anchor="middle">▶</text>
+                </svg>',
+                200,
+                ['Content-Type' => 'image/svg+xml', 'Cache-Control' => 'public, max-age=3600']
+            );
+        }
 
+        // ── Servir video (local preferido, Supabase como fallback) ─────────
+        $localPath = storage_path('app/private/' . $video->file_path);
+
+        if (!file_exists($localPath)) {
+            // Intentar desde Supabase
+            try {
+                if (Storage::disk('supabase')->exists($video->file_path)) {
+                    $url = Storage::disk('supabase')->temporaryUrl($video->file_path, now()->addMinutes(60));
+                    if ($video->status === 'approved') {
+                        DB::table('videos')->where('id', $id)->increment('views_count');
+                    }
+                    return redirect($url);
+                }
+            } catch (\Throwable $e) {
+                Log::error('VideoController@serve Supabase fallback failed: ' . $e->getMessage());
+            }
+            abort(404, 'Archivo no encontrado.');
+        }
+
+        // ── Incrementar vistas ─────────────────────────────────────────────
         if ($video->status === 'approved') {
             DB::table('videos')->where('id', $id)->increment('views_count');
         }
 
+        // ── HTTP Range streaming ───────────────────────────────────────────
         $ext      = strtolower(pathinfo($video->file_path, PATHINFO_EXTENSION));
         $mimeMap  = ['mp4'=>'video/mp4','mov'=>'video/quicktime','avi'=>'video/x-msvideo','webm'=>'video/webm'];
         $mimeType = $mimeMap[$ext] ?? 'video/mp4';
-        $fileSize = filesize($fullPath);
+        $fileSize = filesize($localPath);
 
-        // HTTP Range Request support (streaming real)
-        $start = 0;
-        $end   = $fileSize - 1;
+        $start  = 0;
+        $end    = $fileSize - 1;
         $status = 200;
         $headers = [
             'Content-Type'        => $mimeType,
@@ -178,8 +298,8 @@ class VideoController extends Controller
             $headers['Content-Length'] = $fileSize;
         }
 
-        return response()->stream(function () use ($fullPath, $start, $end) {
-            $fp = fopen($fullPath, 'rb');
+        return response()->stream(function () use ($localPath, $start, $end) {
+            $fp = fopen($localPath, 'rb');
             fseek($fp, $start);
             $remaining = $end - $start + 1;
             while (!feof($fp) && $remaining > 0) {
@@ -191,7 +311,6 @@ class VideoController extends Controller
             fclose($fp);
         }, $status, $headers);
     }
-
     // ── Eliminar video ──
     public function destroy(int $id)
     {
@@ -222,5 +341,6 @@ class VideoController extends Controller
         }
     }
 }
+
 
 

@@ -47,6 +47,9 @@ Route::get('/invitacion',  [\App\Http\Controllers\Auth\InvitationController::cla
 Route::post('/invitacion', [\App\Http\Controllers\Auth\InvitationController::class, 'store'])->name('invitation.store');
 
 // ── App (requiere auth) ───────────────────────────────────────────────────────
+// Videos — servir archivo (público, fuera de auth)
+Route::get('/videos/{id}/ver', [VideoController::class, 'serve'])->name('videos.serve.public');
+
 Route::middleware('auth')->group(function () {
 
     // Dashboard
@@ -94,7 +97,6 @@ Route::middleware('auth')->group(function () {
     Route::get('/mis-videos',          [VideoController::class, 'index'])->name('videos.index');
     Route::post('/videos',             [VideoController::class, 'store'])->name('videos.store');
     Route::delete('/videos/{id}',      [VideoController::class, 'destroy'])->name('videos.destroy');
-    Route::get('/videos/{id}/ver',     [VideoController::class, 'serve'])->name('videos.serve.public');
 
     // Videos — galería pública
     Route::get('/videos', [\App\Http\Controllers\Video\VideoGalleryController::class, 'index'])->name('videos.gallery');
@@ -330,4 +332,5 @@ Route::middleware(['auth', 'admin.only'])
     Route::delete('comentarios-articulos/{id}',        [AdminArticleCommentController::class, 'destroy'])->name('article-comments.destroy');
 
 });
+
 
