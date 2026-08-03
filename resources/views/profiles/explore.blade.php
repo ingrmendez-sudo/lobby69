@@ -9,8 +9,6 @@
     @include('layouts.sidebar-right')
 @endpush
 
-@section('content')
-
 @push('styles')
 <style>
 /* ══ EXPLORAR ══ */
@@ -239,6 +237,9 @@
 }
 </style>
 @endpush
+
+@section('content')
+
 
 {{-- ── Filtros ── --}}
 <form method="GET" action="{{ route('explore') }}">
