@@ -42,26 +42,41 @@
         'connectors' => ['label' => 'Connectors', 'icon' => 'fa-link'],
         'influencer' => ['label' => 'Influencer', 'icon' => 'fa-star'],
         'vip_elite'  => ['label' => 'VIP Elite',  'icon' => 'fa-gem'],
-        'Fundador'  => ['label' => 'Fundador',  'icon' => 'fa-crown'],
+        'Fundador'   => ['label' => 'Fundador',   'icon' => 'fa-crown'],
     ];
     $sMembershipInfo = $sMembershipLabels[$sMembership] ?? $sMembershipLabels['trial'];
+
+    $iconFile = match($sMembership) {
+        'trial_verified' => 'trial.png',
+        'explorer'       => 'explorer.png',
+        'connectors'     => 'connectors.png',
+        'influencer'     => 'influencer.png',
+        'vip_elite'      => 'vip-elite.png',
+        'Fundador'       => 'Fundador.png',
+        default          => 'trial.png',
+    };
 @endphp
 
 {{-- ══ BLOQUE FIJO: Mini Perfil ══ --}}
 <div class="l69-sidebar-card" style="padding-top:1.5rem;">
     <div class="l69-mini-profile">
+
         <div class="l69-mini-profile__avatar-wrap">
-            <img loading="eager" src="{{ $sAvatar }}"
+            <img loading="eager"
+                 src="{{ $sAvatar }}"
                  alt="{{ $sNick }}"
                  class="l69-mini-profile__avatar"
-                     onerror="this.src=this.dataset.fallback"
+                 data-fallback="{{ asset('img/default-avatar.svg') }}"
+                 onerror="this.src=this.dataset.fallback">
             @if($sVerified)
             <div class="l69-mini-profile__verified" title="Verificado">
                 <i class="fas fa-check"></i>
             </div>
             @endif
-        </div>
+        </div>{{-- /.l69-mini-profile__avatar-wrap --}}
+
         <div class="l69-mini-profile__nick">{{ $sNick }}</div>
+
         <div class="l69-mini-profile__type">
             @if($sProfile?->profile_type === 'pareja')
                 <i class="fas fa-heart"></i> Pareja
@@ -71,19 +86,10 @@
                 <i class="fas fa-user"></i> Single
             @endif
         </div>
-        @php
-            $iconFile = match($sMembership) {
-                'trial_verified' => 'trial.png',
-                'explorer'       => 'explorer.png',
-                'connectors'     => 'connectors.png',
-                'influencer'     => 'influencer.png',
-                'vip_elite'      => 'vip-elite.png',
-                'Fundador'      => 'Fundador.png',
-                default          => 'trial.png',
-            };
-        @endphp
+
         <span class="l69-membership-badge l69-membership-badge--{{ $sMembership }}">
-            <img loading="lazy" src="{{ asset('img/membership/' . $iconFile) }}"
+            <img loading="lazy"
+                 src="{{ asset('img/membership/' . $iconFile) }}"
                  style="width:14px;height:14px;object-fit:contain;"
                  onerror="this.style.display='none'">
             {{ $sMembershipInfo['label'] }}
@@ -100,13 +106,15 @@
             </div>
         </div>
         @endif
-    </div>
 
-    @if(str_starts_with($sRoute, 'dashboard'))
+    </div>{{-- /.l69-mini-profile --}}
+</div>{{-- /.l69-sidebar-card (mini-perfil) --}}
+
+@if(str_starts_with($sRoute, 'dashboard'))
 
 {{-- ── Últimas visitas a mi perfil ── --}}
 @php
-    $sWhoViewed = $whoViewedMe ?? collect();
+    $sWhoViewed      = $whoViewedMe      ?? collect();
     $sWhoViewedCount = $whoViewedMeCount ?? 0;
 @endphp
 <div class="l69-sidebar-card">
@@ -129,20 +137,17 @@
                 $vNick   = $visitor->nickname ?? 'Usuario';
                 $vAvatar = null;
                 if (!empty($visitor->avatar_photo_id)) {
-                    try {
-                        $vAvatar = route('photos.serve', $visitor->avatar_photo_id);
-                    } catch(\Exception $e) {}
+                    try { $vAvatar = route('photos.serve', $visitor->avatar_photo_id); } catch(\Exception $e) {}
                 }
-                if (!$vAvatar && !empty($visitor->avatar_url)) {
-                    $vAvatar = $visitor->avatar_url;
-                }
+                if (!$vAvatar && !empty($visitor->avatar_url)) { $vAvatar = $visitor->avatar_url; }
                 $vTime = !empty($visitor->visited_at)
                     ? \Carbon\Carbon::parse($visitor->visited_at)->diffForHumans()
                     : '';
             @endphp
             <div style="display:flex;align-items:center;gap:.6rem;">
                 <img loading="lazy"
-                     src="{{ $vAvatar ?? asset('img/default-avatar.svg') }}" data-fallback="{{ asset('img/default-avatar.svg') }}"
+                     src="{{ $vAvatar ?? asset('img/default-avatar.svg') }}"
+                     data-fallback="{{ asset('img/default-avatar.svg') }}"
                      style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;"
                      onerror="this.src=this.dataset.fallback">
                 <div style="min-width:0;flex:1;">
@@ -159,13 +164,12 @@
                     </span>
                     @endif
                     @if($vTime)
-                    <span style="font-size:.72rem;color:var(--theme-muted,#9ca3af);">
-                        {{ $vTime }}
-                    </span>
+                    <span style="font-size:.72rem;color:var(--theme-muted,#9ca3af);">{{ $vTime }}</span>
                     @endif
                 </div>
             </div>
             @endforeach
+        </div>{{-- /.flex-column --}}
         @if($sWhoViewedCount > 5)
         <a href="#" style="display:block;text-align:center;font-size:.78rem;
                            color:rgba(180,60,120,.8);margin-top:.75rem;
@@ -174,7 +178,7 @@
         </a>
         @endif
     @endif
-</div>
+</div>{{-- /.l69-sidebar-card (quién me visitó) --}}
 
 {{-- ── Últimos perfiles visitados ── --}}
 @php
@@ -201,20 +205,17 @@
                 $vdNick   = $visited->nickname ?? 'Usuario';
                 $vdAvatar = null;
                 if (!empty($visited->avatar_photo_id)) {
-                    try {
-                        $vdAvatar = route('photos.serve', $visited->avatar_photo_id);
-                    } catch(\Exception $e) {}
+                    try { $vdAvatar = route('photos.serve', $visited->avatar_photo_id); } catch(\Exception $e) {}
                 }
-                if (!$vdAvatar && !empty($visited->avatar_url)) {
-                    $vdAvatar = $visited->avatar_url;
-                }
+                if (!$vdAvatar && !empty($visited->avatar_url)) { $vdAvatar = $visited->avatar_url; }
                 $vdTime = !empty($visited->visited_at)
                     ? \Carbon\Carbon::parse($visited->visited_at)->diffForHumans()
                     : '';
             @endphp
             <div style="display:flex;align-items:center;gap:.6rem;">
                 <img loading="lazy"
-                     src="{{ $vdAvatar ?? asset('img/default-avatar.svg') }}" data-fallback="{{ asset('img/default-avatar.svg') }}"
+                     src="{{ $vdAvatar ?? asset('img/default-avatar.svg') }}"
+                     data-fallback="{{ asset('img/default-avatar.svg') }}"
                      style="width:32px;height:32px;border-radius:50%;object-fit:cover;flex-shrink:0;"
                      onerror="this.src=this.dataset.fallback">
                 <div style="min-width:0;flex:1;">
@@ -231,32 +232,30 @@
                     </span>
                     @endif
                     @if($vdTime)
-                    <span style="font-size:.72rem;color:var(--theme-muted,#9ca3af);">
-                        {{ $vdTime }}
-                    </span>
+                    <span style="font-size:.72rem;color:var(--theme-muted,#9ca3af);">{{ $vdTime }}</span>
                     @endif
                 </div>
             </div>
             @endforeach
+        </div>{{-- /.flex-column --}}
         @if($sIViewedCount > 5)
-        <a href="{{ route('profile.visitors') }}" style="display:block;text-align:center;font-size:.78rem;
-                           color:rgba(180,60,120,.8);margin-top:.75rem;
-                           text-decoration:none;font-weight:600;">
+        <a href="{{ route('profile.visitors') }}"
+           style="display:block;text-align:center;font-size:.78rem;
+                  color:rgba(180,60,120,.8);margin-top:.75rem;
+                  text-decoration:none;font-weight:600;">
             Ver historial completo →
         </a>
         @endif
-        </div>
     @endif
-</div>
+</div>{{-- /.l69-sidebar-card (últimos visitados) --}}
 
-@endif {{-- fin if dashboard --}}
+@endif {{-- /if dashboard --}}
 
-
-    {{-- ══ NAVEGACIÓN CONTEXTUAL ══ --}}
+{{-- ══ NAVEGACIÓN CONTEXTUAL ══ --}}
+<div class="l69-sidebar-card">
     <ul class="l69-sidebar-nav">
 
         @if(str_starts_with($sRoute, 'videos'))
-        {{-- Contexto: Mis Videos --}}
         <li class="l69-sidebar-nav__item">
             <a href="{{ route('videos.index') }}" class="is-active">
                 <i class="fas fa-video"></i> Mis Videos
@@ -274,27 +273,22 @@
                 <i class="fas fa-info-circle"></i> Límites
             </p>
             <div style="display:flex;flex-direction:column;gap:.3rem;">
-                <div style="font-size:.78rem;color:var(--theme-muted,#9ca3af);
-                            display:flex;justify-content:space-between;">
+                <div style="font-size:.78rem;color:var(--theme-muted,#9ca3af);display:flex;justify-content:space-between;">
                     <span>Duración mín.</span><strong>30 seg</strong>
                 </div>
-                <div style="font-size:.78rem;color:var(--theme-muted,#9ca3af);
-                            display:flex;justify-content:space-between;">
+                <div style="font-size:.78rem;color:var(--theme-muted,#9ca3af);display:flex;justify-content:space-between;">
                     <span>Duración máx.</span><strong>5 min</strong>
                 </div>
-                <div style="font-size:.78rem;color:var(--theme-muted,#9ca3af);
-                            display:flex;justify-content:space-between;">
+                <div style="font-size:.78rem;color:var(--theme-muted,#9ca3af);display:flex;justify-content:space-between;">
                     <span>Peso máx.</span><strong>100 MB</strong>
                 </div>
-                <div style="font-size:.78rem;color:var(--theme-muted,#9ca3af);
-                            display:flex;justify-content:space-between;">
+                <div style="font-size:.78rem;color:var(--theme-muted,#9ca3af);display:flex;justify-content:space-between;">
                     <span>Formatos</span><strong>MP4 MOV WEBM</strong>
                 </div>
             </div>
         </li>
 
         @elseif(str_starts_with($sRoute, 'photos'))
-        {{-- Contexto: Mis Fotos --}}
         <li class="l69-sidebar-nav__item">
             <a href="{{ route('photos.index') }}" class="is-active">
                 <i class="fas fa-images"></i> Mis Fotos
@@ -312,23 +306,19 @@
                 <i class="fas fa-info-circle"></i> Álbumes
             </p>
             <div style="display:flex;flex-direction:column;gap:.3rem;">
-                <div style="font-size:.78rem;color:var(--theme-muted,#9ca3af);
-                            display:flex;justify-content:space-between;">
+                <div style="font-size:.78rem;color:var(--theme-muted,#9ca3af);display:flex;justify-content:space-between;">
                     <span>🌐 Público</span><span>Todos los verificados</span>
                 </div>
-                <div style="font-size:.78rem;color:var(--theme-muted,#9ca3af);
-                            display:flex;justify-content:space-between;">
+                <div style="font-size:.78rem;color:var(--theme-muted,#9ca3af);display:flex;justify-content:space-between;">
                     <span>🔒 Privado</span><span>Connectors+</span>
                 </div>
-                <div style="font-size:.78rem;color:var(--theme-muted,#9ca3af);
-                            display:flex;justify-content:space-between;">
+                <div style="font-size:.78rem;color:var(--theme-muted,#9ca3af);display:flex;justify-content:space-between;">
                     <span>👑 VIP</span><span>VIP Elite+</span>
                 </div>
             </div>
         </li>
 
         @elseif(str_starts_with($sRoute, 'explore'))
-        {{-- Contexto: Explorar --}}
         <li class="l69-sidebar-nav__item">
             <a href="{{ route('explore') }}" class="is-active">
                 <i class="fas fa-compass"></i> Explorar
@@ -336,23 +326,16 @@
         </li>
         <li class="l69-sidebar-nav__sep"></li>
         <li class="l69-sidebar-nav__item">
-            <a href="{{ route('explore') }}?type=single">
-                <i class="fas fa-user"></i> Singles
-            </a>
+            <a href="{{ route('explore') }}?type=single"><i class="fas fa-user"></i> Singles</a>
         </li>
         <li class="l69-sidebar-nav__item">
-            <a href="{{ route('explore') }}?type=pareja">
-                <i class="fas fa-heart"></i> Parejas
-            </a>
+            <a href="{{ route('explore') }}?type=pareja"><i class="fas fa-heart"></i> Parejas</a>
         </li>
         <li class="l69-sidebar-nav__item">
-            <a href="{{ route('explore') }}?type=unicornio">
-                <i class="fas fa-star"></i> Unicornios
-            </a>
+            <a href="{{ route('explore') }}?type=unicornio"><i class="fas fa-star"></i> Unicornios</a>
         </li>
 
         @elseif(str_starts_with($sRoute, 'profile'))
-        {{-- Contexto: Perfil --}}
         <li class="l69-sidebar-nav__item">
             <a href="{{ route('profile.edit') }}" class="{{ $sActive('profile.edit') }}">
                 <i class="fas fa-user-edit"></i> Editar Perfil
@@ -367,8 +350,6 @@
         @endif
 
         @else
-        {{-- Contexto: Dashboard y resto --}}
-
         <li class="l69-sidebar-nav__item">
             <a href="{{ route('events.public.index') }}">
                 <i class="fas fa-calendar-alt"></i> Eventos
@@ -399,9 +380,6 @@
                 </button>
             </form>
         </li>
+
     </ul>
-</div>
-
-
-
-
+</div>{{-- /.l69-sidebar-card (nav) --}}
