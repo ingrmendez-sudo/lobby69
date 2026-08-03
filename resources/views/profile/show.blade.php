@@ -1596,7 +1596,7 @@ function openVideoModal(videoId, caption, views, duration, ownerId) {
     var capEl   = document.getElementById('video-modal-caption');
     var viewsEl = document.getElementById('video-modal-views');
     var durEl   = document.getElementById('video-modal-duration');
-    if (!modal || !player || !src) return;
+    if (!modal || !player) return;
 
     player.src = '/videos/' + videoId + '/ver';
     player.load();
