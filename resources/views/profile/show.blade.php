@@ -1429,7 +1429,7 @@
                 align-items:center;padding:1.5rem 1rem;">
         <video id="video-modal-player" controls muted
                style="width:100%;max-height:75vh;border-radius:10px;background:#000;display:block;">
-            <source id="video-modal-src" src="" type="video/mp4">
+
         </video>
         <p id="video-modal-caption"
            style="color:#e2e8f0;text-align:center;margin-top:.5rem;font-size:.85rem;max-width:100%;"></p>
@@ -1592,13 +1592,13 @@ function openVideoModal(videoId, caption, views, duration, ownerId) {
 
     var modal   = document.getElementById('video-modal');
     var player  = document.getElementById('video-modal-player');
-    var src     = document.getElementById('video-modal-src');
+    // src element removed — using player.src directly
     var capEl   = document.getElementById('video-modal-caption');
     var viewsEl = document.getElementById('video-modal-views');
     var durEl   = document.getElementById('video-modal-duration');
     if (!modal || !player || !src) return;
 
-    src.setAttribute('src', '/videos/' + videoId + '/ver');
+    player.src = '/videos/' + videoId + '/ver';
     player.load();
     player.muted = true;
     player.play().catch(function(){});
@@ -1627,7 +1627,7 @@ function openVideoModal(videoId, caption, views, duration, ownerId) {
 function closeVideoModal() {
     var modal  = document.getElementById('video-modal');
     var player = document.getElementById('video-modal-player');
-    if (player) { player.pause(); player.src = ''; }
+    if (player) { player.pause(); player.removeAttribute('src'); player.load(); }
     if (modal)  modal.style.display = 'none';
     document.body.style.overflow = '';
     _vmVideoId = null;
@@ -2503,3 +2503,5 @@ function contieneContacto(txt) {
 
 
 
+
+    if (player) { player.pause(); player.removeAttribute('src'); player.load(); }
