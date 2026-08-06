@@ -18,18 +18,10 @@ return Application::configure(basePath: dirname(__DIR__))
             'force.password.change' => \App\Http\Middleware\ForcePasswordChange::class,
             'profile.completed'     => \App\Http\Middleware\ProfileCompleted::class,
             'check.membership'      => \App\Http\Middleware\CheckMembershipStatus::class,
-            'track.seen' => \App\Http\Middleware\TrackLastSeen::class,
-
+            'track.seen'            => \App\Http\Middleware\TrackLastSeen::class,
+            'first.login'           => \App\Http\Middleware\FirstLoginMiddleware::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
-
-
-
-// Scheduler: limpiar sesiones de video huerfanas
-$app->booted(function () {
-    $schedule = app(\Illuminate\Console\Scheduling\Schedule::class);
-    $schedule->command('video:clean-orphans')->everyMinute();
-});

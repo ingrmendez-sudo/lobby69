@@ -8,6 +8,7 @@ use App\Http\Controllers\Auth\LoginController;
 // ── App Controllers ───────────────────────────────────────────────────────────
 use App\Http\Controllers\Dashboard\DashboardController;
 use App\Http\Controllers\Profile\ProfileController;
+use App\Http\Controllers\Auth\PasswordChangeController;
 use App\Http\Controllers\Verification\VerificationController;
 use App\Http\Controllers\Photo\PhotoController;
 use App\Http\Controllers\Photo\PhotoInteractionController;
@@ -50,7 +51,7 @@ Route::post('/invitacion', [\App\Http\Controllers\Auth\InvitationController::cla
 // Videos — servir archivo (público, fuera de auth)
 Route::get('/videos/{id}/ver', [VideoController::class, 'serve'])->name('videos.serve.public');
 
-Route::middleware('auth')->group(function () {
+Route::middleware(['auth', 'profile.completed', 'force.password.change'])->group(function () {
 
     // Dashboard
     Route::get('/dashboard',      [DashboardController::class, 'index'])->name('dashboard');
@@ -67,9 +68,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/mensajes/anuncio',                           [\App\Http\Controllers\MessagesController::class, 'storeAnnouncement'])->name('messages.announcement.store');
     Route::patch('/mensajes/anuncio/{id}/cerrar',              [\App\Http\Controllers\MessagesController::class, 'closeAnnouncement'])->name('messages.announcement.close');
 
-    // Perfil
-    Route::get('/perfil/configurar',  [ProfileController::class, 'setup'])->name('profile.setup');
-    Route::post('/perfil/configurar', [ProfileController::class, 'store'])->name('profile.store');
+    // Perfil — setup (exento de middlewares de flujo)
+    Route::get('/perfil/configurar',  [ProfileController::class, 'setup'])->name('profile.setup')->withoutMiddleware(['profile.completed','force.password.change']);
+    Route::post('/perfil/configurar', [ProfileController::class, 'store'])->name('profile.store')->withoutMiddleware(['profile.completed','force.password.change']);
+    // Cambiar contraseña (exento de middlewares de flujo)
+    Route::get('/cambiar-password',  [PasswordChangeController::class, 'show'])->name('profile.change-password')->withoutMiddleware(['profile.completed','force.password.change']);
+    Route::post('/cambiar-password', [PasswordChangeController::class, 'store'])->name('password.change.store')->withoutMiddleware(['profile.completed','force.password.change']);
+
     Route::get('/perfil/editar',      [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/perfil/editar',      [ProfileController::class, 'update'])->name('profile.update');
     Route::get('/u/{nickname}',       [ProfileController::class, 'publicShow'])->name('profile.show');

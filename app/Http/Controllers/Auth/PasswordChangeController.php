@@ -1,5 +1,6 @@
 <?php
 namespace App\Http\Controllers\Auth;
+
 use App\Http\Controllers\Controller;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -10,8 +11,8 @@ class PasswordChangeController extends Controller
 {
     public function show()
     {
-        $user = DB::table('users')->where('id', auth()->id())->first();
-        if ($user && $user->password_changed) {
+        // Si ya cambio contrasena, redirigir al dashboard
+        if (auth()->user()->password_changed) {
             return redirect()->route('dashboard');
         }
         return view('auth.password-change');
@@ -25,52 +26,34 @@ class PasswordChangeController extends Controller
                 'string',
                 'min:8',
                 'confirmed',
-                function ($attribute, $value, $fail) {
-                    if (!preg_match('/[A-Z]/', $value)) {
-                        $fail('Debe tener al menos una mayúscula.');
-                    }
-                    if (!preg_match('/[a-z]/', $value)) {
-                        $fail('Debe tener al menos una minúscula.');
-                    }
-                    if (!preg_match('/[0-9]/', $value)) {
-                        $fail('Debe tener al menos un número.');
-                    }
-                },
+                'regex:/[A-Z]/',
+                'regex:/[a-z]/',
+                'regex:/[0-9]/',
             ],
-            'password_confirmation' => 'required',
+        ], [
+            'password.required'  => 'La contraseña es obligatoria.',
+            'password.min'       => 'La contraseña debe tener al menos 8 caracteres.',
+            'password.confirmed' => 'Las contraseñas no coinciden.',
+            'password.regex'     => 'La contraseña debe tener mayusculas, minusculas y numeros.',
         ]);
 
-        $userId = auth()->id();
-        $user   = DB::table('users')->where('id', $userId)->first();
+        $user = auth()->user();
 
-        if (!$user) {
-            return back()->withErrors(['password' => 'Usuario no encontrado.']);
-        }
-
-        if (Hash::check($request->password, $user->password)) {
-            return back()->withErrors([
-                'password' => 'La nueva contraseña debe ser diferente a la contraseña temporal.'
+        DB::table('users')
+            ->where('id', $user->id)
+            ->update([
+                'password'            => Hash::make($request->password),
+                'password_changed'    => true,
+                'password_changed_at' => Carbon::now(),
+                'updated_at'          => Carbon::now(),
             ]);
-        }
 
-        // Usar DB::table directamente para evitar problemas de fillable
-        $updated = DB::table('users')->where('id', $userId)->update([
-            'password'            => Hash::make($request->password),
-            'password_changed'    => true,
-            'password_changed_at' => Carbon::now()->toDateTimeString(),
-            'updated_at'          => Carbon::now()->toDateTimeString(),
-        ]);
+        // Cerrar sesion y redirigir al login con mensaje
+        auth()->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
 
-        if (!$updated) {
-            return back()->withErrors(['password' => 'Error al guardar. Intenta de nuevo.']);
-        }
-
-        // Refrescar la sesion del usuario
-        auth()->setUser(
-            \App\Models\User::find($userId)
-        );
-
-        return redirect()->route('dashboard')
-            ->with('success', '✅ Contraseña actualizada. ¡Bienvenido a LOBBY69!');
+        return redirect()->route('login')
+            ->with('success', 'Contrasena actualizada correctamente. Inicia sesion con tu nueva contrasena.');
     }
 }
