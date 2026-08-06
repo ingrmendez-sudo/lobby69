@@ -270,14 +270,27 @@ class VideoController extends Controller
             DB::table('videos')->where('id', $id)->increment('views_count');
         }
 
-        // ── HTTP Range streaming ───────────────────────────────────────────
+                // ── HTTP Range streaming ─────────────────────────────────────────
         $ext      = strtolower(pathinfo($video->file_path, PATHINFO_EXTENSION));
         $mimeMap  = ['mp4'=>'video/mp4','mov'=>'video/quicktime','avi'=>'video/x-msvideo','webm'=>'video/webm'];
         $mimeType = $mimeMap[$ext] ?? 'video/mp4';
-        $fileSize = filesize($localPath);
 
-        $start  = 0;
-        $end    = $fileSize - 1;
+        // ── Detectar y saltar BOM UTF-8 (EF BB BF) si existe ─────────────
+        $bomOffset = 0;
+        $fp = fopen($localPath, 'rb');
+        if ($fp) {
+            $bom = fread($fp, 3);
+            fclose($fp);
+            if ($bom === "\xEF\xBB\xBF") {
+                $bomOffset = 3;
+                \Log::info('VideoController@serve: BOM detectado, saltando 3 bytes: ' . $localPath);
+            }
+        }
+
+        $fullSize = filesize($localPath);
+        $fileSize = $fullSize - $bomOffset;
+        $start    = $bomOffset;
+        $end      = $fullSize - 1;
         $status = 200;
         $headers = [
             'Content-Type'        => $mimeType,
@@ -341,6 +354,3 @@ class VideoController extends Controller
         }
     }
 }
-
-
-

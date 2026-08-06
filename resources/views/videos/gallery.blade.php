@@ -611,46 +611,58 @@ window.vgLoadVideo = function(v, src) {
 
         /* ── Helpers ── */
         function _startHover(card) {
-            var thumb = card.querySelector('.vg-thumb--hoverable');
-            var video = thumb ? thumb.querySelector('video') : null;
-            if (!video || !card.dataset.vsrc) return;
+        var thumb = card.querySelector('.vg-thumb--hoverable');
+        var video = thumb ? thumb.querySelector('video') : null;
+        if (!video || !card.dataset.vsrc) return;
 
-            /* Ya cargado en esta sesión de hover: solo hacer play */
-            if (hoverLoaded.get(card)) {
-                video.currentTime = 0;
-                video.play().catch(function () {});
-                return;
-            }
+        if (hoverLoaded.get(card)) {
+            video.currentTime = 0;
+            video.play().catch(function () {});
+            return;
+        }
 
-            /* Mostrar spinner */
-            thumb.classList.add('vg-loading');
+        thumb.classList.add('vg-loading');
 
-            /* Remover listeners anteriores si existieran */
-            if (video._hoverCanPlay) {
-                video.removeEventListener('canplay', video._hoverCanPlay);
-                video._hoverCanPlay = null;
-            }
+        if (video._hoverCanPlay) {
+            video.removeEventListener('canplay', video._hoverCanPlay);
+            video._hoverCanPlay = null;
+        }
 
-            /* Listener de canplay: arrancar reproducción silenciada */
+        // Obtener URL firmada directamente para evitar el 302 cross-origin
+        var resolveUrl = card.dataset.vsrc + '?direct=1';
+
+        fetch(resolveUrl, {
+            method: 'GET',
+            redirect: 'manual',         // capturar el 302 sin seguirlo
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function(resp) {
+            // resp.type === 'opaqueredirect' cuando hay 302
+            // En ese caso usamos la URL directamente (el <video> sí sigue redirects)
+            return card.dataset.vsrc;
+        })
+        .catch(function() {
+            return card.dataset.vsrc;
+        })
+        .then(function(src) {
             video._hoverCanPlay = function () {
                 thumb.classList.remove('vg-loading');
                 video.play().catch(function () {});
                 hoverLoaded.set(card, true);
             };
             video.addEventListener('canplay', video._hoverCanPlay, { once: true });
-
-            /* Listener de error: quitar spinner silenciosamente */
             video.addEventListener('error', function () {
                 thumb.classList.remove('vg-loading');
             }, { once: true });
 
-            /* Asignar src y cargar — muted obligatorio para autoplay */
-            video.muted       = true;
-            video.loop        = true;
-            video.preload     = 'auto';
-            video.src         = card.dataset.vsrc;
+            video.muted   = true;
+            video.loop    = true;
+            video.preload = 'auto';
+            video.src     = src;
             video.load();
-        }
+        });
+    }
+
 
         function _stopHover(card) {
             var thumb = card.querySelector('.vg-thumb--hoverable');
