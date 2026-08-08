@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace App\Http\Controllers;
 
@@ -121,29 +121,20 @@ class FollowController extends Controller
             ->orderByDesc('follows.created_at')
             ->get();
 
-        // Avatar para cada seguidor
-        $followers = $followers->map(function ($f) {
-            $avatar = DB::table('photos')
-                ->where('user_id', $f->user_id)
-                ->where('is_profile_photo', true)
-                ->where('status', 'approved')
-                ->value('file_path');
+        // Avatar en una sola query con LEFT JOIN
+        $userIds = $followers->pluck('user_id')->map(fn($id) => (string)$id)->toArray();
+        $avatars = DB::table('photos')
+            ->whereRaw('user_id::text IN (' . implode(',', array_fill(0, count($userIds), '?')) . ')', $userIds)
+            ->where('is_profile_photo', true)
+            ->where('status', 'approved')
+            ->select(['id', DB::raw('user_id::text as uid'), 'file_path'])
+            ->get()
+            ->keyBy('uid');
 
-            if (!$avatar) {
-                $avatar = DB::table('photos')
-                    ->where('user_id', $f->user_id)
-                    ->where('album_type', 'public')
-                    ->where('status', 'approved')
-                    ->orderBy('sort_order')
-                    ->value('file_path');
-            }
-
-            $f->avatar_url = $avatar
-                ? route('photos.serve', DB::table('photos')
-                    ->where('file_path', $avatar)
-                    ->value('id'))
-                : null;
-
+        $followers = $followers->map(function ($f) use ($avatars) {
+            $uid = (string)$f->user_id;
+            $av  = $avatars->get($uid);
+            $f->avatar_url = $av ? route('photos.serve', $av->id) : null;
             return $f;
         });
 
@@ -177,29 +168,20 @@ class FollowController extends Controller
             ->orderByDesc('follows.created_at')
             ->get();
 
-        // Avatar para cada seguido
-        $following = $following->map(function ($f) {
-            $avatar = DB::table('photos')
-                ->where('user_id', $f->user_id)
-                ->where('is_profile_photo', true)
-                ->where('status', 'approved')
-                ->value('file_path');
+        // Avatar en una sola query con LEFT JOIN
+        $userIds = $following->pluck('user_id')->map(fn($id) => (string)$id)->toArray();
+        $avatars = count($userIds) ? DB::table('photos')
+            ->whereRaw('user_id::text IN (' . implode(',', array_fill(0, count($userIds), '?')) . ')', $userIds)
+            ->where('is_profile_photo', true)
+            ->where('status', 'approved')
+            ->select(['id', DB::raw('user_id::text as uid'), 'file_path'])
+            ->get()
+            ->keyBy('uid') : collect();
 
-            if (!$avatar) {
-                $avatar = DB::table('photos')
-                    ->where('user_id', $f->user_id)
-                    ->where('album_type', 'public')
-                    ->where('status', 'approved')
-                    ->orderBy('sort_order')
-                    ->value('file_path');
-            }
-
-            $f->avatar_url = $avatar
-                ? route('photos.serve', DB::table('photos')
-                    ->where('file_path', $avatar)
-                    ->value('id'))
-                : null;
-
+        $following = $following->map(function ($f) use ($avatars) {
+            $uid = (string)$f->user_id;
+            $av  = $avatars->get($uid);
+            $f->avatar_url = $av ? route('photos.serve', $av->id) : null;
             return $f;
         });
 
