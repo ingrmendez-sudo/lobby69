@@ -39,7 +39,7 @@
     </form>
 
     {{-- ── Grid de usuarios ── --}}
-    @if($users->isEmpty())
+    @if($available->isEmpty())
         <div class="avail-page__empty">
             <span style="font-size:2.5rem">😴</span>
             <p>Nadie disponible en este momento.</p>
@@ -47,7 +47,7 @@
         </div>
     @else
     <div class="avail-page__grid">
-        @foreach($users as $u)
+        @foreach($available as $u)
         @php
             $avatarUrl  = supabase_photo_url($u->avatar_path ?? null) ?? asset('img/default-avatar.svg');
             $profileUrl = $u->nickname ? route('profile.show', $u->nickname) : '#';
@@ -90,9 +90,9 @@
     </div>
 
     {{-- ── Paginación ── --}}
-    @if($users->hasPages())
+    @if($available->hasPages())
     <div class="avail-page__pagination">
-        {{ $users->links() }}
+        {{ $available->links() }}
     </div>
     @endif
     @endif
