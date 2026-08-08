@@ -228,6 +228,18 @@ class AvailabilityController extends Controller
 
         $available = $query->orderBy('av.expires_at', 'asc')->paginate(24);
 
-        return view('availability.index', compact('available', 'slot', 'search') + ['total' => $available->total()]);
+        return view('availability.index', [
+            'available'   => $available,
+            'total'       => $available->total(),
+            'slot'        => $slot,
+            'slotFilter'  => $slot,
+            'search'      => $search,
+            'slotLabels'  => [
+                'manana'   => ['icon' => '🌅', 'label' => 'Mañana'],
+                'tarde'    => ['icon' => '☀️',  'label' => 'Tarde'],
+                'noche'    => ['icon' => '🌙', 'label' => 'Noche'],
+                'ahora'    => ['icon' => '⚡', 'label' => 'Ahora'],
+            ],
+        ]);
     }
 }
