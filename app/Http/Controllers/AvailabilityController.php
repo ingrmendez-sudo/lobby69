@@ -241,5 +241,17 @@ class AvailabilityController extends Controller
                 'ahora'    => ['icon' => '⚡', 'label' => 'Ahora'],
             ],
         ]);
+            'available'   => $available,
+            'total'       => $available->total(),
+            'slot'        => $slot,
+            'slotFilter'  => $slot,
+            'search'      => $search,
+            'slotLabels'  => [
+                'manana'   => ['icon' => '🌅', 'label' => 'Mañana'],
+                'tarde'    => ['icon' => '☀️',  'label' => 'Tarde'],
+                'noche'    => ['icon' => '🌙', 'label' => 'Noche'],
+                'ahora'    => ['icon' => '⚡', 'label' => 'Ahora'],
+            ],
+        ]);
     }
 }
