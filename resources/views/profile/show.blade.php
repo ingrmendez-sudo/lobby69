@@ -1593,20 +1593,7 @@ function timeAgo(raw) {
         .then(function(data) {
             var comments = Array.isArray(data.photo.comments) ? data.photo.comments : [];
             _commentCache[uuid] = comments; /* guardar en caché */
-            if (!comments.length) {
-                box.innerHTML = '<p class="prf-comment-empty">Sé el primero en comentar.</p>';
-                return;
-            }
-            box.innerHTML = '';
-            comments.forEach(function(c) {
-                var div = document.createElement('div');
-                div.className = 'prf-modal-comment';
-                div.innerHTML =
-                    '<span class="prf-modal-comment__author">' + (c.user_nick || c.nickname || 'Usuario') + '</span>' +
-                    '<span class="prf-modal-comment__text">'   + (c.body    || '')         + '</span>' +
-                    '<span class="prf-modal-comment__time">' + timeAgo(c.created_at) + '</span>';
-                box.appendChild(div);
-            });
+            renderComments(box, comments);
         })
         .catch(function() {
             box.innerHTML = '<p class="prf-comment-empty">No se pudieron cargar los comentarios.</p>';
