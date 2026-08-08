@@ -294,7 +294,7 @@
 {{-- ── Wrapper para alinear con sidebars ── --}}
 <div style="min-width:0;">
 {{-- ── Disponibles ahora ── --}}
-@include('availability._available_users', ['availableUsers' => \ ?? collect()])
+@include('availability._available_users', ['availableUsers' => $availableUsers ?? collect()])
 
 {{-- ── Tabs ── --}}
 <div class="l69-feed-tabs" style="display:flex;gap:.5rem;margin-bottom:1.25rem;">

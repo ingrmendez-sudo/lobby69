@@ -133,20 +133,29 @@ class AdminVideoController extends Controller
         $video = DB::table('videos')->where('id', $id)->first();
         abort_if(!$video, 404);
 
-        $path = $video->file_path;
-
-        if (!Storage::disk('private')->exists($path)) {
-            abort(404, 'Archivo no encontrado');
+        // Intentar primero desde Supabase (videos nuevos)
+        try {
+            $signedUrl = Storage::disk('supabase')
+                ->temporaryUrl($video->file_path, now()->addMinutes(30));
+            return redirect($signedUrl);
+        } catch (\Throwable $e) {
+            // Fallback: disco local (videos pre-migración)
         }
 
-        $fullPath = Storage::disk('private')->path($path);
+        // Fallback local
+        $localPath = storage_path('app/private/' . ltrim($video->file_path, '/'));
+        if (!file_exists($localPath)) {
+            abort(404, 'Archivo no encontrado en disco ni en Supabase.');
+        }
 
-        return response()->file($fullPath, [
-            'Content-Type'        => mime_content_type($fullPath),
-            'Content-Length'      => filesize($fullPath),
-            'Content-Disposition' => 'inline; filename="' . basename($path) . '"',
+        return response()->file($localPath, [
+            'Content-Type'        => mime_content_type($localPath),
+            'Content-Length'      => filesize($localPath),
+            'Content-Disposition' => 'inline; filename="' . basename($localPath) . '"',
             'Cache-Control'       => 'no-store',
         ]);
     }
+
 }
+
 
