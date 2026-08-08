@@ -176,11 +176,20 @@ class AvailabilityController extends Controller
 
 
     // == Pagina publica: todos los disponibles ==
+
+    // == Pagina publica: todos los disponibles ==
     public function publicList(\Illuminate\Http\Request $request)
     {
         $userId = (string) auth()->id();
         $slot   = $request->input('slot');
         $search = $request->input('q');
+
+        $slotLabels = [
+            'manana' => ['icon' => '🌅', 'label' => 'Manana'],
+            'tarde'  => ['icon' => '☀️',  'label' => 'Tarde'],
+            'noche'  => ['icon' => '🌙', 'label' => 'Noche'],
+            'ahora'  => ['icon' => '⚡', 'label' => 'Ahora'],
+        ];
 
         $query = \Illuminate\Support\Facades\DB::table('availability as av')
             ->join('users as u',
@@ -191,7 +200,8 @@ class AvailabilityController extends Controller
                 \Illuminate\Support\Facades\DB::raw('u.id::text'))
             ->leftJoin(
                 \Illuminate\Support\Facades\DB::raw(
-                    "(SELECT DISTINCT ON (user_id) user_id::text AS av_uid, id AS avatar_id, file_path AS avatar_path
+                    "(SELECT DISTINCT ON (user_id) user_id::text AS av_uid,
+                      id AS avatar_id, file_path AS avatar_path
                       FROM photos
                       WHERE is_profile_photo = true AND status = 'approved'
                       ORDER BY user_id) as ph"
@@ -209,7 +219,8 @@ class AvailabilityController extends Controller
                 'p.age',
                 'p.city',
                 'p.bio',
-                                'av.slot',
+                'p.verified_profile',
+                'av.slot',
                 'av.message',
                 'av.expires_at',
                 'ph.avatar_path',
@@ -226,32 +237,12 @@ class AvailabilityController extends Controller
             });
         }
 
-        $available = $query->orderBy('av.expires_at', 'asc')->paginate(24);
+        $available   = $query->orderBy('av.expires_at', 'asc')->paginate(24);
+        $slotFilter  = $slot;
+        $total       = $available->total();
 
-        return view('availability.index', [
-            'available'   => $available,
-            'total'       => $available->total(),
-            'slot'        => $slot,
-            'slotFilter'  => $slot,
-            'search'      => $search,
-            'slotLabels'  => [
-                'manana'   => ['icon' => '🌅', 'label' => 'Mañana'],
-                'tarde'    => ['icon' => '☀️',  'label' => 'Tarde'],
-                'noche'    => ['icon' => '🌙', 'label' => 'Noche'],
-                'ahora'    => ['icon' => '⚡', 'label' => 'Ahora'],
-            ],
-        ]);
-            'available'   => $available,
-            'total'       => $available->total(),
-            'slot'        => $slot,
-            'slotFilter'  => $slot,
-            'search'      => $search,
-            'slotLabels'  => [
-                'manana'   => ['icon' => '🌅', 'label' => 'Mañana'],
-                'tarde'    => ['icon' => '☀️',  'label' => 'Tarde'],
-                'noche'    => ['icon' => '🌙', 'label' => 'Noche'],
-                'ahora'    => ['icon' => '⚡', 'label' => 'Ahora'],
-            ],
-        ]);
+        return view('availability.index', compact(
+            'available', 'total', 'slot', 'slotFilter', 'search', 'slotLabels'
+        ));
     }
 }
