@@ -59,7 +59,7 @@
 @endphp
 
 {{-- ── Panel Disponible HOY ── --}}
-@if($rUser)
+@if($rUser && $rRoute !== 'explore' && !str_starts_with($rRoute, 'events.') && !str_starts_with($rRoute, 'articles.'))
 @php
     $rAvail = \Illuminate\Support\Facades\DB::table('availability')
         ->whereRaw('user_id::text = ?', [(string)$rUser->id])
