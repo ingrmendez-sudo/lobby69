@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 namespace App\Http\Middleware;
 
 use Closure;
@@ -20,10 +20,8 @@ class CheckMembershipStatus
 
         if (!$user) return $next($request);
 
-        // Admin siempre pasa
         if ($user->role === 'admin') return $next($request);
 
-        // Rutas que siempre están permitidas
         $allowedRoutes = [
             'verification.show', 'verification.store',
             'membership.plans', 'membership.checkout',
@@ -42,7 +40,7 @@ class CheckMembershipStatus
         if ($membershipType === 'trial' && $trialDays > 7) {
             Cache::forget("membership_user_{$userId}");
             return redirect()->route('verification.show')
-                ->with('warning', 'Tu período de prueba ha expirado. Verifica tu identidad para continuar.');
+                ->with('warning', 'Tu periodo de prueba ha expirado. Verifica tu identidad para continuar.');
         }
 
         if ($membershipType === 'trial_verified') {
@@ -50,14 +48,14 @@ class CheckMembershipStatus
             if ($verifiedAt->diffInDays(Carbon::now()) > 30) {
                 Cache::forget("membership_user_{$userId}");
                 return redirect()->route('membership.plans')
-                    ->with('warning', 'Tu mes gratuito ha terminado. Elige una membresía para continuar.');
+                    ->with('warning', 'Tu mes gratuito ha terminado. Elige una membresia para continuar.');
             }
         }
 
         if ($membershipType === 'expired') {
             Cache::forget("membership_user_{$userId}");
             return redirect()->route('membership.plans')
-                ->with('warning', 'Tu membresía ha vencido. Renueva para continuar.');
+                ->with('warning', 'Tu membresia ha vencido. Renueva para continuar.');
         }
 
         if (in_array($membershipType, ['suspended', 'banned'])) {
