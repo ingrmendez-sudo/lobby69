@@ -223,46 +223,6 @@
     </ul>
 </div>
 
-@elseif(str_starts_with($rRoute, 'explore'))
-<div class="l69-sidebar-card">
-    <div class="l69-sidebar-card__title">
-        <i class="fas fa-filter"></i> Filtros Rápidos
-    </div>
-    <div style="display:flex;flex-direction:column;gap:.4rem;">
-        <a href="{{ route('explore') }}?type=single"    class="l69-quick-btn"><i class="fas fa-user"></i> Singles</a>
-        <a href="{{ route('explore') }}?type=pareja"    class="l69-quick-btn"><i class="fas fa-heart"></i> Parejas</a>
-        <a href="{{ route('explore') }}?type=unicornio" class="l69-quick-btn"><i class="fas fa-star"></i> Unicornios</a>
-    </div>
-</div>
-
-@else
-<div class="l69-sidebar-card">
-    <div class="l69-sidebar-card__title">
-        <i class="fas fa-bolt"></i> Accesos Rápidos
-    </div>
-    <div style="display:flex;flex-direction:column;gap:.4rem;">
-        @if(!$rIsVerified)
-        <a href="{{ route('verification.show') }}" class="l69-quick-btn"
-           style="border-color:rgba(245,158,11,.35);color:#fbbf24;">
-            <i class="fas fa-id-card"></i> Verificar identidad
-        </a>
-        @endif
-        <a href="{{ route('photos.index') }}" class="l69-quick-btn">
-            <i class="fas fa-camera"></i> Subir fotos
-        </a>
-        <a href="{{ route('videos.index') }}" class="l69-quick-btn">
-            <i class="fas fa-video"></i> Subir videos
-        </a>
-        <a href="{{ route('explore') }}" class="l69-quick-btn">
-            <i class="fas fa-compass"></i> Explorar perfiles
-        </a>
-        @if($rProfile?->nickname)
-        <a href="{{ route('profile.show', $rProfile->nickname) }}" class="l69-quick-btn">
-            <i class="fas fa-eye"></i> Ver mi perfil público
-        </a>
-        @endif
-    </div>
-</div>
 @endif
 
 @if(!$rIsVerified)
