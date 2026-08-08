@@ -1679,7 +1679,7 @@ function timeAgo(raw) {
                 body    : JSON.stringify({ body: body.value.trim() })
             })
             .then(function(r) { return r.json(); })
-            .then(function() { body.value = ''; loadComments(uuid); })
+            .then(function() { body.value = ''; delete _commentCache[uuid]; loadComments(uuid); })
             .catch(function() {});
         });
     }
