@@ -51,7 +51,7 @@
         @php
             $avatarUrl  = supabase_photo_url($u->avatar_path ?? null) ?? asset('img/default-avatar.svg');
             $profileUrl = $u->nickname ? route('profile.show', $u->nickname) : '#';
-            $mins       = max(0, (int) now()->diffInMinutes($u->expires_at, false));
+            $mins       = max(0, (int) now()->diffInMinutes(\Carbon\Carbon::parse($u->expires_at), false));
             $hrs        = floor($mins / 60);
             $rem        = $mins % 60;
             $timeLabel  = $mins < 60 ? "{$mins}min" : ($rem > 0 ? "{$hrs}h {$rem}m" : "{$hrs}h");
@@ -60,7 +60,7 @@
         <a href="{{ $profileUrl }}" class="avail-ucard">
             <div class="avail-ucard__img-wrap">
                 <img src="{{ $avatarUrl }}"
-                     alt="{{ $u->display_name }}"
+                     alt="{{ ($u->nickname ?? $u->name) }}"
                      class="avail-ucard__img"
                      loading="lazy"
                      onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
@@ -70,7 +70,7 @@
                 @endif
             </div>
             <div class="avail-ucard__body">
-                <p class="avail-ucard__name">{{ Str::limit($u->display_name, 18) }}</p>
+                <p class="avail-ucard__name">{{ Str::limit(($u->nickname ?? $u->name), 18) }}</p>
                 @if($u->nickname)
                     <p class="avail-ucard__nick">@{{ $u->nickname }}</p>
                 @endif
