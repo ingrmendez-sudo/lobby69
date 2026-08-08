@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 @section('title', ($profile->nickname ?? 'Perfil') . ' — LOBBY69')
 
 {{-- ════════════════════════════════════════════
@@ -1508,7 +1508,7 @@
         var likes     = item.dataset.likes     || '0';
         var iLiked    = item.dataset.iliked     === '1';
 
-        pmImg.src = '/fotos/ver/' + photoId;
+        pmImg.src = '/fotos/' + photoUuid + '/ver';
         pmImg.alt = caption;
         if (pmCap)  pmCap.textContent  = caption;
 
@@ -1534,12 +1534,12 @@
         var box = document.getElementById('pm-comments');
         if (!box || !uuid) return;
         box.innerHTML = '<p class="prf-comment-empty">Cargando…</p>';
-        fetch('/fotos/' + uuid + '/comentarios', {
+        fetch('/fotos/' + uuid + '/info', {
             headers: { 'Accept': 'application/json' }
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
-            var comments = Array.isArray(data) ? data : (data.data || []);
+            var comments = Array.isArray(data.photo.comments) ? data.photo.comments : [];
             if (!comments.length) {
                 box.innerHTML = '<p class="prf-comment-empty">Sé el primero en comentar.</p>';
                 return;
@@ -1549,7 +1549,7 @@
                 var div = document.createElement('div');
                 div.className = 'prf-modal-comment';
                 div.innerHTML =
-                    '<span class="prf-modal-comment__author">' + (c.nickname || 'Usuario') + '</span>' +
+                    '<span class="prf-modal-comment__author">' + (c.user_nick || c.nickname || 'Usuario') + '</span>' +
                     '<span class="prf-modal-comment__text">'   + (c.body    || '')         + '</span>' +
                     '<span class="prf-modal-comment__time">'   + (c.created_at || '')      + '</span>';
                 box.appendChild(div);

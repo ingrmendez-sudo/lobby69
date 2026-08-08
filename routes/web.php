@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -359,4 +359,5 @@ Route::middleware(['auth'])->prefix('disponibilidad')->name('availability.')->gr
     Route::post('/activar',      [\App\Http\Controllers\AvailabilityController::class, 'activate'])->name('activate');
     Route::delete('/desactivar', [\App\Http\Controllers\AvailabilityController::class, 'deactivate'])->name('deactivate');
     Route::get('/estado',        [\App\Http\Controllers\AvailabilityController::class, 'status'])->name('status');
+
 });
