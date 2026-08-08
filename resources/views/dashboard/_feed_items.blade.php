@@ -1,29 +1,41 @@
 @foreach($feed as $photo)
+@php
+    $photoUrl  = supabase_photo_url($photo->file_path);
+    $avatarUrl = supabase_photo_url($photo->avatar_file_path ?? null)
+                 ?? asset('img/default-avatar.svg');
+
+    $ownerNick = $photo->nickname ?? null;
+    $ownerName = $photo->display_name ?? 'Usuario';
+    $ownerUrl  = $ownerNick ? route('profile.show', $ownerNick) : '#';
+
+    $ptLabel = match($photo->profile_type ?? null) {
+        'pareja'    => '👫 Pareja',
+        'single'    => '🙋 Single',
+        'unicornio' => '🦄 Unicornio',
+        default     => '👤 Perfil',
+    };
+@endphp
+
 <div class="l69-feed-card"
      data-photo-id="{{ $photo->photo_uuid }}"
      style="cursor:pointer;">
 
     <div class="l69-feed-card__img-wrap">
-        <img loading="lazy" src="{{ route('photos.serve', $photo->id) }}"
-            alt="{{ $photo->caption ?? 'Foto' }}"
-            class="l69-feed-card__img"
-            loading="lazy"
-            onerror="this.closest('.l69-feed-card').style.display='none'">
 
-        @php
-            $ownerNick   = $photo->nickname ?? null;
-            $ownerName   = $photo->display_name ?? 'Usuario';
-            $ownerAvatar = $photo->avatar_photo_id
-                ? route('photos.serve', $photo->avatar_photo_id)
-                : asset('img/default-avatar.svg');
-            $ownerUrl    = $ownerNick ? route('profile.show', $ownerNick) : '#';
-        @endphp
+        <img src="{{ $photoUrl }}"
+             alt="{{ $photo->caption ?? 'Foto' }}"
+             class="l69-feed-card__img"
+             loading="lazy"
+             decoding="async"
+             onerror="this.closest('.l69-feed-card').style.display='none'">
 
         <a href="{{ $ownerUrl }}"
            class="l69-feed-card__owner-top"
            onclick="event.stopPropagation()">
-            <img loading="lazy" src="{{ $ownerAvatar }}"
+            <img src="{{ $avatarUrl }}"
                  alt="{{ $ownerName }}"
+                 loading="lazy"
+                 decoding="async"
                  onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
             <span>{{ $ownerName }}</span>
         </a>
@@ -42,14 +54,6 @@
         </div>
     </div>
 
-    @php
-        $ptLabel = match($photo->profile_type ?? null) {
-            'pareja'    => '👫 Pareja',
-            'single'    => '🙋 Single',
-            'unicornio' => '🦄 Unicornio',
-            default       => '👤 Perfil',
-        };
-    @endphp
     <div style="padding:.5rem .75rem .6rem; display:flex; align-items:center; justify-content:space-between;">
         <span style="font-size:.78rem; font-weight:600; color:var(--theme-pink);">
             {{ $ptLabel }}
@@ -63,4 +67,3 @@
     </div>
 </div>
 @endforeach
-

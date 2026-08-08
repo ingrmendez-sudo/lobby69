@@ -328,7 +328,7 @@ class DashboardController extends Controller
                 WHERE user_id::text = '{$userId}'
             ) as ul_agg"), 'ul_agg.ul_photo_id', '=', DB::raw('photos.photo_uuid::text'))
             ->leftJoin(DB::raw("(
-                SELECT DISTINCT ON (user_id) user_id::text AS av_user_id, id AS avatar_photo_id
+                SELECT DISTINCT ON (user_id) user_id::text AS av_user_id, id AS avatar_photo_id, file_path AS avatar_file_path
                 FROM photos
                 WHERE is_profile_photo = true AND status = 'approved'
                 ORDER BY user_id
@@ -351,6 +351,7 @@ class DashboardController extends Controller
                 DB::raw('p.profile_type as profile_type'),
                 DB::raw('p.city as user_city'),
                 DB::raw('av_agg.avatar_photo_id as avatar_photo_id'),
+                DB::raw('av_agg.avatar_file_path as avatar_file_path'),
                 DB::raw('COALESCE(pl_agg.likes_count, 0) as likes_count'),
                 DB::raw('COALESCE(pc_agg.comments_count, 0) as comments_count'),
                 DB::raw('COALESCE(ul_agg.user_liked, false) as user_liked'),

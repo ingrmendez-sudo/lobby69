@@ -2,20 +2,12 @@
 
 return [
 
+    'supabase_public_url' => env('SUPABASE_PUBLIC_URL', 'https://kjhaquimghhejqznleyn.supabase.co/storage/v1/object/public/gallery'),
+
+
     'default' => env('FILESYSTEM_DISK', 'local'),
 
     'disks' => [
-
-        'supabase' => [
-            'driver'                  => 's3',
-            'key'                     => env('SUPABASE_STORAGE_KEY'),
-            'secret'                  => env('SUPABASE_STORAGE_SECRET'),
-            'region'                  => 'us-east-1',
-            'bucket'                  => env('SUPABASE_STORAGE_BUCKET', 'gallery'),
-            'url'                     => env('SUPABASE_STORAGE_ENDPOINT'),
-            'endpoint'                => env('SUPABASE_STORAGE_ENDPOINT'),
-            'use_path_style_endpoint' => true,
-        ],
 
         'local' => [
             'driver' => 'local',
@@ -53,7 +45,6 @@ return [
             'report'   => false,
         ],
 
-
         'supabase' => [
             'driver'                  => 's3',
             'key'                     => env('SUPABASE_STORAGE_KEY', 'service_role'),
@@ -62,9 +53,10 @@ return [
             'bucket'                  => env('SUPABASE_STORAGE_BUCKET', 'gallery'),
             'endpoint'                => env('SUPABASE_STORAGE_ENDPOINT'),
             'use_path_style_endpoint' => true,
-            'http' => ['verify' => false],
+            'http'                    => ['verify' => false],
             'throw'                   => true,
         ],
+
     ],
 
     'links' => [
@@ -72,6 +64,3 @@ return [
     ],
 
 ];
-
-
-
