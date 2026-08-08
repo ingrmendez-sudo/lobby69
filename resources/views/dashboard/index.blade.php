@@ -293,6 +293,9 @@
 @section('content')
 {{-- ── Wrapper para alinear con sidebars ── --}}
 <div style="min-width:0;">
+{{-- ── Disponibles ahora ── --}}
+@include('availability._available_users', ['availableUsers' => \])
+
 {{-- ── Tabs ── --}}
 <div class="l69-feed-tabs" style="display:flex;gap:.5rem;margin-bottom:1.25rem;">
     <a href="{{ route('dashboard', ['tab'=>'new']) }}"

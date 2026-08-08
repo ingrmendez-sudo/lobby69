@@ -1,36 +1,150 @@
 @php
     $rUser    = auth()->user();
-    $rProfile = $rUser->profile ?? null;
+    $rIsVerified         = false;
+    $rVerificationStatus = 'none';
     $rRoute   = request()->route()?->getName() ?? '';
+    $rProfile = null;
 
-    $rPendingPhotos = 0;
-    $rApprovedPhotos = 0;
-    try {
-        $rPendingPhotos  = \Illuminate\Support\Facades\DB::table('photos')
-            ->whereRaw('user_id::text = ?', [$rUser->id])
-            ->where('status', 'pending')->count();
-        $rApprovedPhotos = \Illuminate\Support\Facades\DB::table('photos')
-            ->whereRaw('user_id::text = ?', [$rUser->id])
-            ->where('status', 'approved')->count();
-    } catch(\Exception $e) {}
+    if ($rUser) {
+        try {
+            $rProfile = \Illuminate\Support\Facades\DB::table('profiles')
+                ->whereRaw('user_id::text = ?', [(string)$rUser->id])
+                ->first();
+        } catch(\Exception $e) {}
 
-    $rPendingVideos  = 0;
-    $rApprovedVideos = 0;
-    $rTotalViews     = 0;
-    try {
-        $rPendingVideos  = \Illuminate\Support\Facades\DB::table('videos')
-            ->whereRaw('user_id::text = ?', [$rUser->id])
-            ->where('status', 'pending')->count();
-        $rVStats = \Illuminate\Support\Facades\DB::table('videos')
-            ->whereRaw('user_id::text = ?', [$rUser->id])
-            ->where('status', 'approved')
-            ->selectRaw('COUNT(*) as total, COALESCE(SUM(views_count),0) as total_views')
-            ->first();
-        $rApprovedVideos = $rVStats?->total ?? 0;
-        $rTotalViews     = $rVStats?->total_views ?? 0;
-    } catch(\Exception $e) {}
+        try {
+            $rVerif = \Illuminate\Support\Facades\DB::table('verifications')
+                ->whereRaw('user_id::text = ?', [(string)$rUser->id])
+                ->orderByDesc('created_at')
+                ->first();
+            $rVerificationStatus = $rVerif?->status ?? 'none';
+            $rIsVerified         = ($rVerificationStatus === 'approved');
+        } catch(\Exception $e) {}
+
+        try {
+            $rPendingPhotos  = \Illuminate\Support\Facades\DB::table('photos')
+                ->whereRaw('user_id::text = ?', [(string)$rUser->id])
+                ->where('status', 'pending')->count();
+            $rApprovedPhotos = \Illuminate\Support\Facades\DB::table('photos')
+                ->whereRaw('user_id::text = ?', [(string)$rUser->id])
+                ->where('status', 'approved')->count();
+        } catch(\Exception $e) {
+            $rPendingPhotos  = 0;
+            $rApprovedPhotos = 0;
+        }
+
+        try {
+            $rPendingVideos = \Illuminate\Support\Facades\DB::table('videos')
+                ->whereRaw('user_id::text = ?', [(string)$rUser->id])
+                ->where('status', 'pending')->count();
+            $rVStats = \Illuminate\Support\Facades\DB::table('videos')
+                ->whereRaw('user_id::text = ?', [(string)$rUser->id])
+                ->where('status', 'approved')
+                ->selectRaw('COUNT(*) as total, COALESCE(SUM(views_count),0) as total_views')
+                ->first();
+            $rApprovedVideos = $rVStats?->total ?? 0;
+            $rTotalViews     = $rVStats?->total_views ?? 0;
+        } catch(\Exception $e) {
+            $rPendingVideos  = 0;
+            $rApprovedVideos = 0;
+            $rTotalViews     = 0;
+        }
+    } else {
+        $rPendingPhotos  = 0;
+        $rApprovedPhotos = 0;
+        $rPendingVideos  = 0;
+        $rApprovedVideos = 0;
+        $rTotalViews     = 0;
+    }
 @endphp
 
+{{-- ── Panel Disponible HOY ── --}}
+@if($rUser)
+@php
+    $rAvail = \Illuminate\Support\Facades\DB::table('availability')
+        ->whereRaw('user_id::text = ?', [(string)$rUser->id])
+        ->where('expires_at', '>', now())
+        ->first();
+    $rAvailActive = (bool) $rAvail;
+@endphp
+<div class="l69-sidebar-card" id="availPanel">
+    <div class="l69-sidebar-card__title">
+        <span class="avail-badge__dot" style="display:inline-block;width:8px;height:8px;background:{{ $rAvailActive ? '#2ed573' : '#666' }};border-radius:50%;margin-right:.3rem;{{ $rAvailActive ? 'animation:availPulse 1.8s ease-in-out infinite;' : '' }}"></span>
+        Disponible HOY
+    </div>
+
+    @if($rAvailActive)
+    {{-- Estado activo --}}
+    <div style="margin-bottom:.75rem;">
+        <div class="avail-badge" style="margin-bottom:.5rem;">
+            <span class="avail-badge__dot"></span>
+            <span class="avail-badge__text">
+                {{ \Carbon\Carbon::parse($rAvail->expires_at)->diffForHumans(['parts' => 1, 'short' => true]) }}
+            </span>
+        </div>
+        @if($rAvail->message)
+        <p style="font-size:.78rem;color:rgba(226,217,243,.7);margin:.3rem 0 0;font-style:italic;">
+            "{{ $rAvail->message }}"
+        </p>
+        @endif
+    </div>
+    <form method="POST" action="{{ route('availability.deactivate') }}">
+        @csrf
+        @method('DELETE')
+        <button type="submit" style="
+            width:100%;padding:.5rem;border-radius:8px;border:1px solid rgba(239,68,68,.4);
+            background:rgba(239,68,68,.1);color:#f87171;font-size:.8rem;font-weight:600;
+            cursor:pointer;transition:background .2s;">
+            <i class="fas fa-times-circle"></i> Desactivar disponibilidad
+        </button>
+    </form>
+
+    @else
+    {{-- Formulario activar --}}
+    <form method="POST" action="{{ route('availability.activate') }}" id="availForm">
+        @csrf
+        <div style="margin-bottom:.65rem;">
+            <label style="font-size:.75rem;color:rgba(226,217,243,.6);display:block;margin-bottom:.4rem;">
+                ¿Cuánto tiempo estarás disponible?
+            </label>
+            <div style="display:flex;flex-wrap:wrap;gap:.35rem;">
+                @foreach([1,2,3,4,6,8] as $h)
+                <label style="cursor:pointer;">
+                    <input type="radio" name="duration_hours" value="{{ $h }}"
+                           {{ $h === 2 ? 'checked' : '' }}
+                           style="display:none;"
+                           class="avail-duration-radio">
+                    <span class="avail-duration-btn" data-hours="{{ $h }}">{{ $h }}h</span>
+                </label>
+                @endforeach
+            </div>
+        </div>
+        <div style="margin-bottom:.65rem;">
+            <input type="text" name="message"
+                   placeholder="Mensaje opcional (ej: En casa esta tarde)"
+                   maxlength="200"
+                   style="width:100%;padding:.45rem .65rem;border-radius:8px;
+                          border:1px solid rgba(180,60,120,.3);background:rgba(255,255,255,.05);
+                          color:var(--theme-text,#f0e8ff);font-size:.78rem;box-sizing:border-box;">
+        </div>
+        <label style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;
+                      color:rgba(226,217,243,.7);margin-bottom:.65rem;cursor:pointer;">
+            <input type="checkbox" name="notify_followers" value="1" checked
+                   style="accent-color:#2ed573;">
+            Notificar a mis seguidores
+        </label>
+        <button type="submit" style="
+            width:100%;padding:.55rem;border-radius:8px;border:none;
+            background:linear-gradient(135deg,#2ed573,#1abc9c);
+            color:#fff;font-size:.82rem;font-weight:700;cursor:pointer;
+            transition:opacity .2s;">
+            <i class="fas fa-circle" style="font-size:.5rem;vertical-align:middle;"></i>
+            Activar disponibilidad
+        </button>
+    </form>
+    @endif
+</div>
+@endif
 {{-- Stats generales --}}
 <div class="l69-sidebar-card">
     <div class="l69-sidebar-card__title">
@@ -47,7 +161,7 @@
         </div>
         <div class="l69-stat">
             <div class="l69-stat__value" style="font-size:1rem;">
-                @if(($rUser->verification_status ?? '') === 'approved')
+                @if($rIsVerified)
                     <i class="fas fa-check-circle" style="color:#27ae60;"></i>
                 @else
                     <i class="fas fa-clock" style="color:#f59e0b;"></i>
@@ -178,7 +292,7 @@
         <i class="fas fa-bolt"></i> Accesos Rápidos
     </div>
     <div style="display:flex;flex-direction:column;gap:.4rem;">
-        @if(!(($rUser->verification_status ?? '') === 'approved'))
+        @if(!$rIsVerified)
         <a href="{{ route('verification.show') }}" class="l69-quick-btn"
            style="border-color:rgba(245,158,11,.35);color:#fbbf24;">
             <i class="fas fa-id-card"></i> Verificar identidad
@@ -202,7 +316,7 @@
 </div>
 @endif
 
-@if(!(($rUser->verification_status ?? '') === 'approved'))
+@if(!$rIsVerified)
 <div class="l69-sidebar-card"
      style="border-color:rgba(245,158,11,.3);background:rgba(245,158,11,.05);">
     <div style="display:flex;align-items:flex-start;gap:.6rem;">
@@ -312,3 +426,7 @@
     @endforelse
 </div>
 @endif
+
+
+
+

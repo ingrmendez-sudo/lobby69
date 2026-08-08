@@ -36,6 +36,20 @@ Route::get('/', function () {
     return view('auth.landing');
 })->name('landing');
 
+// ── Rutas de flujo de primer login (auth requerido, SIN los middlewares de flujo) ──
+Route::middleware(['auth'])->group(function () {
+    Route::get('/cambiar-password',  [PasswordChangeController::class, 'show'])
+        ->name('password.change');           // <── nombre correcto para el middleware
+    Route::post('/cambiar-password', [PasswordChangeController::class, 'store'])
+        ->name('password.change.store');
+
+    Route::get('/perfil/configurar',  [ProfileController::class, 'setup'])
+        ->name('profile.setup');
+    Route::post('/perfil/configurar', [ProfileController::class, 'store'])
+        ->name('profile.store');
+});
+
+
 // ── Auth ──────────────────────────────────────────────────────────────────────
 Route::middleware('guest')->group(function () {
     Route::get('/login',  [LoginController::class, 'show'])->name('login');
@@ -339,3 +353,10 @@ Route::middleware(['auth', 'admin.only'])
 });
 
 
+
+// ── Disponibilidad ────────────────────────────────────────────────────────────
+Route::middleware(['auth'])->prefix('disponibilidad')->name('availability.')->group(function () {
+    Route::post('/activar',      [\App\Http\Controllers\AvailabilityController::class, 'activate'])->name('activate');
+    Route::delete('/desactivar', [\App\Http\Controllers\AvailabilityController::class, 'deactivate'])->name('deactivate');
+    Route::get('/estado',        [\App\Http\Controllers\AvailabilityController::class, 'status'])->name('status');
+});
