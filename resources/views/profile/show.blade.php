@@ -1462,6 +1462,20 @@
 
 @push('scripts')
 <script>
+/* ── Fecha relativa para comentarios ── */
+function timeAgo(raw) {
+    if (!raw) return '';
+    var d    = new Date(raw);
+    if (isNaN(d)) return raw;
+    var diff = Math.floor((Date.now() - d.getTime()) / 1000); /* segundos */
+    if (diff < 60)                        return 'ahora';
+    if (diff < 3600)  { var m = Math.floor(diff/60);   return 'hace ' + m + ' min'; }
+    if (diff < 86400) { var h = Math.floor(diff/3600);  return 'hace ' + h + (h===1?' hr':' hrs'); }
+    if (diff < 604800){ var dy= Math.floor(diff/86400); return 'hace ' + dy + (dy===1?' día':' días'); }
+    /* más de 7 días: formato "20 ago 26" */
+    var months = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+    return d.getDate() + ' ' + months[d.getMonth()] + ' ' + String(d.getFullYear()).slice(-2);
+}
 /* ── Carrusel de videos ── */
 
 /* ══════════════════════════════════════════════════════════════
@@ -1499,20 +1513,25 @@
         document.body.style.overflow = '';
     }
 
+    /* ── caché de comentarios por uuid ── */
+    var _commentCache = {};
+
     function loadPhoto(index) {
-        var item   = _items[index];
+        var item = _items[index];
         if (!item) return;
         var photoId   = item.dataset.photoId   || '';
         var photoUuid = item.dataset.photoUuid || '';
         var caption   = item.dataset.caption   || '';
         var likes     = item.dataset.likes     || '0';
-        var iLiked    = item.dataset.iliked     === '1';
+        var iLiked    = item.dataset.iliked === '1';
 
-        pmImg.src = '/fotos/' + photoUuid + '/ver';
+        /* 1. Mostrar thumbnail del carrusel INMEDIATAMENTE como placeholder */
+        var thumb = item.querySelector('img');
+        if (thumb && thumb.src) { pmImg.src = thumb.src; }
         pmImg.alt = caption;
-        if (pmCap)  pmCap.textContent  = caption;
+        if (pmCap) pmCap.textContent = caption;
 
-        /* Likes */
+        /* 2. Likes desde data-* (instantáneo, sin fetch) */
         if (pmLike) {
             pmLike.dataset.photoUuid = photoUuid;
             var likeIcon  = pmLike.querySelector('.prf-like-icon');
@@ -1522,24 +1541,58 @@
             pmLike.classList.toggle('liked', iLiked);
         }
 
-        /* Comentarios */
+        /* 3. Cargar imagen full-size en paralelo — cuando llega, reemplaza el thumb */
+        var fullImg = new Image();
+        fullImg.onload = function() { if (pmLike && pmLike.dataset.photoUuid === photoUuid) pmImg.src = fullImg.src; };
+        fullImg.src = '/fotos/' + photoUuid + '/ver';
+
+        /* 4. Comentarios: usar caché si ya se cargaron, sino fetch */
         loadComments(photoUuid);
 
-        /* Navegación: ocultar flechas en extremos */
+        /* 5. Precargar imagen siguiente y anterior silenciosamente */
+        [index - 1, index + 1].forEach(function(adj) {
+            if (adj >= 0 && adj < _items.length) {
+                var adjUuid = _items[adj].dataset.photoUuid;
+                if (adjUuid) { var p = new Image(); p.src = '/fotos/' + adjUuid + '/ver'; }
+            }
+        });
+
+        /* 6. Navegación: opacidad flechas en extremos */
         if (pmPrev) pmPrev.style.opacity = index === 0                 ? '.25' : '1';
         if (pmNext) pmNext.style.opacity = index === _items.length - 1 ? '.25' : '1';
+    }
+
+    /* renderiza lista de comentarios en el box */
+    function renderComments(box, comments) {
+        if (!comments.length) {
+            box.innerHTML = '<p class="prf-comment-empty">S\u00e9 el primero en comentar.</p>';
+            return;
+        }
+        box.innerHTML = '';
+        comments.forEach(function(c) {
+            var div = document.createElement('div');
+            div.className = 'prf-modal-comment';
+            div.innerHTML =
+                '<span class="prf-modal-comment__author">' + (c.user_nick || c.nickname || 'Usuario') + '</span>' +
+                '<span class="prf-modal-comment__text">'   + (c.body || '')  + '</span>' +
+                '<span class="prf-modal-comment__time">'   + timeAgo(c.created_at) + '</span>';
+            box.appendChild(div);
+        });
     }
 
     function loadComments(uuid) {
         var box = document.getElementById('pm-comments');
         if (!box || !uuid) return;
-        box.innerHTML = '<p class="prf-comment-empty">Cargando…</p>';
+        /* usar caché si ya fue cargado */
+        if (_commentCache[uuid]) { renderComments(box, _commentCache[uuid]); return; }
+        box.innerHTML = '<p class="prf-comment-empty">Cargando\u2026</p>';
         fetch('/fotos/' + uuid + '/info', {
             headers: { 'Accept': 'application/json' }
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
             var comments = Array.isArray(data.photo.comments) ? data.photo.comments : [];
+            _commentCache[uuid] = comments; /* guardar en caché */
             if (!comments.length) {
                 box.innerHTML = '<p class="prf-comment-empty">Sé el primero en comentar.</p>';
                 return;
@@ -1551,7 +1604,7 @@
                 div.innerHTML =
                     '<span class="prf-modal-comment__author">' + (c.user_nick || c.nickname || 'Usuario') + '</span>' +
                     '<span class="prf-modal-comment__text">'   + (c.body    || '')         + '</span>' +
-                    '<span class="prf-modal-comment__time">'   + (c.created_at || '')      + '</span>';
+                    '<span class="prf-modal-comment__time">' + timeAgo(c.created_at) + '</span>';
                 box.appendChild(div);
             });
         })
