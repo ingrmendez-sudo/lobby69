@@ -304,15 +304,35 @@ class DashboardController extends Controller
             ? "CASE WHEN photos.user_id::text IN ('" . implode("','", $followingIds) . "') THEN 3 ELSE 0 END"
             : '0';
 
-        $scoreSQL = "(" . $followClause . " + " . $cityClause . " + CASE WHEN p.verified_profile = true THEN 1 ELSE 0 END + EXTRACT(EPOCH FROM (NOW() - photos.created_at)) / -86400.0 * 0.5)";
+        $scoreSQL = "({$followClause} + {$cityClause} + "
+                  . "CASE WHEN p.verified_profile = true THEN 1 ELSE 0 END "
+                  . "+ EXTRACT(EPOCH FROM (NOW() - photos.created_at)) / -86400.0 * 0.5)";
 
         $query = DB::table('photos')
-            ->join('users as u', function ($j) {
-                $j->on(DB::raw('u.id::text'), '=', DB::raw('photos.user_id::text'));
-            })
-            ->leftJoin('profiles as p', function ($j) {
-                $j->on(DB::raw('p.user_id::text'), '=', DB::raw('u.id::text'));
-            })
+            ->join('users as u', DB::raw('u.id::text'), '=', DB::raw('photos.user_id::text'))
+            ->leftJoin('profiles as p', DB::raw('p.user_id::text'), '=', DB::raw('u.id::text'))
+            ->leftJoin(DB::raw('(
+                SELECT photo_id::text AS pl_photo_id, COUNT(*) AS likes_count
+                FROM photo_likes
+                GROUP BY photo_id::text
+            ) as pl_agg'), 'pl_agg.pl_photo_id', '=', DB::raw('photos.photo_uuid::text'))
+            ->leftJoin(DB::raw("(
+                SELECT photo_id::text AS pc_photo_id, COUNT(*) AS comments_count
+                FROM photo_comments
+                WHERE status = 'approved'
+                GROUP BY photo_id::text
+            ) as pc_agg"), 'pc_agg.pc_photo_id', '=', DB::raw('photos.photo_uuid::text'))
+            ->leftJoin(DB::raw("(
+                SELECT photo_id::text AS ul_photo_id, true AS user_liked
+                FROM photo_likes
+                WHERE user_id::text = '{$userId}'
+            ) as ul_agg"), 'ul_agg.ul_photo_id', '=', DB::raw('photos.photo_uuid::text'))
+            ->leftJoin(DB::raw("(
+                SELECT DISTINCT ON (user_id) user_id::text AS av_user_id, id AS avatar_photo_id
+                FROM photos
+                WHERE is_profile_photo = true AND status = 'approved'
+                ORDER BY user_id
+            ) as av_agg"), 'av_agg.av_user_id', '=', DB::raw('u.id::text'))
             ->where('photos.status', 'approved')
             ->where('u.active', true)
             ->whereRaw('photos.user_id::text != ?', [$userId])
@@ -330,11 +350,11 @@ class DashboardController extends Controller
                 DB::raw('p.verified_profile as verified_profile'),
                 DB::raw('p.profile_type as profile_type'),
                 DB::raw('p.city as user_city'),
-                DB::raw("(SELECT id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = 'approved' LIMIT 1) as avatar_photo_id"),
-                DB::raw('(SELECT COUNT(*) FROM photo_likes pl WHERE pl.photo_id::text = photos.photo_uuid::text) as likes_count'),
-                DB::raw("(SELECT COUNT(*) FROM photo_comments pc WHERE pc.photo_id::text = photos.photo_uuid::text AND pc.status = 'approved') as comments_count"),
-                DB::raw("EXISTS(SELECT 1 FROM photo_likes pl WHERE pl.photo_id::text = photos.photo_uuid::text AND pl.user_id::text = '" . $userId . "') as user_liked"),
-                DB::raw($scoreSQL . " as feed_score"),
+                DB::raw('av_agg.avatar_photo_id as avatar_photo_id'),
+                DB::raw('COALESCE(pl_agg.likes_count, 0) as likes_count'),
+                DB::raw('COALESCE(pc_agg.comments_count, 0) as comments_count'),
+                DB::raw('COALESCE(ul_agg.user_liked, false) as user_liked'),
+                DB::raw($scoreSQL . ' as feed_score'),
             ]);
 
         if ($tab === 'following') {
@@ -346,13 +366,14 @@ class DashboardController extends Controller
         }
 
         if ($tab === 'popular') {
-            $query->orderByDesc(DB::raw('(SELECT COUNT(*) FROM photo_likes pl WHERE pl.photo_id::text = photos.photo_uuid::text)'));
+            $query->orderByDesc(DB::raw('COALESCE(pl_agg.likes_count, 0)'));
         } else {
             $query->orderByDesc(DB::raw($scoreSQL . ' + RANDOM() * 0.3'));
         }
 
         return $query;
     }
+
     /**
      * El dueño de la foto responde un comentario.
      */

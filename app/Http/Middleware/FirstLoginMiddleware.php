@@ -7,12 +7,9 @@ use Symfony\Component\HttpFoundation\Response;
 
 class FirstLoginMiddleware
 {
-    /**
-     * Rutas que quedan exentas aunque password_changed = false
-     */
     private array $except = [
+        'cambiar-password',
         'perfil/configurar',
-        'perfil/cambiar-password',
         'logout',
         'login',
     ];
@@ -25,20 +22,16 @@ class FirstLoginMiddleware
             return $next($request);
         }
 
-        // Si ya cambio contrasena, no hacer nada
         if ($user->password_changed) {
             return $next($request);
         }
 
-        // Verificar si la ruta actual esta exenta
         foreach ($this->except as $except) {
             if ($request->is($except) || $request->is($except . '/*')) {
                 return $next($request);
             }
         }
 
-        // Perfil completado? -> cambiar contrasena
-        // Perfil NO completado? -> configurar perfil primero
         $profile = \Illuminate\Support\Facades\DB::table('profiles')
             ->where('user_id', $user->id)
             ->first();

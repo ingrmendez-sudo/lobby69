@@ -154,12 +154,12 @@
                         @csrf
                         <select name="tier" onchange="this.form.submit()"
                                 style="padding:.22rem .5rem;border-radius:5px;border:1px solid var(--theme-border);background:var(--theme-bg);color:var(--theme-text);font-size:.76rem;cursor:pointer;">
-                            <option value="invitado"   {{ $user->membership_type==='invitado'   ?'selected':' }}>Invitado</option>
-                            <option value="explorer"   {{ $user->membership_type==='explorer'   ?'selected':' }}>Explorer</option>
-                            <option value="connectors" {{ $user->membership_type==='connectors' ?'selected':' }}>Connectors</option>
-                            <option value="influencer" {{ $user->membership_type==='influencer' ?'selected':' }}>Influencer</option>
-                            <option value="vip_elite"  {{ $user->membership_type==='vip_elite'  ?'selected':' }}>VIP Elite</option>
-                            <option value="Fundador"  {{ $user->membership_type==='Fundador'  ?'selected':' }}>Fundador</option>
+                            <option value="invitado"   {{ $user->membership_type==='invitado'   ?'selected':'' }}>Invitado</option>
+                            <option value="explorer"   {{ $user->membership_type==='explorer'   ?'selected':'' }}>Explorer</option>
+                            <option value="connectors" {{ $user->membership_type==='connectors' ?'selected':'' }}>Connectors</option>
+                            <option value="influencer" {{ $user->membership_type==='influencer' ?'selected':'' }}>Influencer</option>
+                            <option value="vip_elite"  {{ $user->membership_type==='vip_elite'  ?'selected':'' }}>VIP Elite</option>
+                            <option value="Fundador"  {{ $user->membership_type==='Fundador'  ?'selected':'' }}>Fundador</option>
                         </select>
                     </form>
                     @if($user->membership_expires_at)
