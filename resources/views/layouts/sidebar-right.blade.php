@@ -67,12 +67,12 @@
         ->first();
     $rAvailActive = (bool) $rAvail;
     $slotLabels = [
-        'hoy'          => ['label' => 'Hoy',              'icon' => '📅'],
-        'entre_semana' => ['label' => 'Entre semana (L–J)','icon' => '💼'],
-        'viernes'      => ['label' => 'Viernes',           'icon' => '🍹'],
-        'finde'        => ['label' => 'Fin de semana',     'icon' => '🎉'],
-        'sabado'       => ['label' => 'Sábado',            'icon' => '🌙'],
-        'domingo'      => ['label' => 'Domingo',           'icon' => '☀️'],
+        'hoy'          => ['label' => 'Hoy',               'icon' => '📅'],
+        'entre_semana' => ['label' => 'Entre semana (L–J)', 'icon' => '💼'],
+        'viernes'      => ['label' => 'Viernes',            'icon' => '🍹'],
+        'finde'        => ['label' => 'Fin de semana',      'icon' => '🎉'],
+        'sabado'       => ['label' => 'Sábado',             'icon' => '🌙'],
+        'domingo'      => ['label' => 'Domingo',            'icon' => '☀️'],
     ];
     $currentSlotLabel = $slotLabels[$rAvail->slot ?? 'hoy'] ?? ['label' => 'Hoy', 'icon' => '📅'];
 @endphp
@@ -83,7 +83,7 @@
     </div>
 
     @if($rAvailActive)
-    {{-- ── Estado activo ── --}}
+    {{-- Estado activo --}}
     <div class="avail-active-state">
         <div class="avail-active-slot">
             <span class="avail-slot-icon">{{ $currentSlotLabel['icon'] }}</span>
@@ -105,7 +105,7 @@
     </div>
 
     @else
-    {{-- ── Formulario activar ── --}}
+    {{-- Formulario activar --}}
     <form method="POST" action="{{ route('availability.activate') }}" id="availForm">
         @csrf
         <p class="avail-form-label">¿Cuándo estarás disponible?</p>
@@ -142,112 +142,6 @@
     @endif
 </div>
 @endif
-    </div>
-    <form method="POST" action="{{ route('availability.deactivate') }}">
-        @csrf
-        @method('DELETE')
-        <button type="submit" style="
-            width:100%;padding:.5rem;border-radius:8px;border:1px solid rgba(239,68,68,.4);
-            background:rgba(239,68,68,.1);color:#f87171;font-size:.8rem;font-weight:600;
-            cursor:pointer;transition:background .2s;">
-            <i class="fas fa-times-circle"></i> Desactivar disponibilidad
-        </button>
-    </form>
-
-    @else
-    {{-- Formulario activar --}}
-    <form method="POST" action="{{ route('availability.activate') }}" id="availForm">
-        @csrf
-        <div style="margin-bottom:.65rem;">
-            <label style="font-size:.75rem;color:rgba(226,217,243,.6);display:block;margin-bottom:.4rem;">
-                ¿Cuánto tiempo estarás disponible?
-            </label>
-            <div style="display:flex;flex-wrap:wrap;gap:.35rem;">
-                @foreach([1,2,3,4,6,8] as $h)
-                <label style="cursor:pointer;">
-                    <input type="radio" name="duration_hours" value="{{ $h }}"
-                           {{ $h === 2 ? 'checked' : '' }}
-                           style="display:none;"
-                           class="avail-duration-radio">
-                    <span class="avail-duration-btn" data-hours="{{ $h }}">{{ $h }}h</span>
-                </label>
-                @endforeach
-            </div>
-        </div>
-        <div style="margin-bottom:.65rem;">
-            <input type="text" name="message"
-                   placeholder="Mensaje opcional (ej: En casa esta tarde)"
-                   maxlength="200"
-                   style="width:100%;padding:.45rem .65rem;border-radius:8px;
-                          border:1px solid rgba(180,60,120,.3);background:rgba(255,255,255,.05);
-                          color:var(--theme-text,#f0e8ff);font-size:.78rem;box-sizing:border-box;">
-        </div>
-        <label style="display:flex;align-items:center;gap:.5rem;font-size:.78rem;
-                      color:rgba(226,217,243,.7);margin-bottom:.65rem;cursor:pointer;">
-            <input type="checkbox" name="notify_followers" value="1" checked
-                   style="accent-color:#2ed573;">
-            Notificar a mis seguidores
-        </label>
-        <button type="submit" style="
-            width:100%;padding:.55rem;border-radius:8px;border:none;
-            background:linear-gradient(135deg,#2ed573,#1abc9c);
-            color:#fff;font-size:.82rem;font-weight:700;cursor:pointer;
-            transition:opacity .2s;">
-            <i class="fas fa-circle" style="font-size:.5rem;vertical-align:middle;"></i>
-            Activar disponibilidad
-        </button>
-    </form>
-    @endif
-</div>
-@endif
-{{-- Stats generales --}}
-<div class="l69-sidebar-card">
-    <div class="l69-sidebar-card__title">
-        <i class="fas fa-chart-bar"></i> Mi Actividad
-    </div>
-    <div class="l69-stat-grid">
-        <div class="l69-stat">
-            <div class="l69-stat__value">{{ $rApprovedPhotos }}</div>
-            <div class="l69-stat__label">Fotos</div>
-        </div>
-        <div class="l69-stat">
-            <div class="l69-stat__value">{{ $rApprovedVideos }}</div>
-            <div class="l69-stat__label">Videos</div>
-        </div>
-        <div class="l69-stat">
-            <div class="l69-stat__value" style="font-size:1rem;">
-                @if($rIsVerified)
-                    <i class="fas fa-check-circle" style="color:#27ae60;"></i>
-                @else
-                    <i class="fas fa-clock" style="color:#f59e0b;"></i>
-                @endif
-            </div>
-            <div class="l69-stat__label">Verificación</div>
-        </div>
-        <div class="l69-stat">
-            <div class="l69-stat__value" style="font-size:.85rem;color:#a78bfa;">
-                {{ ucfirst($rUser->membership_type ?? 'trial') }}
-            </div>
-            <div class="l69-stat__label">Plan</div>
-        </div>
-    </div>
-
-    @if($rPendingPhotos > 0 || $rPendingVideos > 0)
-    <div style="padding:.65rem;background:rgba(245,158,11,.1);
-                border:1px solid rgba(245,158,11,.25);border-radius:9px;">
-        @if($rPendingPhotos > 0)
-        <p style="font-size:.78rem;color:#fbbf24;margin:0 0 .2rem;">
-            <i class="fas fa-image"></i> {{ $rPendingPhotos }} foto(s) en revisión
-        </p>
-        @endif
-        @if($rPendingVideos > 0)
-        <p style="font-size:.78rem;color:#fbbf24;margin:0;">
-            <i class="fas fa-video"></i> {{ $rPendingVideos }} video(s) en revisión
-        </p>
-        @endif
-    </div>
-    @endif
-</div>
 
 {{-- Contexto por página --}}
 @if(str_starts_with($rRoute, 'videos'))
