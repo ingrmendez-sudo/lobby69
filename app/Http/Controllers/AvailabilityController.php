@@ -173,4 +173,50 @@ class AvailabilityController extends Controller
             ]);
         }
     }
+
+    // == Pagina publica: todos los disponibles ==
+    public function publicList(\Illuminate\Http\Request \)
+    {
+        \ = (string) auth()->id();
+        \    = \->input('slot');
+        \        = \->input('q');
+
+        \ = \Illuminate\Support\Facades\DB::table('availability as av')
+            ->join('users as u', \Illuminate\Support\Facades\DB::raw('u.id::text'), '=', \Illuminate\Support\Facades\DB::raw('av.user_id::text'))
+            ->leftJoin('profiles as p', \Illuminate\Support\Facades\DB::raw('p.user_id::text'), '=', \Illuminate\Support\Facades\DB::raw('u.id::text'))
+            ->leftJoin(\Illuminate\Support\Facades\DB::raw("(SELECT DISTINCT ON (user_id) user_id::text AS av_uid, id AS avatar_id, file_path AS avatar_path FROM photos WHERE is_profile_photo = true AND status = 'approved' ORDER BY user_id) as ph"), 'ph.av_uid', '=', \Illuminate\Support\Facades\DB::raw('u.id::text'))
+            ->where('av.expires_at', '>', now())
+            ->whereRaw('av.user_id::text != ?', [\])
+            ->where('u.active', true)
+            ->orderByRaw('CASE WHEN p.verified_profile = true THEN 0 ELSE 1 END ASC, av.expires_at ASC');
+
+        if (\ && in_array(\, self::VALID_SLOTS)) {
+            \->where('av.slot', \);
+        }
+
+        if (\) {
+            \->where(function(\) use (\) {
+                \->where('p.nickname',      'ilike', '%' . \ . '%')
+                  ->orWhere('p.display_name', 'ilike', '%' . \ . '%')
+                  ->orWhere('p.city',         'ilike', '%' . \ . '%');
+            });
+        }
+
+        \ = \->select([
+            \Illuminate\Support\Facades\DB::raw('u.id::text as user_id'),
+            \Illuminate\Support\Facades\DB::raw('COALESCE(p.nickname, u.username) as nickname'),
+            \Illuminate\Support\Facades\DB::raw('COALESCE(p.display_name, u.username) as display_name'),
+            \Illuminate\Support\Facades\DB::raw('p.verified_profile as verified_profile'),
+            \Illuminate\Support\Facades\DB::raw('p.profile_type as profile_type'),
+            \Illuminate\Support\Facades\DB::raw('p.city as city'),
+            'av.slot', 'av.expires_at', 'av.message',
+            'ph.avatar_id', 'ph.avatar_path',
+        ])->paginate(24)->withQueryString();
+
+        \ = \App\Models\Availability::SLOTS;
+        \369      = \Illuminate\Support\Facades\DB::table('availability')
+            ->where('expires_at', '>', now())->count();
+
+        return view('availability.index', compact('users', 'slotLabels', 'slotFilter', 'search', 'total'));
+    }
 }
