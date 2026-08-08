@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -354,7 +354,12 @@ Route::middleware(['auth', 'admin.only'])
 
 
 
-// ── Disponibilidad ────────────────────────────────────────────────────────────
+// ── Página pública: quién está disponible ahora ───────────────────────────────
+Route::get('/disponibles', [\App\Http\Controllers\AvailabilityController::class, 'publicList'])
+    ->middleware('auth')
+    ->name('availability.public');
+
+// ── Disponibilidad ──────────────────────────────────────────────────────────────
 Route::middleware(['auth'])->prefix('disponibilidad')->name('availability.')->group(function () {
     Route::post('/activar',      [\App\Http\Controllers\AvailabilityController::class, 'activate'])->name('activate');
     Route::delete('/desactivar', [\App\Http\Controllers\AvailabilityController::class, 'deactivate'])->name('deactivate');
