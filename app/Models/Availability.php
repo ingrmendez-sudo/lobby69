@@ -11,6 +11,7 @@ class Availability extends Model
 
     protected $fillable = [
         'user_id',
+        'slot',
         'duration_hours',
         'expires_at',
         'message',
@@ -18,8 +19,18 @@ class Availability extends Model
     ];
 
     protected $casts = [
-        'expires_at'        => 'datetime',
-        'notify_followers'  => 'boolean',
+        'expires_at'       => 'datetime',
+        'notify_followers' => 'boolean',
+    ];
+
+    // ── Slots válidos ─────────────────────────────────────────────────
+    public const SLOTS = [
+        'hoy'          => ['label' => 'Hoy',                   'icon' => '📅'],
+        'entre_semana' => ['label' => 'Entre semana (L–J)',     'icon' => '💼'],
+        'viernes'      => ['label' => 'Viernes',                'icon' => '🍹'],
+        'finde'        => ['label' => 'Fin de semana (V–D)',    'icon' => '🎉'],
+        'sabado'       => ['label' => 'Sábado',                 'icon' => '🌙'],
+        'domingo'      => ['label' => 'Domingo',                'icon' => '☀️'],
     ];
 
     // ── Relaciones ────────────────────────────────────────────────────
@@ -40,6 +51,16 @@ class Availability extends Model
         return $this->expires_at->isFuture();
     }
 
+    public function humanSlotLabel(): string
+    {
+        return self::SLOTS[$this->slot]['label'] ?? ucfirst($this->slot ?? 'Hoy');
+    }
+
+    public function humanSlotIcon(): string
+    {
+        return self::SLOTS[$this->slot]['icon'] ?? '📅';
+    }
+
     public function minutesRemaining(): int
     {
         return max(0, (int) now()->diffInMinutes($this->expires_at, false));
@@ -48,8 +69,8 @@ class Availability extends Model
     public function humanTimeRemaining(): string
     {
         $mins = $this->minutesRemaining();
-        if ($mins <= 0)   return 'Expirado';
-        if ($mins < 60)   return "{$mins} min restantes";
+        if ($mins <= 0)  return 'Expirado';
+        if ($mins < 60)  return "{$mins} min restantes";
         $hrs = floor($mins / 60);
         $rem = $mins % 60;
         return $rem > 0 ? "{$hrs}h {$rem}min restantes" : "{$hrs}h restantes";

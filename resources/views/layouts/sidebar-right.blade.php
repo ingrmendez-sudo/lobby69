@@ -66,27 +66,82 @@
         ->where('expires_at', '>', now())
         ->first();
     $rAvailActive = (bool) $rAvail;
+    $slotLabels = [
+        'hoy'          => ['label' => 'Hoy',              'icon' => '📅'],
+        'entre_semana' => ['label' => 'Entre semana (L–J)','icon' => '💼'],
+        'viernes'      => ['label' => 'Viernes',           'icon' => '🍹'],
+        'finde'        => ['label' => 'Fin de semana',     'icon' => '🎉'],
+        'sabado'       => ['label' => 'Sábado',            'icon' => '🌙'],
+        'domingo'      => ['label' => 'Domingo',           'icon' => '☀️'],
+    ];
+    $currentSlotLabel = $slotLabels[$rAvail->slot ?? 'hoy'] ?? ['label' => 'Hoy', 'icon' => '📅'];
 @endphp
-<div class="l69-sidebar-card" id="availPanel">
+<div class="l69-sidebar-card avail-panel" id="availPanel">
     <div class="l69-sidebar-card__title">
-        <span class="avail-badge__dot" style="display:inline-block;width:8px;height:8px;background:{{ $rAvailActive ? '#2ed573' : '#666' }};border-radius:50%;margin-right:.3rem;{{ $rAvailActive ? 'animation:availPulse 1.8s ease-in-out infinite;' : '' }}"></span>
+        <span class="avail-dot-indicator {{ $rAvailActive ? 'is-active' : '' }}"></span>
         Disponible HOY
     </div>
 
     @if($rAvailActive)
-    {{-- Estado activo --}}
-    <div style="margin-bottom:.75rem;">
-        <div class="avail-badge" style="margin-bottom:.5rem;">
-            <span class="avail-badge__dot"></span>
-            <span class="avail-badge__text">
-                {{ \Carbon\Carbon::parse($rAvail->expires_at)->diffForHumans(['parts' => 1, 'short' => true]) }}
-            </span>
+    {{-- ── Estado activo ── --}}
+    <div class="avail-active-state">
+        <div class="avail-active-slot">
+            <span class="avail-slot-icon">{{ $currentSlotLabel['icon'] }}</span>
+            <span class="avail-slot-text">{{ $currentSlotLabel['label'] }}</span>
         </div>
-        @if($rAvail->message)
-        <p style="font-size:.78rem;color:rgba(226,217,243,.7);margin:.3rem 0 0;font-style:italic;">
-            "{{ $rAvail->message }}"
+        <p class="avail-expires-label">
+            Expira {{ \Carbon\Carbon::parse($rAvail->expires_at)->translatedFormat('l d/m \a \l\a\s H:i') }}
         </p>
+        @if($rAvail->message)
+        <p class="avail-message-display">"{{ $rAvail->message }}"</p>
         @endif
+        <form method="POST" action="{{ route('availability.deactivate') }}">
+            @csrf
+            @method('DELETE')
+            <button type="submit" class="avail-btn avail-btn--off">
+                <i class="fas fa-times-circle"></i> Desactivar
+            </button>
+        </form>
+    </div>
+
+    @else
+    {{-- ── Formulario activar ── --}}
+    <form method="POST" action="{{ route('availability.activate') }}" id="availForm">
+        @csrf
+        <p class="avail-form-label">¿Cuándo estarás disponible?</p>
+
+        <div class="avail-slots-grid">
+            @foreach($slotLabels as $slotKey => $slotMeta)
+            <label class="avail-slot-pill">
+                <input type="radio" name="slot" value="{{ $slotKey }}"
+                       {{ $slotKey === 'hoy' ? 'checked' : '' }}>
+                <span class="avail-slot-pill__inner">
+                    <span class="avail-slot-pill__icon">{{ $slotMeta['icon'] }}</span>
+                    <span class="avail-slot-pill__text">{{ $slotMeta['label'] }}</span>
+                </span>
+            </label>
+            @endforeach
+        </div>
+
+        <input type="text"
+               name="message"
+               placeholder="Mensaje opcional (ej: En casa esta tarde)…"
+               maxlength="200"
+               class="avail-msg-input">
+
+        <label class="avail-notify-row">
+            <input type="checkbox" name="notify_followers" value="1" checked>
+            <span>Notificar a mis seguidores</span>
+        </label>
+
+        <button type="submit" class="avail-btn avail-btn--on">
+            <span class="avail-btn__dot"></span>
+            Activar disponibilidad
+        </button>
+    </form>
+    @endif
+</div>
+@endif
     </div>
     <form method="POST" action="{{ route('availability.deactivate') }}">
         @csrf
