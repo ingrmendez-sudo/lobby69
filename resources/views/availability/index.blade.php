@@ -154,7 +154,7 @@
 
 @push('styles')
 <style>
-.avail-page { max-width: 1400px; margin: 0 auto; padding: 1.5rem 1rem; }
+.avail-page { max-width: 1400px; margin: 0 auto; padding: 2rem 1.5rem; }
 
 .avail-page__header {
     display: flex; justify-content: space-between; align-items: center;
@@ -231,7 +231,7 @@
 /* Grid central */
 .avail-page__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
     gap: 1rem;
 }
 
@@ -245,7 +245,7 @@
     display: block;
 }
 .avail-ucard:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.1); }
-.avail-ucard__img-wrap { position: relative; aspect-ratio: 1; overflow: hidden; }
+.avail-ucard__img-wrap { position: relative; aspect-ratio: 3/4; overflow: hidden; }
 .avail-ucard__img { width: 100%; height: 100%; object-fit: cover; }
 .avail-ucard__online-dot {
     position: absolute; bottom: 6px; right: 6px;
