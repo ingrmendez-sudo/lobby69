@@ -185,10 +185,12 @@ class AvailabilityController extends Controller
         $search = $request->input('q');
 
         $slotLabels = [
-            'manana' => ['icon' => '🌅', 'label' => 'Manana'],
-            'tarde'  => ['icon' => '☀️',  'label' => 'Tarde'],
-            'noche'  => ['icon' => '🌙', 'label' => 'Noche'],
-            'ahora'  => ['icon' => '⚡', 'label' => 'Ahora'],
+            'hoy'          => ['label' => 'Hoy',                'icon' => '📅'],
+            'entre_semana' => ['label' => 'Entre semana (L-J)', 'icon' => '💼'],
+            'viernes'      => ['label' => 'Viernes',            'icon' => '🍹'],
+            'finde'        => ['label' => 'Fin de semana',      'icon' => '🎉'],
+            'sabado'       => ['label' => 'Sabado',             'icon' => '🌙'],
+            'domingo'      => ['label' => 'Domingo',            'icon' => '☀️'],
         ];
 
         $query = \Illuminate\Support\Facades\DB::table('availability as av')
