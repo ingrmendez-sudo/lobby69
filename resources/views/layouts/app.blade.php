@@ -436,7 +436,7 @@
                 'admin.invitations.index','admin.invitations.show',
                 'admin.verifications.index','admin.verifications.show',
                 'admin.photos.index',
-                'disponibles',
+                'availability.public',
                 'messages.index',
             ]);
 

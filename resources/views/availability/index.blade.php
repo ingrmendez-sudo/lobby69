@@ -6,14 +6,14 @@
 <style>
 /* ══ RESET ancho total ══ */
 .l69-layout, .l69-layout__content, .l69-layout__main,
-.content-wrapper, main { max-width: 100% !important; width: 100% !important; }
+.content-wrapper, main { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
 
 /* ══ WRAPPER ══ */
 .avail-page {
     display: grid;
-    grid-template-columns: 210px 1fr 220px;
+    grid-template-columns: 190px 1fr 200px;
     gap: 1.4rem;
-    padding: 1.4rem 2rem;
+    padding: 1.2rem 1rem;
     width: 100%;
     box-sizing: border-box;
     align-items: start;
@@ -55,7 +55,7 @@
 }
 .avail-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
     gap: 1rem;
 }
 .avail-card {
@@ -187,7 +187,7 @@
     {{-- ══ SIDEBAR IZQUIERDO ══ --}}
     <aside class="avail-sidebar">
         <h3>Filtrar</h3>
-        <form method="GET" action="{{ route('disponibles') }}" id="filterForm">
+        <form method="GET" action="{{ '/disponibles' }}" id="filterForm">
             @foreach($slotLabels as $key => $info)
             <button type="submit" name="slot" value="{{ $key }}"
                 class="avail-filter-btn {{ $slotFilter === $key ? 'active' : '' }}">
@@ -213,7 +213,7 @@
             <h1>Disponibles ahora</h1>
             <span class="avail-badge">{{ $total }} {{ $total == 1 ? 'persona' : 'personas' }}</span>
             @if(request()->has('slot') || request()->has('search'))
-                <a href="{{ route('disponibles') }}" style="margin-left:auto;font-size:.8rem;color:#7c3aed;">✕ Limpiar filtros</a>
+                <a href="{{ '/disponibles' }}" style="margin-left:auto;font-size:.8rem;color:#7c3aed;">✕ Limpiar filtros</a>
             @endif
         </div>
 
