@@ -340,6 +340,7 @@
                 </button>
                 <ul class="l69-nav__submenu">
                     <li><a href="{{ route('photos.index') }}"><i class="fas fa-images"></i> Mis Fotos</a></li>
+                    <li><a href="/disponibles"><i class="fas fa-fire"></i> Disponibles ahora</a></li>
                     <li><a href="#"><i class="fas fa-film"></i> Historias <span class="l69-nav__soon">Pronto</span></a></li>
                     <li><a href="#"><i class="fas fa-video"></i> Videochat <span class="l69-nav__soon">Pronto</span></a></li>
                     <li><a href="#"><i class="fas fa-bullhorn"></i> Anuncios <span class="l69-nav__soon">Pronto</span></a></li>
@@ -613,4 +614,3 @@
     setInterval(refreshNotifBadge, 60000);
 })();
 </script>
-
