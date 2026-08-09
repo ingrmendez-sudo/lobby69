@@ -53,6 +53,7 @@
     background:#7c3aed; color:#fff; font-size:.72rem;
     padding:.2rem .65rem; border-radius:20px; font-weight:600;
 }
+.avail-main { min-width: 0; width: 100%; }
 .avail-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
@@ -66,7 +67,7 @@
 .avail-card:hover { transform:translateY(-4px); box-shadow:0 6px 20px rgba(0,0,0,.13); }
 .avail-card__img { width:100%; aspect-ratio:3/4; object-fit:cover; display:block; }
 .avail-card__img-placeholder {
-    width:100%; aspect-ratio:3/4; background:#f0eeff;
+    width:100% !important; aspect-ratio:3/4; background:#f0eeff;
     display:flex; align-items:center; justify-content:center; font-size:3rem;
 }
 .avail-card__body { padding:.75rem; }
@@ -208,7 +209,7 @@
     </aside>
 
     {{-- ══ COLUMNA CENTRAL ══ --}}
-    <main>
+    <div class="avail-main">
         <div class="avail-header">
             <h1>Disponibles ahora</h1>
             <span class="avail-badge">{{ $total }} {{ $total == 1 ? 'persona' : 'personas' }}</span>
@@ -280,7 +281,7 @@
             <p>No hay nadie disponible con ese filtro en este momento.</p>
         </div>
         @endif
-    </main>
+    </div><!-- /avail-main -->
 
     {{-- ══ SIDEBAR DERECHO ══ --}}
     <aside class="avail-cta">
