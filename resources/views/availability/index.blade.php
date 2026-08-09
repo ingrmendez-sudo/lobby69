@@ -10,11 +10,11 @@
 
 /* ══ WRAPPER ══ */
 .avail-page {
-    display: grid;
-    grid-template-columns: 190px 1fr 200px;
+    display: grid !important;
+    grid-template-columns: 190px 1fr 200px !important;
     gap: 1.4rem;
     padding: 1.2rem 1rem;
-    width: 100%;
+    width: 100% !important;
     box-sizing: border-box;
     align-items: start;
 }
@@ -53,33 +53,33 @@
     background:#7c3aed; color:#fff; font-size:.72rem;
     padding:.2rem .65rem; border-radius:20px; font-weight:600;
 }
-.avail-main { min-width: 0; width: 100%; }
-.avail-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
+.avail-main { min-width: 0 !important; width: 100% !important; overflow: visible !important; }
+.apage-grid {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)) !important;
     gap: 1rem;
+    width: 100% !important;
 }
-.avail-card {
     background:#fff; border-radius:14px; overflow:hidden; min-width:0;
     box-shadow:0 2px 10px rgba(0,0,0,.09); transition:transform .18s, box-shadow .18s;
     cursor: pointer;
 }
-.avail-card:hover { transform:translateY(-4px); box-shadow:0 6px 20px rgba(0,0,0,.13); }
-.avail-card__img { width:100%; aspect-ratio:3/4; object-fit:cover; display:block; }
-.avail-card__img-placeholder {
+.apage-card:hover { transform:translateY(-4px); box-shadow:0 6px 20px rgba(0,0,0,.13); }
+.apage-card__img { width:100%; aspect-ratio:3/4; object-fit:cover; display:block; }
+.apage-card__img-placeholder {
     width:100% !important; aspect-ratio:3/4; background:#f0eeff;
     display:flex; align-items:center; justify-content:center; font-size:3rem;
 }
-.avail-card__body { padding:.75rem; }
-.avail-card__nick { font-weight:700; font-size:.9rem; }
-.avail-card__sub  { color:#888; font-size:.75rem; margin-bottom:.45rem; }
-.avail-card__slot {
+.apage-card__body { padding:.75rem; }
+.apage-card__nick { font-weight:700; font-size:.9rem; }
+.apage-card__sub  { color:#888; font-size:.75rem; margin-bottom:.45rem; }
+.apage-card__slot {
     display:inline-flex; align-items:center; gap:.3rem;
     font-size:.72rem; background:#f0eeff; color:#7c3aed;
     padding:.2rem .55rem; border-radius:20px; font-weight:600; margin-bottom:.5rem;
 }
-.avail-card__timer { font-size:.7rem; color:#aaa; }
-.avail-card__bio   { font-size:.75rem; color:#555; margin-top:.4rem; font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.apage-card__timer { font-size:.7rem; color:#aaa; }
+.apage-card__bio   { font-size:.75rem; color:#555; margin-top:.4rem; font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .avail-msg-btn {
     display:block; width:100%; margin-top:.65rem; padding:.5rem;
     background:#7c3aed; color:#fff; border:none; border-radius:8px;
@@ -219,7 +219,7 @@
         </div>
 
         @if($available->count())
-        <div class="avail-grid">
+        <div class="apage-grid">
             @foreach($available as $u)
             @php
                 $nick    = $u->nickname ?? $u->name ?? 'Usuario';
@@ -237,7 +237,7 @@
                     ? route('photo.show.uuid', ['photoUuid' => $photoId])
                     : null;
             @endphp
-            <div class="avail-card"
+            <div class="apage-card"
                  data-partner="{{ $u->user_id }}"
                  data-nick="{{ e($nick) }}"
                  data-slot="{{ e($slotIco . ' ' . $slotLbl) }}"
@@ -245,22 +245,22 @@
                  data-avatar="{{ $avatarUrl ?? '' }}">
 
                 @if($avatarUrl)
-                    <img class="avail-card__img" src="{{ $avatarUrl }}" alt="{{ $nick }}" loading="lazy">
+                    <img class="apage-card__img" src="{{ $avatarUrl }}" alt="{{ $nick }}" loading="lazy">
                 @else
-                    <div class="avail-card__img-placeholder">👤</div>
+                    <div class="apage-card__img-placeholder">👤</div>
                 @endif
 
-                <div class="avail-card__body">
-                    <div class="avail-card__nick">{{ $nick }}</div>
+                <div class="apage-card__body">
+                    <div class="apage-card__nick">{{ $nick }}</div>
                     @if($city)
-                    <div class="avail-card__sub">📍 {{ $city }}</div>
+                    <div class="apage-card__sub">📍 {{ $city }}</div>
                     @endif
-                    <span class="avail-card__slot">{{ $slotIco }} {{ $slotLbl }}</span>
+                    <span class="apage-card__slot">{{ $slotIco }} {{ $slotLbl }}</span>
                     @if($mins !== null)
-                    <div class="avail-card__timer">⏱ {{ $hrs }}h {{ $minRest }}m restantes</div>
+                    <div class="apage-card__timer">⏱ {{ $hrs }}h {{ $minRest }}m restantes</div>
                     @endif
                     @if($u->note ?? null)
-                    <div class="avail-card__bio">"{{ $u->note }}"</div>
+                    <div class="apage-card__bio">"{{ $u->note }}"</div>
                     @endif
 
                     <button class="avail-msg-btn open-msg-modal">
@@ -348,7 +348,7 @@
     }
 
     /* ── abrir modal al click en tarjeta o botón ── */
-    document.querySelectorAll('.avail-card').forEach(function(card) {
+    document.querySelectorAll('.apage-card').forEach(function(card) {
         card.addEventListener('click', function(e) {
             /* evitar double-fire si el click fue directo en el botón */
             openModal(card);
