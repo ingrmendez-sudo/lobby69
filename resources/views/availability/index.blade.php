@@ -6,7 +6,7 @@
 <style>
 /* ══ RESET ancho total ══ */
 .l69-layout, .l69-layout__content, .l69-layout__main,
-.content-wrapper, main { max-width: 100% !important; width: 100% !important; padding: 0 !important; margin: 0 !important; }
+.content-wrapper { max-width: 100% !important; width: 100% !important; }
 
 /* ══ WRAPPER ══ */
 .avail-page {
