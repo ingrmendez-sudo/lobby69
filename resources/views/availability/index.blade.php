@@ -1,298 +1,419 @@
 @extends('layouts.app')
 
-@section('title', 'Disponibles ahora - LOBBY69')
-
-@section('content')
-<div class="avail-page">
-
-    {{-- Header --}}
-    <div class="avail-page__header">
-        <div class="avail-page__header-left">
-            <span class="avail-page__pulse"></span>
-            <h1 class="avail-page__title">Disponibles ahora</h1>
-            <span class="avail-page__total">{{ $total }} {{ $total === 1 ? 'persona' : 'personas' }}</span>
-        </div>
-        <a href="{{ route('dashboard') }}" class="avail-page__back">&larr; Volver</a>
-    </div>
-
-    <div class="avail-page__layout">
-
-        {{-- Columna izquierda: filtros --}}
-        <aside class="avail-page__sidebar-left">
-            <div class="avail-sidebar-box">
-                <h3 class="avail-sidebar-box__title">Filtrar</h3>
-                <form method="GET" action="{{ url('/disponibles') }}">
-                    @if($search)
-                        <input type="hidden" name="q" value="{{ $search }}">
-                    @endif
-                    <div class="avail-sidebar-slots">
-                        <a href="{{ url('/disponibles') }}{{ $search ? '?q='.$search : '' }}"
-                           class="avail-filter-btn {{ !$slotFilter ? 'is-active' : '' }}">
-                            Todos
-                        </a>
-                        @foreach($slotLabels as $key => $meta)
-                        <a href="{{ url('/disponibles') }}?slot={{ $key }}{{ $search ? '&q='.$search : '' }}"
-                           class="avail-filter-btn {{ $slotFilter === $key ? 'is-active' : '' }}">
-                            {{ $meta['icon'] }} {{ $meta['label'] }}
-                        </a>
-                        @endforeach
-                    </div>
-                </form>
-            </div>
-
-            <div class="avail-sidebar-box" style="margin-top:1rem">
-                <h3 class="avail-sidebar-box__title">Buscar</h3>
-                <form method="GET" action="{{ url('/disponibles') }}">
-                    @if($slotFilter)
-                        <input type="hidden" name="slot" value="{{ $slotFilter }}">
-                    @endif
-                    <input type="text"
-                           name="q"
-                           value="{{ $search }}"
-                           placeholder="Nick o ciudad..."
-                           class="avail-page__search">
-                    <button type="submit" class="avail-filter-btn is-active" style="width:100%;margin-top:.5rem">
-                        Buscar
-                    </button>
-                </form>
-            </div>
-        </aside>
-
-        {{-- Columna central: grid --}}
-        <main class="avail-page__main">
-            @if($available->isEmpty())
-                <div class="avail-page__empty">
-                    <span style="font-size:2.5rem">&#128564;</span>
-                    <p>Nadie disponible en este momento.</p>
-                    <p style="font-size:.85rem;opacity:.6">Vuelve mas tarde o activa tu propia disponibilidad.</p>
-                </div>
-            @else
-            <div class="avail-page__grid">
-                @foreach($available as $u)
-                @php
-                    $avatarUrl  = supabase_photo_url($u->avatar_path ?? null) ?? asset('img/default-avatar.svg');
-                    $profileUrl = url('/mensajes') . '?partner=' . $u->user_id . '&msg=' . urlencode('Hola! Vi que estas disponible ' . ($u->slot ? '(' . ($slotLabels[$u->slot]['label'] ?? $u->slot) . ')' : '') . ' y me gustaria platicar.');
-                    $mins       = max(0, (int) now()->diffInMinutes(\Carbon\Carbon::parse($u->expires_at), false));
-                    $hrs        = floor($mins / 60);
-                    $minRest    = $mins % 60;
-                    $timeLabel  = $hrs > 0 ? "{$hrs}h {$minRest}m" : "{$mins}m";
-                    $slotMeta   = $slotLabels[$u->slot] ?? ['icon' => '&#128197;', 'label' => $u->slot];
-                @endphp
-                <a href="{{ $profileUrl }}" class="avail-ucard">
-                    <div class="avail-ucard__img-wrap">
-                        <img src="{{ $avatarUrl }}"
-                             alt="{{ $u->nickname ?? $u->name }}"
-                             class="avail-ucard__img"
-                             loading="lazy"
-                             onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
-                        <span class="avail-ucard__online-dot"></span>
-                        @if($u->verified_profile)
-                            <span class="avail-ucard__verified" title="Verificado">&#10003;</span>
-                        @endif
-                    </div>
-                    <div class="avail-ucard__body">
-                        <p class="avail-ucard__name">{{ Str::limit($u->nickname ?? $u->name, 18) }}</p>
-                        @if($u->nickname)
-                            <p class="avail-ucard__nick">&#64;{{ $u->nickname }}</p>
-                        @endif
-                        @if($u->city)
-                            <p class="avail-ucard__city">&#128205; {{ $u->city }}</p>
-                        @endif
-                        <div class="avail-ucard__meta">
-                            <span class="avail-ucard__slot">{{ $slotMeta['icon'] }} {{ $slotMeta['label'] }}</span>
-                            <span class="avail-ucard__time">{{ $timeLabel }}</span>
-                        </div>
-                        @if($u->message)
-                            <p class="avail-ucard__msg">"{{ Str::limit($u->message, 60) }}"</p>
-                        @endif
-                    </div>
-                </a>
-                @endforeach
-            </div>
-            <div class="avail-page__pagination">
-                {{ $available->appends(['slot' => $slotFilter, 'q' => $search])->links() }}
-            </div>
-            @endif
-        </main>
-
-        {{-- Columna derecha: CTA + info --}}
-        <aside class="avail-page__sidebar-right">
-            @auth
-            <div class="avail-sidebar-box avail-sidebar-box--cta">
-                <h3 class="avail-sidebar-box__title">&#128293; Tu disponibilidad</h3>
-                @if(auth()->user()->activeAvailability ?? false)
-                    <p class="avail-sidebar-cta__desc">Ya estas disponible. Otros pueden verte aqui.</p>
-                    <form method="POST" action="{{ route('availability.deactivate') }}">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="avail-sidebar-cta__btn avail-sidebar-cta__btn--off">
-                            Desactivar
-                        </button>
-                    </form>
-                @else
-                    <p class="avail-sidebar-cta__desc">Activa tu disponibilidad para que otros te encuentren aqui.</p>
-                    <a href="{{ route('dashboard') }}" class="avail-sidebar-cta__btn avail-sidebar-cta__btn--on">
-                        Activar ahora
-                    </a>
-                @endif
-            </div>
-            @endauth
-
-            <div class="avail-sidebar-box" style="margin-top:1rem">
-                <h3 class="avail-sidebar-box__title">&#128276; Como funciona</h3>
-                <ul class="avail-sidebar-how">
-                    <li>Activa tu disponibilidad desde el panel lateral</li>
-                    <li>Elige el slot de tiempo que mejor te va</li>
-                    <li>Otros miembros podran verte en esta pagina</li>
-                    <li>Se desactiva automaticamente al expirar</li>
-                </ul>
-            </div>
-        </aside>
-
-    </div>{{-- /.avail-page__layout --}}
-</div>{{-- /.avail-page --}}
+@section('title', 'Disponibles ahora')
 
 @push('styles')
 <style>
-.avail-page { width: 100%; padding: 2rem 1.5rem; box-sizing: border-box; }
+/* ══ RESET ancho total ══ */
+.l69-layout, .l69-layout__content, .l69-layout__main,
+.content-wrapper, main { max-width: 100% !important; width: 100% !important; }
 
-.avail-page__header {
-    display: flex; justify-content: space-between; align-items: center;
-    margin-bottom: 1.5rem;
-}
-.avail-page__header-left { display: flex; align-items: center; gap: .75rem; }
-.avail-page__pulse {
-    width: 10px; height: 10px; border-radius: 50%;
-    background: #22c55e;
-    box-shadow: 0 0 0 3px rgba(34,197,94,.25);
-    animation: pulse 2s infinite;
-}
-@keyframes pulse { 0%,100%{box-shadow:0 0 0 3px rgba(34,197,94,.25)} 50%{box-shadow:0 0 0 6px rgba(34,197,94,.1)} }
-.avail-page__title { font-size: 1.4rem; font-weight: 700; margin: 0; }
-.avail-page__total {
-    background: #22c55e; color: #fff;
-    font-size: .8rem; font-weight: 600;
-    padding: .2rem .6rem; border-radius: 999px;
-}
-.avail-page__back { font-size: .9rem; opacity: .7; text-decoration: none; }
-.avail-page__back:hover { opacity: 1; }
-
-/* Layout 3 columnas */
-.avail-page__layout {
+/* ══ WRAPPER ══ */
+.avail-page {
     display: grid;
-    grid-template-columns: 180px 1fr 200px;
-    gap: 1.5rem;
+    grid-template-columns: 210px 1fr 220px;
+    gap: 1.4rem;
+    padding: 1.4rem 2rem;
+    width: 100%;
+    box-sizing: border-box;
     align-items: start;
 }
-@media(max-width: 700px) {
-    .avail-page__layout { grid-template-columns: 1fr; }
-    .avail-page__sidebar-left, .avail-page__sidebar-right { display: none; }
-}
 
-/* Sidebar boxes */
-.avail-sidebar-box {
-    background: var(--bg-card, #fff);
-    border: 1px solid var(--border, #e5e7eb);
-    border-radius: .75rem;
+/* ══ SIDEBAR IZQUIERDO ══ */
+.avail-sidebar {
+    position: sticky;
+    top: 70px;
+    background: #fff;
+    border-radius: 12px;
     padding: 1rem;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08);
 }
-.avail-sidebar-box__title {
-    font-size: .8rem; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .05em;
-    opacity: .5; margin: 0 0 .75rem;
-}
-.avail-sidebar-slots { display: flex; flex-direction: column; gap: .35rem; }
-
-/* Filtros */
+.avail-sidebar h3 { font-size:.78rem; font-weight:700; color:#888; text-transform:uppercase; margin:0 0 .7rem; }
 .avail-filter-btn {
-    display: block; width: 100%;
-    padding: .4rem .75rem; border-radius: .5rem;
-    font-size: .85rem; font-weight: 500;
-    border: 1px solid var(--border, #e5e7eb);
-    background: transparent; cursor: pointer;
-    text-decoration: none; color: inherit;
-    transition: all .15s;
-    text-align: left;
+    display:block; width:100%; text-align:left;
+    padding:.55rem .9rem; border-radius:8px; border:none; background:none;
+    font-size:.88rem; cursor:pointer; margin-bottom:4px; transition:background .15s;
 }
-.avail-filter-btn:hover { background: var(--bg-hover, #f3f4f6); }
-.avail-filter-btn.is-active {
-    background: #7c3aed; color: #fff; border-color: #7c3aed;
+.avail-filter-btn:hover  { background:#f0f0f5; }
+.avail-filter-btn.active { background:#7c3aed; color:#fff; font-weight:600; }
+.avail-search { margin-top:1.2rem; }
+.avail-search input {
+    width:100%; padding:.5rem .75rem; border:1px solid #ddd;
+    border-radius:8px; font-size:.85rem; box-sizing:border-box;
 }
-
-/* Busqueda */
-.avail-page__search {
-    width: 100%; padding: .5rem .75rem;
-    border: 1px solid var(--border, #e5e7eb);
-    border-radius: .5rem; font-size: .9rem;
-    background: var(--bg-input, #fff);
-    color: inherit; box-sizing: border-box;
+.avail-search button {
+    width:100%; margin-top:.5rem; padding:.5rem; background:#7c3aed;
+    color:#fff; border:none; border-radius:8px; cursor:pointer; font-size:.85rem;
 }
 
-/* Grid central */
-.avail-page__grid {
+/* ══ GRID CENTRAL ══ */
+.avail-header { display:flex; align-items:center; gap:.75rem; margin-bottom:1rem; }
+.avail-header h1 { font-size:1.4rem; font-weight:700; margin:0; }
+.avail-badge {
+    background:#7c3aed; color:#fff; font-size:.72rem;
+    padding:.2rem .65rem; border-radius:20px; font-weight:600;
+}
+.avail-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
     gap: 1rem;
 }
+.avail-card {
+    background:#fff; border-radius:14px; overflow:hidden;
+    box-shadow:0 2px 10px rgba(0,0,0,.09); transition:transform .18s, box-shadow .18s;
+    cursor: pointer;
+}
+.avail-card:hover { transform:translateY(-4px); box-shadow:0 6px 20px rgba(0,0,0,.13); }
+.avail-card__img { width:100%; aspect-ratio:3/4; object-fit:cover; display:block; }
+.avail-card__img-placeholder {
+    width:100%; aspect-ratio:3/4; background:#f0eeff;
+    display:flex; align-items:center; justify-content:center; font-size:3rem;
+}
+.avail-card__body { padding:.75rem; }
+.avail-card__nick { font-weight:700; font-size:.9rem; }
+.avail-card__sub  { color:#888; font-size:.75rem; margin-bottom:.45rem; }
+.avail-card__slot {
+    display:inline-flex; align-items:center; gap:.3rem;
+    font-size:.72rem; background:#f0eeff; color:#7c3aed;
+    padding:.2rem .55rem; border-radius:20px; font-weight:600; margin-bottom:.5rem;
+}
+.avail-card__timer { font-size:.7rem; color:#aaa; }
+.avail-card__bio   { font-size:.75rem; color:#555; margin-top:.4rem; font-style:italic; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.avail-msg-btn {
+    display:block; width:100%; margin-top:.65rem; padding:.5rem;
+    background:#7c3aed; color:#fff; border:none; border-radius:8px;
+    font-size:.82rem; font-weight:600; cursor:pointer; transition:background .15s;
+}
+.avail-msg-btn:hover { background:#6d28d9; }
 
-/* Tarjeta */
-.avail-ucard {
-    border-radius: .75rem; overflow: hidden;
-    border: 1px solid var(--border, #e5e7eb);
-    background: var(--bg-card, #fff);
-    text-decoration: none; color: inherit;
-    transition: transform .15s, box-shadow .15s;
-    display: block;
+/* ══ SIDEBAR DERECHO ══ */
+.avail-cta {
+    position:sticky; top:70px;
+    background:#fff; border-radius:12px; padding:1.2rem;
+    box-shadow:0 2px 8px rgba(0,0,0,.08); text-align:center;
 }
-.avail-ucard:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.1); }
-.avail-ucard__img-wrap { position: relative; aspect-ratio: 3/4; overflow: hidden; }
-.avail-ucard__img { width: 100%; height: 100%; object-fit: cover; }
-.avail-ucard__online-dot {
-    position: absolute; bottom: 6px; right: 6px;
-    width: 10px; height: 10px; border-radius: 50%;
-    background: #22c55e; border: 2px solid #fff;
+.avail-cta h4 { margin:0 0 .4rem; font-size:.9rem; }
+.avail-cta p  { font-size:.78rem; color:#666; margin:0 0 .9rem; }
+.avail-cta-btn {
+    display:block; padding:.65rem 1rem; background:#7c3aed; color:#fff;
+    border-radius:10px; font-weight:700; text-decoration:none;
+    font-size:.85rem; border:none; cursor:pointer; width:100%; box-sizing:border-box;
 }
-.avail-ucard__verified {
-    position: absolute; top: 6px; right: 6px;
-    background: #3b82f6; color: #fff;
-    font-size: .7rem; width: 18px; height: 18px;
-    border-radius: 50%; display: grid; place-items: center;
-}
-.avail-ucard__body { padding: .6rem .75rem; }
-.avail-ucard__name { font-weight: 700; font-size: .9rem; margin: 0 0 .15rem; }
-.avail-ucard__nick { font-size: .78rem; opacity: .5; margin: 0 0 .25rem; }
-.avail-ucard__city { font-size: .78rem; opacity: .65; margin: 0 0 .35rem; }
-.avail-ucard__meta {
-    display: flex; justify-content: space-between; align-items: center;
-    font-size: .75rem; margin-bottom: .3rem;
-}
-.avail-ucard__slot {
-    background: #f3e8ff; color: #7c3aed;
-    padding: .15rem .45rem; border-radius: 999px; font-weight: 600;
-}
-.avail-ucard__time { opacity: .5; }
-.avail-ucard__msg { font-size: .78rem; opacity: .7; font-style: italic; margin: .3rem 0 0; }
+.avail-how { margin-top:1rem; text-align:left; }
+.avail-how h5 { font-size:.78rem; font-weight:700; color:#888; text-transform:uppercase; margin:0 0 .6rem; }
+.avail-how li { font-size:.75rem; color:#555; margin-bottom:.4rem; padding-left:.3rem; }
 
-/* CTA sidebar */
-.avail-sidebar-box--cta { border-color: #7c3aed33; background: #faf5ff; }
-.avail-sidebar-cta__desc { font-size: .82rem; opacity: .75; margin: 0 0 .75rem; }
-.avail-sidebar-cta__btn {
-    display: block; width: 100%; padding: .5rem;
-    border-radius: .5rem; font-size: .85rem; font-weight: 600;
-    text-align: center; text-decoration: none; border: none; cursor: pointer;
+/* ══ MODAL DE MENSAJE ══ */
+.avail-modal-overlay {
+    display:none; position:fixed; inset:0; background:rgba(0,0,0,.55);
+    z-index:9999; align-items:center; justify-content:center;
 }
-.avail-sidebar-cta__btn--on { background: #7c3aed; color: #fff; }
-.avail-sidebar-cta__btn--off { background: #fee2e2; color: #dc2626; }
+.avail-modal-overlay.open { display:flex; }
+.avail-modal {
+    background:#fff; border-radius:16px; padding:1.5rem;
+    width:min(460px, 94vw); box-shadow:0 8px 32px rgba(0,0,0,.18);
+}
+.avail-modal__header { display:flex; align-items:center; gap:.75rem; margin-bottom:1rem; }
+.avail-modal__avatar {
+    width:52px; height:52px; border-radius:50%; object-fit:cover;
+    background:#f0eeff; display:flex; align-items:center; justify-content:center;
+    font-size:1.4rem; overflow:hidden; flex-shrink:0;
+}
+.avail-modal__name  { font-weight:700; font-size:1rem; }
+.avail-modal__slot  { font-size:.75rem; color:#7c3aed; }
+.avail-modal__close { margin-left:auto; background:none; border:none; font-size:1.4rem; cursor:pointer; color:#888; }
+.avail-modal__hint  { font-size:.78rem; color:#888; margin-bottom:.5rem; }
+.avail-modal textarea {
+    width:100%; box-sizing:border-box; border:1.5px solid #ddd; border-radius:10px;
+    padding:.75rem; font-size:.88rem; resize:vertical; min-height:90px; font-family:inherit;
+}
+.avail-modal textarea:focus { outline:none; border-color:#7c3aed; }
+.avail-modal__actions { display:flex; gap:.6rem; margin-top:.75rem; justify-content:flex-end; }
+.avail-modal__send {
+    padding:.6rem 1.4rem; background:#7c3aed; color:#fff;
+    border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:.88rem;
+}
+.avail-modal__send:hover { background:#6d28d9; }
+.avail-modal__cancel {
+    padding:.6rem 1rem; background:#f5f5f5; color:#333;
+    border:none; border-radius:8px; cursor:pointer; font-size:.88rem;
+}
+.avail-modal__toast {
+    display:none; margin-top:.75rem; padding:.6rem .9rem;
+    border-radius:8px; font-size:.82rem; text-align:center;
+}
+.avail-modal__toast.ok  { display:block; background:#ecfdf5; color:#059669; }
+.avail-modal__toast.err { display:block; background:#fef2f2; color:#dc2626; }
 
-/* Como funciona */
-.avail-sidebar-how { font-size: .82rem; opacity: .75; padding-left: 1.1rem; margin: 0; }
-.avail-sidebar-how li { margin-bottom: .4rem; }
-
-/* Empty */
-.avail-page__empty { text-align: center; padding: 3rem 1rem; opacity: .6; }
-
-/* Paginacion */
-.avail-page__pagination { margin-top: 1.5rem; }
+/* ══ RESPONSIVE ══ */
+@media(max-width:900px) {
+    .avail-page { grid-template-columns: 180px 1fr; }
+    .avail-cta  { display:none; }
+}
+@media(max-width:640px) {
+    .avail-page { grid-template-columns: 1fr; padding:.75rem; }
+    .avail-sidebar { position:static; }
+}
 </style>
 @endpush
+
+@section('content')
+
+{{-- ══ MODAL DE MENSAJE ══ --}}
+<div class="avail-modal-overlay" id="availMsgModal">
+    <div class="avail-modal">
+        <div class="avail-modal__header">
+            <div class="avail-modal__avatar" id="modalAvatar">👤</div>
+            <div>
+                <div class="avail-modal__name" id="modalNick">—</div>
+                <div class="avail-modal__slot" id="modalSlot"></div>
+            </div>
+            <button class="avail-modal__close" id="closeModal">✕</button>
+        </div>
+        <div class="avail-modal__hint">
+            Escribe un mensaje. Le llegará a su bandeja de Mensajes vinculado a su anuncio de disponibilidad.
+        </div>
+        <textarea id="availMsgText" placeholder="Ej: Hola! Vi que estás disponible hoy, me gustaría platicar 😊"></textarea>
+        <div class="avail-modal__actions">
+            <button class="avail-modal__cancel" id="cancelModal">Cancelar</button>
+            <button class="avail-modal__send" id="sendAvailMsg">✉ Enviar mensaje</button>
+        </div>
+        <div class="avail-modal__toast" id="modalToast"></div>
+    </div>
+</div>
+
+<div class="avail-page">
+
+    {{-- ══ SIDEBAR IZQUIERDO ══ --}}
+    <aside class="avail-sidebar">
+        <h3>Filtrar</h3>
+        <form method="GET" action="{{ route('disponibles') }}" id="filterForm">
+            @foreach($slotLabels as $key => $info)
+            <button type="submit" name="slot" value="{{ $key }}"
+                class="avail-filter-btn {{ $slotFilter === $key ? 'active' : '' }}">
+                {{ $info['icon'] }} {{ $info['label'] }}
+            </button>
+            @endforeach
+            <button type="submit" name="slot" value=""
+                class="avail-filter-btn {{ !$slotFilter ? 'active' : '' }}">
+                🌐 Todos
+            </button>
+
+            <div class="avail-search">
+                <h3>Buscar</h3>
+                <input type="text" name="search" value="{{ $search ?? '' }}" placeholder="Nick o ciudad...">
+                <button type="submit">Buscar</button>
+            </div>
+        </form>
+    </aside>
+
+    {{-- ══ COLUMNA CENTRAL ══ --}}
+    <main>
+        <div class="avail-header">
+            <h1>Disponibles ahora</h1>
+            <span class="avail-badge">{{ $total }} {{ $total == 1 ? 'persona' : 'personas' }}</span>
+            @if(request()->has('slot') || request()->has('search'))
+                <a href="{{ route('disponibles') }}" style="margin-left:auto;font-size:.8rem;color:#7c3aed;">✕ Limpiar filtros</a>
+            @endif
+        </div>
+
+        @if($available->count())
+        <div class="avail-grid">
+            @foreach($available as $u)
+            @php
+                $nick    = $u->nickname ?? $u->name ?? 'Usuario';
+                $city    = $u->city ?? '';
+                $slotKey = $u->slot ?? '';
+                $slotLbl = $slotLabels[$slotKey]['label'] ?? $slotKey;
+                $slotIco = $slotLabels[$slotKey]['icon']  ?? '📅';
+                $photoId = $u->profile_photo_id ?? null;
+                $expires = $u->expires_at ? \Carbon\Carbon::parse($u->expires_at) : null;
+                $mins    = $expires ? max(0, (int) now()->diffInMinutes($expires, false)) : null;
+                $hrs     = $mins !== null ? floor($mins / 60) : null;
+                $minRest = $mins !== null ? ($mins % 60) : null;
+                $msgDefault = 'Hola ' . $nick . '! Vi que estás disponible' . ($slotLbl ? ' (' . $slotLbl . ')' : '') . ' y me gustaría platicar 😊';
+                $avatarUrl = $photoId
+                    ? route('photo.show.uuid', ['photoUuid' => $photoId])
+                    : null;
+            @endphp
+            <div class="avail-card"
+                 data-partner="{{ $u->user_id }}"
+                 data-nick="{{ e($nick) }}"
+                 data-slot="{{ e($slotIco . ' ' . $slotLbl) }}"
+                 data-msg="{{ e($msgDefault) }}"
+                 data-avatar="{{ $avatarUrl ?? '' }}">
+
+                @if($avatarUrl)
+                    <img class="avail-card__img" src="{{ $avatarUrl }}" alt="{{ $nick }}" loading="lazy">
+                @else
+                    <div class="avail-card__img-placeholder">👤</div>
+                @endif
+
+                <div class="avail-card__body">
+                    <div class="avail-card__nick">{{ $nick }}</div>
+                    @if($city)
+                    <div class="avail-card__sub">📍 {{ $city }}</div>
+                    @endif
+                    <span class="avail-card__slot">{{ $slotIco }} {{ $slotLbl }}</span>
+                    @if($mins !== null)
+                    <div class="avail-card__timer">⏱ {{ $hrs }}h {{ $minRest }}m restantes</div>
+                    @endif
+                    @if($u->note ?? null)
+                    <div class="avail-card__bio">"{{ $u->note }}"</div>
+                    @endif
+
+                    <button class="avail-msg-btn open-msg-modal">
+                        ✉ Enviar mensaje
+                    </button>
+                </div>
+            </div>
+            @endforeach
+        </div>
+
+        <div style="margin-top:1.5rem;">
+            {{ $available->appends(request()->query())->links() }}
+        </div>
+
+        @else
+        <div style="text-align:center;padding:4rem 0;color:#aaa;">
+            <div style="font-size:3rem;margin-bottom:1rem;">🔍</div>
+            <p>No hay nadie disponible con ese filtro en este momento.</p>
+        </div>
+        @endif
+    </main>
+
+    {{-- ══ SIDEBAR DERECHO ══ --}}
+    <aside class="avail-cta">
+        <h4>🔥 TU DISPONIBILIDAD</h4>
+        <p>Activa tu disponibilidad para que otros te encuentren aquí.</p>
+        <a href="{{ route('dashboard') }}#disponibilidad" class="avail-cta-btn">Activar ahora</a>
+
+        <div class="avail-how">
+            <h5>¿Cómo funciona?</h5>
+            <ul>
+                <li>Activa tu disponibilidad desde el panel lateral</li>
+                <li>Elige el slot de tiempo que mejor te va</li>
+                <li>Otros miembros podrán verte en esta página</li>
+                <li>Se desactiva automáticamente al expirar</li>
+            </ul>
+        </div>
+    </aside>
+</div>
+
 @endsection
+
+@push('scripts')
+<script>
+(function () {
+    /* ── datos del usuario autenticado pasados por Laravel ── */
+    var authId   = "{{ auth()->id() ?? '' }}";
+    var csrfToken = "{{ csrf_token() }}";
+
+    /* ── elementos del modal ── */
+    var overlay   = document.getElementById('availMsgModal');
+    var modalNick = document.getElementById('modalNick');
+    var modalSlot = document.getElementById('modalSlot');
+    var modalAvat = document.getElementById('modalAvatar');
+    var msgText   = document.getElementById('availMsgText');
+    var toast     = document.getElementById('modalToast');
+    var currentPartner = null;
+
+    function openModal(card) {
+        currentPartner = card.dataset.partner;
+        var nick   = card.dataset.nick;
+        var slot   = card.dataset.slot;
+        var avatar = card.dataset.avatar;
+        var msg    = decodeURIComponent(card.dataset.msg || '');
+
+        modalNick.textContent = nick;
+        modalSlot.textContent = slot;
+        msgText.value = msg;
+
+        if (avatar) {
+            modalAvat.innerHTML = '<img src="' + avatar + '" style="width:100%;height:100%;object-fit:cover;">';
+        } else {
+            modalAvat.textContent = '👤';
+        }
+
+        toast.className = 'avail-modal__toast';
+        toast.textContent = '';
+        overlay.classList.add('open');
+        msgText.focus();
+    }
+
+    function closeModal() {
+        overlay.classList.remove('open');
+        currentPartner = null;
+    }
+
+    /* ── abrir modal al click en tarjeta o botón ── */
+    document.querySelectorAll('.avail-card').forEach(function(card) {
+        card.addEventListener('click', function(e) {
+            /* evitar double-fire si el click fue directo en el botón */
+            openModal(card);
+        });
+    });
+
+    /* ── cerrar ── */
+    document.getElementById('closeModal').addEventListener('click', closeModal);
+    document.getElementById('cancelModal').addEventListener('click', closeModal);
+    overlay.addEventListener('click', function(e) {
+        if (e.target === overlay) closeModal();
+    });
+
+    /* ── enviar mensaje ── */
+    document.getElementById('sendAvailMsg').addEventListener('click', function() {
+        var text = msgText.value.trim();
+        if (!text) { msgText.focus(); return; }
+        if (!currentPartner) return;
+
+        var btn = this;
+        btn.disabled = true;
+        btn.textContent = 'Enviando...';
+
+        fetch('{{ route("messages.send") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify({
+                receiver_id: currentPartner,
+                body: text,
+                source: 'availability'
+            })
+        })
+        .then(function(r) { return r.json(); })
+        .then(function(data) {
+            btn.disabled = false;
+            btn.textContent = '✉ Enviar mensaje';
+
+            if (data.success || data.id || data.message_id) {
+                toast.className = 'avail-modal__toast ok';
+                toast.textContent = '✅ Mensaje enviado correctamente';
+                msgText.value = '';
+                setTimeout(closeModal, 1800);
+            } else {
+                toast.className = 'avail-modal__toast err';
+                toast.textContent = '⚠ ' + (data.error || data.message || 'No se pudo enviar el mensaje.');
+            }
+        })
+        .catch(function(err) {
+            btn.disabled = false;
+            btn.textContent = '✉ Enviar mensaje';
+            toast.className = 'avail-modal__toast err';
+            toast.textContent = '⚠ Error de red. Intenta de nuevo.';
+        });
+    });
+
+    /* ── CTRL+ENTER para enviar ── */
+    msgText.addEventListener('keydown', function(e) {
+        if (e.ctrlKey && e.key === 'Enter') {
+            document.getElementById('sendAvailMsg').click();
+        }
+    });
+
+})();
+</script>
+@endpush
