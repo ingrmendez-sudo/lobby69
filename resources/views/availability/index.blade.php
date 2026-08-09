@@ -1,345 +1,298 @@
 @extends('layouts.app')
 
-@section('title', 'Disponibles ahora ÔÇö LOBBY69')
+@section('title', 'Disponibles ahora - LOBBY69')
 
 @section('content')
 <div class="avail-page">
 
-    {{-- ÔöÇÔöÇ Header ÔöÇÔöÇ --}}
+    {{-- Header --}}
     <div class="avail-page__header">
         <div class="avail-page__header-left">
             <span class="avail-page__pulse"></span>
             <h1 class="avail-page__title">Disponibles ahora</h1>
             <span class="avail-page__total">{{ $total }} {{ $total === 1 ? 'persona' : 'personas' }}</span>
         </div>
-        <a href="{{ route('dashboard') }}" class="avail-page__back">
-            ÔåÉ Volver
-        </a>
+        <a href="{{ route('dashboard') }}" class="avail-page__back">&larr; Volver</a>
     </div>
 
-    {{-- ÔöÇÔöÇ Filtros ÔöÇÔöÇ --}}
-    <form method="GET" action="{{ route('availability.public') }}" class="avail-page__filters" id="filterForm">
-        <div class="avail-page__search-wrap">
-            <input type="text" name="q" value="{{ $search }}"
-                   placeholder="Buscar por nick o ciudadÔÇª"
-                   class="avail-page__search">
-        </div>
-        <div class="avail-page__slots">
-            <button type="submit" name="slot" value=""
-                    class="avail-filter-btn {{ !$slotFilter ? 'is-active' : '' }}">
-                Todos
-            </button>
-            @foreach($slotLabels as $key => $meta)
-            <button type="submit" name="slot" value="{{ $key }}"
-                    class="avail-filter-btn {{ $slotFilter === $key ? 'is-active' : '' }}">
-                {{ $meta['icon'] }} {{ $meta['label'] }}
-            </button>
-            @endforeach
-        </div>
-    </form>
+    <div class="avail-page__layout">
 
-    {{-- ÔöÇÔöÇ Grid de usuarios ÔöÇÔöÇ --}}
-    @if($available->isEmpty())
-        <div class="avail-page__empty">
-            <span style="font-size:2.5rem">­ƒÿ┤</span>
-            <p>Nadie disponible en este momento.</p>
-            <p style="font-size:.85rem;opacity:.6">Vuelve m├ís tarde o activa tu propia disponibilidad.</p>
-        </div>
-    @else
-    <div class="avail-page__grid">
-        @foreach($available as $u)
-        @php
-            $avatarUrl  = supabase_photo_url($u->avatar_path ?? null) ?? asset('img/default-avatar.svg');
-            $profileUrl = $u->nickname ? route('profile.show', $u->nickname) : '#';
-            $mins       = max(0, (int) now()->diffInMinutes(\Carbon\Carbon::parse($u->expires_at), false));
-            $hrs        = floor($mins / 60);
-            $rem        = $mins % 60;
-            $timeLabel  = $mins < 60 ? "{$mins}min" : ($rem > 0 ? "{$hrs}h {$rem}m" : "{$hrs}h");
-            $slotMeta   = $slotLabels[$u->slot] ?? ['icon' => '­ƒôà', 'label' => $u->slot];
-        @endphp
-        <a href="{{ $profileUrl }}" class="avail-ucard">
-            <div class="avail-ucard__img-wrap">
-                <img src="{{ $avatarUrl }}"
-                     alt="{{ ($u->nickname ?? $u->name) }}"
-                     class="avail-ucard__img"
-                     loading="lazy"
-                     onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
-                <span class="avail-ucard__online-dot"></span>
-                @if($u->verified_profile)
-                    <span class="avail-ucard__verified" title="Verificado">Ô£ô</span>
-                @endif
+        {{-- Columna izquierda: filtros --}}
+        <aside class="avail-page__sidebar-left">
+            <div class="avail-sidebar-box">
+                <h3 class="avail-sidebar-box__title">Filtrar</h3>
+                <form method="GET" action="{{ url('/disponibles') }}">
+                    @if($search)
+                        <input type="hidden" name="q" value="{{ $search }}">
+                    @endif
+                    <div class="avail-sidebar-slots">
+                        <a href="{{ url('/disponibles') }}{{ $search ? '?q='.$search : '' }}"
+                           class="avail-filter-btn {{ !$slotFilter ? 'is-active' : '' }}">
+                            Todos
+                        </a>
+                        @foreach($slotLabels as $key => $meta)
+                        <a href="{{ url('/disponibles') }}?slot={{ $key }}{{ $search ? '&q='.$search : '' }}"
+                           class="avail-filter-btn {{ $slotFilter === $key ? 'is-active' : '' }}">
+                            {{ $meta['icon'] }} {{ $meta['label'] }}
+                        </a>
+                        @endforeach
+                    </div>
+                </form>
             </div>
-            <div class="avail-ucard__body">
-                <p class="avail-ucard__name">{{ Str::limit(($u->nickname ?? $u->name), 18) }}</p>
-                @if($u->nickname)
-                    <p class="avail-ucard__nick">@{{ $u->nickname }}</p>
-                @endif
-                @if($u->city)
-                    <p class="avail-ucard__city">­ƒôì {{ $u->city }}</p>
-                @endif
-                <div class="avail-ucard__meta">
-                    <span class="avail-ucard__slot">{{ $slotMeta['icon'] }} {{ $slotMeta['label'] }}</span>
-                    <span class="avail-ucard__time">{{ $timeLabel }}</span>
+
+            <div class="avail-sidebar-box" style="margin-top:1rem">
+                <h3 class="avail-sidebar-box__title">Buscar</h3>
+                <form method="GET" action="{{ url('/disponibles') }}">
+                    @if($slotFilter)
+                        <input type="hidden" name="slot" value="{{ $slotFilter }}">
+                    @endif
+                    <input type="text"
+                           name="q"
+                           value="{{ $search }}"
+                           placeholder="Nick o ciudad..."
+                           class="avail-page__search">
+                    <button type="submit" class="avail-filter-btn is-active" style="width:100%;margin-top:.5rem">
+                        Buscar
+                    </button>
+                </form>
+            </div>
+        </aside>
+
+        {{-- Columna central: grid --}}
+        <main class="avail-page__main">
+            @if($available->isEmpty())
+                <div class="avail-page__empty">
+                    <span style="font-size:2.5rem">&#128564;</span>
+                    <p>Nadie disponible en este momento.</p>
+                    <p style="font-size:.85rem;opacity:.6">Vuelve mas tarde o activa tu propia disponibilidad.</p>
                 </div>
-                @if($u->message)
-                    <p class="avail-ucard__msg">"{{ Str::limit($u->message, 60) }}"</p>
+            @else
+            <div class="avail-page__grid">
+                @foreach($available as $u)
+                @php
+                    $avatarUrl  = supabase_photo_url($u->avatar_path ?? null) ?? asset('img/default-avatar.svg');
+                    $profileUrl = $u->nickname ? route('profile.show', $u->nickname) : '#';
+                    $mins       = max(0, (int) now()->diffInMinutes(\Carbon\Carbon::parse($u->expires_at), false));
+                    $hrs        = floor($mins / 60);
+                    $minRest    = $mins % 60;
+                    $timeLabel  = $hrs > 0 ? "{$hrs}h {$minRest}m" : "{$mins}m";
+                    $slotMeta   = $slotLabels[$u->slot] ?? ['icon' => '&#128197;', 'label' => $u->slot];
+                @endphp
+                <a href="{{ $profileUrl }}" class="avail-ucard">
+                    <div class="avail-ucard__img-wrap">
+                        <img src="{{ $avatarUrl }}"
+                             alt="{{ $u->nickname ?? $u->name }}"
+                             class="avail-ucard__img"
+                             loading="lazy"
+                             onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
+                        <span class="avail-ucard__online-dot"></span>
+                        @if($u->verified_profile)
+                            <span class="avail-ucard__verified" title="Verificado">&#10003;</span>
+                        @endif
+                    </div>
+                    <div class="avail-ucard__body">
+                        <p class="avail-ucard__name">{{ Str::limit($u->nickname ?? $u->name, 18) }}</p>
+                        @if($u->nickname)
+                            <p class="avail-ucard__nick">&#64;{{ $u->nickname }}</p>
+                        @endif
+                        @if($u->city)
+                            <p class="avail-ucard__city">&#128205; {{ $u->city }}</p>
+                        @endif
+                        <div class="avail-ucard__meta">
+                            <span class="avail-ucard__slot">{{ $slotMeta['icon'] }} {{ $slotMeta['label'] }}</span>
+                            <span class="avail-ucard__time">{{ $timeLabel }}</span>
+                        </div>
+                        @if($u->message)
+                            <p class="avail-ucard__msg">"{{ Str::limit($u->message, 60) }}"</p>
+                        @endif
+                    </div>
+                </a>
+                @endforeach
+            </div>
+            <div class="avail-page__pagination">
+                {{ $available->appends(['slot' => $slotFilter, 'q' => $search])->links() }}
+            </div>
+            @endif
+        </main>
+
+        {{-- Columna derecha: CTA + info --}}
+        <aside class="avail-page__sidebar-right">
+            @auth
+            <div class="avail-sidebar-box avail-sidebar-box--cta">
+                <h3 class="avail-sidebar-box__title">&#128293; Tu disponibilidad</h3>
+                @if(auth()->user()->activeAvailability ?? false)
+                    <p class="avail-sidebar-cta__desc">Ya estas disponible. Otros pueden verte aqui.</p>
+                    <form method="POST" action="{{ route('availability.deactivate') }}">
+                        @csrf
+                        @method('DELETE')
+                        <button type="submit" class="avail-sidebar-cta__btn avail-sidebar-cta__btn--off">
+                            Desactivar
+                        </button>
+                    </form>
+                @else
+                    <p class="avail-sidebar-cta__desc">Activa tu disponibilidad para que otros te encuentren aqui.</p>
+                    <a href="{{ route('dashboard') }}" class="avail-sidebar-cta__btn avail-sidebar-cta__btn--on">
+                        Activar ahora
+                    </a>
                 @endif
             </div>
-        </a>
-        @endforeach
-    </div>
+            @endauth
 
-    {{-- ÔöÇÔöÇ Paginaci├│n ÔöÇÔöÇ --}}
-    @if($available->hasPages())
-    <div class="avail-page__pagination">
-        {{ $available->links() }}
-    </div>
-    @endif
-    @endif
+            <div class="avail-sidebar-box" style="margin-top:1rem">
+                <h3 class="avail-sidebar-box__title">&#128276; Como funciona</h3>
+                <ul class="avail-sidebar-how">
+                    <li>Activa tu disponibilidad desde el panel lateral</li>
+                    <li>Elige el slot de tiempo que mejor te va</li>
+                    <li>Otros miembros podran verte en esta pagina</li>
+                    <li>Se desactiva automaticamente al expirar</li>
+                </ul>
+            </div>
+        </aside>
 
-</div>
+    </div>{{-- /.avail-page__layout --}}
+</div>{{-- /.avail-page --}}
 
+@push('styles')
 <style>
-/* ÔöÇÔöÇ P├ígina Disponibles ÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇÔöÇ */
-.avail-page {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 1.5rem 1rem 3rem;
-}
+.avail-page { max-width: 1200px; margin: 0 auto; padding: 1.5rem 1rem; }
+
 .avail-page__header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    display: flex; justify-content: space-between; align-items: center;
     margin-bottom: 1.5rem;
-    gap: 1rem;
 }
-.avail-page__header-left {
-    display: flex;
-    align-items: center;
-    gap: .75rem;
-}
+.avail-page__header-left { display: flex; align-items: center; gap: .75rem; }
 .avail-page__pulse {
-    width: 12px; height: 12px;
-    background: #16a34a;
-    border-radius: 50%;
-    box-shadow: 0 0 0 0 rgba(22,163,74,.6);
-    animation: avail-pulse 1.6s ease-in-out infinite;
-    flex-shrink: 0;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #22c55e;
+    box-shadow: 0 0 0 3px rgba(34,197,94,.25);
+    animation: pulse 2s infinite;
 }
-@keyframes avail-pulse {
-    0%   { box-shadow: 0 0 0 0 rgba(22,163,74,.6); }
-    70%  { box-shadow: 0 0 0 8px rgba(22,163,74,0); }
-    100% { box-shadow: 0 0 0 0 rgba(22,163,74,0); }
-}
-.avail-page__title {
-    font-size: 1.4rem;
-    font-weight: 700;
-    color: var(--_text);
-    margin: 0;
-}
+@keyframes pulse { 0%,100%{box-shadow:0 0 0 3px rgba(34,197,94,.25)} 50%{box-shadow:0 0 0 6px rgba(34,197,94,.1)} }
+.avail-page__title { font-size: 1.4rem; font-weight: 700; margin: 0; }
 .avail-page__total {
-    font-size: .8rem;
-    background: rgba(22,163,74,.12);
-    color: #16a34a;
-    border: 1px solid rgba(22,163,74,.25);
-    padding: .2rem .6rem;
-    border-radius: 99px;
-    font-weight: 600;
+    background: #22c55e; color: #fff;
+    font-size: .8rem; font-weight: 600;
+    padding: .2rem .6rem; border-radius: 999px;
 }
-.avail-page__back {
-    font-size: .85rem;
-    color: var(--_muted);
-    text-decoration: none;
-    padding: .4rem .8rem;
-    border: 1px solid var(--_border);
-    border-radius: 8px;
-    transition: background .15s;
-    white-space: nowrap;
-}
-.avail-page__back:hover { background: var(--_hover); }
+.avail-page__back { font-size: .9rem; opacity: .7; text-decoration: none; }
+.avail-page__back:hover { opacity: 1; }
 
-/* ÔöÇÔöÇ Filtros ÔöÇÔöÇ */
-.avail-page__filters {
-    display: flex;
-    flex-direction: column;
-    gap: .75rem;
-    margin-bottom: 1.75rem;
+/* Layout 3 columnas */
+.avail-page__layout {
+    display: grid;
+    grid-template-columns: 200px 1fr 220px;
+    gap: 1.5rem;
+    align-items: start;
 }
-.avail-page__search-wrap { width: 100%; max-width: 360px; }
-.avail-page__search {
-    width: 100%;
-    padding: .55rem .9rem;
-    border: 1px solid var(--_border);
-    border-radius: 10px;
-    background: var(--_input-bg, var(--_bg));
-    color: var(--_text);
-    font-size: .9rem;
-    outline: none;
-    transition: border-color .15s;
+@media(max-width: 900px) {
+    .avail-page__layout { grid-template-columns: 1fr; }
+    .avail-page__sidebar-left, .avail-page__sidebar-right { display: none; }
 }
-.avail-page__search:focus { border-color: #16a34a; }
-.avail-page__slots {
-    display: flex;
-    flex-wrap: wrap;
-    gap: .5rem;
+
+/* Sidebar boxes */
+.avail-sidebar-box {
+    background: var(--bg-card, #fff);
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: .75rem;
+    padding: 1rem;
 }
+.avail-sidebar-box__title {
+    font-size: .8rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .05em;
+    opacity: .5; margin: 0 0 .75rem;
+}
+.avail-sidebar-slots { display: flex; flex-direction: column; gap: .35rem; }
+
+/* Filtros */
 .avail-filter-btn {
-    padding: .35rem .8rem;
-    border: 1px solid var(--_border);
-    border-radius: 99px;
-    background: var(--_card-bg, var(--_bg));
-    color: var(--_text);
-    font-size: .8rem;
-    cursor: pointer;
+    display: block; width: 100%;
+    padding: .4rem .75rem; border-radius: .5rem;
+    font-size: .85rem; font-weight: 500;
+    border: 1px solid var(--border, #e5e7eb);
+    background: transparent; cursor: pointer;
+    text-decoration: none; color: inherit;
     transition: all .15s;
-    white-space: nowrap;
+    text-align: left;
 }
-.avail-filter-btn:hover  { border-color: #16a34a; color: #16a34a; }
+.avail-filter-btn:hover { background: var(--bg-hover, #f3f4f6); }
 .avail-filter-btn.is-active {
-    background: #16a34a;
-    border-color: #16a34a;
-    color: #fff;
-    font-weight: 600;
+    background: #7c3aed; color: #fff; border-color: #7c3aed;
 }
 
-/* ÔöÇÔöÇ Grid ÔöÇÔöÇ */
+/* Busqueda */
+.avail-page__search {
+    width: 100%; padding: .5rem .75rem;
+    border: 1px solid var(--border, #e5e7eb);
+    border-radius: .5rem; font-size: .9rem;
+    background: var(--bg-input, #fff);
+    color: inherit; box-sizing: border-box;
+}
+
+/* Grid central */
 .avail-page__grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
     gap: 1rem;
 }
+
+/* Tarjeta */
 .avail-ucard {
-    display: flex;
-    flex-direction: column;
-    background: var(--_card-bg, var(--_bg));
-    border: 1px solid var(--_border);
-    border-radius: 14px;
-    overflow: hidden;
-    text-decoration: none;
-    color: var(--_text);
-    transition: transform .18s, box-shadow .18s;
-}
-.avail-ucard:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 8px 24px rgba(0,0,0,.12);
-    border-color: rgba(22,163,74,.4);
-}
-.avail-ucard__img-wrap {
-    position: relative;
-    width: 100%;
-    aspect-ratio: 1;
-    background: var(--_border);
-    overflow: hidden;
-}
-.avail-ucard__img {
-    width: 100%; height: 100%;
-    object-fit: cover;
+    border-radius: .75rem; overflow: hidden;
+    border: 1px solid var(--border, #e5e7eb);
+    background: var(--bg-card, #fff);
+    text-decoration: none; color: inherit;
+    transition: transform .15s, box-shadow .15s;
     display: block;
 }
+.avail-ucard:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,.1); }
+.avail-ucard__img-wrap { position: relative; aspect-ratio: 1; overflow: hidden; }
+.avail-ucard__img { width: 100%; height: 100%; object-fit: cover; }
 .avail-ucard__online-dot {
-    position: absolute;
-    bottom: 8px; right: 8px;
-    width: 12px; height: 12px;
-    background: #16a34a;
-    border-radius: 50%;
-    border: 2px solid var(--_card-bg, #fff);
+    position: absolute; bottom: 6px; right: 6px;
+    width: 10px; height: 10px; border-radius: 50%;
+    background: #22c55e; border: 2px solid #fff;
 }
 .avail-ucard__verified {
-    position: absolute;
-    top: 8px; right: 8px;
-    background: #3b82f6;
-    color: #fff;
-    font-size: .65rem;
-    font-weight: 700;
-    width: 18px; height: 18px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
+    position: absolute; top: 6px; right: 6px;
+    background: #3b82f6; color: #fff;
+    font-size: .7rem; width: 18px; height: 18px;
+    border-radius: 50%; display: grid; place-items: center;
 }
-.avail-ucard__body {
-    padding: .75rem .8rem;
-    display: flex;
-    flex-direction: column;
-    gap: .2rem;
-    flex: 1;
-}
-.avail-ucard__name {
-    font-weight: 700;
-    font-size: .92rem;
-    margin: 0;
-    color: var(--_text);
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-.avail-ucard__nick {
-    font-size: .75rem;
-    color: var(--_muted);
-    margin: 0;
-}
-.avail-ucard__city {
-    font-size: .75rem;
-    color: var(--_muted);
-    margin: 0;
-}
+.avail-ucard__body { padding: .6rem .75rem; }
+.avail-ucard__name { font-weight: 700; font-size: .9rem; margin: 0 0 .15rem; }
+.avail-ucard__nick { font-size: .78rem; opacity: .5; margin: 0 0 .25rem; }
+.avail-ucard__city { font-size: .78rem; opacity: .65; margin: 0 0 .35rem; }
 .avail-ucard__meta {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-top: .35rem;
-    gap: .4rem;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: .75rem; margin-bottom: .3rem;
 }
 .avail-ucard__slot {
-    font-size: .72rem;
-    background: rgba(22,163,74,.1);
-    color: #16a34a;
-    border-radius: 99px;
-    padding: .15rem .5rem;
-    font-weight: 600;
-    white-space: nowrap;
+    background: #f3e8ff; color: #7c3aed;
+    padding: .15rem .45rem; border-radius: 999px; font-weight: 600;
 }
-.avail-ucard__time {
-    font-size: .7rem;
-    color: var(--_muted);
-    white-space: nowrap;
-}
-.avail-ucard__msg {
-    font-size: .75rem;
-    color: var(--_muted);
-    margin: .25rem 0 0;
-    font-style: italic;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-}
+.avail-ucard__time { opacity: .5; }
+.avail-ucard__msg { font-size: .78rem; opacity: .7; font-style: italic; margin: .3rem 0 0; }
 
-/* ÔöÇÔöÇ Empty state ÔöÇÔöÇ */
-.avail-page__empty {
-    text-align: center;
-    padding: 4rem 1rem;
-    color: var(--_muted);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: .5rem;
+/* CTA sidebar */
+.avail-sidebar-box--cta { border-color: #7c3aed33; background: #faf5ff; }
+.avail-sidebar-cta__desc { font-size: .82rem; opacity: .75; margin: 0 0 .75rem; }
+.avail-sidebar-cta__btn {
+    display: block; width: 100%; padding: .5rem;
+    border-radius: .5rem; font-size: .85rem; font-weight: 600;
+    text-align: center; text-decoration: none; border: none; cursor: pointer;
 }
+.avail-sidebar-cta__btn--on { background: #7c3aed; color: #fff; }
+.avail-sidebar-cta__btn--off { background: #fee2e2; color: #dc2626; }
 
-/* ÔöÇÔöÇ Paginaci├│n ÔöÇÔöÇ */
-.avail-page__pagination {
-    margin-top: 2rem;
-    display: flex;
-    justify-content: center;
-}
+/* Como funciona */
+.avail-sidebar-how { font-size: .82rem; opacity: .75; padding-left: 1.1rem; margin: 0; }
+.avail-sidebar-how li { margin-bottom: .4rem; }
 
-/* ÔöÇÔöÇ Responsive ÔöÇÔöÇ */
-@media (max-width: 640px) {
-    .avail-page__grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-    .avail-page__header { flex-direction: column; align-items: flex-start; }
-}
+/* Empty */
+.avail-page__empty { text-align: center; padding: 3rem 1rem; opacity: .6; }
+
+/* Paginacion */
+.avail-page__pagination { margin-top: 1.5rem; }
 </style>
-
-{{-- Auto-refresh cada 60 segundos --}}
-<script>
-    setTimeout(function() { window.location.reload(); }, 60000);
-</script>
+@endpush
 @endsection
