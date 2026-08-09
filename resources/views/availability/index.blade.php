@@ -71,7 +71,7 @@
                 @foreach($available as $u)
                 @php
                     $avatarUrl  = supabase_photo_url($u->avatar_path ?? null) ?? asset('img/default-avatar.svg');
-                    $profileUrl = route('messages.conversation', $u->user_id) . '?msg=' . urlencode('Hola! Vi que estas disponible ' . ($u->slot ? '(' . ($slotLabels[$u->slot]['label'] ?? $u->slot) . ')' : '') . ' y me gustaria platicar.');
+                    $profileUrl = url('/mensajes') . '?partner=' . $u->user_id . '&msg=' . urlencode('Hola! Vi que estas disponible ' . ($u->slot ? '(' . ($slotLabels[$u->slot]['label'] ?? $u->slot) . ')' : '') . ' y me gustaria platicar.');
                     $mins       = max(0, (int) now()->diffInMinutes(\Carbon\Carbon::parse($u->expires_at), false));
                     $hrs        = floor($mins / 60);
                     $minRest    = $mins % 60;
