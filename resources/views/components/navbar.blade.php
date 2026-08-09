@@ -327,7 +327,7 @@
                 <i class="fas fa-envelope"></i> Mensajes
                 <span id="msgBadgeDesktop" class="l69-nav__badge-dot" style="display:none;"></span>
             </a></li>
-            <li><a href="/disponibles" class="l69-nav__link {{ request()->is('disponibles*') ? 'is-active' : '' }}"><i class="fas fa-fire"></i> Disponibles</a></li>
+
             <li><a href="/eventos" class="l69-nav__link {{ request()->is('eventos*') ? 'is-active' : '' }}">
                 <i class="fas fa-calendar-alt"></i> Eventos
             </a></li>

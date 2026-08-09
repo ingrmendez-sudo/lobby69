@@ -55,11 +55,11 @@
 }
 .avail-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 260px), 1fr));
     gap: 1rem;
 }
 .avail-card {
-    background:#fff; border-radius:14px; overflow:hidden;
+    background:#fff; border-radius:14px; overflow:hidden; min-width:0;
     box-shadow:0 2px 10px rgba(0,0,0,.09); transition:transform .18s, box-shadow .18s;
     cursor: pointer;
 }
