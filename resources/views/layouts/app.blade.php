@@ -17,6 +17,8 @@
     </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <link rel="shortcut icon" type="image/png" href="/favicon.png">
     <title>@yield('title', 'LOBBY69') | LOBBY69</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="description" content="LOBBY69 - La comunidad swinger más discreta de México">
