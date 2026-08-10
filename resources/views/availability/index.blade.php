@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Disponibles ahora')
 
@@ -51,8 +51,8 @@
 }
 .dp-grid {
     display: grid !important;
-    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr)) !important;
-    gap: 1rem;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)) !important;
+    gap: .85rem;
     width: 100% !important;
 }
 .dp-card {
@@ -62,10 +62,12 @@
     cursor:pointer;
 }
 .dp-card:hover { transform:translateY(-4px); box-shadow:0 6px 20px rgba(0,0,0,.13); }
-.dp-card__img { width:100%; aspect-ratio:3/4; object-fit:cover; display:block; }
+.dp-card__img {
+    width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block;
+}
 .dp-card__placeholder {
-    width:100%; aspect-ratio:3/4; background:#f0eeff;
-    display:flex; align-items:center; justify-content:center; font-size:3rem;
+    width: 100%; aspect-ratio: 1/1; background: #f0eeff;
+    display: flex; align-items: center; justify-content: center; font-size: 2.5rem;
 }
 .dp-card__body { padding:.75rem; }
 .dp-card__nick { font-weight:700; font-size:.9rem; }
@@ -79,6 +81,12 @@
 .dp-card__bio {
     font-size:.75rem; color:#555; margin-top:.4rem; font-style:italic;
     white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.dp-card__message {
+    font-size: .75rem; color: #555; margin-top: .4rem;
+    font-style: italic; display: -webkit-box;
+    -webkit-line-clamp: 2; -webkit-box-orient: vertical;
+    overflow: hidden; line-height: 1.4;
 }
 .dp-msg-btn {
     display:block; width:100%; margin-top:.65rem; padding:.5rem;
@@ -222,13 +230,14 @@
                 $slotKey = $u->slot ?? '';
                 $slotLbl = $slotLabels[$slotKey]['label'] ?? $slotKey;
                 $slotIco = $slotLabels[$slotKey]['icon']  ?? '📅';
-                $photoId = $u->profile_photo_id ?? null;
+                $photoId = $u->avatar_path ?? null;
                 $expires = $u->expires_at ? \Carbon\Carbon::parse($u->expires_at) : null;
                 $mins    = $expires ? max(0, (int) now()->diffInMinutes($expires, false)) : null;
                 $hrs     = $mins !== null ? floor($mins / 60) : null;
                 $minRest = $mins !== null ? ($mins % 60) : null;
                 $msgDef  = 'Hola ' . $nick . '! Vi que estás disponible (' . $slotLbl . ') y me gustaría platicar 😊';
-                $avatarUrl = $photoId ? route('photo.show.uuid', ['photoUuid' => $photoId]) : null;
+                $avMessage = $u->message ?? null;
+                $avatarUrl = $photoId ? config('filesystems.supabase_public_url') . '/' . $photoId : null;
             @endphp
             <div class="dp-card"
                  data-partner="{{ $u->user_id }}"
@@ -251,9 +260,9 @@
                     <span class="dp-card__slot">{{ $slotIco }} {{ $slotLbl }}</span>
                     @if($mins !== null)
                         <div class="dp-card__timer">⏱ {{ $hrs }}h {{ $minRest }}m restantes</div>
+                    @if($avMessage)
+                        <div class="dp-card__message">"{{ $avMessage }}"</div>
                     @endif
-                    @if($u->note ?? null)
-                        <div class="dp-card__bio">"{{ $u->note }}"</div>
                     @endif
                     <button class="dp-msg-btn">✉ Enviar mensaje</button>
                 </div>
