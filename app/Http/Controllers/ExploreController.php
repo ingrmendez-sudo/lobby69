@@ -10,9 +10,9 @@ class ExploreController extends Controller
     public function index(Request $request)
     {
         $query = DB::table('profiles')
-            ->where('profile_completed', true)
+            ->whereRaw('profile_completed = true')
             ->where(function($q) {
-                $q->where('public', true)->orWhereNull('public');
+                $q->whereRaw('public = true')->orWhereNull('public');
             })
             ->whereNotNull('nickname')
             ->where('nickname', '!=', '')
@@ -50,8 +50,8 @@ class ExploreController extends Controller
 
         $avatars = DB::table('photos')
             ->whereIn(DB::raw('user_id::text'), $userIds)
-            ->where('is_profile_photo', true)
-            ->where('status', 'approved')
+            ->whereRaw('is_profile_photo = true')
+            ->whereRaw("status = 'approved'")
             ->select('user_id', 'file_path', 'id')
             ->get()
             ->keyBy(fn($r) => (string)$r->user_id);
@@ -65,7 +65,7 @@ class ExploreController extends Controller
             $fallbacks = DB::table('photos')
                 ->whereIn(DB::raw('user_id::text'), $missingAvatars)
                 ->where('album_type', 'public')
-                ->where('status', 'approved')
+                ->whereRaw("status = 'approved'")
                 ->orderBy('sort_order')
                 ->orderBy('created_at')
                 ->select('user_id', 'file_path', 'id')
@@ -77,8 +77,8 @@ class ExploreController extends Controller
         }
 
         $ciudades = DB::table('profiles')
-            ->where('profile_completed', true)
-            ->where('public', true)
+            ->whereRaw('profile_completed = true')
+            ->whereRaw('public = true')
             ->whereNotNull('city')
             ->where('city', '!=', '')
             ->distinct()

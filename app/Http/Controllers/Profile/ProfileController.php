@@ -118,7 +118,7 @@ class ProfileController extends Controller
     {
         $profile = DB::table('profiles')
             ->where('nickname', $nickname)
-            ->where('profile_completed', true)
+            ->whereRaw('profile_completed = true')
             ->first();
 
         if (!$profile) abort(404, 'Perfil no encontrado.');
@@ -159,7 +159,7 @@ class ProfileController extends Controller
         // Avatar
         $profilePhoto = DB::table('photos')
             ->where('user_id', $profile->user_id)
-            ->where('is_profile_photo', true)
+            ->whereRaw('is_profile_photo = true')
             ->where('status', 'approved')
             ->first();
 

@@ -96,7 +96,7 @@ class AdminStatsController extends Controller
 
         // ── Funnel de conversión ──
         $totalRegistered    = DB::table('users')->where('role', '!=', 'admin')->count();
-        $profileCompleted   = DB::table('profiles')->where('profile_completed', true)->count();
+        $profileCompleted   = DB::table('profiles')->whereRaw('profile_completed = true')->count();
         $uploadedPhoto      = DB::table('photos')->distinct('user_id')->count('user_id');
         $paidMembership     = DB::table('users')->where('role', '!=', 'admin')
             ->whereNotIn('membership_type', ['invitado'])->count();

@@ -278,7 +278,7 @@ class DashboardController extends Controller
 
         $avatarPhotoId = DB::table('photos')
             ->whereRaw('user_id::text = ?', [$userId])
-            ->where('is_profile_photo', true)
+            ->whereRaw('is_profile_photo = true')
             ->where('status', 'approved')
             ->value('id');
 

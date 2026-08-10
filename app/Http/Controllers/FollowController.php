@@ -125,7 +125,7 @@ class FollowController extends Controller
         $userIds = $followers->pluck('user_id')->map(fn($id) => (string)$id)->toArray();
         $avatars = DB::table('photos')
             ->whereRaw('user_id::text IN (' . implode(',', array_fill(0, count($userIds), '?')) . ')', $userIds)
-            ->where('is_profile_photo', true)
+            ->whereRaw('is_profile_photo = true')
             ->where('status', 'approved')
             ->select(['id', DB::raw('user_id::text as uid'), 'file_path'])
             ->get()
@@ -172,7 +172,7 @@ class FollowController extends Controller
         $userIds = $following->pluck('user_id')->map(fn($id) => (string)$id)->toArray();
         $avatars = count($userIds) ? DB::table('photos')
             ->whereRaw('user_id::text IN (' . implode(',', array_fill(0, count($userIds), '?')) . ')', $userIds)
-            ->where('is_profile_photo', true)
+            ->whereRaw('is_profile_photo = true')
             ->where('status', 'approved')
             ->select(['id', DB::raw('user_id::text as uid'), 'file_path'])
             ->get()
