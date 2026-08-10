@@ -14,15 +14,44 @@ class DashboardController extends Controller
     public function index(Request $request)
     {
         /** @var User $user */
-        $user = auth()->user();
-        $tab  = $request->get('tab', 'new');
-        $feed = $this->buildFeedQuery($user, $tab)->paginate(24);
+        $user   = auth()->user();
+        $userId = (string) $user->id;
+        $tab    = $request->get('tab', 'new');
+
+        // Cargar profile junto con el usuario (evita lazy load extra en vista)
+        $user->loadMissing('profile');
+
+        // Feed con simplePaginate (evita el COUNT(*) extra = 1 round-trip menos)
+        $feed = $this->buildFeedQuery($user, $tab)->simplePaginate(24);
+
+        // Disponibles: query ligera, solo campos esenciales
+        $availableUsers = DB::table('availability as av')
+            ->join('users as u', DB::raw('u.id::text'), '=', DB::raw('av.user_id::text'))
+            ->leftJoin('profiles as p', DB::raw('p.user_id::text'), '=', DB::raw('u.id::text'))
+            ->leftJoin(DB::raw(
+                "(SELECT DISTINCT ON (user_id) user_id::text AS av_uid, file_path AS avatar_path
+                  FROM photos WHERE is_profile_photo = true AND status = 'approved'
+                  ORDER BY user_id) as ph"
+            ), 'ph.av_uid', '=', DB::raw('u.id::text'))
+            ->where('av.expires_at', '>', now())
+            ->whereRaw('av.user_id::text != ?', [$userId])
+            ->select([
+                'u.id as user_id',
+                DB::raw('COALESCE(p.nickname, u.name) as nickname'),
+                DB::raw('COALESCE(p.display_name, p.nickname, u.name) as display_name'),
+                'av.expires_at',
+                'ph.avatar_path',
+            ])
+            ->orderBy('av.expires_at', 'asc')
+            ->limit(10)
+            ->get();
 
         return view('dashboard.index', [
-            'user'    => $user,
-            'profile' => $user->profile,
-            'tab'     => $tab,
-            'feed'    => $feed,
+            'user'           => $user,
+            'profile'        => $user->profile,
+            'tab'            => $tab,
+            'feed'           => $feed,
+            'availableUsers' => $availableUsers,
         ]);
     }
 
@@ -31,7 +60,9 @@ class DashboardController extends Controller
         $user = auth()->user();
         $tab  = $request->get('tab', 'new');
         $page = max(1, (int) $request->get('page', 1));
-        $feed = $this->buildFeedQuery($user, $tab)->paginate(24, ['*'], 'page', $page);
+
+        // simplePaginate también aquí: AJAX no necesita total de páginas
+        $feed = $this->buildFeedQuery($user, $tab)->simplePaginate(24, ['*'], 'page', $page);
 
         $html = view('dashboard._feed_items', [
             'feed' => $feed,
@@ -106,9 +137,6 @@ class DashboardController extends Controller
             ])
             ->get();
 
-        $avatarPhotoId = $photo->avatar_photo_id ?? null;
-
-        // Quienes dieron like (máx. 20, más recientes primero)
         $likers = DB::table('photo_likes')
             ->leftJoin('profiles as lp', function ($j) {
                 $j->on(DB::raw('lp.user_id::text'), '=', DB::raw('photo_likes.user_id::text'));
@@ -141,7 +169,7 @@ class DashboardController extends Controller
             'owner' => [
                 'name'            => $photo->display_name ?? 'Usuario',
                 'nickname'        => $photo->nickname ?? null,
-                'avatar_photo_id' => $avatarPhotoId,
+                'avatar_photo_id' => $photo->avatar_photo_id ?? null,
                 'url'             => $photo->nickname ? '/u/' . $photo->nickname : null,
             ],
         ]);
@@ -191,8 +219,6 @@ class DashboardController extends Controller
             ->whereRaw('photo_id::text = ?', [$photoUuid])
             ->count();
 
-
-        // Notificar al dueño si se dio like (no al quitar)
         if ($liked) {
             $likeOwner = DB::table('photos')
                 ->whereRaw('photo_uuid::text = ?', [$photoUuid])
@@ -207,6 +233,7 @@ class DashboardController extends Controller
                 ]);
             }
         }
+
         return response()->json([
             'liked'       => $liked,
             'likes_count' => $count,
@@ -215,9 +242,7 @@ class DashboardController extends Controller
 
     public function storeComment(Request $request, $id)
     {
-        $request->validate([
-            'body' => 'required|string|min:1|max:500',
-        ]);
+        $request->validate(['body' => 'required|string|min:1|max:500']);
 
         $user   = auth()->user();
         $userId = (string) $user->id;
@@ -257,8 +282,6 @@ class DashboardController extends Controller
             ->where('status', 'approved')
             ->value('id');
 
-
-        // Notificar al dueño de la foto cuando alguien comenta
         $photoOwner = DB::table('photos')
             ->whereRaw('photo_uuid::text = ?', [(string) $photo->photo_uuid])
             ->value('user_id');
@@ -286,15 +309,26 @@ class DashboardController extends Controller
     {
         $userId = (string) $user->id;
 
-        $userCity = DB::table('profiles')
-            ->whereRaw('user_id::text = ?', [$userId])
-            ->value('city');
+        // Obtener city y follows en UNA sola query fusionada para ahorrar un round-trip
+        $profileAndFollows = DB::selectOne("
+            SELECT
+                p.city,
+                COALESCE(
+                    (SELECT array_agg(f.following_id::text)
+                     FROM follows f
+                     WHERE f.follower_id::text = ?),
+                    ARRAY[]::text[]
+                ) AS following_ids
+            FROM profiles p
+            WHERE p.user_id::text = ?
+        ", [$userId, $userId]);
 
-        $followingIds = DB::table('follows')
-            ->whereRaw('follower_id::text = ?', [$userId])
-            ->pluck('following_id')
-            ->map(fn($id) => (string) $id)
-            ->toArray();
+        $userCity     = $profileAndFollows?->city ?? null;
+        $followingIds = $profileAndFollows?->following_ids
+            ? (is_array($profileAndFollows->following_ids)
+                ? $profileAndFollows->following_ids
+                : array_filter(explode(',', trim($profileAndFollows->following_ids, '{}'))))
+            : [];
 
         $cityClause = $userCity
             ? "CASE WHEN p.city ILIKE '%" . addslashes($userCity) . "%' THEN 2 ELSE 0 END"
@@ -306,35 +340,33 @@ class DashboardController extends Controller
 
         $scoreSQL = "({$followClause} + {$cityClause} + "
                   . "CASE WHEN p.verified_profile = true THEN 1 ELSE 0 END "
-                  . "+ EXTRACT(EPOCH FROM (NOW() - photos.created_at)) / -86400.0 * 0.5)";
+                  . "+ CASE WHEN photos.created_at > NOW() - INTERVAL '7 days' THEN 2 ELSE 0 END "
+                  . "+ EXTRACT(EPOCH FROM (NOW() - photos.created_at)) / -86400.0 * 0.3)";
 
         $query = DB::table('photos')
             ->join('users as u', DB::raw('u.id::text'), '=', DB::raw('photos.user_id::text'))
             ->leftJoin('profiles as p', DB::raw('p.user_id::text'), '=', DB::raw('u.id::text'))
             ->leftJoin(DB::raw('(
                 SELECT photo_id::text AS pl_photo_id, COUNT(*) AS likes_count
-                FROM photo_likes
-                GROUP BY photo_id::text
+                FROM photo_likes GROUP BY photo_id::text
             ) as pl_agg'), 'pl_agg.pl_photo_id', '=', DB::raw('photos.photo_uuid::text'))
             ->leftJoin(DB::raw("(
                 SELECT photo_id::text AS pc_photo_id, COUNT(*) AS comments_count
-                FROM photo_comments
-                WHERE status = 'approved'
+                FROM photo_comments WHERE status = 'approved'
                 GROUP BY photo_id::text
             ) as pc_agg"), 'pc_agg.pc_photo_id', '=', DB::raw('photos.photo_uuid::text'))
             ->leftJoin(DB::raw("(
                 SELECT photo_id::text AS ul_photo_id, true AS user_liked
-                FROM photo_likes
-                WHERE user_id::text = '{$userId}'
+                FROM photo_likes WHERE user_id::text = '{$userId}'
             ) as ul_agg"), 'ul_agg.ul_photo_id', '=', DB::raw('photos.photo_uuid::text'))
             ->leftJoin(DB::raw("(
-                SELECT DISTINCT ON (user_id) user_id::text AS av_user_id, id AS avatar_photo_id, file_path AS avatar_file_path
-                FROM photos
-                WHERE is_profile_photo = true AND status = 'approved'
+                SELECT DISTINCT ON (user_id) user_id::text AS av_user_id,
+                       id AS avatar_photo_id, file_path AS avatar_file_path
+                FROM photos WHERE is_profile_photo = true AND status = 'approved'
                 ORDER BY user_id
             ) as av_agg"), 'av_agg.av_user_id', '=', DB::raw('u.id::text'))
-            ->where('photos.status', 'approved')
-            ->where('u.active', true)
+            ->whereRaw("photos.status = 'approved'")
+            ->whereRaw('u.active = true')
             ->whereRaw('photos.user_id::text != ?', [$userId])
             ->select([
                 'photos.id',
@@ -369,15 +401,13 @@ class DashboardController extends Controller
         if ($tab === 'popular') {
             $query->orderByDesc(DB::raw('COALESCE(pl_agg.likes_count, 0)'));
         } else {
-            $query->orderByDesc(DB::raw($scoreSQL . ' + RANDOM() * 0.3'));
+            // Score como tiebreaker suave, RANDOM() domina completamente
+            $query->orderByDesc(DB::raw('RANDOM() * 10.0 + (' . $scoreSQL . ') * 0.3'));
         }
 
         return $query;
     }
 
-    /**
-     * El dueño de la foto responde un comentario.
-     */
     public function replyComment(Request $request, $photoId, $commentId)
     {
         $request->validate(['body' => 'required|string|min:1|max:500']);
@@ -401,7 +431,6 @@ class DashboardController extends Controller
             return response()->json(['error' => 'Solo el dueño de la foto puede responder.'], 403);
         }
 
-        // Verificar que el comentario padre existe
         $parent = DB::table('photo_comments')
             ->whereRaw('id::text = ?', [$commentId])
             ->whereRaw('photo_id::text = ?', [(string) $photo->photo_uuid])
@@ -432,15 +461,11 @@ class DashboardController extends Controller
         return response()->json([
             'success' => true,
             'reply'   => [
-                'id'       => $replyId,
-                'body'     => strip_tags($request->input('body')),
-                'user_nick'=> $profile?->nickname ?? $profile?->display_name ?? 'Usuario',
-                'commenter_nick'  => $profile?->nickname ?? null,
+                'id'            => $replyId,
+                'body'          => strip_tags($request->input('body')),
+                'user_nick'     => $profile?->nickname ?? $profile?->display_name ?? 'Usuario',
+                'commenter_nick'=> $profile?->nickname ?? null,
             ]
         ]);
     }
 }
-
-
-
-

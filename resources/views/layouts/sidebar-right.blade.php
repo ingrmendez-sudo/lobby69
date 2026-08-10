@@ -58,6 +58,203 @@
     }
 @endphp
 
+{{-- ── Disponibles ahora (sidebar derecho, solo dashboard) ── --}}
+@if($rUser && $rRoute === 'dashboard')
+@php
+    $sideAvailUsers = \Illuminate\Support\Facades\DB::table('availability as av')
+        ->join('users as u', \Illuminate\Support\Facades\DB::raw('u.id::text'), '=', \Illuminate\Support\Facades\DB::raw('av.user_id::text'))
+        ->leftJoin('profiles as p', \Illuminate\Support\Facades\DB::raw('p.user_id::text'), '=', \Illuminate\Support\Facades\DB::raw('u.id::text'))
+        ->leftJoin(\Illuminate\Support\Facades\DB::raw(
+            "(SELECT DISTINCT ON (user_id) user_id::text AS sa_uid, file_path AS sa_avatar
+              FROM photos WHERE is_profile_photo = true AND status = 'approved'
+              ORDER BY user_id) as sa"
+        ), 'sa.sa_uid', '=', \Illuminate\Support\Facades\DB::raw('u.id::text'))
+        ->where('av.expires_at', '>', now())
+        ->whereRaw('av.user_id::text != ?', [(string)$rUser->id])
+        ->select([
+            'u.id as user_id',
+            \Illuminate\Support\Facades\DB::raw('COALESCE(p.nickname, u.name) as nickname'),
+            'av.slot',
+            'av.message',
+            'av.expires_at',
+            'sa.sa_avatar as avatar_path',
+        ])
+        ->orderBy('av.expires_at', 'asc')
+        ->limit(8)
+        ->get();
+
+    $sideSlotIcons = [
+        'hoy' => '📅', 'entre_semana' => '💼', 'viernes' => '🍹',
+        'finde' => '🎉', 'sabado' => '🌙', 'domingo' => '☀️',
+    ];
+    $supabaseBase = config('filesystems.supabase_public_url', '');
+@endphp
+@if($sideAvailUsers->count() > 0)
+<div class="l69-sidebar-card" style="padding:.85rem;">
+    <div class="l69-sidebar-card__title" style="margin-bottom:.65rem;">
+        <span style="display:inline-block;width:8px;height:8px;border-radius:50%;
+                     background:#22c55e;box-shadow:0 0 6px #22c55e;margin-right:.4rem;
+                     vertical-align:middle;flex-shrink:0;"></span>
+        Disponibles ahora
+        <a href="{{ route('availability.public') }}"
+           style="margin-left:auto;font-size:.68rem;color:#a78bfa;font-weight:500;
+                  text-decoration:none;white-space:nowrap;">
+            Ver todos →
+        </a>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:.5rem;">
+    @foreach($sideAvailUsers as $su)
+    @php
+        $suPhoto = $su->avatar_path
+            ? $supabaseBase . '/' . ltrim($su->avatar_path, '/')
+            : null;
+        $suIcon  = $sideSlotIcons[$su->slot ?? 'hoy'] ?? '📅';
+        $suNick  = $su->nickname ?? 'Usuario';
+        $suMsg   = trim($su->message ?? '');
+        $suUid   = (string)$su->user_id;
+    @endphp
+    <div style="display:flex;align-items:center;gap:.55rem;padding:.35rem 0;
+                border-bottom:1px solid rgba(255,255,255,.05);cursor:pointer;"
+         onclick="document.getElementById('dpSideModal').dataset.partner='{{ $suUid }}';
+                  document.getElementById('dpSideModal').dataset.nick='{{ e($suNick) }}';
+                  document.getElementById('dpSideModalNick').textContent='{{ e($suNick) }}';
+                  document.getElementById('dpSideModalBody').value='';
+                  document.getElementById('dpSideModalFeedback').textContent='';
+                  document.getElementById('dpSideModal').classList.add('is-open');">
+
+        {{-- Avatar --}}
+        <div style="width:34px;height:34px;border-radius:50%;overflow:hidden;
+                    background:rgba(108,63,197,.25);flex-shrink:0;border:1px solid rgba(108,63,197,.3);">
+            @if($suPhoto)
+            <img src="{{ $suPhoto }}" alt="{{ $suNick }}"
+                 style="width:100%;height:100%;object-fit:cover;"
+                 onerror="this.style.display='none'">
+            @else
+            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-user" style="font-size:.75rem;color:#a78bfa;"></i>
+            </div>
+            @endif
+        </div>
+
+        {{-- Info --}}
+        <div style="min-width:0;flex:1;">
+            <div style="font-size:.78rem;font-weight:700;color:var(--theme-text,#e2d9f3);
+                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                {{ $suNick }}
+                <span style="font-size:.68rem;font-weight:400;opacity:.7;">{{ $suIcon }}</span>
+            </div>
+            @if($suMsg)
+            <div style="font-size:.7rem;color:rgba(226,217,243,.5);
+                        white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+                        font-style:italic;">
+                "{{ $suMsg }}"
+            </div>
+            @else
+            <div style="font-size:.7rem;color:rgba(226,217,243,.3);">
+                Hasta {{ \Carbon\Carbon::parse($su->expires_at)->format('H:i') }}
+            </div>
+            @endif
+        </div>
+
+        {{-- Botón mensaje --}}
+        <button style="flex-shrink:0;background:rgba(108,63,197,.25);border:1px solid rgba(108,63,197,.4);
+                       border-radius:6px;padding:.22rem .45rem;color:#a78bfa;cursor:pointer;
+                       font-size:.68rem;transition:background .2s;"
+                onclick="event.stopPropagation();">
+            <i class="fas fa-paper-plane"></i>
+        </button>
+    </div>
+    @endforeach
+    </div>
+</div>
+@endif
+@endif
+
+{{-- ── Modal mensaje desde sidebar ── --}}
+<div id="dpSideModal"
+     style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);
+            backdrop-filter:blur(4px);z-index:9999;align-items:center;justify-content:center;"
+     data-partner="" data-nick=""
+     class=""
+     onclick="if(event.target===this)this.classList.remove('is-open')">
+    <div style="background:var(--theme-bg,#1a1025);border:1px solid rgba(108,63,197,.35);
+                border-radius:16px;padding:1.5rem;width:90%;max-width:400px;position:relative;">
+        <button onclick="document.getElementById('dpSideModal').classList.remove('is-open')"
+                style="position:absolute;top:.75rem;right:.85rem;background:none;border:none;
+                       color:rgba(226,217,243,.5);font-size:1.1rem;cursor:pointer;">&times;</button>
+        <p style="font-size:.95rem;font-weight:700;color:var(--theme-text);margin:0 0 .75rem;">
+            <i class="fas fa-paper-plane"></i> Enviar mensaje
+        </p>
+        <p style="font-size:.8rem;color:rgba(226,217,243,.55);margin:0 0 .75rem;">
+            Para: <strong id="dpSideModalNick" style="color:rgba(226,217,243,.85);">—</strong>
+        </p>
+        <textarea id="dpSideModalBody"
+                  style="width:100%;background:rgba(255,255,255,.05);border:1px solid rgba(108,63,197,.3);
+                         border-radius:8px;color:var(--theme-text);padding:.6rem .75rem;font-size:.85rem;
+                         resize:vertical;min-height:90px;box-sizing:border-box;"
+                  placeholder="Escribe tu mensaje…" maxlength="500"></textarea>
+        <button onclick="dpSideModalSend()"
+                style="width:100%;margin-top:.75rem;padding:.55rem;
+                       background:linear-gradient(135deg,#6c3fc5,#e056a0);border:none;
+                       border-radius:8px;color:#fff;font-size:.88rem;font-weight:700;cursor:pointer;">
+            Enviar
+        </button>
+        <div id="dpSideModalFeedback"
+             style="margin-top:.5rem;font-size:.8rem;text-align:center;min-height:1.2em;color:#22c55e;"></div>
+    </div>
+</div>
+
+<style>
+#dpSideModal.is-open { display:flex !important; }
+</style>
+
+<script>
+if (!window._dpSideModalInit) {
+    window._dpSideModalInit = true;
+    async function dpSideModalSend() {
+        const modal    = document.getElementById('dpSideModal');
+        const receiver = modal.dataset.partner;
+        const body     = document.getElementById('dpSideModalBody').value.trim();
+        const fb       = document.getElementById('dpSideModalFeedback');
+        const btn      = modal.querySelector('button[onclick="dpSideModalSend()"]');
+
+        if (!body) { fb.style.color='#f87171'; fb.textContent='Escribe un mensaje primero.'; return; }
+        if (!receiver) { fb.style.color='#f87171'; fb.textContent='Error: destinatario no encontrado.'; return; }
+
+        btn.disabled = true;
+        fb.style.color = 'rgba(226,217,243,.5)';
+        fb.textContent = 'Enviando…';
+
+        try {
+            const csrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+            const res  = await fetch('/messages/send', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': csrf,
+                    'Accept': 'application/json'
+                },
+                body: JSON.stringify({ receiver_id: receiver, body: body })
+            });
+            const data = await res.json();
+            if (res.ok && (data.success || data.message)) {
+                fb.style.color = '#22c55e';
+                fb.textContent = '¡Mensaje enviado!';
+                setTimeout(() => modal.classList.remove('is-open'), 1400);
+            } else {
+                fb.style.color = '#f87171';
+                fb.textContent = data.error || data.message || 'Error al enviar.';
+                btn.disabled = false;
+            }
+        } catch(err) {
+            fb.style.color = '#f87171';
+            fb.textContent = 'Error de red. Intenta de nuevo.';
+            btn.disabled = false;
+        }
+    }
+}
+</script>
 {{-- ── Panel Disponible HOY ── --}}
 @if($rUser && $rRoute !== 'explore' && !str_starts_with($rRoute, 'events.') && !str_starts_with($rRoute, 'articles.'))
 @php
