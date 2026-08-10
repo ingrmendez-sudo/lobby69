@@ -71,7 +71,7 @@ class MessagesController extends Controller
 
             $unreadTotal = DB::table('messages')
                 ->whereRaw('receiver_id::text = ?', [$userId])
-                ->where('read', false)
+                ->whereRaw('"read" = false')
                 ->count();
         }
 
@@ -198,7 +198,7 @@ class MessagesController extends Controller
         DB::table('messages')
             ->whereRaw('sender_id::text = ?',   [$partnerId])
             ->whereRaw('receiver_id::text = ?',  [$userId])
-            ->where('read', false)
+            ->whereRaw('"read" = false')
             ->update(['read' => true, 'read_at' => now()]);
 
         $messages = DB::table('messages as m')
@@ -305,7 +305,7 @@ class MessagesController extends Controller
 
             $avatarPhotoId = DB::table('photos')
                 ->whereRaw('user_id::text = ?', [$userId])
-                ->where('is_profile_photo', true)
+                ->whereRaw('is_profile_photo = true')
                 ->where('status', 'approved')
                 ->value('id');
 
