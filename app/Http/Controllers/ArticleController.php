@@ -12,7 +12,7 @@ class ArticleController extends Controller
     public function index(Request $request)
     {
         $articles = DB::table('articles')
-            ->where('published', true)
+            ->whereRaw('published = true')
             ->orderByDesc('created_at')
             ->get();
 
@@ -25,7 +25,7 @@ class ArticleController extends Controller
 
         $article = DB::table('articles')
             ->where('id', $id)
-            ->where('published', true)
+            ->whereRaw('published = true')
             ->first();
 
         if (!$article) abort(404);
@@ -78,7 +78,7 @@ class ArticleController extends Controller
         $user   = auth()->user();
         $userId = (string) $user->id;
 
-        $article = DB::table('articles')->where('id', $id)->where('published', true)->first();
+        $article = DB::table('articles')->where('id', $id)->whereRaw('published = true')->first();
         if (!$article) return response()->json(['error' => 'No encontrado'], 404);
 
         $existing = DB::table('article_likes')
@@ -114,7 +114,7 @@ class ArticleController extends Controller
         $user   = auth()->user();
         $userId = (string) $user->id;
 
-        $article = DB::table('articles')->where('id', $id)->where('published', true)->first();
+        $article = DB::table('articles')->where('id', $id)->whereRaw('published = true')->first();
         if (!$article) return response()->json(['error' => 'No encontrado'], 404);
 
         DB::table('article_comments')->insert([

@@ -45,7 +45,7 @@ class MembershipController extends Controller
     public function request(Request $request)
     {
         $slug = $request->query('plan');
-        $plan = $slug ? MembershipPlan::where('slug', $slug)->where('is_active', true)->first() : null;
+        $plan = $slug ? MembershipPlan::where('slug', $slug)->whereRaw('is_active = true')->first() : null;
 
         if (! $plan) {
             return redirect()->route('membership.index')
@@ -79,7 +79,7 @@ class MembershipController extends Controller
 
         $user = $request->user();
         $plan = MembershipPlan::where('slug', $request->plan_slug)
-                    ->where('is_active', true)
+                    ->whereRaw('is_active = true')
                     ->firstOrFail();
 
         // Verificar que no tenga ya una solicitud pendiente para este plan

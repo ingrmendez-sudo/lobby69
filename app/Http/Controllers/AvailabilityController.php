@@ -105,7 +105,7 @@ class AvailabilityController extends Controller
             ) as ph"), 'ph.av_uid', '=', DB::raw('u.id::text'))
             ->where('av.expires_at', '>', now())
             ->whereRaw('av.user_id::text != ?', [$currentUserId])
-            ->where('u.active', true)
+            ->whereRaw('u.active = true')
             ->orderBy('av.expires_at', 'asc')
             ->limit($limit)
             ->select([

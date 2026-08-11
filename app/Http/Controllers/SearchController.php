@@ -24,7 +24,7 @@ class SearchController extends Controller
                 'profiles.city',
                 'users.last_seen_at'
             )
-            ->where('profiles.profile_completed', true)
+            ->whereRaw('profiles.profile_completed = true')
             ->where(function($query) use ($q) {
                 $query->whereRaw('LOWER(profiles.nickname) LIKE ?', ['%' . strtolower($q) . '%'])
                       ->orWhereRaw('LOWER(profiles.display_name) LIKE ?', ['%' . strtolower($q) . '%']);
@@ -54,7 +54,7 @@ class SearchController extends Controller
             $results = DB::table('profiles')
                 ->join('users', DB::raw('profiles.user_id::text'), '=', 'users.id')
                 ->select('profiles.*', 'users.last_seen_at', 'users.created_at as joined_at')
-                ->where('profiles.profile_completed', true)
+                ->whereRaw('profiles.profile_completed = true')
                 ->where(function($query) use ($q) {
                     $query->whereRaw('LOWER(profiles.nickname) LIKE ?', ['%' . strtolower($q) . '%'])
                           ->orWhereRaw('LOWER(profiles.bio) LIKE ?', ['%' . strtolower($q) . '%']);

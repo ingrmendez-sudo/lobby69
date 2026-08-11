@@ -338,7 +338,7 @@ class ProfileController extends Controller
                     ->join('users as u',     'u.id', '=', 'pv.viewed_id')
                     ->whereRaw('pv.viewer_id = ?', [$me])
                     ->whereRaw('pv.viewed_id != ?', [$profile->user_id])
-                    ->where('u.active', true)
+                    ->whereRaw('u.active = true')
                     ->select([
                         DB::raw('DISTINCT ON (pv.viewed_id) pv.viewed_id'),
                         'pr.nickname',
@@ -375,8 +375,8 @@ class ProfileController extends Controller
 
                 $recommendedProfiles = DB::table('profiles as pr')
                     ->join('users as u', 'u.id', '=', 'pr.user_id')
-                    ->where('pr.profile_completed', true)
-                    ->where('u.active', true)
+                    ->whereRaw('pr.profile_completed = true')
+                    ->whereRaw('u.active = true')
                     ->whereNotIn('pr.user_id', $alreadyFollowing)
                     ->when($meCity, fn($q) => $q->where('pr.city', 'ilike', '%'.$meCity.'%'))
                     ->select([
@@ -487,7 +487,7 @@ class ProfileController extends Controller
                 WHERE pv2.viewer_id = pv.viewer_id
                   AND pv2.viewed_id = pv.viewed_id
             )')
-            ->where('u.active', true)
+            ->whereRaw('u.active = true')
             ->select([
                 'pr.nickname',
                 'pr.profile_type',

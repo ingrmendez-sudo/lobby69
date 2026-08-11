@@ -20,7 +20,7 @@ class VideoGalleryController extends Controller
                 ->join('profiles', 'users.id',       '=', 'profiles.user_id')
                 ->leftJoin('photos', function($j) {
                     $j->on('photos.user_id', '=', 'videos.user_id')
-                       ->where('photos.is_profile_photo', true);
+                       ->whereRaw('photos.is_profile_photo = true');
                 })
                 ->leftJoin(DB::raw('(
                     SELECT video_id, COUNT(*) AS likes_count
@@ -33,8 +33,8 @@ class VideoGalleryController extends Controller
                     WHERE parent_id IS NULL
                     GROUP BY video_id
                 ) AS vc'), 'vc.video_id', '=', 'videos.id')
-                ->where('videos.status', 'approved')
-                ->where('videos.album_type', 'public')
+                ->whereRaw("videos.status = 'approved'")
+                ->whereRaw("videos.album_type = 'public'")
                 ->select([
                     'videos.id',
                     'videos.caption',
@@ -77,7 +77,7 @@ class VideoGalleryController extends Controller
             $userProfile = DB::table('profiles')
                 ->leftJoin('photos as ph_side', function($j) {
                     $j->on('ph_side.user_id', '=', 'profiles.user_id')
-                       ->where('ph_side.is_profile_photo', true);
+                       ->whereRaw('ph_side.is_profile_photo = true');
                 })
                 ->where('profiles.user_id', $uid)
                 ->select('profiles.*', 'ph_side.id as avatar_photo_id')
@@ -95,8 +95,8 @@ class VideoGalleryController extends Controller
             // Usamos videos con más vistas como "últimos vistos" fallback
             $lastWatched = DB::table('videos')
                 ->join('profiles', 'videos.user_id', '=', 'profiles.user_id')
-                ->where('videos.status', 'approved')
-                ->where('videos.album_type', 'public')
+                ->whereRaw("videos.status = 'approved'")
+                ->whereRaw("videos.album_type = 'public'")
                 ->select(
                     'videos.id',
                     'videos.caption',
@@ -142,7 +142,7 @@ class VideoGalleryController extends Controller
             // Mis últimos 5 videos
             $myLatestVideos = DB::table('videos')
                 ->where('user_id', $uid)
-                ->where('status', 'approved')
+                ->where(DB::raw("status = 'approved'"))
                 ->select('id','caption','thumbnail_path','views_count','created_at')
                 ->orderByDesc('created_at')
                 ->limit(5)
@@ -152,8 +152,8 @@ class VideoGalleryController extends Controller
             $topVideos = Cache::remember('top_videos', 1800, function () {
                 return DB::table('videos')
                     ->join('profiles', 'videos.user_id', '=', 'profiles.user_id')
-                    ->where('videos.status', 'approved')
-                    ->where('videos.album_type', 'public')
+                    ->whereRaw("videos.status = 'approved'")
+                    ->whereRaw("videos.album_type = 'public'")
                     ->select('videos.id','videos.caption','videos.thumbnail_path','videos.views_count','profiles.nickname')
                     ->orderByDesc('videos.views_count')
                     ->limit(5)
@@ -171,7 +171,7 @@ class VideoGalleryController extends Controller
                     ->join('profiles', 'video_likes.user_id', '=', 'profiles.user_id')
                     ->leftJoin('photos as ph_lk', function($j) {
                         $j->on('ph_lk.user_id', '=', 'video_likes.user_id')
-                           ->where('ph_lk.is_profile_photo', true);
+                           ->whereRaw('ph_lk.is_profile_photo = true');
                     })
                     ->whereIn('video_likes.video_id', $myVideoIds)
                     ->select(
@@ -191,7 +191,7 @@ class VideoGalleryController extends Controller
                     ->join('profiles', 'video_comments.user_id', '=', 'profiles.user_id')
                     ->leftJoin('photos as ph_cm', function($j) {
                         $j->on('ph_cm.user_id', '=', 'video_comments.user_id')
-                           ->where('ph_cm.is_profile_photo', true);
+                           ->whereRaw('ph_cm.is_profile_photo = true');
                     })
                     ->whereIn('video_comments.video_id', $myVideoIds)
                     ->select(
@@ -217,7 +217,7 @@ class VideoGalleryController extends Controller
 
             $myVideoCount = DB::table('videos')
                 ->where('user_id', $uid)
-                ->where('status', 'approved')
+                ->where(DB::raw("status = 'approved'"))
                 ->count();
 
             $likedIds = DB::table('video_likes')
