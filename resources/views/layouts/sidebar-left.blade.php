@@ -18,14 +18,14 @@
     try {
         $sAvatarPhoto = \Illuminate\Support\Facades\DB::table('photos')
             ->whereRaw('user_id::text = ?', [$sUser->id])
-            ->where('is_profile_photo', true)
-            ->where('status', 'approved')
+            ->whereRaw('is_profile_photo = true')
+            ->whereRaw('status = \'approved\'')
             ->first();
         if (!$sAvatarPhoto) {
             $sAvatarPhoto = \Illuminate\Support\Facades\DB::table('photos')
                 ->whereRaw('user_id::text = ?', [$sUser->id])
-                ->where('album_type', 'public')
-                ->where('status', 'approved')
+                ->whereRaw('album_type = \'public\'')
+                ->whereRaw('status = \'approved\'')
                 ->orderBy('sort_order')
                 ->first();
         }
