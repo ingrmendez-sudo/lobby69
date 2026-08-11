@@ -11,6 +11,7 @@ class EventController extends Controller
     {
         $events = DB::table('events')
             ->whereRaw('is_published = true')
+            ->whereRaw('starts_at >= ?', [now()->startOfDay()])
             ->orderBy('starts_at', 'asc')
             ->get();
 
