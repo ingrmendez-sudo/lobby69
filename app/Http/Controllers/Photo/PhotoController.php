@@ -92,12 +92,12 @@ class PhotoController extends Controller
         // Quitar foto de perfil anterior
         DB::table('photos')
             ->whereRaw('user_id::text = ?', [$userId])
-            ->update(['is_profile_photo' => false, 'updated_at' => Carbon::now()]);
+            ->update(['is_profile_photo' => DB::raw('false'), 'updated_at' => Carbon::now()]);
 
         // Establecer nueva — NO guardar URL en profiles, se construye dinámicamente
         DB::table('photos')
             ->where('id', $id)
-            ->update(['is_profile_photo' => true, 'updated_at' => Carbon::now()]);
+            ->update(['is_profile_photo' => DB::raw('true'), 'updated_at' => Carbon::now()]);
 
         return back()->with('success', '✅ Foto de perfil actualizada.');
     }
