@@ -199,7 +199,7 @@ class MessagesController extends Controller
             ->whereRaw('sender_id::text = ?',   [$partnerId])
             ->whereRaw('receiver_id::text = ?',  [$userId])
             ->whereRaw('"read" = false')
-            ->update(['read' => true, 'read_at' => now()]);
+            ->update(['read' => DB::raw('true'), 'read_at' => now()]);
 
         $messages = DB::table('messages as m')
             ->join('users as u',  DB::raw('u.id::text'), '=', DB::raw('m.sender_id::text'))
@@ -279,7 +279,7 @@ class MessagesController extends Controller
                 'sender_id'   => $userId,
                 'receiver_id' => $request->receiver_id,
                 'body'        => $request->body,
-                'read'        => false,
+                'read'        => DB::raw('false'),
                 'created_at'  => $now,
                 'updated_at'  => $now,
             ]);
