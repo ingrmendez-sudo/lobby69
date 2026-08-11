@@ -353,7 +353,7 @@
                 'X-CSRF-TOKEN': csrfToken,
                 'Accept': 'application/json'
             },
-            body: JSON.stringify({ receiver_id: currentPartner, body: text, source: 'availability' })
+            body: JSON.stringify({ receiver_id: currentPartner, body: '📍 Desde Disponibles ahora: ' + text, source: 'availability' })
         })
         .then(function(r) { return r.json(); })
         .then(function(data) {
