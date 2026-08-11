@@ -43,7 +43,7 @@ class PasswordChangeController extends Controller
             ->where('id', $user->id)
             ->update([
                 'password'            => Hash::make($request->password),
-                'password_changed'    => true,
+                'password_changed'    => DB::raw('true'),
                 'password_changed_at' => Carbon::now(),
                 'updated_at'          => Carbon::now(),
             ]);
