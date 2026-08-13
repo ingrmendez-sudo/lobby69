@@ -23,28 +23,28 @@ class InvitationService
 
         DB::beginTransaction();
         try {
-            $userId = (string) Str::uuid();
-            DB::table('users')->insert([
-                'id'               => $userId,
-                'email'            => $inv->email,
-                'username'         => $username,
-                'password'         => Hash::make($tempPassword),
-                'name'             => $inv->nombre,
-                'role'             => 'user',
-                'active'           => true,
-                'terms_accepted'   => true,
-                'terms_accepted_at'=> Carbon::now(),
-                'email_verified_at'=> Carbon::now(),
-                'created_at'       => Carbon::now(),
-                'updated_at'       => Carbon::now(),
-            ]);
+            $userId    = (string) Str::uuid();
+            $hash      = Hash::make($tempPassword);
+            $now       = Carbon::now()->toDateTimeString();
+
+            // Raw SQL para evitar el cast boolean de PostgreSQL via pgBouncer
+            DB::statement("
+                INSERT INTO users (id, email, username, password, name, role,
+                                   active, terms_accepted,
+                                   terms_accepted_at, email_verified_at,
+                                   created_at, updated_at)
+                VALUES (?, ?, ?, ?, ?, 'user',
+                        true, true,
+                        ?, ?, ?, ?)
+            ", [$userId, $inv->email, $username, $hash, $inv->nombre,
+                $now, $now, $now, $now]);
 
             DB::table('invitation_requests')->where('id', $id)->update([
-                'status'       => 'approved',
-                'reviewed_by'  => $adminId,
-                'reviewed_at'  => Carbon::now(),
-                'approved_at'  => Carbon::now(),
-                'updated_at'   => Carbon::now(),
+                'status'      => 'approved',
+                'reviewed_by' => $adminId,
+                'reviewed_at' => $now,
+                'approved_at' => $now,
+                'updated_at'  => $now,
             ]);
 
             DB::commit();
@@ -54,8 +54,8 @@ class InvitationService
                 'username'      => $username,
                 'temp_password' => $tempPassword,
                 'user_id'       => $userId,
-                'approved_at'   => Carbon::now()->toDateTimeString(),
-                'message'       => "Credenciales temporales para {$inv->email}: usuario={$username} pass={$tempPassword}",
+                'approved_at'   => $now,
+                'message'       => "Credenciales para {$inv->email}: usuario={$username} pass={$tempPassword}",
             ]);
 
             return ['success'=>true,'email'=>$inv->email,'temp_password'=>$tempPassword];
