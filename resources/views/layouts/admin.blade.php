@@ -307,6 +307,13 @@
                 <span class="adm-nav__badge yellow">{{ $pendingInvitations }}</span>
             @endif
         </a>
+        <a href="{{ route('admin.admin.referral-codes.index') }}"
+           class="adm-nav__item {{ request()->routeIs('admin.admin.referral-codes.*') ? 'active' : '' }}">
+            <i class="fas fa-key" style="margin-right:.5rem;"></i> Codigos de Referido
+        </a>
+
+
+
 
         <div class="adm-nav__section">Usuarios</div>
         <a href="{{ route('admin.users.index') }}"

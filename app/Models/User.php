@@ -40,7 +40,8 @@ class User extends Authenticatable
         'trial_started_at'      => 'datetime',
         'last_seen_at'          => 'datetime',
         'password_changed'      => 'boolean',
-        'password_changed_at'   => 'datetime',
+        'password_changed_at' => 'datetime',
+        'welcomed_at'          => 'datetime',
         'created_at'            => 'datetime',
         'updated_at'            => 'datetime',
         'referral_count'        => 'integer',
@@ -135,3 +136,5 @@ class User extends Authenticatable
         return app(MembershipAccessService::class)->limit($this, $key);
     }
 }
+
+

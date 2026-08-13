@@ -10,6 +10,7 @@ class ProfileCompleted
     private array $except = [
         'perfil/configurar',
         'cambiar-password',
+        'bienvenido',
         'logout',
         'debug-auth',
     ];

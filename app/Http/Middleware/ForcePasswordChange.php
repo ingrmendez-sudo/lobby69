@@ -7,6 +7,7 @@ class ForcePasswordChange
 {
     private array $except = [
         'cambiar-password',
+        'bienvenido',
         'perfil/configurar',
         'logout',
         'login',

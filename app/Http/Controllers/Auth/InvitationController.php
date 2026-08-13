@@ -12,9 +12,10 @@ use Illuminate\Support\Str;
 
 class InvitationController extends Controller
 {
-    public function show()
+    public function show(\Illuminate\Http\Request $request)
     {
-        return view('auth.invitation-request');
+        $refCode = $request->query('ref');
+        return view('auth.invitation-request', compact('refCode'));
     }
 
     public function store(InvitationRequest $request)
@@ -47,8 +48,8 @@ class InvitationController extends Controller
                 'edad'                => (int) ($data['edad'] ?? 0),
                 'pais'                => $data['pais'] ?? 'Mexico',
                 'municipio'           => $data['municipio'] ?? '',
-                'terminos_aceptados'  => true,
-                'privacidad_aceptada' => true,
+                'terminos_aceptados'  => DB::raw('true'),
+                'privacidad_aceptada' => DB::raw('true'),
             ]);
 
             DB::table('invitation_requests')->insert([
@@ -63,8 +64,8 @@ class InvitationController extends Controller
                 'invitation_code'     => $data['invitation_code'] ?? null,
                 'referred_by_user_id' => $referredByUserId,
                 'status'              => $status,
-                'terminos_aceptados'  => true,
-                'privacidad_aceptada' => true,
+                'terminos_aceptados'  => DB::raw('true'),
+                'privacidad_aceptada' => DB::raw('true'),
                 'created_at'          => Carbon::now(),
                 'updated_at'          => Carbon::now(),
             ]);
@@ -77,7 +78,7 @@ class InvitationController extends Controller
                 ? 'Codigo valido. En breve recibiras un correo con tus credenciales.'
                 : 'Solicitud enviada. Te contactaremos a ' . $data['email'] . ' pronto.';
 
-            return redirect()->route('landing')->with('success', $mensaje);
+            return redirect()->route('invitation.success')->with('success', $mensaje);
 
         } catch (\Exception $e) {
             DB::rollBack();
@@ -88,3 +89,4 @@ class InvitationController extends Controller
         }
     }
 }
+
