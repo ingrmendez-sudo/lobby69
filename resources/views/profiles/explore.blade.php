@@ -379,6 +379,19 @@
                 @endif
                 {{ $profile->nickname }}
             </p>
+            @php
+                $expScore  = floatval($profile->recommendation_score ?? 0);
+                $expFull   = (int) floor($expScore);
+                $expHalf   = ($expScore - $expFull) >= 0.4 ? 1 : 0;
+                $expEmpty  = max(0, 5 - $expFull - $expHalf);
+            @endphp
+            @if($expScore > 0)
+            <div class="exp-card__stars" title="Puntuacion: {{ number_format($expScore,1) }}">
+                @for($i = 0; $i < $expFull; $i++)<i class="fa fa-star"></i>@endfor
+                @if($expHalf)<i class="fa fa-star-half-o"></i>@endif
+                @for($i = 0; $i < $expEmpty; $i++)<i class="fa fa-star-o"></i>@endfor
+            </div>
+            @endif
             @if($meta)
                 <p class="exp-card__meta">{{ $meta }}</p>
             @endif
