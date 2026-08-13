@@ -20,6 +20,7 @@
             {{ ucfirst($profile->profile_type ?? 'single') }}
             @if($verificationStatus === 'approved')
                 &middot; <span style="color:#3b82f6;">&#10003; Verificado</span>
+            @endif
 
         {{-- ⭐ Score de recomendacion --}}
         @php

@@ -267,3 +267,5 @@ Route::middleware(['auth'])->prefix('disponibilidad')->name('availability.')->gr
     Route::delete('/desactivar', [\App\Http\Controllers\AvailabilityController::class, 'deactivate'])->name('deactivate');
     Route::get('/estado',        [\App\Http\Controllers\AvailabilityController::class, 'status'])->name('status');
 });
+// Página informativa de estrellas de recomendación
+Route::view('/como-funcionan-las-estrellas', 'score.info')->name('score.info');
