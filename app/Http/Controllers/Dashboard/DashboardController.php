@@ -387,6 +387,7 @@ class DashboardController extends Controller
                 DB::raw('COALESCE(pl_agg.likes_count, 0) as likes_count'),
                 DB::raw('COALESCE(pc_agg.comments_count, 0) as comments_count'),
                 DB::raw('COALESCE(ul_agg.user_liked, false) as user_liked'),
+                DB::raw('COALESCE(p.recommendation_score, 0) as recommendation_score'),
                 DB::raw($scoreSQL . ' as feed_score'),
             ]);
 

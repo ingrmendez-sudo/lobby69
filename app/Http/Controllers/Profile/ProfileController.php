@@ -416,6 +416,18 @@ class ProfileController extends Controller
             'Fundador'  => asset('img/membership/Fundador.png'),
             default      => asset('img/membership/trial.png'),
         };
+        // Score de recomendacion
+        $recommendationScore = (float) DB::table('profiles')
+            ->whereRaw('user_id::text = ?', [(string)$profile->user_id])
+            ->value('recommendation_score') ?? 0.0;
+        $scoreBoostActive = false;
+        $boostUntil = DB::table('profiles')
+            ->whereRaw('user_id::text = ?', [(string)$profile->user_id])
+            ->value('boost_until');
+        if ($boostUntil && \Carbon\Carbon::parse($boostUntil)->isFuture()) {
+            $scoreBoostActive = true;
+        }
+
 
         $isPairing = $profile->profile_type === 'pareja';
         $isUnicorn = $profile->profile_type === 'unicornio';
@@ -448,7 +460,7 @@ class ProfileController extends Controller
             'commonFriends',
             'recentlyVisited', 'recommendedProfiles',
             'verificationStatus', 'typeLabel', 'memberLabel', 'memberIcon',
-            'isPairing', 'isUnicorn',
+            'isPairing', 'isUnicorn', 'recommendationScore', 'scoreBoostActive',
             'lookingFor', 'interests', 'allLookingFor', 'allInterests'
         ));
     }

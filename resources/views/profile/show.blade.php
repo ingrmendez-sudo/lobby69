@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 @section('title', ($profile->nickname ?? 'Perfil') . ' — LOBBY69')
 
 {{-- ════════════════════════════════════════════
@@ -20,9 +20,43 @@
             {{ ucfirst($profile->profile_type ?? 'single') }}
             @if($verificationStatus === 'approved')
                 &middot; <span style="color:#3b82f6;">&#10003; Verificado</span>
-            @endif
+
+        {{-- ⭐ Score de recomendacion --}}
+        @php
+            $fullStars  = floor($recommendationScore);
+            $halfStar   = ($recommendationScore - $fullStars) >= 0.5;
+            $emptyStars = 5 - $fullStars - ($halfStar ? 1 : 0);
+        @endphp
+        <div style="text-align:center;margin:.4rem 0 .6rem;">
+            <div style="display:inline-flex;align-items:center;gap:.1rem;font-size:.95rem;">
+                @for($i = 0; $i < $fullStars; $i++)
+                    <i class="fas fa-star" style="color:#f59e0b;"></i>
+                @endfor
+                @if($halfStar)
+                    <i class="fas fa-star-half-alt" style="color:#f59e0b;"></i>
+                @endif
+                @for($i = 0; $i < $emptyStars; $i++)
+                    <i class="far fa-star" style="color:#f59e0b;opacity:.4;"></i>
+                @endfor
+            </div>
+            <div style="font-size:.68rem;color:var(--theme-muted);margin-top:.15rem;">
+                @if($recommendationScore >= 4.5)
+                    🔥 Perfil muy activo
+                @elseif($recommendationScore >= 3.0)
+                    ⚡ Perfil activo
+                @elseif($recommendationScore >= 1.5)
+                    👤 En crecimiento
+                @else
+                    💡 <a href="{{ route('score.info') }}"
+                          style="color:var(--theme-muted);text-decoration:underline dotted;font-size:.68rem;">
+                            ¿Cómo subir mis estrellas?
+                       </a>
+                @endif
+                @if($scoreBoostActive)
+                    <span style="color:#e056a0;font-size:.65rem;margin-left:.2rem;">⬆ boost</span>
+                @endif
+            </div>
         </div>
-    </div>
     <div class="l69-stat-grid">
         <div class="l69-stat">
             <div class="l69-stat__value">{{ $followersCount }}</div>

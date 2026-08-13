@@ -21,7 +21,13 @@ class ExploreController extends Controller
                   ->from('users')
                   ->whereRaw('users.id::text = profiles.user_id::text')
                   ->where('users.role', 'admin');
-            });
+            })
+            ->select(
+                'user_id', 'nickname', 'profile_type', 'gender',
+                'city', 'state', 'orientation', 'age',
+                'verified_profile', 'last_active_at', 'created_at',
+                DB::raw('COALESCE(recommendation_score, 0) as recommendation_score')
+            );
 
         if ($request->filled('tipo')) {
             $query->where('profile_type', $request->tipo);
@@ -39,10 +45,22 @@ class ExploreController extends Controller
             $query->where('orientation', $request->orientacion);
         }
 
-        $query->orderByRaw("
-            CASE WHEN verified_profile = true THEN 0 ELSE 1 END ASC,
-            last_active_at DESC NULLS LAST
-        ");
+        $orden = $request->get('orden', 'destacados');
+
+        if ($orden === 'score') {
+            $query->orderByRaw('COALESCE(recommendation_score, 0) DESC, last_active_at DESC NULLS LAST');
+        } elseif ($orden === 'recientes') {
+            $query->orderBy('created_at', 'desc');
+        } elseif ($orden === 'activos') {
+            $query->orderBy('last_active_at', 'desc');
+        } else {
+            // 'destacados' — verificados primero, luego por score, luego por actividad
+            $query->orderByRaw("
+                CASE WHEN verified_profile = true THEN 0 ELSE 1 END ASC,
+                COALESCE(recommendation_score, 0) DESC,
+                last_active_at DESC NULLS LAST
+            ");
+        }
 
         $profiles = $query->paginate(24)->withQueryString();
 
@@ -85,6 +103,6 @@ class ExploreController extends Controller
             ->orderBy('city')
             ->pluck('city');
 
-        return view('profiles.explore', compact('profiles', 'avatars', 'ciudades'));
+        return view('profiles.explore', compact('profiles', 'avatars', 'ciudades', 'orden'));
     }
 }

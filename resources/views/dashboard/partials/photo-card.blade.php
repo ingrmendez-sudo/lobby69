@@ -9,6 +9,10 @@
     $authorName = $photo->display_name ?? $photo->username ?? 'Usuario';
     $liked      = $isLiked ?? false;
     $likesCount = $photo->likes_count ?? 0;
+    $photoScore     = (float)($photo->recommendation_score ?? 0);
+    $photoFullStars = (int)floor($photoScore);
+    $photoHalfStar  = ($photoScore - $photoFullStars) >= 0.5;
+
     $commCount  = $photo->comments_count ?? 0;
 @endphp
 
@@ -67,6 +71,13 @@
                 <i class="fas fa-check-circle" style="color:#6C3FC5;font-size:.7rem;margin-left:.2rem;"></i>
             @endif
         </span>
+        {{-- Score estrellas --}}
+        @if($photoScore > 0)
+        <span style="display:inline-flex;align-items:center;gap:.05rem;font-size:.7rem;">
+            @for($si=0;$si<$photoFullStars;$si++)<i class="fas fa-star" style="color:#f59e0b;"></i>@endfor
+            @if($photoHalfStar)<i class="fas fa-star-half-alt" style="color:#f59e0b;"></i>@endif
+        </span>
+        @endif
         <span style="font-size:.72rem; color:var(--theme-muted);">
             {{ \Carbon\Carbon::parse($photo->created_at)->diffForHumans() }}
         </span>

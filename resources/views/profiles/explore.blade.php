@@ -235,6 +235,16 @@
     .exp-filters { flex-direction: column; }
     .exp-grid    { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); }
 }
+/* Estrellas en tarjetas explore */
+.exp-card__stars {
+    margin-top: .35rem;
+    font-size: .65rem;
+    color: #f59e0b;
+    letter-spacing: .05em;
+}
+.exp-card__stars .far.fa-star {
+    color: rgba(245,158,11,.25);
+}
 </style>
 @endpush
 
@@ -281,6 +291,16 @@
             <option value="heterosexual" {{ request('orientacion') === 'heterosexual' ? 'selected' : '' }}>Heterosexual</option>
             <option value="bisexual"     {{ request('orientacion') === 'bisexual'     ? 'selected' : '' }}>Bisexual</option>
             <option value="homosexual"   {{ request('orientacion') === 'homosexual'   ? 'selected' : '' }}>Homosexual</option>
+        </select>
+    </div>
+
+    <div class="exp-filter-group">
+        <label>Ordenar por</label>
+        <select name="orden" class="exp-select">
+            <option value="destacados" {{ request('orden','destacados')==='destacados' ? 'selected' : '' }}>Destacados</option>
+            <option value="score"      {{ request('orden')==='score'      ? 'selected' : '' }}>Mayor puntuación</option>
+            <option value="activos"    {{ request('orden')==='activos'    ? 'selected' : '' }}>Más activos</option>
+            <option value="recientes"  {{ request('orden')==='recientes'  ? 'selected' : '' }}>Más recientes</option>
         </select>
     </div>
 
