@@ -282,6 +282,79 @@
     </div>
 </div>
 
+
+
+{{-- ═══════════════════════════════════════════════════
+     SECCIÓN: MÉTRICAS DE REFERIDOS
+═══════════════════════════════════════════════════ --}}
+<div class="adm-section" style="margin-top:2.5rem;">
+    <h2 class="adm-section-title" style="font-size:1.15rem;font-weight:700;color:#c084fc;margin-bottom:1.2rem;letter-spacing:.04em;">
+        🔗 Métricas de Referidos
+    </h2>
+
+    {{-- Tarjetas resumen --}}
+    <div class="adm-stats" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem;margin-bottom:1.5rem;">
+
+        <div class="adm-stat" style="background:#1e1b2e;border:1px solid #7c3aed33;border-radius:.75rem;padding:1.2rem 1.4rem;">
+            <div style="font-size:.75rem;color:#a78bfa;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;">Total Referidos</div>
+            <div style="font-size:2rem;font-weight:700;color:#e2e8f0;">{{ $totalReferidos }}</div>
+            <div style="font-size:.72rem;color:#64748b;margin-top:.3rem;">usuarios con código</div>
+        </div>
+
+        <div class="adm-stat" style="background:#1e1b2e;border:1px solid #7c3aed33;border-radius:.75rem;padding:1.2rem 1.4rem;">
+            <div style="font-size:.75rem;color:#34d399;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;">Referidos con Pago</div>
+            <div style="font-size:2rem;font-weight:700;color:#e2e8f0;">{{ $referidosConPago }}</div>
+            <div style="font-size:.72rem;color:#64748b;margin-top:.3rem;">membresía aprobada</div>
+        </div>
+
+        <div class="adm-stat" style="background:#1e1b2e;border:1px solid #7c3aed33;border-radius:.75rem;padding:1.2rem 1.4rem;">
+            <div style="font-size:.75rem;color:#fbbf24;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;">Ingresos Referidos</div>
+            <div style="font-size:2rem;font-weight:700;color:#e2e8f0;">${{ number_format($ingresosReferidos, 0) }}</div>
+            <div style="font-size:.72rem;color:#64748b;margin-top:.3rem;">suma pagos aprobados</div>
+        </div>
+
+        <div class="adm-stat" style="background:#1e1b2e;border:1px solid #7c3aed33;border-radius:.75rem;padding:1.2rem 1.4rem;">
+            <div style="font-size:.75rem;color:#f87171;text-transform:uppercase;letter-spacing:.08em;margin-bottom:.4rem;">Conversión</div>
+            <div style="font-size:2rem;font-weight:700;color:#e2e8f0;">{{ $conversionReferidos }}%</div>
+            <div style="font-size:.72rem;color:#64748b;margin-top:.3rem;">referidos que pagaron</div>
+        </div>
+
+    </div>
+
+    {{-- Tabla top códigos --}}
+    @if($topCodigos->count() > 0)
+    <div style="background:#1e1b2e;border:1px solid #7c3aed22;border-radius:.75rem;overflow:hidden;">
+        <div style="padding:.9rem 1.2rem;border-bottom:1px solid #7c3aed22;font-size:.8rem;font-weight:600;color:#a78bfa;text-transform:uppercase;letter-spacing:.06em;">
+            Top Códigos por Uso
+        </div>
+        <table style="width:100%;border-collapse:collapse;font-size:.85rem;">
+            <thead>
+                <tr style="background:#13111f;">
+                    <th style="padding:.7rem 1.2rem;text-align:left;color:#64748b;font-weight:500;">Código</th>
+                    <th style="padding:.7rem 1.2rem;text-align:left;color:#64748b;font-weight:500;">Propietario</th>
+                    <th style="padding:.7rem 1.2rem;text-align:right;color:#64748b;font-weight:500;">Usos</th>
+                    <th style="padding:.7rem 1.2rem;text-align:right;color:#64748b;font-weight:500;">Máx.</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($topCodigos as $cod)
+                <tr style="border-top:1px solid #1e1b2e;">
+                    <td style="padding:.65rem 1.2rem;color:#e2e8f0;font-family:monospace;">{{ $cod->code }}</td>
+                    <td style="padding:.65rem 1.2rem;color:#94a3b8;">{{ $cod->owner_name ?? "—" }}</td>
+                    <td style="padding:.65rem 1.2rem;text-align:right;color:#c084fc;font-weight:600;">{{ $cod->uses_count }}</td>
+                    <td style="padding:.65rem 1.2rem;text-align:right;color:#475569;">{{ $cod->max_uses }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+    @else
+    <div style="text-align:center;padding:2rem;color:#475569;font-size:.9rem;">
+        Aún no hay códigos con usos registrados.
+    </div>
+    @endif
+</div>
+
 @endsection
 
 @push('scripts')

@@ -170,13 +170,51 @@ class AdminStatsController extends Controller
             ->where('role', '!=', 'admin')
             ->where('last_seen_at', '>=', now()->subDays(30))->count();
 
+
+        // ── Metricas de referidos ──
+        $totalReferidos = DB::table('users')
+            ->whereNotNull('referral_code')
+            ->whereRaw('LENGTH("referral_code") > 0')
+            ->count();
+
+        $referidosConPago = DB::table('users')
+            ->whereNotNull('referral_code')
+            ->whereRaw('LENGTH("referral_code") > 0')
+            ->whereExists(function($q) {
+                $q->select(DB::raw(1))
+                   ->from('membership_payments')
+                   ->whereRaw('membership_payments.user_id::text = users.id::text')
+                   ->where('membership_payments.status', 'approved');
+            })
+            ->distinct()
+            ->count('id');
+
+        $ingresosReferidos = (float) DB::table('membership_payments')
+            ->join('users', function($join) {
+                $join->whereRaw('users.id::text = membership_payments.user_id');
+            })
+            ->whereNotNull('users.referral_code')
+            ->whereRaw('LENGTH(users.referral_code) > 0')
+            ->where('membership_payments.status', 'approved')
+            ->sum('membership_payments.amount');
+
+        $topCodigos = DB::table('referral_codes')
+            ->leftJoin('users as u', 'referral_codes.owner_user_id', '=', 'u.id')
+            ->orderByDesc('uses_count')
+            ->limit(5)
+            ->get(['referral_codes.code', 'referral_codes.uses_count', 'referral_codes.max_uses', 'u.username as owner_name']);
+
+        $conversionReferidos = $totalReferidos > 0
+            ? round(($referidosConPago / $totalReferidos) * 100, 1)
+            : 0;
         return view('admin.stats.index', compact(
             'usersByDay', 'photosByDay', 'viewsByDay', 'viewsByWeek', 'viewsByMonth',
             'viewsThisWeek', 'viewsLastWeek', 'viewsThisMonth', 'viewsLastMonth',
             'membershipStats', 'membershipsByMonth',
             'totals', 'paidCount', 'invitadoCount',
             'funnel', 'usersByState', 'activityByHour', 'topUploaders',
-            'activeUsers7d', 'activeUsers30d', 'totalRegistered'
+            'activeUsers7d', 'activeUsers30d', 'totalRegistered',
+            'totalReferidos', 'referidosConPago', 'ingresosReferidos', 'topCodigos', 'conversionReferidos'
         ));
     }
 }

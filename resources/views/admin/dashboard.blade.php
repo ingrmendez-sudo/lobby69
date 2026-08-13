@@ -334,4 +334,8 @@ new Chart(document.getElementById('chartDailyPhotos'), {
 </script>
 @endpush
 
+{{-- REFERIDOS --}}
+<div style="margin-bottom:1.5rem;">
+</div>
+
 @endsection
