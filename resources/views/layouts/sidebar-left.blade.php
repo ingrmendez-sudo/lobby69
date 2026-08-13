@@ -55,6 +55,12 @@
         'Fundador'       => 'Fundador.png',
         default          => 'trial.png',
     };
+
+    // Score de recomendación del usuario de sesión
+    $sScore     = (float)($sProfile?->recommendation_score ?? 0);
+    $sFullStars = (int)floor($sScore);
+    $sHalfStar  = ($sScore - $sFullStars) >= 0.5;
+    $sEmptyStars = 5 - $sFullStars - ($sHalfStar ? 1 : 0);
 @endphp
 
 {{-- ══ BLOQUE FIJO: Mini Perfil ══ --}}
@@ -94,6 +100,26 @@
                  onerror="this.style.display='none'">
             {{ $sMembershipInfo['label'] }}
         </span>
+
+        {{-- ⭐ Estrellas de recomendación --}}
+        @if($sScore > 0)
+        <div style="margin-top:.5rem;display:flex;align-items:center;gap:.1rem;justify-content:center;font-size:.8rem;color:#f59e0b;">
+            @for($si=0; $si < $sFullStars; $si++)
+                <i class="fas fa-star"></i>
+            @endfor
+            @if($sHalfStar)
+                <i class="fas fa-star-half-alt"></i>
+            @endif
+            @for($si=0; $si < $sEmptyStars; $si++)
+                <i class="far fa-star" style="opacity:.3;"></i>
+            @endfor
+        </div>
+        <div style="font-size:.65rem;color:var(--theme-muted);margin-top:.1rem;text-align:center;">
+            <a href="{{ route('score.info') }}" style="color:inherit;text-decoration:underline dotted;">
+                {{ number_format($sScore, 1) }} ★ ¿Cómo subir?
+            </a>
+        </div>
+        @endif
 
         @if($sProgress < 100)
         <div class="l69-profile-progress" style="width:100%;margin-top:.75rem;">

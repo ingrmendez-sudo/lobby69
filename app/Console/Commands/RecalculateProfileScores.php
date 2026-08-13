@@ -18,7 +18,7 @@ class RecalculateProfileScores extends Command
             ->where('users.role', '!=', 'admin')
             ->select('profiles.user_id');
         if ($userId = $this->option('user')) {
-            $query->where('profiles.user_id', $userId);
+            $query->whereRaw('profiles.user_id::text = ?', [$userId]);
         }
         $profiles = $query->get();
         $count = 0;

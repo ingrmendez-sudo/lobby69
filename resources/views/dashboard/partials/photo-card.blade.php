@@ -71,8 +71,7 @@
                 <i class="fas fa-check-circle" style="color:#6C3FC5;font-size:.7rem;margin-left:.2rem;"></i>
             @endif
         </span>
-        {{-- Score estrellas --}}
-        @if($photoScore > 0)
+        {{-- Score estrellas --}}        @if($photoScore > 0)
         <span style="display:inline-flex;align-items:center;gap:.05rem;font-size:.7rem;">
             @for($si=0;$si<$photoFullStars;$si++)<i class="fas fa-star" style="color:#f59e0b;"></i>@endfor
             @if($photoHalfStar)<i class="fas fa-star-half-alt" style="color:#f59e0b;"></i>@endif

@@ -432,8 +432,12 @@ class ProfileController extends Controller
         $isPairing = $profile->profile_type === 'pareja';
         $isUnicorn = $profile->profile_type === 'unicornio';
 
+        // json_decode doble por si el campo tiene double-encoding (string dentro de string JSON)
         $lookingFor = json_decode($profile->looking_for ?? '[]', true) ?? [];
-        $interests  = json_decode($profile->interests   ?? '[]', true) ?? [];
+        if (is_string($lookingFor)) $lookingFor = json_decode($lookingFor, true) ?? [];
+
+        $interests  = json_decode($profile->interests ?? '[]', true) ?? [];
+        if (is_string($interests))  $interests  = json_decode($interests,  true) ?? [];
 
         $allLookingFor = [
             'Parejas heterosexuales', 'Parejas bisexuales', 'Parejas (ella bisexual)',
