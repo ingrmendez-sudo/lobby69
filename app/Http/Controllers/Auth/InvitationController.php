@@ -14,7 +14,7 @@ class InvitationController extends Controller
 {
     public function show(\Illuminate\Http\Request $request)
     {
-        $refCode = $request->query('ref');
+        $refCode = $request->query('ref') ?? session('referral_code');
         return view('auth.invitation-request', compact('refCode'));
     }
 

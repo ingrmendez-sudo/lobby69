@@ -13,6 +13,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->web(append: [
+            \App\Http\Middleware\CaptureReferralCode::class,
+        ]);
         $middleware->alias([
             'admin.only'            => \App\Http\Middleware\AdminOnly::class,
             'force.password.change' => \App\Http\Middleware\ForcePasswordChange::class,
