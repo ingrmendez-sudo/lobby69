@@ -531,8 +531,79 @@ if (!window._dpSideModalInit) {
     <p style="font-size:.78rem;color:var(--theme-muted);margin:0;">Sin recomendaciones aún.</p>
     @endforelse
 </div>
-@endif
 
+<div class="l69-sidebar-card" style="margin-top:.75rem;">
+    <div class="l69-sidebar-card__title">
+        <i class="fas fa-star" style="color:#f59e0b;"></i> Top perfiles
+    </div>
+    @php
+    try {
+        $rTopProfiles = \Illuminate\Support\Facades\DB::table('profiles')
+            ->join('users', \Illuminate\Support\Facades\DB::raw('users.id::text'), '=', \Illuminate\Support\Facades\DB::raw('profiles.user_id::text'))
+            ->leftJoin(\Illuminate\Support\Facades\DB::raw(
+                "(SELECT DISTINCT ON (user_id) user_id::text AS tp_uid, file_path AS tp_avatar
+                  FROM photos WHERE is_profile_photo = true AND status = 'approved'
+                  ORDER BY user_id) as tp"
+            ), 'tp.tp_uid', '=', \Illuminate\Support\Facades\DB::raw('profiles.user_id::text'))
+            ->where('profiles.profile_completed', true)
+            ->where('profiles.public', true)
+            ->where('users.active', true)
+            ->where('users.role', '!=', 'admin')
+            ->whereRaw('profiles.user_id::text != ?', [(string)$rUser->id])
+            ->where('profiles.recommendation_score', '>', 0)
+            ->orderByDesc('profiles.recommendation_score')
+            ->limit(5)
+            ->select([
+                'profiles.nickname',
+                'profiles.display_name',
+                'profiles.profile_type',
+                'profiles.recommendation_score',
+                'profiles.verified_profile',
+                'tp.tp_avatar',
+            ])
+            ->get();
+    } catch(\Exception $e) { $rTopProfiles = collect(); }
+    $supabaseBase = config('filesystems.supabase_public_url', '');
+    @endphp
+    @forelse($rTopProfiles as $tp)
+    @php
+        $tpScore  = floatval($tp->recommendation_score ?? 0);
+        $tpFull   = (int) floor($tpScore);
+        $tpHalf   = ($tpScore - $tpFull) >= 0.4 ? 1 : 0;
+        $tpAvatar = $tp->tp_avatar ? $supabaseBase . '/' . ltrim($tp->tp_avatar, '/') : null;
+    @endphp
+    <a href="{{ $tp->nickname ? route('profile.show', $tp->nickname) : '#' }}"
+       style="display:flex;align-items:center;gap:.5rem;padding:.4rem 0;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.05);">
+        <div style="width:32px;height:32px;border-radius:50%;overflow:hidden;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);flex-shrink:0;">
+            @if($tpAvatar)
+            <img src="{{ $tpAvatar }}" alt="{{ $tp->nickname }}"
+                 style="width:100%;height:100%;object-fit:cover;"
+                 onerror="this.style.display='none'">
+            @else
+            <div style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;">
+                <i class="fas fa-user" style="font-size:.65rem;color:#f59e0b;"></i>
+            </div>
+            @endif
+        </div>
+        <div style="min-width:0;flex:1;">
+            <div style="font-size:.78rem;font-weight:600;color:var(--theme-text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">
+                {{ $tp->display_name ?? $tp->nickname ?? 'Usuario' }}
+                @if($tp->verified_profile)
+                <i class="fas fa-check-circle" style="color:#22c55e;font-size:.6rem;"></i>
+                @endif
+            </div>
+            <div style="font-size:.68rem;color:#f59e0b;letter-spacing:.5px;">
+                @for($i = 0; $i < $tpFull; $i++)<i class="fa fa-star"></i>@endfor
+                @if($tpHalf)<i class="fa fa-star-half-o"></i>@endif
+                <span style="color:var(--theme-muted);margin-left:.2rem;">{{ number_format($tpScore,1) }}</span>
+            </div>
+        </div>
+    </a>
+    @empty
+    <p style="font-size:.78rem;color:var(--theme-muted);margin:0;">Sin perfiles destacados aún.</p>
+    @endforelse
+</div>
+@endif
 
 
 
