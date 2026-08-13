@@ -257,6 +257,10 @@ Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->grou
 
     Route::resource('referral-codes', \App\Http\Controllers\Admin\AdminReferralCodeController::class)->names('admin.referral-codes');
 
+    Route::get('boost',              [\App\Http\Controllers\Admin\AdminBoostController::class, 'index'])->name('boost.index');
+    Route::post('boost/{userId}',    [\App\Http\Controllers\Admin\AdminBoostController::class, 'apply'])->name('boost.apply');
+    Route::delete('boost/{userId}',  [\App\Http\Controllers\Admin\AdminBoostController::class, 'remove'])->name('boost.remove');
+
     Route::get('invitacion/gracias', function () { return view('auth.invitation-success'); })->name('invitation.success');
 });
 

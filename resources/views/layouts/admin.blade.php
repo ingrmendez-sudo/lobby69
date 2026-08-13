@@ -311,6 +311,10 @@
            class="adm-nav__item {{ request()->routeIs('admin.admin.referral-codes.*') ? 'active' : '' }}">
             <i class="fas fa-key" style="margin-right:.5rem;"></i> Codigos de Referido
         </a>
+        <a href="{{ route('admin.boost.index') }}"
+           class="adm-nav__item {{ request()->routeIs('admin.boost.*') ? 'active' : '' }}">
+            <i class="fas fa-bolt" style="color:#f59e0b;"></i> Boost de perfiles
+        </a>
 
 
 
