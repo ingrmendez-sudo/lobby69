@@ -96,27 +96,40 @@
 
         </div>
 
-        {{-- Preferencias --}}
-        @if($invitation->preferencias)
+        {{-- Datos extra del formulario (preferencias JSON) --}}
         @php
-            $prefs = is_string($invitation->preferencias)
-                ? json_decode($invitation->preferencias, true)
-                : (array)$invitation->preferencias;
+            $extraFields = [
+                'edad'      => 'Edad',
+                'pais'      => 'País',
+                'municipio' => 'Municipio / Ciudad',
+            ];
+            $extras = [];
+            if ($invitation->preferencias) {
+                $raw = is_string($invitation->preferencias)
+                    ? json_decode($invitation->preferencias, true)
+                    : (array) $invitation->preferencias;
+                foreach ($extraFields as $key => $label) {
+                    if (!empty($raw[$key])) {
+                        $extras[$label] = $raw[$key];
+                    }
+                }
+            }
         @endphp
-        @if(!empty($prefs))
-        <div style="margin-bottom:1.25rem;">
-            <div style="font-size:.72rem;color:var(--theme-muted);margin-bottom:.5rem;text-transform:uppercase;letter-spacing:.05em;">
-                Preferencias
+
+        @if(!empty($extras))
+        <div style="margin-bottom:1.25rem;padding:.9rem;background:var(--theme-bg);border:1px solid var(--theme-border);border-radius:8px;">
+            <div style="font-size:.72rem;color:var(--theme-muted);margin-bottom:.75rem;text-transform:uppercase;letter-spacing:.05em;font-weight:700;">
+                <i class="fas fa-info-circle"></i> Datos adicionales
             </div>
-            <div style="display:flex;flex-wrap:wrap;gap:.4rem;">
-                @foreach($prefs as $pref)
-                <span style="background:var(--theme-accent)22;color:var(--theme-accent);padding:.2rem .65rem;border-radius:20px;font-size:.78rem;">
-                    {{ $pref }}
-                </span>
+            <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:.6rem .5rem;">
+                @foreach($extras as $label => $value)
+                <div>
+                    <div style="font-size:.68rem;color:var(--theme-muted);margin-bottom:.15rem;">{{ $label }}</div>
+                    <div style="font-size:.85rem;color:var(--theme-text);font-weight:600;">{{ $value }}</div>
+                </div>
                 @endforeach
             </div>
         </div>
-        @endif
         @endif
 
         {{-- Motivo --}}

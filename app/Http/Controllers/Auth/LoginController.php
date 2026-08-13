@@ -5,7 +5,9 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\LoginRequest;
 use App\Services\AuthService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class LoginController extends Controller
 {
@@ -24,8 +26,7 @@ class LoginController extends Controller
     public function store(LoginRequest $request)
     {
         $credentials = $request->validated();
-
-        $remember = $request->boolean('remember');
+        $remember    = $request->boolean('remember');
 
         $result = $this->authService->attemptLogin(
             $credentials['email'],
@@ -35,8 +36,20 @@ class LoginController extends Controller
 
         if ($result['success']) {
             $request->session()->regenerate();
+
+            $user = auth()->user();
+
+            // Primer login real: password ya cambiado y nunca vio la bienvenida
+            if ($user->password_changed && !$user->welcomed_at) {
+                DB::table('users')
+                    ->where('id', $user->id)
+                    ->update(['welcomed_at' => Carbon::now()]);
+
+                return redirect()->route('welcome');
+            }
+
             return redirect()->intended(route('dashboard'))
-                ->with('success', '¡Bienvenido de vuelta!');
+                ->with('success', 'Bienvenido de vuelta!');
         }
 
         return back()
@@ -52,4 +65,3 @@ class LoginController extends Controller
         return redirect()->route('landing');
     }
 }
-

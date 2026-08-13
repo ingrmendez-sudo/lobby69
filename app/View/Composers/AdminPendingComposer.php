@@ -11,7 +11,7 @@ class AdminPendingComposer
     public function compose(View $view): void
     {
         try {
-            $pendingPhotos = Schema::hasColumn('photos', 'status')
+            $pendingPhotos = Schema::hasTable('photos') && Schema::hasColumn('photos', 'status')
                 ? DB::table('photos')->where('status', 'pending')->count()
                 : 0;
         } catch (\Exception $e) { $pendingPhotos = 0; }
@@ -23,16 +23,14 @@ class AdminPendingComposer
         } catch (\Exception $e) { $pendingVideos = 0; }
 
         try {
-            $pendingVerifications = Schema::hasTable('identity_verifications') && Schema::hasColumn('identity_verifications', 'status')
-                ? DB::table('identity_verifications')->where('status', 'pending')->count()
-                : (Schema::hasTable('verifications') && Schema::hasColumn('verifications', 'status')
-                    ? DB::table('verifications')->where('status', 'pending')->count()
-                    : 0);
+            $pendingVerifications = Schema::hasTable('verifications') && Schema::hasColumn('verifications', 'status')
+                ? DB::table('verifications')->where('status', 'pending')->count()
+                : 0;
         } catch (\Exception $e) { $pendingVerifications = 0; }
 
         try {
-            $pendingInvitations = Schema::hasTable('invitations') && Schema::hasColumn('invitations', 'status')
-                ? DB::table('invitations')->where('status', 'pending')->count()
+            $pendingInvitations = Schema::hasTable('invitation_requests') && Schema::hasColumn('invitation_requests', 'status')
+                ? DB::table('invitation_requests')->where('status', 'pending')->count()
                 : 0;
         } catch (\Exception $e) { $pendingInvitations = 0; }
 
@@ -43,11 +41,11 @@ class AdminPendingComposer
         } catch (\Exception $e) { $pendingArticleComments = 0; }
 
         $view->with([
-            'pendingPhotos'        => $pendingPhotos,
-            'pendingVideos'        => $pendingVideos,
-            'pendingVerifications' => $pendingVerifications,
-            'pendingInvitations'   => $pendingInvitations,
+            'pendingPhotos'         => $pendingPhotos,
+            'pendingVideos'         => $pendingVideos,
+            'pendingVerifications'  => $pendingVerifications,
+            'pendingInvitations'    => $pendingInvitations,
+            'pendingArticleComments'=> $pendingArticleComments,
         ]);
     }
 }
-
