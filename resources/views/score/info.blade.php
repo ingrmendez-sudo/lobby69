@@ -25,6 +25,71 @@
         </p>
     </div>
 
+
+    {{-- ── Breakdown personal ── --}}
+    @auth
+    @php
+        $bUserId = auth()->id();
+        $bHistory = \Illuminate\Support\Facades\DB::table('profile_score_history')
+            ->whereRaw('user_id::text = ?', [(string)$bUserId])
+            ->orderByDesc('calculated_at')
+            ->first();
+        $bProfile = \Illuminate\Support\Facades\DB::table('profiles')
+            ->whereRaw('user_id::text = ?', [(string)$bUserId])
+            ->first();
+        $bScore   = floatval($bProfile->recommendation_score ?? 0);
+        $bFull    = (int) floor($bScore);
+        $bHalf    = ($bScore - $bFull) >= 0.4 ? 1 : 0;
+        $bEmpty   = max(0, 5 - $bFull - $bHalf);
+        $bFactors = $bHistory ? [
+            ['icon'=>'📸','label'=>'Fotos aprobadas',      'pts'=> (float)$bHistory->factor_photos,     'max'=>1.50],
+            ['icon'=>'👁️','label'=>'Visitas al perfil',    'pts'=> (float)$bHistory->factor_visits,     'max'=>1.25],
+            ['icon'=>'⚡','label'=>'Actividad reciente',   'pts'=> (float)$bHistory->factor_activity,   'max'=>1.00],
+            ['icon'=>'💬','label'=>'Mensajes enviados',    'pts'=> (float)$bHistory->factor_responses,  'max'=>0.75],
+            ['icon'=>'✅','label'=>'Perfil completo',      'pts'=> (float)$bHistory->factor_completeness,'max'=>0.50],
+            ['icon'=>'🔗','label'=>'Invitaciones exitosas','pts'=> 0.00,                                 'max'=>0.50],
+        ] : [];
+    @endphp
+    @if($bHistory)
+    <div style="background:var(--theme-card);border:1px solid rgba(108,63,197,.3);
+                border-radius:14px;padding:1.5rem;margin-bottom:1.25rem;
+                border-top:3px solid #6C3FC5;">
+        <h2 style="font-size:1rem;font-weight:700;color:var(--theme-text);margin:0 0 .5rem;">
+            🎯 Tu desglose personal
+        </h2>
+        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem;">
+            <div style="font-size:1.5rem;color:#f59e0b;">
+                @for($i=0;$i<$bFull;$i++)<i class="fa fa-star"></i>@endfor
+                @if($bHalf)<i class="fa fa-star-half-o"></i>@endif
+                @for($i=0;$i<$bEmpty;$i++)<i class="fa fa-star-o" style="opacity:.3;"></i>@endfor
+            </div>
+            <span style="font-size:1.6rem;font-weight:800;color:#f59e0b;">{{ number_format($bScore,2) }}</span>
+            <span style="font-size:.8rem;color:var(--theme-muted);">/ 5.00</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.65rem;">
+            @foreach($bFactors as $bf)
+            @php $pct = $bf['max'] > 0 ? min(100, round(($bf['pts']/$bf['max'])*100)) : 0; @endphp
+            <div>
+                <div style="display:flex;justify-content:space-between;margin-bottom:.25rem;">
+                    <span style="font-size:.82rem;color:var(--theme-text);">{{ $bf['icon'] }} {{ $bf['label'] }}</span>
+                    <span style="font-size:.78rem;font-weight:700;color:{{ $bf['pts'] >= $bf['max'] ? '#22c55e' : '#f59e0b' }};">
+                        {{ number_format($bf['pts'],2) }} / {{ number_format($bf['max'],2) }}
+                    </span>
+                </div>
+                <div style="background:rgba(255,255,255,.06);border-radius:99px;height:6px;overflow:hidden;">
+                    <div style="height:100%;width:{{ $pct }}%;border-radius:99px;
+                                background:{{ $pct >= 100 ? 'linear-gradient(90deg,#22c55e,#16a34a)' : 'linear-gradient(90deg,#6C3FC5,#e056a0)' }};
+                                transition:width .4s ease;"></div>
+                </div>
+            </div>
+            @endforeach
+        </div>
+        <p style="font-size:.72rem;color:var(--theme-muted);margin-top:1rem;text-align:right;">
+            Último cálculo: {{ \Carbon\Carbon::parse($bHistory->calculated_at)->diffForHumans() }}
+        </p>
+    </div>
+    @endif
+    @endauth
     {{-- Factores --}}
     <div style="background:var(--theme-card);border:1px solid var(--theme-border);
                 border-radius:14px;padding:1.5rem;margin-bottom:1.25rem;">
