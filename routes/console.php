@@ -1,8 +1,15 @@
 <?php
 
+use Illuminate\Foundation\Inspiring;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
 
-Schedule::command('video:clean-orphans')->everyMinute();
+Artisan::command('inspire', function () {
+    $this->comment(Inspiring::quote());
+})->purpose('Display an inspiring quote');
 
-// Auto-expirar disponibilidad cada 5 minutos
-Schedule::command('availability:expire')->everyFiveMinutes();
+// Recalcular scores de recomendacion cada dia a las 3am
+Schedule::command('profiles:recalculate-scores')
+    ->dailyAt('03:00')
+    ->withoutOverlapping()
+    ->runInBackground();
