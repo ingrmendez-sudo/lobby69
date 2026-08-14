@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use App\Notifications\ScoreLevelUp;
 
 class RecalculateProfileScores extends Command
 {
@@ -33,6 +34,16 @@ class RecalculateProfileScores extends Command
         $this->newLine();
         $this->info("Scores actualizados: {$count} perfiles.");
         return Command::SUCCESS;
+    }
+
+    private function starLevel(float $score): int
+    {
+        if ($score >= 4.5) return 5;
+        if ($score >= 3.5) return 4;
+        if ($score >= 2.5) return 3;
+        if ($score >= 1.5) return 2;
+        if ($score >= 0.5) return 1;
+        return 0;
     }
 
     private function recalculate(string $userId): void
@@ -90,6 +101,31 @@ class RecalculateProfileScores extends Command
         }
         $finalScore = min(5.0, round($baseScore + $boost, 2));
 
+        // Detectar cambio de nivel de estrella y notificar
+        $oldScore   = (float)($profile?->recommendation_score ?? 0.0);
+        $oldLevel   = $this->starLevel($oldScore);
+        $newLevel   = $this->starLevel($finalScore);
+        if ($newLevel > $oldLevel) {
+            $oldStars = $this->starLevel($oldScore);
+            $newStars = $this->starLevel($finalScore);
+            $starsMap = [0=>'sin estrellas',1=>'1 estrella',2=>'2 estrellas',3=>'3 estrellas',4=>'4 estrellas',5=>'5 estrellas'];
+            DB::table('notifications')->insert([
+                'id'         => \Illuminate\Support\Str::uuid()->toString(),
+                'user_id'    => $userId,
+                'type'       => 'score_level_up',
+                'data'       => json_encode([
+                    'type'      => 'score_level_up',
+                    'old_score' => $oldScore,
+                    'new_score' => $finalScore,
+                    'old_stars' => $starsMap[$oldStars] ?? 'sin estrellas',
+                    'new_stars' => $starsMap[$newStars] ?? 'sin estrellas',
+                    'message'   => 'Tu perfil subio de ' . ($starsMap[$oldStars] ?? '') . ' a ' . ($starsMap[$newStars] ?? '') . '!',
+                ]),
+                'created_at' => $now,
+                'updated_at' => $now,
+            ]);
+        }
+
         // Guardar en profiles
         DB::table('profiles')->whereRaw('user_id::text = ?', [$userId])->update([
             'recommendation_score' => $finalScore,
@@ -108,3 +144,4 @@ class RecalculateProfileScores extends Command
         );
     }
 }
+

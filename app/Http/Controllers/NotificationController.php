@@ -95,7 +95,11 @@ class NotificationController extends Controller
         ];
 
         $totalUnread = DB::table('notifications')
-            ->where('user_id', $user->id)->whereNull('read_at')->count();
+            ->whereNull('read_at')
+            ->where(function($q) use ($user) {
+                $q->whereRaw('user_id::text = ?', [(string)$user->id])
+                  ->orWhereRaw('notifiable_id::text = ?', [(string)$user->id]);
+            })->count();
 
         $myNick = DB::table('profiles')
             ->where('user_id', $user->id)->value('nickname') ?? '';
@@ -158,6 +162,7 @@ class NotificationController extends Controller
         }
     }
 }
+
 
 
 

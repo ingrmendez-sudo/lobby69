@@ -83,6 +83,31 @@
 
         <div class="l69-mini-profile__nick">{{ $sNick }}</div>
 
+        {{-- Campana de notificaciones --}}
+        @php
+            $sNotifCount = 0;
+            try {
+                $sNotifCount = \Illuminate\Support\Facades\DB::table('notifications')
+                    ->whereRaw('user_id::text = ?', [(string)$sUser->id])
+                    ->whereNull('read_at')
+                    ->count();
+            } catch(\Exception $e) {}
+        @endphp
+        <div style="position:relative;display:inline-flex;justify-content:center;margin-top:.35rem;">
+            <a href="{{ route('notifications.index') }}"
+               style="color:var(--theme-muted);font-size:1.1rem;text-decoration:none;position:relative;"
+               title="Notificaciones">
+                <i class="fas fa-bell"></i>
+                @if($sNotifCount > 0)
+                <span style="position:absolute;top:-6px;right:-8px;background:#ef4444;color:#fff;
+                             font-size:.55rem;font-weight:700;border-radius:999px;
+                             padding:1px 4px;line-height:1.4;min-width:14px;text-align:center;">
+                    {{ $sNotifCount > 99 ? '99+' : $sNotifCount }}
+                </span>
+                @endif
+            </a>
+        </div>
+
         <div class="l69-mini-profile__type">
             @if($sProfile?->profile_type === 'pareja')
                 <i class="fas fa-heart"></i> Pareja
