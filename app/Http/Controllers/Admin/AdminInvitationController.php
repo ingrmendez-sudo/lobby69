@@ -11,7 +11,7 @@ class AdminInvitationController extends Controller
 
     public function index(Request $request)
     {
-        $status  = $request->get('status', 'pending');
+        $status  = $request->get('status', 'all');
         $search  = $request->get('search', '');
 
         $query = DB::table('invitation_requests')->orderBy('created_at', 'desc');

@@ -261,7 +261,7 @@ Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->grou
     Route::post('boost/{userId}',    [\App\Http\Controllers\Admin\AdminBoostController::class, 'apply'])->name('boost.apply');
     Route::delete('boost/{userId}',  [\App\Http\Controllers\Admin\AdminBoostController::class, 'remove'])->name('boost.remove');
 
-    Route::get('invitacion/gracias', function () { return view('auth.invitation-success'); })->name('invitation.success');
+    // invitation.success definida en rutas publicas (linea 53)
 });
 
 // Disponibilidad
@@ -273,3 +273,4 @@ Route::middleware(['auth'])->prefix('disponibilidad')->name('availability.')->gr
 });
 // Página informativa de estrellas de recomendación
 Route::view('/como-funcionan-las-estrellas', 'score.info')->name('score.info');
+
