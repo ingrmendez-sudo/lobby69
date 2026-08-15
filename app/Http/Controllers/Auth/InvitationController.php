@@ -26,12 +26,13 @@ class InvitationController extends Controller
 
         try {
             $referredByUserId = null;
-            $status = 'pending';
+            $status           = 'pending';
+            $codeValid        = false;
 
             if (!empty($data['invitation_code'])) {
                 $referralCode = ReferralCode::where('code', $data['invitation_code'])->first();
                 if ($referralCode && $referralCode->isValid()) {
-                    $status = 'approved';
+                    $codeValid        = true;
                     $referredByUserId = $referralCode->owner_user_id;
                     $referralCode->increment('uses_count');
                 }
@@ -48,8 +49,8 @@ class InvitationController extends Controller
                 'edad'                => (int) ($data['edad'] ?? 0),
                 'pais'                => $data['pais'] ?? 'Mexico',
                 'municipio'           => $data['municipio'] ?? '',
-                'terminos_aceptados'  => DB::raw('true'),
-                'privacidad_aceptada' => DB::raw('true'),
+                'terminos_aceptados'  => true,
+                'privacidad_aceptada' => true,
             ]);
 
             DB::table('invitation_requests')->insert([
@@ -72,10 +73,10 @@ class InvitationController extends Controller
 
             DB::commit();
 
-            Log::info('Invitacion guardada', ['email' => $data['email'], 'status' => $status]);
+            Log::info('Invitacion guardada', ['email' => $data['email'], 'status' => $status, 'code_valid' => $codeValid]);
 
-            $mensaje = $status === 'approved'
-                ? 'Codigo valido. En breve recibiras un correo con tus credenciales.'
+            $mensaje = $codeValid
+                ? 'Codigo valido. Tu solicitud tiene prioridad. Te contactaremos a ' . $data['email'] . ' pronto.'
                 : 'Solicitud enviada. Te contactaremos a ' . $data['email'] . ' pronto.';
 
             return redirect()->route('invitation.success')->with('success', $mensaje);
@@ -89,4 +90,3 @@ class InvitationController extends Controller
         }
     }
 }
-
