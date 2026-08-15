@@ -26,10 +26,23 @@
 .lp-hero__bg {
     position: absolute;
     inset: 0;
-    background:
-        radial-gradient(ellipse 80% 60% at 50% -10%, rgba(108,63,197,.45) 0%, transparent 70%),
-        radial-gradient(ellipse 60% 40% at 80% 80%, rgba(224,86,160,.3) 0%, transparent 60%),
-        radial-gradient(ellipse 40% 30% at 10% 90%, rgba(245,158,11,.15) 0%, transparent 50%);
+    background-image: url('/img/hero.png');
+    background-size: cover;
+    background-position: center top;
+    background-repeat: no-repeat;
+    z-index: 0;
+}
+.lp-hero__bg::after {
+    content: """";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+        to bottom,
+        rgba(10,10,15,.55) 0%,
+        rgba(10,10,15,.35) 40%,
+        rgba(10,10,15,.75) 100%
+    );
+    z-index: 1;
 }
 .lp-hero__particles {
     position: absolute;
@@ -558,3 +571,5 @@
 </section>
 
 @endsection
+
+
