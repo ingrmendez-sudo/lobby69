@@ -5,6 +5,8 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\Mail;
+use App\Mail\InvitacionAprobada;
 
 class InvitationService
 {
@@ -57,6 +59,21 @@ class InvitationService
                 'approved_at'   => $now,
                 'message'       => "Credenciales para {$inv->email}: usuario={$username} pass={$tempPassword}",
             ]);
+
+            // Enviar email de bienvenida con credenciales
+            try {
+                Mail::to($inv->email)->send(new InvitacionAprobada(
+                    nombre:       $inv->nombre,
+                    email:        $inv->email,
+                    username:     $username,
+                    tempPassword: $tempPassword,
+                    loginUrl:     config('app.url') . '/login',
+                ));
+            } catch (\Exception $mailEx) {
+                Log::warning('Email de bienvenida no enviado: ' . $mailEx->getMessage(), [
+                    'email' => $inv->email,
+                ]);
+            }
 
             return ['success'=>true,'email'=>$inv->email,'temp_password'=>$tempPassword];
 
