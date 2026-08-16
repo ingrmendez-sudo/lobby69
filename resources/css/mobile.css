@@ -212,3 +212,209 @@
     body { padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)) !important; }
     .l69-bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
 }
+
+/* ── Feed cards mobile ── */
+@media (max-width: 480px) {
+    .feed-card__meta {
+        padding: 6px 8px;
+        font-size: 0.75rem;
+    }
+    .feed-card__nick {
+        font-size: 0.8rem;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+}
+
+/* ── Padding bottom nav ── */
+@media (max-width: 768px) {
+    .feed-container,
+    .profiles-grid {
+        padding-bottom: 80px;
+    }
+}
+
+/* ── Tabs mobile ── */
+@media (max-width: 480px) {
+    .feed-tabs .tab-item {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+        border-radius: 20px;
+    }
+    .feed-tabs .tab-item.active {
+        background: var(--color-primary);
+        color: #fff;
+    }
+}
+
+/* ══ CORRECCIÓN SELECTORES REALES ══ */
+
+/* ── Feed grid mobile ── */
+@media (max-width: 768px) {
+    .l69-feed-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: .6rem !important;
+        padding-bottom: 80px;
+    }
+}
+
+/* ── Feed card footer ── */
+@media (max-width: 480px) {
+    .l69-feed-card {
+        border-radius: 10px;
+        overflow: hidden;
+    }
+    .l69-feed-card__img-wrap {
+        aspect-ratio: 3/4;
+    }
+    .l69-feed-card__img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+    }
+    .l69-feed-card__owner-top span {
+        font-size: .7rem;
+        max-width: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+}
+
+/* ── Tabs (l69-quick-btn) mobile ── */
+@media (max-width: 480px) {
+    .l69-feed-tabs {
+        gap: .35rem !important;
+        margin-bottom: 1rem !important;
+    }
+    .l69-quick-btn {
+        font-size: .8rem !important;
+        padding: .45rem .9rem !important;
+    }
+}
+
+/* ══ EXPLORAR — mobile ══ */
+@media (max-width: 768px) {
+    .exp-filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: .5rem;
+        padding: .75rem;
+    }
+    .exp-filter-group {
+        flex: 1 1 calc(50% - .5rem);
+        min-width: 130px;
+    }
+    .exp-select,
+    .exp-input {
+        width: 100%;
+        font-size: .85rem;
+        padding: .45rem .6rem;
+    }
+    .exp-btn-filter,
+    .exp-btn-reset {
+        flex: 1 1 100%;
+        text-align: center;
+        padding: .55rem;
+        font-size: .85rem;
+    }
+    .exp-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: .6rem;
+        padding-bottom: 80px;
+    }
+    .exp-card__avatar-wrap {
+        aspect-ratio: 3/4;
+    }
+    .exp-count {
+        font-size: .8rem;
+        padding: .5rem .75rem;
+    }
+}
+
+/* ══ PERFIL INDIVIDUAL — mobile ══ */
+@media (max-width: 768px) {
+
+    /* El sidebar izquierdo pasa a ser header compacto */
+    .l69-sidebar-card {
+        border-radius: 12px;
+        padding: .75rem;
+        margin-bottom: .75rem;
+    }
+    .l69-sidebar-card img[style*="72px"] {
+        width: 56px !important;
+        height: 56px !important;
+    }
+
+    /* Layout: sidebar + main → columna única */
+    .l69-layout {
+        flex-direction: column !important;
+    }
+    .l69-sidebar-left,
+    .l69-sidebar-right {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: none !important;
+    }
+    .l69-main {
+        width: 100% !important;
+        min-width: 0 !important;
+        padding-bottom: 80px;
+    }
+}
+
+/* ══ LAYOUT PRINCIPAL — mobile (clases corregidas) ══ */
+@media (max-width: 768px) {
+    .l69-layout {
+        flex-direction: column !important;
+    }
+    .l69-sidebar.l69-sidebar--left,
+    .l69-sidebar.l69-sidebar--right {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex: none !important;
+        position: static !important;
+    }
+    .l69-layout__content {
+        width: 100% !important;
+        min-width: 0 !important;
+        padding-bottom: 80px !important;
+    }
+}
+/* ══ SIDEBAR IZQUIERDO visible en mobile ══ */
+@media (max-width: 768px) {
+    .l69-sidebar--left {
+        display: block !important;
+        position: static !important;
+        max-height: none !important;
+        overflow-y: visible !important;
+        width: 100% !important;
+    }
+    .l69-sidebar--right {
+        display: none !important;
+    }
+    .l69-layout {
+        grid-template-columns: 1fr !important;
+        grid-template-rows: auto auto !important;
+    }
+}
+/* ══ PERFIL — ocultar sección "visitados" en mobile ══ */
+@media (max-width: 768px) {
+    .l69-sidebar--left .l69-sidebar-card + .l69-sidebar-card {
+        display: none !important;
+    }
+    .l69-stat-grid {
+        display: grid !important;
+        grid-template-columns: repeat(4, 1fr) !important;
+        gap: .4rem !important;
+        text-align: center;
+    }
+    .l69-stat__value {
+        font-size: 1.1rem !important;
+        font-weight: 800 !important;
+    }
+    .l69-stat__label {
+        font-size: .65rem !important;
+    }
+}
