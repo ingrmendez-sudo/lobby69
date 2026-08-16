@@ -1,0 +1,214 @@
+/* ============================================================
+   LOBBY69 — MOBILE RESPONSIVE
+   Breakpoints: 767px (tablet), 480px (phone)
+   ============================================================ */
+
+/* ══ LANDING ══ */
+@media (max-width: 767px) {
+    .lp-hero { min-height: 100svh; }
+    .lp-hero__content { padding: 5rem 1.25rem 2rem; }
+    .lp-hero__title { font-size: clamp(1.8rem, 8vw, 2.8rem) !important; }
+    .lp-hero__sub { font-size: .9rem; }
+    .lp-hero__badges { flex-wrap: wrap; gap: .4rem; justify-content: center; }
+    .lp-hero__cta { flex-direction: column; align-items: stretch; }
+    .lp-hero__cta a, .lp-hero__cta button { width: 100%; text-align: center; justify-content: center; }
+
+    /* Stats bar */
+    .lp-stats { grid-template-columns: repeat(2, 1fr) !important; gap: 1rem !important; padding: 1.5rem 1rem !important; }
+
+    /* Features grid */
+    .lp-features__grid { grid-template-columns: 1fr !important; }
+    .lp-steps__grid    { grid-template-columns: 1fr !important; }
+    .lp-plans__grid    { grid-template-columns: 1fr !important; }
+    .lp-testimonials   { grid-template-columns: 1fr !important; }
+
+    /* Sección headers */
+    .lp-section { padding: 3rem 1.25rem !important; }
+    .lp-section__title { font-size: clamp(1.5rem, 6vw, 2rem) !important; }
+}
+
+/* ══ FORMULARIO DE INVITACIÓN ══ */
+@media (max-width: 767px) {
+    .auth-section { padding: 1rem .75rem !important; align-items: flex-start !important; }
+    .auth-card { padding: 1.5rem 1.25rem !important; }
+    .auth-card__header img { height: 40px !important; }
+
+    /* Grid de tipo de perfil — columna única en mobile */
+    .invitation-profile-types { flex-direction: column !important; }
+
+    /* Inputs full width */
+    .form-control { font-size: 16px !important; } /* evita zoom en iOS */
+    select.form-control { font-size: 16px !important; }
+}
+
+/* ══ DASHBOARD — FEED ══ */
+@media (max-width: 767px) {
+    /* Grid del feed */
+    .l69-feed-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: .5rem !important;
+    }
+    /* Story bar horizontal scroll */
+    .l69-stories { overflow-x: auto; padding-bottom: .5rem; }
+    .l69-stories::-webkit-scrollbar { display: none; }
+
+    /* Feed cards más compactas */
+    .l69-feed-card__overlay { opacity: 1 !important; }
+    .l69-feed-card__owner-top { font-size: .68rem; }
+}
+
+@media (max-width: 480px) {
+    .l69-feed-grid { grid-template-columns: repeat(2, 1fr) !important; gap: .35rem !important; }
+}
+
+/* ══ EXPLORAR ══ */
+@media (max-width: 767px) {
+    /* Filtros en columna */
+    .exp-filters {
+        flex-direction: column !important;
+        gap: .6rem !important;
+        padding: .85rem !important;
+    }
+    .exp-filter-group { min-width: 100% !important; }
+    .exp-btn-filter, .exp-btn-reset { width: 100% !important; padding: .65rem !important; }
+
+    /* Grid de perfiles */
+    .exp-grid {
+        grid-template-columns: repeat(2, 1fr) !important;
+        gap: .6rem !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .exp-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* ══ PERFIL DE USUARIO ══ */
+@media (max-width: 767px) {
+    /* Hero del perfil */
+    .profile-hero { min-height: 220px !important; }
+    .profile-hero__avatar { width: 80px !important; height: 80px !important; }
+    .profile-hero__name { font-size: 1.3rem !important; }
+
+    /* Tabs horizontales con scroll */
+    .profile-tabs {
+        overflow-x: auto !important;
+        white-space: nowrap !important;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+        padding-bottom: 2px;
+    }
+    .profile-tabs::-webkit-scrollbar { display: none; }
+    .profile-tab { display: inline-flex !important; }
+
+    /* Grid de fotos del perfil */
+    .profile-photos-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: .35rem !important;
+    }
+
+    /* Stats del perfil en fila */
+    .l69-stat-grid { grid-template-columns: repeat(4, 1fr) !important; gap: .4rem !important; }
+    .l69-stat__value { font-size: 1rem !important; }
+    .l69-stat__label { font-size: .6rem !important; }
+}
+
+/* ══ MENSAJES ══ */
+@media (max-width: 767px) {
+    .messages-layout {
+        grid-template-columns: 1fr !important;
+        height: calc(100svh - var(--nav-h) - var(--bottom-nav-h)) !important;
+    }
+    .messages-sidebar { display: none !important; }
+    .messages-sidebar.is-visible { display: flex !important; }
+    .messages-chat { display: flex !important; }
+
+    /* Input de mensaje */
+    .messages-input-wrap { padding: .5rem .75rem !important; }
+    .messages-input { font-size: 16px !important; }
+}
+
+/* ══ PERFIL EDIT ══ */
+@media (max-width: 767px) {
+    .profile-edit-grid {
+        grid-template-columns: 1fr !important;
+    }
+    .profile-edit-tabs {
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: none;
+    }
+    .profile-edit-tabs::-webkit-scrollbar { display: none; }
+}
+
+/* ══ NOTIFICACIONES ══ */
+@media (max-width: 767px) {
+    .notif-list { padding: 0 !important; }
+    .notif-item { padding: .85rem 1rem !important; border-radius: 0 !important; }
+    .notif-filters { overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+    .notif-filters::-webkit-scrollbar { display: none; }
+}
+
+/* ══ FOTOS ══ */
+@media (max-width: 767px) {
+    .photos-grid {
+        grid-template-columns: repeat(3, 1fr) !important;
+        gap: .35rem !important;
+    }
+    .photos-upload-btn { width: 100% !important; }
+}
+
+/* ══ ADMIN PANEL ══ */
+@media (max-width: 767px) {
+    .admin-table-wrap { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+    .admin-table { min-width: 600px; }
+    .admin-stats-grid { grid-template-columns: repeat(2, 1fr) !important; }
+}
+
+/* ══ LAYOUT GLOBAL MOBILE ══ */
+@media (max-width: 767px) {
+    /* Padding bottom para bottom nav */
+    body { padding-bottom: var(--bottom-nav-h) !important; }
+
+    /* Contenido sin padding lateral excesivo */
+    .l69-layout {
+        padding: .75rem .75rem !important;
+        gap: .75rem !important;
+    }
+
+    /* Cards genéricas */
+    .card, .l69-card {
+        border-radius: 12px !important;
+        padding: 1rem !important;
+    }
+
+    /* Botones full width en mobile */
+    .btn-mobile-full { width: 100% !important; }
+
+    /* Modales */
+    .modal {
+        border-radius: 16px 16px 0 0 !important;
+        max-height: 92vh !important;
+        margin: auto auto 0 !important;
+        max-width: 100% !important;
+    }
+    .modal-overlay { align-items: flex-end !important; padding: 0 !important; }
+
+    /* Toast en mobile */
+    .toast {
+        top: auto !important;
+        bottom: calc(var(--bottom-nav-h) + 1rem) !important;
+        right: .75rem !important;
+        left: .75rem !important;
+        max-width: 100% !important;
+    }
+
+    /* Tablas admin scroll horizontal */
+    table { display: block; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+}
+
+/* ══ SAFE AREA (iPhone notch / Dynamic Island) ══ */
+@supports (padding-bottom: env(safe-area-inset-bottom)) {
+    body { padding-bottom: calc(var(--bottom-nav-h) + env(safe-area-inset-bottom)) !important; }
+    .l69-bottom-nav { padding-bottom: env(safe-area-inset-bottom); }
+}
