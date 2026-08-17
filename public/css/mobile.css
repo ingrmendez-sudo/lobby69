@@ -418,3 +418,10 @@
         font-size: .65rem !important;
     }
 }
+/* ══ Chat input visible sobre bottom nav ══ */
+@media (max-width: 767px) {
+    .ch-wrap {
+        bottom: calc(var(--bottom-nav-h, 62px)) !important;
+        height: calc(100vh - var(--nav-h, 64px) - var(--bottom-nav-h, 62px)) !important;
+    }
+}

@@ -3045,7 +3045,7 @@ body.page-mensajes .l69-sidebar--right {
 @endphp
 
 <div class="ch-wrap" id="chWrap">
-    <div class="ch-sidebar-overlay" id="chOverlay"></div>
+    <div class="ch-sidebar-overlay" id="chOverlay" style="position:fixed;display:none;"></div>
 
     {{-- PANEL IZQUIERDO — Canales + DMs --}}
     <aside class="ch-sidebar" id="chSidebar">
@@ -4037,11 +4037,11 @@ body.page-mensajes .l69-sidebar--right {
 
     function openSidebarMobile() {
         if (chSidebar) chSidebar.classList.add('is-open');
-        if (chOverlay) chOverlay.classList.add('is-visible');
+        if (chOverlay) { chOverlay.style.display = 'block'; }
     }
     function closeSidebarMobile() {
         if (chSidebar) chSidebar.classList.remove('is-open');
-        if (chOverlay) chOverlay.classList.remove('is-visible');
+        if (chOverlay) { chOverlay.style.display = 'none'; }
     }
     if (btnMenuSala) btnMenuSala.addEventListener('click', openSidebarMobile);
     if (btnMenuDm)   btnMenuDm.addEventListener('click', openSidebarMobile);
