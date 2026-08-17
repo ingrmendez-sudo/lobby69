@@ -1,4 +1,4 @@
-﻿@foreach($feed as $photo)
+@foreach($feed as $photo)
 @php
     $photoUrl  = supabase_photo_url($photo->file_path);
     $avatarUrl = supabase_photo_url($photo->avatar_file_path ?? null)
