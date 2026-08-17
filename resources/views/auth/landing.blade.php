@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Tu acceso exclusivo al placer compartido')
 
@@ -341,7 +341,7 @@
         <div class="lp-hero__eyebrow">
             <span></span> Comunidad activa — México y LATAM
         </div>
-        <img src="{{ asset('img/logo-lobby69.png') }}" class="lp-hero__logo" alt="LOBBY69"
+        <img loading="lazy" src="{{ asset('img/logo-lobby69.png') }}" class="lp-hero__logo" alt="LOBBY69"
              onerror="this.style.display='none'">
         <h1 class="lp-hero__title">
             El club privado donde<br>

@@ -1,4 +1,4 @@
-@php
+﻿@php
     $rUser    = auth()->user();
     $rIsVerified         = false;
     $rVerificationStatus = 'none';
@@ -127,7 +127,7 @@
         <div style="width:34px;height:34px;border-radius:50%;overflow:hidden;
                     background:rgba(108,63,197,.25);flex-shrink:0;border:1px solid rgba(108,63,197,.3);">
             @if($suPhoto)
-            <img src="{{ $suPhoto }}" alt="{{ $suNick }}"
+            <img loading="lazy" src="{{ $suPhoto }}" alt="{{ $suNick }}"
                  style="width:100%;height:100%;object-fit:cover;"
                  onerror="this.style.display='none'">
             @else
@@ -576,7 +576,7 @@ if (!window._dpSideModalInit) {
        style="display:flex;align-items:center;gap:.5rem;padding:.4rem 0;text-decoration:none;border-bottom:1px solid rgba(255,255,255,.05);">
         <div style="width:32px;height:32px;border-radius:50%;overflow:hidden;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);flex-shrink:0;">
             @if($tpAvatar)
-            <img src="{{ $tpAvatar }}" alt="{{ $tp->nickname }}"
+            <img loading="lazy" src="{{ $tpAvatar }}" alt="{{ $tp->nickname }}"
                  style="width:100%;height:100%;object-fit:cover;"
                  onerror="this.style.display='none'">
             @else

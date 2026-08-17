@@ -1,4 +1,4 @@
-@foreach($feed as $photo)
+﻿@foreach($feed as $photo)
 @php
     $photoUrl  = supabase_photo_url($photo->file_path);
     $avatarUrl = supabase_photo_url($photo->avatar_file_path ?? null)
@@ -22,7 +22,7 @@
 
     <div class="l69-feed-card__img-wrap">
 
-        <img src="{{ $photoUrl }}"
+        <img loading="lazy" src="{{ $photoUrl }}"
              alt="{{ $photo->caption ?? 'Foto' }}"
              class="l69-feed-card__img"
              loading="lazy"
@@ -32,7 +32,7 @@
         <a href="{{ $ownerUrl }}"
            class="l69-feed-card__owner-top"
            onclick="event.stopPropagation()">
-            <img src="{{ $avatarUrl }}"
+            <img loading="lazy" src="{{ $avatarUrl }}"
                  alt="{{ $ownerName }}"
                  loading="lazy"
                  decoding="async"

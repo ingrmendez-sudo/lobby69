@@ -3,7 +3,7 @@
 @section('content')
 <section style="min-height:100vh;display:flex;align-items:center;justify-content:center;padding:2rem 1rem;background:linear-gradient(135deg,#1a1a2e 0%,#16213e 50%,#0f3460 100%);">
   <div style="max-width:560px;width:100%;text-align:center;">
-    <img src="{{ asset('img/logo-lobby69.png') }}" alt="LOBBY69" style="height:52px;margin-bottom:2rem;" onerror="this.style.display='none'">
+    <img loading="lazy" src="{{ asset('img/logo-lobby69.png') }}" alt="LOBBY69" style="height:52px;margin-bottom:2rem;" onerror="this.style.display='none'">
     <div style="background:rgba(255,255,255,.06);backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,.12);border-radius:24px;padding:2.5rem 2rem;">
       <div style="width:80px;height:80px;background:linear-gradient(135deg,#f97068,#e84393);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 1.5rem;font-size:2.2rem;">&#127881;</div>
       <h1 style="font-size:1.9rem;font-weight:800;color:#fff;margin-bottom:.5rem;">

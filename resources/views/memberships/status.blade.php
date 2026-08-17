@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 
 @section('title', 'Estado de mis membresías')
 
@@ -54,7 +54,7 @@ $currentImage    = $tierImages[$currentTier] ?? null;
         {{-- Imagen del tier --}}
         <div style="flex-shrink:0;width:90px;height:90px;position:relative;z-index:1;">
             @if($currentImage)
-                <img src="{{ $currentImage }}"
+                <img loading="lazy" src="{{ $currentImage }}"
                      alt="{{ $currentTier }}"
                      style="width:90px;height:90px;object-fit:contain;
                             filter:drop-shadow(0 0 12px {{ $currentColor }}88);">
@@ -213,7 +213,7 @@ $currentImage    = $tierImages[$currentTier] ?? null;
         {{-- Imagen del tier solicitado --}}
         @if($pImage && $payment->isApproved())
         <div style="flex-shrink:0;width:52px;height:52px;">
-            <img src="{{ $pImage }}"
+            <img loading="lazy" src="{{ $pImage }}"
                  alt="{{ $pTier }}"
                  style="width:52px;height:52px;object-fit:contain;
                         filter:drop-shadow(0 0 6px {{ $pColor }}66);">

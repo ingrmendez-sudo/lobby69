@@ -3090,7 +3090,7 @@ body.page-mensajes .l69-sidebar--right {
                  id="dm-{{ $c->partner_id }}">
                 <div class="ch-dm__avatar">
                     @if($c->avatar_photo_id)
-                        <img src="{{ route('photos.serve', $c->avatar_photo_id) }}"
+                        <img loading="lazy" src="{{ route('photos.serve', $c->avatar_photo_id) }}"
                              alt="{{ $c->nickname ?? $c->display_name }}" loading="lazy">
                     @else
                         {{ mb_strtoupper(mb_substr($c->nickname ?? $c->display_name ?? '?', 0, 1)) }}

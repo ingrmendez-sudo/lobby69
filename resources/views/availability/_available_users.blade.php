@@ -1,4 +1,4 @@
-@if($availableUsers->isNotEmpty())
+﻿@if($availableUsers->isNotEmpty())
 <section class="avail-section">
     <div class="avail-section__header">
         <span class="avail-section__dot"></span>
@@ -23,7 +23,7 @@
         @endphp
         <a href="{{ $profileUrl }}" class="avail-card" title="{{ $av->display_name }}">
             <div class="avail-card__avatar-wrap">
-                <img src="{{ $avatarUrl }}"
+                <img loading="lazy" src="{{ $avatarUrl }}"
                      alt="{{ $av->display_name }}"
                      class="avail-card__avatar"
                      loading="lazy"
