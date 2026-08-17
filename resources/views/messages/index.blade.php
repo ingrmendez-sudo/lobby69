@@ -443,6 +443,8 @@ body.page-mensajes .l69-sidebar--right {
     flex-direction: column;
     min-width: 0;
     min-height: 0;
+    flex: 1;
+    overflow: hidden;
     background: var(--ch-bg);
     position: relative;
     overflow: hidden;
@@ -4049,7 +4051,8 @@ body.page-mensajes .l69-sidebar--right {
         el.addEventListener('click', function() {
             if (window.innerWidth < 768) closeSidebarMobile();
         });
-    });})();
+    });
+})();
 </script>
     {{-- ═══ VIDEO CALL SCRIPTS ════════════════════════════════════════════ --}}
     <script src="https://unpkg.com/simple-peer@9.11.1/simplepeer.min.js"></script>
