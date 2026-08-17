@@ -1,5 +1,13 @@
 ﻿<!DOCTYPE html>
 <html lang="es">
+<head>
+    <script>
+        (function(){
+            var t = localStorage.getItem("lobby69-theme");
+            if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            document.documentElement.setAttribute("data-theme", t);
+        })();
+    </script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/favicon.png">
