@@ -27,15 +27,13 @@
              class="l69-feed-card__img"
              loading="lazy"
              decoding="async"
-             onerror="this.closest('.l69-feed-card').style.display='none'">
+             onerror="this.src='https://placehold.co/400x500/1a1523/6C3FC5?text=Sin+foto'">
 
         <a href="{{ $ownerUrl }}"
            class="l69-feed-card__owner-top"
            onclick="event.stopPropagation()">
             <img loading="lazy" src="{{ $avatarUrl }}"
-                 alt="{{ $ownerName }}"
-                 loading="lazy"
-                 decoding="async"
+                 alt="{{ $ownerName }}"`n                 decoding="async"
                  onerror="this.src='{{ asset('img/default-avatar.svg') }}'">
             <span>{{ $ownerName }}</span>
         </a>
