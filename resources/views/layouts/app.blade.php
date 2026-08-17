@@ -1,21 +1,13 @@
 ﻿<!DOCTYPE html>
 <html lang="es">
-<script>
-(function(){
-    var t = localStorage.getItem("lobby69-theme");
-    if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    document.documentElement.setAttribute("data-theme", t);
-})();
-</script>
 <head>
     <script>
-        // Anti-flash: aplicar tema ANTES del render
         (function(){
-            var t = localStorage.getItem('lobby69-theme') || 'light';
-            document.documentElement.setAttribute('data-theme', t);
+            var t = localStorage.getItem("lobby69-theme");
+            if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+            document.documentElement.setAttribute("data-theme", t);
         })();
     </script>
-    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/favicon.png">
     <link rel="shortcut icon" type="image/png" href="/favicon.png">
