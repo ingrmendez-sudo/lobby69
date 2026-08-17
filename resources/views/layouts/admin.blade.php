@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es" data-theme="dark" id="adminRoot">
 <head>
     <meta charset="UTF-8">
@@ -185,6 +185,59 @@
         margin: 0 auto;
     }
 
+    
+    /* ══ ADMIN MOBILE ══ */
+    @media (max-width: 767px) {
+        body { display: block; }
+
+        .adm-sidebar {
+            transform: translateX(-100%);
+            transition: transform 0.28s cubic-bezier(.4,0,.2,1);
+            z-index: 200;
+        }
+        .adm-sidebar.is-open { transform: translateX(0); }
+
+        .adm-sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 199;
+            background: rgba(0,0,0,0.55);
+        }
+        .adm-sidebar-overlay.is-visible { display: block; }
+
+        .adm-main { margin-left: 0 !important; }
+
+        .adm-topbar { padding: 0 1rem; }
+        .adm-topbar__title { font-size: .9rem; }
+
+        .adm-hamburger {
+            display: flex !important;
+            align-items: center;
+            justify-content: center;
+            width: 36px;
+            height: 36px;
+            background: rgba(108,63,197,.15);
+            border: 1px solid rgba(108,63,197,.3);
+            border-radius: 8px;
+            color: var(--theme-text);
+            cursor: pointer;
+            font-size: 1rem;
+            margin-right: .75rem;
+        }
+
+        .adm-content { padding: 1rem .75rem; }
+
+        .adm-stats-grid {
+            grid-template-columns: repeat(2, 1fr) !important;
+            gap: .6rem !important;
+        }
+    }
+
+    @media (min-width: 768px) {
+        .adm-hamburger { display: none !important; }
+        .adm-sidebar-overlay { display: none !important; }
+    }
     /* Toast */
     .adm-toast {
         position: fixed;
@@ -263,6 +316,8 @@
 <body>
 
 {{-- ── Sidebar ── --}}
+<div class="adm-sidebar-overlay" id="admOverlay"></div>
+
 <aside class="adm-sidebar">
     <div class="adm-sidebar__logo">
         <div>
@@ -464,6 +519,31 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 });
 
+</script>
+<script>
+(function() {
+    const sidebar  = document.querySelector('.adm-sidebar');
+    const overlay  = document.getElementById('admOverlay');
+    const hamburger = document.getElementById('admHamburger');
+
+    function openSidebar() {
+        sidebar.classList.add('is-open');
+        overlay.classList.add('is-visible');
+    }
+    function closeSidebar() {
+        sidebar.classList.remove('is-open');
+        overlay.classList.remove('is-visible');
+    }
+    if (hamburger) hamburger.addEventListener('click', openSidebar);
+    if (overlay)   overlay.addEventListener('click', closeSidebar);
+
+    // Cerrar al seleccionar item de nav en mobile
+    document.querySelectorAll('.adm-nav__item').forEach(function(el) {
+        el.addEventListener('click', function() {
+            if (window.innerWidth < 768) closeSidebar();
+        });
+    });
+})();
 </script>
 </body>
 </html>
