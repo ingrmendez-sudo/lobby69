@@ -227,7 +227,3 @@
         padding-bottom: 80px !important;
     }
 }
-/* ══ ANTI-CLS seguro: solo evitar overflow, sin forzar dimensiones ══ */
-img:not([style*="width"]):not([class*="avatar"]):not([class*="l69-av"]) {
-    max-width: 100%;
-}
