@@ -235,7 +235,7 @@
     }
 
     @media (min-width: 768px) {
-        .adm-hamburger { display: none !important; }
+    @media (min-width: 768px) { .adm-hamburger { display: none !important; } }
         .adm-sidebar-overlay { display: none !important; }
     }
     /* Toast */
@@ -438,6 +438,7 @@
 {{-- ── Main ── --}}
 <main class="adm-main">
     <div class="adm-topbar">
+        <button class="adm-hamburger" id="admHamburger" aria-label="Abrir menu">&#9776;</button>
         <span class="adm-topbar__title">@yield('page-title', 'Panel Admin')</span>
         <div class="adm-topbar__actions">
             {{-- Toggle dark/light --}}
