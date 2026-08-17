@@ -1,4 +1,4 @@
-@extends('layouts.app')
+﻿@extends('layouts.app')
 @section('title', 'Mensajes · LOBBY69')
 
 @php
@@ -880,6 +880,18 @@ body.page-mensajes .l69-sidebar--right {
 
 /* ══ Utilidades ══ */
 .ch-hidden { display: none !important; }
+/* ══ Overlay + hamburguesa mobile ══ */
+@media (max-width: 767px) {
+    .ch-header__menu { display: flex !important; }
+    .ch-sidebar-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        z-index: 19;
+        background: rgba(0,0,0,0.45);
+    }
+    .ch-sidebar-overlay.is-visible { display: block; }
+}
 </style>
 @endpush
 
@@ -3031,6 +3043,7 @@ body.page-mensajes .l69-sidebar--right {
 @endphp
 
 <div class="ch-wrap" id="chWrap">
+    <div class="ch-sidebar-overlay" id="chOverlay"></div>
 
     {{-- PANEL IZQUIERDO — Canales + DMs --}}
     <aside class="ch-sidebar" id="chSidebar">
@@ -3126,6 +3139,9 @@ body.page-mensajes .l69-sidebar--right {
                 <button class="ch-header__btn ch-header__back" id="btnBackSala">
                     <i class="fas fa-arrow-left"></i>
                 </button>
+                <button class="ch-header__btn ch-header__menu" id="btnMenuSala" style="display:none;">
+                    <i class="fas fa-bars"></i>
+                </button>
                 <div class="ch-header__icon ch-header__icon--sala">
                     <i class="fas fa-comments"></i>
                 </div>
@@ -3181,6 +3197,9 @@ body.page-mensajes .l69-sidebar--right {
             <div class="ch-header" id="dmHeader">
                 <button class="ch-header__btn ch-header__back" id="btnBackDm">
                     <i class="fas fa-arrow-left"></i>
+                </button>
+                <button class="ch-header__btn ch-header__menu" id="btnMenuDm" style="display:none;">
+                    <i class="fas fa-bars"></i>
                 </button>
                 <div class="ch-header__icon" id="dmHeaderAvatar">
                     <span id="dmHeaderInitials">?</span>
@@ -4007,7 +4026,30 @@ body.page-mensajes .l69-sidebar--right {
     /* Abrir sala general automaticamente al cargar */
     setTimeout(function() { showSala(); }, 600);
 
-})();
+
+    /* ══ Hamburguesa mobile ══ */
+    const btnMenuSala = document.getElementById('btnMenuSala');
+    const btnMenuDm   = document.getElementById('btnMenuDm');
+    const chOverlay   = document.getElementById('chOverlay');
+    const chSidebar   = document.getElementById('chSidebar');
+
+    function openSidebarMobile() {
+        if (chSidebar) chSidebar.classList.add('is-open');
+        if (chOverlay) chOverlay.classList.add('is-visible');
+    }
+    function closeSidebarMobile() {
+        if (chSidebar) chSidebar.classList.remove('is-open');
+        if (chOverlay) chOverlay.classList.remove('is-visible');
+    }
+    if (btnMenuSala) btnMenuSala.addEventListener('click', openSidebarMobile);
+    if (btnMenuDm)   btnMenuDm.addEventListener('click', openSidebarMobile);
+    if (chOverlay)   chOverlay.addEventListener('click', closeSidebarMobile);
+
+    document.querySelectorAll('.ch-dm, .ch-channel').forEach(function(el) {
+        el.addEventListener('click', function() {
+            if (window.innerWidth < 768) closeSidebarMobile();
+        });
+    });})();
 </script>
     {{-- ═══ VIDEO CALL SCRIPTS ════════════════════════════════════════════ --}}
     <script src="https://unpkg.com/simple-peer@9.11.1/simplepeer.min.js"></script>
