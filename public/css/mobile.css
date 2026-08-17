@@ -227,3 +227,9 @@
         padding-bottom: 80px !important;
     }
 }
+/* ══ DASHBOARD: ocultar sidebar izquierdo en mobile (contenido no util) ══ */
+@media (max-width: 767px) {
+    .l69-layout .l69-sidebar.l69-sidebar--left {
+        display: none !important;
+    }
+}
