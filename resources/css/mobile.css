@@ -36,7 +36,7 @@
         gap: .75rem !important;
     }
     .l69-sidebar.l69-sidebar--left {
-        display: block !important;
+        display: none !important;
         position: static !important;
         max-height: none !important;
         overflow-y: visible !important;
