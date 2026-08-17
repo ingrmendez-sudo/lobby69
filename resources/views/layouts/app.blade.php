@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
 <script>
 (function(){
@@ -413,7 +413,7 @@
     </style>
     <style>[x-cloak] { display: none !important; }</style>
 </head>
-<body class="{{ request()->routeIs('messages.*') ? 'page-mensajes overflow-hidden' : '' }}">
+<body class="{{ request()->routeIs('messages.*') ? 'page-mensajes overflow-hidden' : '' }} {{ request()->routeIs('explore') ? 'page-explorar' : '' }} {{ request()->routeIs('profile.show') ? 'page-perfil' : '' }} {{ request()->routeIs('dashboard') ? 'page-dashboard' : '' }}">
     @include('components.navbar')
 
     <main style="width:100%;min-width:0;display:block;">
