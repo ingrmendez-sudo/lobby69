@@ -193,9 +193,9 @@
         .adm-sidebar {
             transform: translateX(-100%);
             transition: transform 0.28s cubic-bezier(.4,0,.2,1);
-            z-index: 9999;
+            z-index: 9999 !important;
         }
-        .adm-sidebar.is-open { transform: translateX(0); }
+        .adm-sidebar.is-open { transform: translateX(0); z-index: 9999 !important; }
 
         .adm-sidebar-overlay {
             display: none;
@@ -250,7 +250,7 @@
         font-size: .875rem;
         font-weight: 600;
         box-shadow: 0 4px 16px rgba(0,0,0,.3);
-        z-index: 9999;
+            z-index: 9999 !important;
         display: none;
         align-items: center;
         gap: .5rem;
