@@ -227,28 +227,7 @@
         padding-bottom: 80px !important;
     }
 }
-
-/* ══ ANTI-CLS: reservar espacio para imágenes antes de cargar ══ */
-img {
+/* ══ ANTI-CLS seguro: solo evitar overflow, sin forzar dimensiones ══ */
+img:not([style*="width"]):not([class*="avatar"]):not([class*="l69-av"]) {
     max-width: 100%;
-    height: auto;
-}
-
-/* Avatares circulares — tamaño conocido */
-img[class*="avatar"],
-img[class*="l69-avatar"],
-img[class*="ch-avatar"] {
-    width: 40px;
-    height: 40px;
-    aspect-ratio: 1 / 1;
-    object-fit: cover;
-}
-
-/* Imágenes de feed/cards — ratio conocido */
-img[class*="photo"],
-img[class*="feed"],
-img[class*="card-img"] {
-    aspect-ratio: 4 / 3;
-    object-fit: cover;
-    width: 100%;
 }
