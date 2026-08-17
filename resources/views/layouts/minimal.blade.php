@@ -1,13 +1,5 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="es">
-<script>
-(function(){
-    var t = localStorage.getItem("lobby69-theme");
-    if (!t) t = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-    document.documentElement.setAttribute("data-theme", t);
-})();
-</script>
-<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="icon" type="image/png" href="/favicon.png">
@@ -106,14 +98,6 @@
 </div>
 
 @stack('scripts')
-<script>
-document.addEventListener('DOMContentLoaded', function () {
-    // ── Modales ──
-    document.querySelectorAll('[data-modal]').forEach(function(t) {
-        t.addEventListener('click', function(e) {
-            e.preventDefault();
-            var overlay = document.getElementById(this.getAttribute('data-modal'));
-            if (overlay) overlay.classList.add('is-open');
         });
     });
     document.querySelectorAll('.modal-overlay').forEach(function(o) {
