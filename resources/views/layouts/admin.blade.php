@@ -529,10 +529,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function openSidebar() {
         sidebar.classList.add('is-open');
+        if (window.innerWidth < 768) { document.querySelector('.adm-main').style.pointerEvents = 'none'; }
         overlay.classList.add('is-visible');
     }
     function closeSidebar() {
         sidebar.classList.remove('is-open');
+        document.querySelector('.adm-main').style.pointerEvents = '';
         overlay.classList.remove('is-visible');
     }
     if (hamburger) hamburger.addEventListener('click', openSidebar);
