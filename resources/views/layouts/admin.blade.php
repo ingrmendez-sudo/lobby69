@@ -193,7 +193,7 @@
         .adm-sidebar {
             transform: translateX(-100%);
             transition: transform 0.28s cubic-bezier(.4,0,.2,1);
-            z-index: 200;
+            z-index: 9999;
         }
         .adm-sidebar.is-open { transform: translateX(0); }
 
