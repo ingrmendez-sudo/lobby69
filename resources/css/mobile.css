@@ -84,11 +84,8 @@
 
 /* ══ EXPLORAR ══ */
 @media (max-width: 767px) {
-    .exp-filters { display: flex; flex-wrap: wrap; gap: .5rem; padding: .75rem; }
-    .exp-filter-group { flex: 1 1 calc(50% - .5rem); min-width: 130px; }
     .exp-select, .exp-input { width: 100%; font-size: .85rem; padding: .45rem .6rem; }
     .exp-btn-filter, .exp-btn-reset { flex: 1 1 100%; text-align: center; padding: .55rem; font-size: .85rem; }
-    .exp-grid { grid-template-columns: repeat(2, 1fr) !important; gap: .6rem; padding-bottom: 80px; }
     .exp-count { font-size: .8rem; padding: .5rem .75rem; }
 }
 
@@ -229,4 +226,29 @@
         gap: .6rem !important;
         padding-bottom: 80px !important;
     }
+}
+
+/* ══ ANTI-CLS: reservar espacio para imágenes antes de cargar ══ */
+img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Avatares circulares — tamaño conocido */
+img[class*="avatar"],
+img[class*="l69-avatar"],
+img[class*="ch-avatar"] {
+    width: 40px;
+    height: 40px;
+    aspect-ratio: 1 / 1;
+    object-fit: cover;
+}
+
+/* Imágenes de feed/cards — ratio conocido */
+img[class*="photo"],
+img[class*="feed"],
+img[class*="card-img"] {
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    width: 100%;
 }
