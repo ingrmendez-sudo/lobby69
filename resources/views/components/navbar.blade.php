@@ -341,7 +341,7 @@
                 <ul class="l69-nav__submenu">
                     <li><a href="{{ route('photos.index') }}"><i class="fas fa-images"></i> Mis Fotos</a></li>
                     <li><a href="/disponibles"><i class="fas fa-fire"></i> Disponibles ahora</a></li>
-                    <li><a href="#"><i class="fas fa-film"></i> Historias <span class="l69-nav__soon">Pronto</span></a></li>
+                    <li><a href="/historias"><i class="fas fa-fire"></i> Historias </a></li>
                     <li><a href="#"><i class="fas fa-video"></i> Videochat <span class="l69-nav__soon">Pronto</span></a></li>
                     <li><a href="#"><i class="fas fa-bullhorn"></i> Anuncios <span class="l69-nav__soon">Pronto</span></a></li>
                 </ul>
@@ -453,7 +453,7 @@
     <a href="/mensajes" class="l69-nav__mobile-link"><i class="fas fa-envelope"></i> Mensajes</a>
     <a href="{{ route('notifications.index') }}" class="l69-nav__mobile-link"><i class="fas fa-bell"></i> Notificaciones</a>
     <div class="l69-nav__mobile-section">Próximamente</div>
-    <a href="#" class="l69-nav__mobile-link"><i class="fas fa-film"></i> Historias <span class="l69-nav__soon">Pronto</span></a>
+    <a href="#" class="l69-nav__mobile-link"><i class="fas fa-film"></i> Historias </a>
     <a href="#" class="l69-nav__mobile-link"><i class="fas fa-video"></i> Videochat <span class="l69-nav__soon">Pronto</span></a>
     <a href="#" class="l69-nav__mobile-link"><i class="fas fa-bullhorn"></i> Anuncios <span class="l69-nav__soon">Pronto</span></a>
     @if(auth()->user()->role === 'admin')

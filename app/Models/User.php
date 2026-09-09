@@ -48,6 +48,8 @@ class User extends Authenticatable
         'referral_paid_count'   => 'integer',
     ];
 
+    protected $appends = ['avatar_url'];
+
     // ─── Relaciones ──────────────────────────────────────────────────────────
 
     public function profile()
