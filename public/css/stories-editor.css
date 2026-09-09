@@ -1,0 +1,612 @@
+/* ═══════════════════════════════════════════════════════════════
+   STORIES EDITOR — TipTap styles
+   ═══════════════════════════════════════════════════════════════ */
+
+.stories-editor-wrapper {
+    background: var(--color-surface, #1a1025);
+    border: 1px solid var(--color-border, rgba(255,255,255,.08));
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.stories-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--color-border, rgba(255,255,255,.08));
+}
+.stories-editor-header h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--color-text, #f0e6ff);
+    margin: 0;
+}
+
+/* ─── Formulario ─────────────────────────────────────────────── */
+.stories-form-group { padding: .75rem 1.25rem 0; }
+.stories-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0 1rem;
+}
+
+.stories-title-input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    border-bottom: 1px solid var(--color-border, rgba(255,255,255,.1));
+    color: var(--color-text, #f0e6ff);
+    font-size: 1.3rem;
+    font-weight: 700;
+    padding: .5rem 0;
+    outline: none;
+    transition: border-color .2s;
+    box-sizing: border-box;
+}
+.stories-title-input::placeholder { color: rgba(240,230,255,.25); }
+.stories-title-input:focus { border-color: var(--color-primary, #9b59b6); }
+
+.stories-label {
+    display: block;
+    font-size: .75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .05em;
+    color: var(--color-text-muted, rgba(240,230,255,.4));
+    margin-bottom: .35rem;
+}
+
+.stories-select {
+    width: 100%;
+    background: rgba(255,255,255,.04);
+    border: 1px solid var(--color-border, rgba(255,255,255,.1));
+    border-radius: 8px;
+    color: var(--color-text, #f0e6ff);
+    font-size: .85rem;
+    padding: .5rem .75rem;
+    outline: none;
+    cursor: pointer;
+    box-sizing: border-box;
+}
+.stories-select:focus { border-color: var(--color-primary, #9b59b6); }
+.stories-select option { background: #1a1025; }
+
+.stories-cover-upload {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    padding: .5rem .75rem;
+    background: rgba(155,89,182,.06);
+    border: 1px dashed rgba(155,89,182,.4);
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: .82rem;
+    color: var(--color-text-muted, rgba(240,230,255,.5));
+    transition: all .2s;
+    box-sizing: border-box;
+}
+.stories-cover-upload:hover {
+    border-color: var(--color-primary, #9b59b6);
+    color: var(--color-text, #f0e6ff);
+}
+
+.stories-cover-preview {
+    width: 100%;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 6px;
+    margin-top: .5rem;
+    border: 1px solid var(--color-border, rgba(255,255,255,.1));
+}
+
+/* ─── Toolbar ────────────────────────────────────────────────── */
+.stories-toolbar {
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    padding: .6rem 1.25rem;
+    background: rgba(255,255,255,.02);
+    border-top: 1px solid var(--color-border, rgba(255,255,255,.06));
+    border-bottom: 1px solid var(--color-border, rgba(255,255,255,.06));
+    flex-wrap: wrap;
+    margin-top: .75rem;
+}
+
+.stories-toolbar__group { display: flex; gap: .2rem; }
+
+.stories-toolbar button {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 .5rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--color-text-muted, rgba(240,230,255,.55));
+    font-size: .82rem;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex; align-items: center; justify-content: center;
+}
+.stories-toolbar button:hover {
+    background: rgba(155,89,182,.15);
+    color: var(--color-text, #f0e6ff);
+}
+.stories-toolbar button.is-active {
+    background: var(--color-primary, #9b59b6);
+    border-color: var(--color-primary, #9b59b6);
+    color: #fff;
+}
+
+.stories-toolbar__divider {
+    width: 1px;
+    height: 20px;
+    background: var(--color-border, rgba(255,255,255,.1));
+    margin: 0 .15rem;
+}
+
+/* ─── Emoji Picker ───────────────────────────────────────────── */
+.stories-emoji-picker {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .2rem;
+    padding: .75rem 1.25rem;
+    background: rgba(0,0,0,.2);
+    border-bottom: 1px solid var(--color-border, rgba(255,255,255,.06));
+    max-height: 120px;
+    overflow-y: auto;
+}
+
+.stories-emoji-btn {
+    width: 34px; height: 34px;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex; align-items: center; justify-content: center;
+}
+.stories-emoji-btn:hover {
+    background: rgba(155,89,182,.2);
+    border-color: rgba(155,89,182,.3);
+    transform: scale(1.15);
+}
+
+/* ─── Editor TipTap ──────────────────────────────────────────── */
+.stories-tiptap-editor { padding: 0 1.25rem; }
+
+.stories-tiptap-area {
+    min-height: 320px;
+    padding: 1rem 0;
+    outline: none;
+    font-size: .95rem;
+    line-height: 1.8;
+    color: var(--color-text, rgba(240,230,255,.85));
+    caret-color: var(--color-primary, #9b59b6);
+}
+
+.stories-tiptap-area p { margin: 0 0 .8rem; }
+.stories-tiptap-area h1,
+.stories-tiptap-area h2,
+.stories-tiptap-area h3 {
+    color: var(--color-text, #f0e6ff);
+    margin: 1.25rem 0 .5rem;
+    line-height: 1.3;
+}
+.stories-tiptap-area h1 { font-size: 1.5rem; }
+.stories-tiptap-area h2 { font-size: 1.2rem; }
+.stories-tiptap-area h3 { font-size: 1rem; }
+
+.stories-tiptap-area ul,
+.stories-tiptap-area ol { padding-left: 1.5rem; margin: 0 0 .8rem; }
+
+.stories-tiptap-area blockquote {
+    border-left: 3px solid var(--color-primary, #9b59b6);
+    padding: .4rem .85rem;
+    margin: .75rem 0;
+    color: var(--color-text-muted, rgba(240,230,255,.6));
+    font-style: italic;
+    background: rgba(155,89,182,.07);
+    border-radius: 0 6px 6px 0;
+}
+
+.stories-tiptap-area hr {
+    border: none;
+    border-top: 1px solid var(--color-border, rgba(255,255,255,.1));
+    margin: 1.25rem 0;
+}
+
+.stories-tiptap-area code {
+    background: rgba(155,89,182,.12);
+    border-radius: 4px;
+    padding: .1rem .3rem;
+    font-size: .88em;
+    color: #d6bcfa;
+}
+
+.stories-tiptap-area pre {
+    background: rgba(0,0,0,.4);
+    border-radius: 8px;
+    padding: 1rem;
+    overflow-x: auto;
+    margin: .75rem 0;
+}
+.stories-tiptap-area pre code {
+    background: transparent; padding: 0; color: #a78bfa;
+}
+
+/* Placeholder */
+.stories-tiptap-area p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    color: rgba(240,230,255,.2);
+    pointer-events: none;
+    float: left;
+    height: 0;
+}
+
+/* ─── Word count ─────────────────────────────────────────────── */
+.stories-word-count {
+    padding: .5rem 1.25rem .75rem;
+    font-size: .75rem;
+    color: var(--color-text-muted, rgba(240,230,255,.35));
+}
+
+/* ─── Acciones del formulario ────────────────────────────────── */
+.stories-form-actions {
+    display: flex;
+    gap: .75rem;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid var(--color-border, rgba(255,255,255,.06));
+    justify-content: flex-end;
+}
+
+.stories-btn-draft {
+    padding: .6rem 1.25rem;
+    background: rgba(255,255,255,.06);
+    border: 1px solid var(--color-border, rgba(255,255,255,.12));
+    border-radius: 8px;
+    color: var(--color-text-muted, rgba(240,230,255,.6));
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+}
+.stories-btn-draft:hover {
+    border-color: rgba(255,255,255,.25);
+    color: var(--color-text, #f0e6ff);
+}
+
+.stories-btn-publish {
+    padding: .6rem 1.5rem;
+    background: var(--color-primary, #9b59b6);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background .2s;
+}
+.stories-btn-publish:hover { background: var(--color-primary-dark, #7d3c98); }
+
+/* ─── Sidebar derecho (editor) ───────────────────────────────── */
+.stories-progress {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    margin-bottom: .75rem;
+}
+.stories-progress__item {
+    display: flex;
+    justify-content: space-between;
+    font-size: .8rem;
+}
+.stories-progress__label { color: var(--color-text-muted, rgba(240,230,255,.45)); }
+.stories-progress__val   { font-weight: 700; color: var(--color-text, #f0e6ff); }
+
+.stories-progress-bar-wrap {
+    height: 5px;
+    background: rgba(255,255,255,.07);
+    border-radius: 3px;
+    margin-bottom: .4rem;
+    overflow: hidden;
+}
+.stories-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #9b59b6, #e91e8c);
+    border-radius: 3px;
+    transition: width .4s ease;
+}
+.stories-progress-hint {
+    font-size: .7rem;
+    color: var(--color-text-muted, rgba(240,230,255,.3));
+}
+
+.stories-shortcuts {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .35rem .75rem;
+    font-size: .78rem;
+    align-items: center;
+}
+.stories-shortcuts span:nth-child(odd) {
+    display: flex; gap: .2rem; align-items: center;
+}
+.stories-shortcuts span:nth-child(even) {
+    color: var(--color-text-muted, rgba(240,230,255,.5));
+}
+kbd {
+    background: rgba(255,255,255,.08);
+    border: 1px solid rgba(255,255,255,.12);
+    border-radius: 4px;
+    padding: .1rem .35rem;
+    font-size: .72rem;
+    color: var(--color-text, #f0e6ff);
+    font-family: monospace;
+}
+
+/* ─── Error inputs ───────────────────────────────────────────── */
+.stories-error {
+    display: block;
+    font-size: .75rem;
+    color: #e74c3c;
+    margin-top: .25rem;
+    padding: 0 1.25rem;
+}
+.is-invalid { border-color: #e74c3c !important; }
+
+/* ─── Fix: editor TipTap fondo transparente ─────────────────── */
+.stories-editor-wrapper {
+    background: var(--theme-surface-2, #1a1025);
+    border: 1px solid rgba(180,60,120,.15);
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.stories-editor-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid rgba(180,60,120,.1);
+}
+.stories-editor-header h2 {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--theme-text, #e2d9f3);
+    margin: 0;
+}
+
+/* El área editable hereda el fondo del wrapper */
+.stories-tiptap-editor {
+    background: transparent;
+    padding: 0 1.25rem;
+}
+
+.stories-tiptap-area {
+    min-height: 320px;
+    padding: 1rem 0;
+    outline: none;
+    font-size: .95rem;
+    line-height: 1.8;
+    color: var(--theme-text, #e2d9f3) !important;
+    caret-color: #e056a0;
+    background: transparent !important;
+}
+
+/* ProseMirror root — forzar fondo transparente */
+.ProseMirror {
+    background: transparent !important;
+    color: var(--theme-text, #e2d9f3) !important;
+    outline: none;
+    min-height: 300px;
+    padding: 1rem 0;
+    font-size: .95rem;
+    line-height: 1.8;
+    caret-color: #e056a0;
+}
+
+.ProseMirror p { margin: 0 0 .8rem; }
+.ProseMirror h1 { font-size: 1.5rem; font-weight: 800; margin: 1.25rem 0 .5rem; color: var(--theme-text, #e2d9f3); }
+.ProseMirror h2 { font-size: 1.2rem;  font-weight: 700; margin: 1.1rem 0 .4rem;  color: var(--theme-text, #e2d9f3); }
+.ProseMirror h3 { font-size: 1rem;   font-weight: 700; margin: 1rem 0 .4rem;    color: var(--theme-text, #e2d9f3); }
+.ProseMirror ul,
+.ProseMirror ol { padding-left: 1.5rem; margin: 0 0 .8rem; }
+.ProseMirror blockquote {
+    border-left: 3px solid #e056a0;
+    padding: .4rem .85rem;
+    margin: .75rem 0;
+    color: rgba(226,217,243,.65);
+    font-style: italic;
+    background: rgba(180,60,120,.07);
+    border-radius: 0 6px 6px 0;
+}
+.ProseMirror hr {
+    border: none;
+    border-top: 1px solid rgba(180,60,120,.2);
+    margin: 1.25rem 0;
+}
+
+/* Placeholder */
+.ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    color: rgba(226,217,243,.2);
+    pointer-events: none;
+    float: left;
+    height: 0;
+}
+
+/* Toolbar fix */
+.stories-toolbar {
+    background: rgba(180,60,120,.05);
+    border-top: 1px solid rgba(180,60,120,.1);
+    border-bottom: 1px solid rgba(180,60,120,.1);
+    padding: .6rem 1.25rem;
+    display: flex;
+    align-items: center;
+    gap: .25rem;
+    flex-wrap: wrap;
+    margin-top: .75rem;
+}
+
+.stories-toolbar button {
+    min-width: 32px;
+    height: 32px;
+    padding: 0 .5rem;
+    background: transparent;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    color: var(--theme-text-muted, rgba(226,217,243,.6));
+    font-size: .82rem;
+    cursor: pointer;
+    transition: all .15s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.stories-toolbar button:hover {
+    background: rgba(180,60,120,.15);
+    color: var(--theme-text, #e2d9f3);
+    border-color: rgba(180,60,120,.2);
+}
+.stories-toolbar button.is-active {
+    background: #e056a0;
+    border-color: #e056a0;
+    color: #fff;
+}
+
+.stories-toolbar__divider {
+    width: 1px;
+    height: 20px;
+    background: rgba(180,60,120,.15);
+    margin: 0 .15rem;
+}
+
+/* Word count */
+.stories-word-count {
+    padding: .5rem 1.25rem .75rem;
+    font-size: .75rem;
+    color: var(--theme-text-muted, rgba(226,217,243,.35));
+}
+
+/* Form actions */
+.stories-form-actions {
+    display: flex;
+    gap: .75rem;
+    padding: 1rem 1.25rem;
+    border-top: 1px solid rgba(180,60,120,.1);
+    justify-content: flex-end;
+}
+
+.stories-btn-draft {
+    padding: .6rem 1.25rem;
+    background: rgba(255,255,255,.05);
+    border: 1px solid rgba(180,60,120,.2);
+    border-radius: 8px;
+    color: var(--theme-text-muted, rgba(226,217,243,.6));
+    font-size: .85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all .2s;
+}
+.stories-btn-draft:hover {
+    border-color: rgba(180,60,120,.4);
+    color: var(--theme-text, #e2d9f3);
+}
+
+.stories-btn-publish {
+    padding: .6rem 1.5rem;
+    background: linear-gradient(135deg, #c0392b, #8e44ad);
+    border: none;
+    border-radius: 8px;
+    color: #fff;
+    font-size: .85rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: opacity .2s;
+}
+.stories-btn-publish:hover { opacity: .88; }
+
+/* Progress sidebar */
+.stories-progress {
+    display: flex;
+    flex-direction: column;
+    gap: .4rem;
+    margin-bottom: .75rem;
+}
+.stories-progress__item {
+    display: flex;
+    justify-content: space-between;
+    font-size: .8rem;
+}
+.stories-progress__label {
+    color: var(--theme-text-muted, rgba(226,217,243,.45));
+}
+.stories-progress__val {
+    font-weight: 700;
+    color: var(--theme-text, #e2d9f3);
+}
+.stories-progress-bar-wrap {
+    height: 5px;
+    background: rgba(255,255,255,.07);
+    border-radius: 3px;
+    overflow: hidden;
+    margin-bottom: .4rem;
+}
+.stories-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #c0392b, #8e44ad);
+    border-radius: 3px;
+    transition: width .4s ease;
+}
+.stories-progress-hint {
+    font-size: .7rem;
+    color: var(--theme-text-muted, rgba(226,217,243,.3));
+}
+
+/* Shortcuts */
+.stories-shortcuts {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: .35rem .75rem;
+    font-size: .78rem;
+    align-items: center;
+}
+.stories-shortcuts span:nth-child(even) {
+    color: var(--theme-text-muted, rgba(226,217,243,.5));
+}
+kbd {
+    background: rgba(180,60,120,.12);
+    border: 1px solid rgba(180,60,120,.2);
+    border-radius: 4px;
+    padding: .1rem .35rem;
+    font-size: .72rem;
+    color: var(--theme-text, #e2d9f3);
+    font-family: monospace;
+}
+
+/* ─── Fix: select categoría fondo correcto ───────────────────── */
+.stories-select {
+    width: 100%;
+    background: var(--theme-surface-2, #1e1535) !important;
+    border: 1px solid rgba(180,60,120,.25);
+    border-radius: 8px;
+    color: var(--theme-text, #e2d9f3) !important;
+    font-size: .85rem;
+    padding: .5rem .75rem;
+    outline: none;
+    cursor: pointer;
+    box-sizing: border-box;
+    -webkit-appearance: none;
+    appearance: none;
+}
+.stories-select:focus {
+    border-color: #e056a0;
+    box-shadow: 0 0 0 2px rgba(224,86,160,.15);
+}
+.stories-select option {
+    background: var(--theme-surface, #120d1f) !important;
+    color: var(--theme-text, #e2d9f3) !important;
+}

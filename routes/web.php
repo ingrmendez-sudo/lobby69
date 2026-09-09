@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -274,3 +274,14 @@ Route::middleware(['auth'])->prefix('disponibilidad')->name('availability.')->gr
 // Página informativa de estrellas de recomendación
 Route::view('/como-funcionan-las-estrellas', 'score.info')->name('score.info');
 
+// ─── Historias ───────────────────────────────────────────────────
+Route::prefix('historias')->name('stories.')->group(function () {
+    Route::get('/',                         [App\Http\Controllers\StoryController::class, 'index'])->name('index');
+    Route::get('/mis-historias',            [App\Http\Controllers\StoryController::class, 'myStories'])->name('my');
+    Route::get('/nueva',                    [App\Http\Controllers\StoryController::class, 'create'])->name('create')->middleware('auth');
+    Route::post('/',                        [App\Http\Controllers\StoryController::class, 'store'])->name('store')->middleware('auth');
+    Route::get('/{story}/editar',           [App\Http\Controllers\StoryController::class, 'edit'])->name('edit')->middleware('auth');
+    Route::put('/{story}',                  [App\Http\Controllers\StoryController::class, 'update'])->name('update')->middleware('auth');
+    Route::delete('/{story}',               [App\Http\Controllers\StoryController::class, 'destroy'])->name('destroy')->middleware('auth');
+    Route::get('/{slug}',                   [App\Http\Controllers\StoryController::class, 'show'])->name('show');
+});
