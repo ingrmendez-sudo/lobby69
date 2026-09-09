@@ -380,8 +380,18 @@
             {{-- Usuario --}}
             <div class="l69-nav__user" id="navUserDropdown">
                 <button class="l69-nav__user-btn" id="navUserBtn" aria-expanded="false">
-                    @php $np = auth()->user()->profile; @endphp
-                    <img loading="lazy" src="{{ $np?->avatar_url ? asset('storage/'.$np->avatar_url) : asset('img/default-avatar.svg') }}"
+                    @php
+                        $np = auth()->user()->profile;
+                        $npPhoto = \Illuminate\Support\Facades\DB::table('photos')
+                            ->whereRaw('user_id::text = ?', [(string)auth()->id()])
+                            ->whereRaw('is_profile_photo = true')
+                            ->whereRaw("status = 'approved'")
+                            ->first(['id', 'file_path']);
+                        $npAvatar = $npPhoto
+                            ? 'https://kjhaquimghhejqznleyn.supabase.co/storage/v1/object/public/gallery/' . $npPhoto->file_path
+                            : asset('img/default-avatar.svg');
+                    @endphp
+                    <img loading="lazy" src="{{ $npAvatar }}"
                          class="l69-nav__user-avatar"
                          onerror="this.src='{{ asset('img/default-avatar.svg') }}'"
                          alt="avatar">
@@ -614,3 +624,5 @@
     setInterval(refreshNotifBadge, 60000);
 })();
 </script>
+
+
