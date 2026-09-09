@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -255,7 +255,7 @@ Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->grou
     Route::post('comentarios-articulos/{id}/rechazar', [AdminArticleCommentController::class, 'reject'])->name('article-comments.reject');
     Route::delete('comentarios-articulos/{id}',        [AdminArticleCommentController::class, 'destroy'])->name('article-comments.destroy');
 
-    Route::resource('referral-codes', \App\Http\Controllers\Admin\AdminReferralCodeController::class)->names('admin.referral-codes');
+    Route::resource('referral-codes', \App\Http\Controllers\Admin\AdminReferralCodeController::class);
 
     Route::get('boost',              [\App\Http\Controllers\Admin\AdminBoostController::class, 'index'])->name('boost.index');
     Route::post('boost/{userId}',    [\App\Http\Controllers\Admin\AdminBoostController::class, 'apply'])->name('boost.apply');
@@ -285,3 +285,5 @@ Route::prefix('historias')->name('stories.')->group(function () {
     Route::delete('/{story}',               [App\Http\Controllers\StoryController::class, 'destroy'])->name('destroy')->middleware('auth');
     Route::get('/{slug}',                   [App\Http\Controllers\StoryController::class, 'show'])->name('show');
 });
+
+

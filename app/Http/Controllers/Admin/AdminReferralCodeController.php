@@ -46,7 +46,7 @@ class AdminReferralCodeController extends Controller
             'updated_at'    => now(),
         ]);
 
-        return redirect()->route('admin.admin.referral-codes.index')
+        return redirect()->route('admin.referral-codes.index')
             ->with('success', 'Codigo creado correctamente.');
     }
 
@@ -76,15 +76,17 @@ class AdminReferralCodeController extends Controller
                 'updated_at'    => now(),
             ]);
 
-        return redirect()->route('admin.admin.referral-codes.index')
+        return redirect()->route('admin.referral-codes.index')
             ->with('success', 'Codigo actualizado.');
     }
 
     public function destroy(ReferralCode $referralCode)
     {
         DB::table('referral_codes')->where('id', $referralCode->id)->delete();
-        return redirect()->route('admin.admin.referral-codes.index')
+        return redirect()->route('admin.referral-codes.index')
             ->with('success', 'Codigo eliminado.');
     }
 }
+
+
 

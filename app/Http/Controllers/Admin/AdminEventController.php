@@ -45,8 +45,8 @@ class AdminEventController extends Controller
             'starts_at'    => $request->starts_at,
             'ends_at'      => $request->ends_at,
             'image_path'   => $imagePath,
-            'is_online'    => $request->boolean('is_online'),
-            'is_published' => $request->boolean('is_published'),
+            'is_online'    => DB::raw($request->boolean('is_online') ? 'true' : 'false'),
+            'is_published' => DB::raw($request->boolean('is_published') ? 'true' : 'false'),
             'created_by'   => (string) auth()->id(),
             'created_at'   => now(),
             'updated_at'   => now(),
@@ -106,8 +106,8 @@ class AdminEventController extends Controller
             'starts_at'    => $request->starts_at,
             'ends_at'      => $request->ends_at,
             'image_path'   => $imagePath,
-            'is_online'    => $request->boolean('is_online'),
-            'is_published' => $request->boolean('is_published'),
+            'is_online'    => DB::raw($request->boolean('is_online') ? 'true' : 'false'),
+            'is_published' => DB::raw($request->boolean('is_published') ? 'true' : 'false'),
             'updated_at'   => now(),
         ]);
 
@@ -125,3 +125,4 @@ class AdminEventController extends Controller
         return back()->with('success', 'Evento eliminado.');
     }
 }
+
