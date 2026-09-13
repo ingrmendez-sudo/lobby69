@@ -207,7 +207,7 @@ Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->grou
     Route::get('fotos',                [AdminPhotoController::class, 'index'])->name('photos.index');
     Route::post('fotos/{id}/aprobar',  [AdminPhotoController::class, 'approve'])->name('photos.approve');
     Route::post('fotos/{id}/rechazar', [AdminPhotoController::class, 'reject'])->name('photos.reject');
-    Route::get('fotos/{id}/ver',       [AdminPhotoController::class, 'serve'])->name('photos.serve');
+    Route::get('fotos/{id}/ver',       [AdminPhotoController::class, 'serve'])->name('admin.photos.serve');
 
     Route::get('videos',                [AdminVideoController::class, 'index'])->name('videos.index');
     Route::post('videos/{id}/aprobar',  [AdminVideoController::class, 'approve'])->name('videos.approve');
@@ -257,6 +257,10 @@ Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->grou
 
     Route::resource('referral-codes', \App\Http\Controllers\Admin\AdminReferralCodeController::class);
 
+
+    Route::get('anuncios',            [\App\Http\Controllers\Admin\AdminAnnouncementController::class, 'index'])->name('announcements.index');
+    Route::delete('anuncios/{id}',    [\App\Http\Controllers\Admin\AdminAnnouncementController::class, 'destroy'])->name('announcements.destroy');
+    Route::patch('anuncios/{id}/cerrar',  [\App\Http\Controllers\Admin\AdminAnnouncementController::class, 'close'])->name('admin.announcements.close');
     Route::get('boost',              [\App\Http\Controllers\Admin\AdminBoostController::class, 'index'])->name('boost.index');
     Route::post('boost/{userId}',    [\App\Http\Controllers\Admin\AdminBoostController::class, 'apply'])->name('boost.apply');
     Route::delete('boost/{userId}',  [\App\Http\Controllers\Admin\AdminBoostController::class, 'remove'])->name('boost.remove');
@@ -264,6 +268,10 @@ Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->grou
     // invitation.success definida en rutas publicas (linea 53)
 });
 
+
+// Anuncios
+Route::get('/anuncios', [\App\Http\Controllers\AnnouncementController::class, 'index'])
+    ->middleware('auth')->name('announcements.index');
 // Disponibilidad
 Route::get('/disponibles', [\App\Http\Controllers\AvailabilityController::class, 'publicList'])->middleware('auth')->name('availability.public');
 Route::middleware(['auth'])->prefix('disponibilidad')->name('availability.')->group(function () {
@@ -285,5 +293,7 @@ Route::prefix('historias')->name('stories.')->group(function () {
     Route::delete('/{story}',               [App\Http\Controllers\StoryController::class, 'destroy'])->name('destroy')->middleware('auth');
     Route::get('/{slug}',                   [App\Http\Controllers\StoryController::class, 'show'])->name('show');
 });
+
+
 
 

@@ -164,7 +164,14 @@ class PhotoController extends Controller
             );
         }
 
-        // Verificar acceso según album_type usando MembershipService
+        // Las fotos de perfil son siempre publicas (avatar visible para todos)
+        if ($photo->is_profile_photo) {
+            return redirect(
+                'https://kjhaquimghhejqznleyn.supabase.co/storage/v1/object/public/gallery/' . $photo->file_path
+            );
+        }
+
+        // Verificar acceso segun album_type usando MembershipService
         $canView = match($photo->album_type) {
             'public'  => true,
             'private' => \App\Services\MembershipService::can($userId, 'can_view_private_photos'),
@@ -173,7 +180,7 @@ class PhotoController extends Controller
         };
 
         if (!$canView) {
-            abort(403, 'Tu membresía no permite ver este contenido.');
+            abort(403, 'Tu membresia no permite ver este contenido.');
         }
 
         return redirect(
@@ -181,6 +188,7 @@ class PhotoController extends Controller
         );
     }
 }
+
 
 
 

@@ -1,4 +1,4 @@
-﻿@extends('layouts.app')
+@extends('layouts.app')
 @section('title', 'Mensajes · LOBBY69')
 
 @php
@@ -4070,12 +4070,50 @@ body.page-mensajes .l69-sidebar--right {
      * Abre videollamada desde el header del chat privado.
      * Se llama desde el botón que inyectamos en openChat().
      */
+    // ── Auto-abrir chat desde ?open=userId (viene de /anuncios) ──
+    (function() {
+        const params   = new URLSearchParams(window.location.search);
+        const openId   = params.get('open');
+        if (!openId) return;
+
+        // Limpiar el param de la URL sin recargar
+        const cleanUrl = window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+
+        // Esperar a que el JS del chat esté listo
+        setTimeout(function() {
+            fetch('/mensajes/conversacion/' + openId, {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                }
+            })
+            .then(r => r.json())
+            .then(data => {
+                const partner = data.partner;
+                if (!partner) return;
+                const name   = partner.display_name || partner.nickname || 'Usuario';
+                const avatar = partner.avatar_photo_id || null;
+                if (window.openChat) {
+                    window.openChat(String(openId), name, avatar);
+                }
+            })
+            .catch(() => {
+                // Si falla la carga, abrir igual sin datos extra
+                if (window.openChat) window.openChat(String(openId), 'Usuario', null);
+            });
+        }, 600);
+    })();
+
     window.startVideoCall = function(toUserId, remoteName) {
         VideoCall.call(toUserId, remoteName);
     };
     </script>
 
 @endpush
+
+
+
 
 
 

@@ -50,6 +50,19 @@ class User extends Authenticatable
 
     protected $appends = ['avatar_url'];
 
+    // ─── Accessors ───────────────────────────────────────────────────────────
+
+    public function getAvatarUrlAttribute(): ?string
+    {
+        $photo = \DB::table('photos')
+            ->whereRaw('user_id::text = ?', [$this->id])
+            ->where('is_profile_photo', true)
+            ->where('status', 'approved')
+            ->value('id');
+
+        return $photo ? url('/fotos/' . $photo . '/ver') : null;
+    }
+
     // ─── Relaciones ──────────────────────────────────────────────────────────
 
     public function profile()
@@ -138,5 +151,6 @@ class User extends Authenticatable
         return app(MembershipAccessService::class)->limit($this, $key);
     }
 }
+
 
 
