@@ -29,6 +29,9 @@ class AdminEventController extends Controller
             'ends_at'      => 'nullable|date|after:starts_at',
             'is_online'    => 'nullable',
             'is_published' => 'nullable',
+            'price'        => 'nullable|numeric|min:0',
+            'price_notes'  => 'nullable|string|max:300',
+            'currency'     => 'nullable|string|max:10',
             'image'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
         ]);
 
@@ -36,6 +39,9 @@ class AdminEventController extends Controller
         if ($request->hasFile('image') && $request->file('image')->isValid()) {
             $imagePath = $request->file('image')->store('events', 'public');
         }
+
+        $priceVal = $request->input('price');
+        $priceVal = ($priceVal !== null && $priceVal !== '') ? (float) $priceVal : null;
 
         DB::table('events')->insert([
             'title'        => $request->title,
@@ -47,6 +53,9 @@ class AdminEventController extends Controller
             'image_path'   => $imagePath,
             'is_online'    => DB::raw($request->boolean('is_online') ? 'true' : 'false'),
             'is_published' => DB::raw($request->boolean('is_published') ? 'true' : 'false'),
+            'price'        => $priceVal,
+            'price_notes'  => $request->input('price_notes'),
+            'currency'     => $request->input('currency', 'MXN'),
             'created_by'   => (string) auth()->id(),
             'created_at'   => now(),
             'updated_at'   => now(),
@@ -74,6 +83,9 @@ class AdminEventController extends Controller
             'ends_at'      => 'nullable|date|after:starts_at',
             'is_online'    => 'nullable',
             'is_published' => 'nullable',
+            'price'        => 'nullable|numeric|min:0',
+            'price_notes'  => 'nullable|string|max:300',
+            'currency'     => 'nullable|string|max:10',
             'image'        => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
         ]);
 
@@ -83,20 +95,21 @@ class AdminEventController extends Controller
         $imagePath = $event->image_path;
 
         if ($request->hasFile('image') && $request->file('image')->isValid()) {
-            // Eliminar imagen anterior si existe
             if ($imagePath && Storage::disk('public')->exists($imagePath)) {
                 Storage::disk('public')->delete($imagePath);
             }
             $imagePath = $request->file('image')->store('events', 'public');
         }
 
-        // Eliminar imagen si se marcó el checkbox
         if ($request->has('remove_image') && $imagePath) {
             if (Storage::disk('public')->exists($imagePath)) {
                 Storage::disk('public')->delete($imagePath);
             }
             $imagePath = null;
         }
+
+        $priceVal = $request->input('price');
+        $priceVal = ($priceVal !== null && $priceVal !== '') ? (float) $priceVal : null;
 
         DB::table('events')->where('id', $id)->update([
             'title'        => $request->title,
@@ -108,6 +121,9 @@ class AdminEventController extends Controller
             'image_path'   => $imagePath,
             'is_online'    => DB::raw($request->boolean('is_online') ? 'true' : 'false'),
             'is_published' => DB::raw($request->boolean('is_published') ? 'true' : 'false'),
+            'price'        => $priceVal,
+            'price_notes'  => $request->input('price_notes'),
+            'currency'     => $request->input('currency', 'MXN'),
             'updated_at'   => now(),
         ]);
 
@@ -125,4 +141,3 @@ class AdminEventController extends Controller
         return back()->with('success', 'Evento eliminado.');
     }
 }
-

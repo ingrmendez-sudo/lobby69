@@ -134,6 +134,41 @@
                 </div>
             </div>
 
+            {{-- Precio --}}
+            <div style="margin-bottom:1.25rem;">
+                <label style="display:block;font-size:.8rem;font-weight:600;color:var(--theme-muted);margin-bottom:.75rem;">
+                    <i class="fas fa-ticket-alt" style="color:#e056a0;margin-right:.4rem;"></i>
+                    Precio de entrada
+                </label>
+                <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;">
+                    <div>
+                        <label style="display:block;font-size:.75rem;color:var(--theme-muted);margin-bottom:.3rem;">Moneda</label>
+                        <select name="currency"
+                                style="width:100%;padding:.55rem .85rem;border-radius:8px;border:1px solid var(--theme-border);background:var(--theme-bg);color:var(--theme-text);font-size:.88rem;">
+                            <option value="MXN" {{ old('currency', $event->currency ?? 'MXN') === 'MXN' ? 'selected' : '' }}>MXN — Peso mexicano</option>
+                            <option value="USD" {{ old('currency', $event->currency ?? '') === 'USD' ? 'selected' : '' }}>USD — Dólar</option>
+                            <option value="COP" {{ old('currency', $event->currency ?? '') === 'COP' ? 'selected' : '' }}>COP — Peso colombiano</option>
+                            <option value="CLP" {{ old('currency', $event->currency ?? '') === 'CLP' ? 'selected' : '' }}>CLP — Peso chileno</option>
+                            <option value="ARS" {{ old('currency', $event->currency ?? '') === 'ARS' ? 'selected' : '' }}>ARS — Peso argentino</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:.75rem;color:var(--theme-muted);margin-bottom:.3rem;">Monto <span style="font-weight:400;">(dejar vacío = gratis)</span></label>
+                        <input type="number" name="price" min="0" step="0.01"
+                               value="{{ old('price', $event->price ?? '') }}"
+                               placeholder="0.00"
+                               style="width:100%;padding:.55rem .85rem;border-radius:8px;border:1px solid var(--theme-border);background:var(--theme-bg);color:var(--theme-text);font-size:.88rem;">
+                    </div>
+                    <div>
+                        <label style="display:block;font-size:.75rem;color:var(--theme-muted);margin-bottom:.3rem;">Nota de precio <span style="font-weight:400;">(opcional)</span></label>
+                        <input type="text" name="price_notes"
+                               value="{{ old('price_notes', $event->price_notes ?? '') }}"
+                               placeholder="Ej: Entrada libre para mujeres"
+                               style="width:100%;padding:.55rem .85rem;border-radius:8px;border:1px solid var(--theme-border);background:var(--theme-bg);color:var(--theme-text);font-size:.88rem;">
+                    </div>
+                </div>
+            </div>
+
             {{-- Checkboxes --}}
             <div style="display:flex;gap:2rem;margin-bottom:1.75rem;padding:.9rem;background:var(--theme-bg);border-radius:8px;border:1px solid var(--theme-border);">
                 <label style="display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.85rem;color:var(--theme-text);">
@@ -197,3 +232,4 @@ dz.addEventListener('dragleave', ()  => { dz.style.borderColor = 'var(--theme-bo
 dz.addEventListener('drop',      e => { dz.style.borderColor = 'var(--theme-border)'; });
 </script>
 @endpush
+

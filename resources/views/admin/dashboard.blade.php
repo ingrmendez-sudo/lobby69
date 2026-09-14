@@ -339,3 +339,4 @@ new Chart(document.getElementById('chartDailyPhotos'), {
 </div>
 
 @endsection
+
