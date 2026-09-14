@@ -53,7 +53,7 @@ class AdminArticleController extends Controller
             'body'         => $request->body,
             'category'     => $request->category,
             'cover_path'   => $coverPath,
-            'published'    => $isPublished,
+            'published'    => $isPublished ? 'true' : 'false',
             'published_at' => $isPublished ? now() : null,
             'author_id'    => (string) auth()->id(),
             'views'        => 0,

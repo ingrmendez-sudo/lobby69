@@ -29,10 +29,11 @@ class ForcePasswordChange
         }
 
         if (!$user->password_changed) {
-            return redirect()->route('profile.change-password')
+            return redirect()->route('password.change')
                 ->with('warning', 'Debes cambiar tu contraseña temporal antes de continuar.');
         }
 
         return $next($request);
     }
 }
+
