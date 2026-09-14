@@ -260,7 +260,7 @@ Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->grou
 
     Route::get('anuncios',            [\App\Http\Controllers\Admin\AdminAnnouncementController::class, 'index'])->name('announcements.index');
     Route::delete('anuncios/{id}',    [\App\Http\Controllers\Admin\AdminAnnouncementController::class, 'destroy'])->name('announcements.destroy');
-    Route::patch('anuncios/{id}/cerrar',  [\App\Http\Controllers\Admin\AdminAnnouncementController::class, 'close'])->name('admin.announcements.close');
+    Route::patch('anuncios/{id}/cerrar',  [\App\Http\Controllers\Admin\AdminAnnouncementController::class, 'close'])->name('announcements.close');
     Route::get('boost',              [\App\Http\Controllers\Admin\AdminBoostController::class, 'index'])->name('boost.index');
     Route::post('boost/{userId}',    [\App\Http\Controllers\Admin\AdminBoostController::class, 'apply'])->name('boost.apply');
     Route::delete('boost/{userId}',  [\App\Http\Controllers\Admin\AdminBoostController::class, 'remove'])->name('boost.remove');
@@ -293,6 +293,7 @@ Route::prefix('historias')->name('stories.')->group(function () {
     Route::delete('/{story}',               [App\Http\Controllers\StoryController::class, 'destroy'])->name('destroy')->middleware('auth');
     Route::get('/{slug}',                   [App\Http\Controllers\StoryController::class, 'show'])->name('show');
 });
+
 
 
 
