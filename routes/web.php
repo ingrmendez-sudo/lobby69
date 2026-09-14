@@ -83,7 +83,7 @@ Route::middleware(['auth', 'profile.completed', 'force.password.change'])->group
     Route::get('/verificacion/pendiente', [VerificationController::class, 'pending'])->name('verification.pending');
 
     Route::get('/mis-fotos',                     [PhotoController::class, 'index'])->name('photos.index');
-    Route::post('/fotos',                         [PhotoController::class, 'store'])->name('photos.store');
+    Route::post('/fotos',                         [PhotoController::class, 'store'])->middleware('throttle:10,1')->name('photos.store');
     Route::post('/fotos/{id}/perfil',             [PhotoController::class, 'setProfilePhoto'])->name('photos.setProfile');
     Route::delete('/fotos/{id}',                  [PhotoController::class, 'destroy'])->name('photos.destroy');
     Route::get('/fotos/{id}/ver',                 [PhotoController::class, 'serve'])->name('photos.serve');
@@ -207,7 +207,7 @@ Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->grou
     Route::get('fotos',                [AdminPhotoController::class, 'index'])->name('photos.index');
     Route::post('fotos/{id}/aprobar',  [AdminPhotoController::class, 'approve'])->name('photos.approve');
     Route::post('fotos/{id}/rechazar', [AdminPhotoController::class, 'reject'])->name('photos.reject');
-    Route::get('fotos/{id}/ver',       [AdminPhotoController::class, 'serve'])->name('admin.photos.serve');
+    Route::get('fotos/{id}/ver',       [AdminPhotoController::class, 'serve'])->name('photos.serve');
 
     Route::get('videos',                [AdminVideoController::class, 'index'])->name('videos.index');
     Route::post('videos/{id}/aprobar',  [AdminVideoController::class, 'approve'])->name('videos.approve');
@@ -293,6 +293,9 @@ Route::prefix('historias')->name('stories.')->group(function () {
     Route::delete('/{story}',               [App\Http\Controllers\StoryController::class, 'destroy'])->name('destroy')->middleware('auth');
     Route::get('/{slug}',                   [App\Http\Controllers\StoryController::class, 'show'])->name('show');
 });
+
+
+
 
 
 

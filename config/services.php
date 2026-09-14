@@ -36,4 +36,10 @@ return [
     ],
 
     'supabase' => ['url' => env('SUPABASE_URL')],
+    'supabase' => [
+        'url'            => env('SUPABASE_URL'),
+        'bucket_public'  => env('SUPABASE_BUCKET_PUBLIC', 'gallery'),
+        'bucket_private' => env('SUPABASE_BUCKET_PRIVATE', 'gallery-private'),
+        'service_key'    => env('SUPABASE_SERVICE_KEY'),
+    ],
 ];
