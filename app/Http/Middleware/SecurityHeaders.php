@@ -18,15 +18,14 @@ class SecurityHeaders
         $response->headers->set(
             'Content-Security-Policy',
             "default-src 'self'; " .
-            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://kit.fontawesome.com; " .
-            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com; " .
-            "font-src 'self' https://fonts.gstatic.com https://ka-f.fontawesome.com; " .
+            "script-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://kit.fontawesome.com; " .
+            "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; " .
+            "font-src 'self' data: https://fonts.gstatic.com https://ka-f.fontawesome.com https://cdnjs.cloudflare.com; " .
             "img-src 'self' data: blob: https://*.supabase.co https://www.genspark.ai; " .
-            "connect-src 'self' wss://localhost:8080 ws://localhost:8080 https://*.supabase.co; " .
+            "connect-src 'self' wss://localhost:8080 ws://localhost:8080 https://*.supabase.co https://cdn.jsdelivr.net; " .
             "frame-ancestors 'self';"
         );
 
         return $response;
     }
 }
-
