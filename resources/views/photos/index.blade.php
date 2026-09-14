@@ -254,9 +254,7 @@
          data-photo-id="{{ $photo->photo_uuid }}"
          data-photo-status="{{ $photo->status }}"
          style="cursor:pointer;">
-        <img loading="lazy" src="{{ route('photos.serve', $photo->id) }}"
-             alt="Foto"
-             onerror="this.parentElement.style.background='var(--theme-input,#f1f5f9)';this.remove()">
+        @protectedImg(route('photos.serve', $photo->id), 'Foto')
 
         <div class="mf-badge
           {{ $photo->status === 'approved' ? 'mf-badge-approved'
