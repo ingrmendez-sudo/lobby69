@@ -14,6 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->append(\App\Http\Middleware\SecurityHeaders::class);
+        $middleware->alias([
+            'throttle.sensitive' => \App\Http\Middleware\ThrottleSensitiveRoutes::class,
+        ]);
         $middleware->web(append: [
             \App\Http\Middleware\CaptureReferralCode::class,
         ]);
@@ -29,4 +32,5 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withExceptions(function (Exceptions $exceptions): void {
         //
     })->create();
+
 

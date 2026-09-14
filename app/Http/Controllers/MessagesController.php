@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Str;
 use Carbon\Carbon;
 use App\Http\Controllers\Photo\PhotoInteractionController;
@@ -457,37 +458,61 @@ class MessagesController extends Controller
     }
 
     // ── Crear anuncio ──
-    public function storeAnnouncement(Request $request)
+public function storeAnnouncement(Request $request)
     {
+        $user = Auth::user();
+
+        // ── Solo membresías de pago — admins exentos ──
+        $freeTiers = ['invitado', 'explorer'];
+        $tier    = app(\App\Services\MembershipAccessService::class)->tier($user);
+        $isAdmin = Gate::allows('admin');
+        if (!$isAdmin && in_array($tier, $freeTiers)) {
+            if ($request->expectsJson()) {
+                return response()->json([
+                    'error'   => 'membership_required',
+                    'message' => 'Solo miembros con membresia de pago pueden publicar anuncios.',
+                    'upgrade_url' => '/membresias',
+                ], 403);
+            }
+            return back()->with('error', 'Solo miembros con membresia de pago pueden publicar anuncios.');
+        }
+        $noLinks = new \App\Rules\NoExternalLinks();
+
         $request->validate([
-            'title'        => 'required|string|max:120',
+            'title'        => ['required','string','max:120', $noLinks],
+            'looking_for'  => ['nullable','string','max:500', $noLinks],
+            'proposal'     => ['nullable','string','max:300', $noLinks],
             'directed_to'  => 'nullable|array',
-            'directed_to.*'=> 'in:singles,parejas,unicornio',
+            'directed_to.*'=> 'string|in:singles,parejas,unicornio,hombres,mujeres',
             'what_looking' => 'nullable|array',
-            'what_looking.*'=> 'in:intercambios,cuckold,fiesta,trio_mhm,trio_hmh,gangbang,cita_soft,reunion_swinger,encuentro_casual,voyeurismo,jugar,conocernos',
-            'event_date'   => 'nullable|date|after:today|before:' . now()->addDays(4)->toDateString(),
-            'proposal'     => 'nullable|string|max:600',
+            'what_looking.*'=> 'string|in:intercambios,cuckold,trio_mhm,trio_mmh,exhibicionismo,voyeurismo,bdsm,solo_charlar',
+            'event_date'   => 'nullable|date|after_or_equal:today',
         ]);
 
-        $expiresAt = Carbon::now()->addDays(4);
+        $expiresAt = \Carbon\Carbon::now()->addDays(4);
 
         DB::table('announcements')->insert([
-            'id'           => Str::uuid(),
+            'id'           => \Illuminate\Support\Str::uuid(),
             'user_id'      => (string) Auth::id(),
             'title'        => $request->title,
-            'looking_for'  => implode(', ', $request->input('what_looking', [])),
-            'directed_to'  => json_encode($request->input('directed_to',  [])),
-            'what_looking' => json_encode($request->input('what_looking', [])),
+            'looking_for'  => $request->looking_for,
             'event_date'   => $request->event_date,
             'proposal'     => $request->proposal,
+            'directed_to'  => json_encode($request->input('directed_to', [])),
+            'what_looking' => json_encode($request->input('what_looking', [])),
             'status'       => 'active',
             'expires_at'   => $expiresAt,
             'created_at'   => now(),
             'updated_at'   => now(),
         ]);
 
-        return response()->json(['ok' => true]);
+        if ($request->expectsJson()) {
+            return response()->json(['success' => true]);
+        }
+        return back()->with('success', 'Anuncio publicado correctamente. Expira en 4 días.');
     }
+
+    // ── Cerrar anuncio ──
 
     // ── Cerrar anuncio ──
     public function closeAnnouncement(string $id)
@@ -500,6 +525,10 @@ class MessagesController extends Controller
         return response()->json(['ok' => true]);
     }
 }
+
+
+
+
 
 
 

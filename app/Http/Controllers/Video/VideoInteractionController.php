@@ -241,7 +241,7 @@ class VideoInteractionController extends Controller
         }
 
         $isOwner = (string)$comment->user_id === (string)Auth::id();
-        $isAdmin = Auth::user()->role === 'admin';
+        $isAdmin = Gate::allows('admin');
 
         if (!$isOwner && !$isAdmin) {
             return response()->json(['error' => 'Sin permisos'], 403);
@@ -327,3 +327,4 @@ class VideoInteractionController extends Controller
         return response()->json(['ok' => true, 'views' => (int)($updatedViews ?? 0)]);
     }
 }
+

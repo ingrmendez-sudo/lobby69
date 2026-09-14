@@ -343,14 +343,14 @@
                     <li><a href="/disponibles"><i class="fas fa-fire"></i> Disponibles ahora</a></li>
                     <li><a href="/historias"><i class="fas fa-fire"></i> Historias </a></li>
                     <li><a href="#"><i class="fas fa-video"></i> Videochat <span class="l69-nav__soon">Pronto</span></a></li>
-                    <li><a href="#"><i class="fas fa-bullhorn"></i> Anuncios <span class="l69-nav__soon">Pronto</span></a></li>
+                    <li><a href="{{ route('announcements.index') }}"><i class="fas fa-bullhorn"></i> Anuncios</a></li>
                 </ul>
             </li>
-            @if(auth()->user()->role === 'admin')
+            @can('admin')
             <li><a href="/admin" class="l69-nav__link">
                 <i class="fas fa-shield-alt"></i> Admin
             </a></li>
-            @endif
+            @endcan
         </ul>
         @endauth
 
@@ -465,11 +465,11 @@
     <div class="l69-nav__mobile-section">Próximamente</div>
     <a href="#" class="l69-nav__mobile-link"><i class="fas fa-film"></i> Historias </a>
     <a href="#" class="l69-nav__mobile-link"><i class="fas fa-video"></i> Videochat <span class="l69-nav__soon">Pronto</span></a>
-    <a href="#" class="l69-nav__mobile-link"><i class="fas fa-bullhorn"></i> Anuncios <span class="l69-nav__soon">Pronto</span></a>
-    @if(auth()->user()->role === 'admin')
+    <a href="{{ route('announcements.index') }}" class="l69-nav__mobile-link"><i class="fas fa-bullhorn"></i> Anuncios</a>
+    @can('admin')
     <div class="l69-nav__mobile-section">Admin</div>
     <a href="/admin" class="l69-nav__mobile-link"><i class="fas fa-shield-alt"></i> Panel Admin</a>
-    @endif
+    @endcan
     <div style="height:1px;background:var(--border-color);margin:.75rem 0;"></div>
     <form method="POST" action="{{ route('logout') }}">
         @csrf
@@ -624,5 +624,7 @@
     setInterval(refreshNotifBadge, 60000);
 })();
 </script>
+
+
 
 

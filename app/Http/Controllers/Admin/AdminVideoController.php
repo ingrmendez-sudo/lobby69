@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 
@@ -128,7 +129,7 @@ class AdminVideoController extends Controller
 
     public function serve($id)
     {
-        abort_if(Auth::user()->role !== 'admin', 403);
+        abort_if(!Gate::allows('admin'), 403);
 
         $video = DB::table('videos')->where('id', $id)->first();
         abort_if(!$video, 404);
@@ -157,5 +158,7 @@ class AdminVideoController extends Controller
     }
 
 }
+
+
 
 
