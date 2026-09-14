@@ -1275,10 +1275,7 @@
                          data-caption="{{ $photo->caption ?? '' }}"
                          data-likes="{{ $likeCount }}"
                          data-iliked="{{ $iLiked ? '1' : '0' }}">
-                        <img loading="lazy" src="{{ route('photos.serve', $photo->id) }}"
-                             alt="{{ $photo->caption ?? '' }}"
-
-                             onerror="this.parentElement.style.display='none'">
+                        @protectedImg(route('photos.serve', $photo->id), $photo->caption ?? '')
                         <div class="prf-carousel-item-overlay">
                             <div class="prf-carousel-item-meta">
                                 <span>{{ $iLiked ? 'Likes' : 'Likes' }} {{ $likeCount }}</span>
@@ -1986,6 +1983,7 @@ window._vgReady = true;
 </script>
 
 @endpush
+
 
 
 
