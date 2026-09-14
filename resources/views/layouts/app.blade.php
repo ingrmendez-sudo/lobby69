@@ -531,8 +531,10 @@
         });
     }());
     </script>
+@include('components.content-protection')
 </body>
 </html>
+
 
 
 

@@ -548,8 +548,10 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 })();
 </script>
+@include('components.content-protection')
 </body>
 </html>
+
 
 
 

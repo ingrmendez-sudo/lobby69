@@ -232,3 +232,4 @@ class PhotoController extends Controller
         return redirect($this->buildPhotoUrl($photo, $photo->album_type));
     }
 }
+
