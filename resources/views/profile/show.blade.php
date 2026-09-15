@@ -2064,6 +2064,10 @@ window._vgReady = true;
             var recv = recvIn ? recvIn.value : '';
             if (!body || !recv) return;
 
+            /* deshabilitar botón mientras envía */
+            var submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Enviando...'; }
+
             fetch('/mensajes/enviar', {
                 method : 'POST',
                 headers: {
@@ -2075,15 +2079,33 @@ window._vgReady = true;
                 body: JSON.stringify({ receiver_id: recv, body: body })
             })
             .then(function (r) {
-                if (!r.ok) throw new Error(r.status);
-                return r.json();
+                return r.json().then(function (data) {
+                    return { status: r.status, ok: r.ok, data: data };
+                });
             })
-            .then(function () {
+            .then(function (res) {
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Enviar'; }
+                if (!res.ok) {
+                    /* ── Errores de membresía y límite diario ── */
+                    var msg = '';
+                    if (res.status === 403 && res.data.error === 'membership_required') {
+                        msg = '🔒 ' + (res.data.message || 'Necesitas membresía para enviar mensajes.');
+                        showConvError(msg, res.data.upgrade_url || '/membresias', 'Ver planes');
+                    } else if (res.status === 429 && res.data.error === 'daily_limit_reached') {
+                        msg = '⏳ ' + (res.data.message || 'Límite diario alcanzado.');
+                        showConvError(msg, res.data.upgrade_url || '/membresias', 'Mejorar plan');
+                    } else {
+                        /* Error desconocido: fallback a página completa */
+                        window.location.href = CONV_URL.replace(':id', recv);
+                    }
+                    return;
+                }
                 if (bodyIn) bodyIn.value = '';
                 loadMessages(recv);
             })
             .catch(function () {
-                /* Fallback: redirigir a página completa de mensajes */
+                if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = 'Enviar'; }
+                /* Error de red: fallback a página completa */
                 window.location.href = CONV_URL.replace(':id', recv);
             });
         });
@@ -2122,6 +2144,17 @@ window._vgReady = true;
         });
     });
 
+
+    /* ── Mostrar error inline en el modal ── */
+    function showConvError(message, linkUrl, linkText) {
+        if (!msgBox) return;
+        var div = document.createElement('div');
+        div.style.cssText = 'padding:.75rem 1rem;background:rgba(233,30,140,.12);border:1px solid rgba(233,30,140,.35);border-radius:.5rem;font-size:.82rem;color:#f8a;margin:.5rem 0;text-align:center;';
+        div.innerHTML = message
+            + (linkUrl ? ' <a href="' + linkUrl + '" style="color:#e91e8c;font-weight:600;text-decoration:underline;">' + (linkText || 'Ver más') + '</a>' : '');
+        msgBox.innerHTML = '';
+        msgBox.appendChild(div);
+    }
     /* ── Enlace "Ver conversación completa" en el modal ── */
     var fullLink = document.getElementById('conv-full-link');
     if (fullLink && recvIn) {
