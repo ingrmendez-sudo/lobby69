@@ -97,6 +97,10 @@ class ProfileController extends Controller
             DB::table('profiles')->insert($data);
         }
 
+        // Invalidar cache del perfil al guardarlo
+        Cache::forget('profile_show_' . $userId);
+        Cache::forget('navbar_' . $userId);
+
         return redirect()->route('dashboard')
             ->with('success', 'Perfil guardado correctamente.');
     }
@@ -116,14 +120,22 @@ class ProfileController extends Controller
 
     public function publicShow($nickname)
     {
+        // ── OPTIMIZACIÓN A ──────────────────────────────────────────────
+        // Traer recommendation_score y boost_until en la misma query inicial.
+        // Elimina las 2 queries redundantes de las líneas originales 420-428.
+        // ────────────────────────────────────────────────────────────────
         $profile = DB::table('profiles')
             ->where('nickname', $nickname)
             ->whereRaw('profile_completed = true')
+            ->select([
+                '*',
+                'recommendation_score',
+                'boost_until',
+            ])
             ->first();
 
         if (!$profile) abort(404, 'Perfil no encontrado.');
 
-        // Respetar privacidad: perfil marcado como no-público
         if (!$profile->public) {
             abort(404, 'Este perfil no está disponible.');
         }
@@ -156,25 +168,29 @@ class ProfileController extends Controller
             return DB::table('follows')->where('follower_id', $profile->user_id)->count();
         });
 
-        // Avatar
-        $profilePhoto = DB::table('photos')
-            ->where('user_id', $profile->user_id)
-            ->whereRaw('is_profile_photo = true')
-            ->where('status', 'approved')
-            ->first();
-
-        if (!$profilePhoto) {
-            $profilePhoto = DB::table('photos')
+        // ── OPTIMIZACIÓN D ──────────────────────────────────────────────
+        // Avatar cacheado 120s. Elimina el doble fallback sin caché original.
+        // ────────────────────────────────────────────────────────────────
+        $avatarPhotoId = Cache::remember('avatar_id_' . $profile->user_id, 120, function () use ($profile) {
+            $photo = DB::table('photos')
                 ->where('user_id', $profile->user_id)
-                ->where('album_type', 'public')
+                ->whereRaw('is_profile_photo = true')
                 ->where('status', 'approved')
-                ->orderBy('sort_order')
-                ->orderBy('created_at')
-                ->first();
-        }
+                ->value('id');
 
-        $avatarPhotoId = $profilePhoto?->id ?? null;
-        $avatarUrl     = $avatarPhotoId
+            if (!$photo) {
+                $photo = DB::table('photos')
+                    ->where('user_id', $profile->user_id)
+                    ->where('album_type', 'public')
+                    ->where('status', 'approved')
+                    ->orderBy('sort_order')
+                    ->orderBy('created_at')
+                    ->value('id');
+            }
+            return $photo;
+        });
+
+        $avatarUrl = $avatarPhotoId
             ? route('photos.serve', $avatarPhotoId)
             : asset('img/default-avatar.svg');
 
@@ -190,18 +206,13 @@ class ProfileController extends Controller
 
         $photosCount = $photos->count();
 
-        // Likes
+        // Likes — una sola pasada por photo_uuid
         $photoUuids = $photos->pluck('photo_uuid')
             ->map(fn($u) => (string)$u)
             ->filter()
             ->toArray();
 
-        $likesCount = count($photoUuids)
-            ? DB::table('photo_likes')
-                ->whereIn('photo_id', $photoUuids)
-                ->count()
-            : 0;
-
+        // likesCount calculado desde likeCounts para evitar query duplicada
         $likeCounts = count($photoUuids)
             ? DB::table('photo_likes')
                 ->whereIn('photo_id', $photoUuids)
@@ -209,6 +220,8 @@ class ProfileController extends Controller
                 ->groupBy('photo_id')
                 ->pluck('cnt', 'puuid')
             : collect();
+
+        $likesCount = $likeCounts->sum();
 
         $myLikes = collect();
         if ($me && count($photoUuids)) {
@@ -241,39 +254,48 @@ class ProfileController extends Controller
         $sbPos = $sbReviews->where('type', 'positive')->count();
         $sbNeg = $sbReviews->where('type', 'negative')->count();
 
-        // Amigos en comun
+        // ── OPTIMIZACIÓN B ──────────────────────────────────────────────
+        // Amigos en común: reemplaza doble ->get() + array_intersect PHP
+        // por un INNER JOIN SQL directo. De 2 queries pesadas a 1 ligera.
+        // ────────────────────────────────────────────────────────────────
         $commonFriends = collect();
         if ($me && !$isOwnProfile) {
             $meId = (string)$me;
             $uid  = (string)$profile->user_id;
 
-            $profileFriendIds = DB::table('friendships')
-                ->where('status', 'accepted')
+            $commonIds = DB::table('friendships as a')
+                ->join('friendships as b', function ($join) use ($meId) {
+                    $join->on(DB::raw('LEAST(b.sender_id::text, b.receiver_id::text)'),
+                              '=',
+                              DB::raw('LEAST(b.sender_id::text, b.receiver_id::text)'))
+                         ->where(function ($q) use ($meId) {
+                             $q->whereRaw('b.sender_id::text = ?', [$meId])
+                               ->orWhereRaw('b.receiver_id::text = ?', [$meId]);
+                         });
+                })
+                ->where('a.status', 'accepted')
+                ->where('b.status', 'accepted')
                 ->where(function ($q) use ($uid) {
-                    $q->whereRaw('sender_id = ?', [$uid])
-                      ->orWhereRaw('receiver_id = ?', [$uid]);
+                    $q->whereRaw('a.sender_id::text = ?', [$uid])
+                      ->orWhereRaw('a.receiver_id::text = ?', [$uid]);
                 })
-                ->get()
-                ->map(fn($f) => (string)$f->sender_id === $uid
-                    ? (string)$f->receiver_id
-                    : (string)$f->sender_id
-                )
+                ->selectRaw("
+                    CASE
+                        WHEN a.sender_id::text = ? THEN a.receiver_id::text
+                        ELSE a.sender_id::text
+                    END AS friend_id
+                ", [$uid])
+                ->whereRaw("
+                    CASE
+                        WHEN a.sender_id::text = ? THEN a.receiver_id::text
+                        ELSE a.sender_id::text
+                    END = CASE
+                        WHEN b.sender_id::text = ? THEN b.receiver_id::text
+                        ELSE b.sender_id::text
+                    END
+                ", [$uid, $meId])
+                ->pluck('friend_id')
                 ->toArray();
-
-            $myFriendIds = DB::table('friendships')
-                ->where('status', 'accepted')
-                ->where(function ($q) use ($meId) {
-                    $q->whereRaw('sender_id = ?', [$meId])
-                      ->orWhereRaw('receiver_id = ?', [$meId]);
-                })
-                ->get()
-                ->map(fn($f) => (string)$f->sender_id === $meId
-                    ? (string)$f->receiver_id
-                    : (string)$f->sender_id
-                )
-                ->toArray();
-
-            $commonIds = array_values(array_intersect($profileFriendIds, $myFriendIds));
 
             if (count($commonIds)) {
                 $commonFriends = DB::table('users as u')
@@ -294,7 +316,7 @@ class ProfileController extends Controller
             }
         }
 
-        // Estado de amistad con el perfil visitado
+        // Estado de amistad
         $friendshipStatus = null;
         $friendshipId     = null;
         if ($me && !$isOwnProfile) {
@@ -302,12 +324,12 @@ class ProfileController extends Controller
             $uid  = (string)$profile->user_id;
             $fr   = DB::table('friendships')
                 ->where(function($q) use ($meId, $uid) {
-                    $q->whereRaw('sender_id = ?', [$meId])
-                      ->whereRaw('receiver_id = ?', [$uid]);
+                    $q->whereRaw('sender_id::text = ?', [$meId])
+                      ->whereRaw('receiver_id::text = ?', [$uid]);
                 })
                 ->orWhere(function($q) use ($meId, $uid) {
-                    $q->whereRaw('sender_id = ?', [$uid])
-                      ->whereRaw('receiver_id = ?', [$meId]);
+                    $q->whereRaw('sender_id::text = ?', [$uid])
+                      ->whereRaw('receiver_id::text = ?', [$meId]);
                 })
                 ->select(['id', 'status', 'sender_id'])
                 ->first();
@@ -329,75 +351,101 @@ class ProfileController extends Controller
             } catch (\Exception $e) {}
         }
 
-        // Ultimos perfiles visitados por el usuario logueado
+        // ── OPTIMIZACIÓN C ──────────────────────────────────────────────
+        // recentlyVisited y recommendedProfiles cacheados 60s por usuario.
+        // Son las queries más costosas: DISTINCT ON + subconsultas correlacionadas.
+        // ────────────────────────────────────────────────────────────────
         $recentlyVisited = collect();
         if ($me) {
-            try {
-                $recentlyVisited = DB::table('profile_views as pv')
-                    ->join('profiles as pr', 'pr.user_id', '=', 'pv.viewed_id')
-                    ->join('users as u',     'u.id', '=', 'pv.viewed_id')
-                    ->whereRaw('pv.viewer_id = ?', [$me])
-                    ->whereRaw('pv.viewed_id != ?', [$profile->user_id])
-                    ->whereRaw('u.active = true')
-                    ->select([
-                        DB::raw('DISTINCT ON (pv.viewed_id) pv.viewed_id'),
-                        'pr.nickname',
-                        DB::raw('COALESCE(pr.display_name, u.username) AS display_name'),
-                        'pr.profile_type',
-                        'pr.verified_profile',
-                        DB::raw("(SELECT ap.id FROM photos ap
-                                  WHERE ap.user_id = pv.viewed_id
-                                    AND ap.is_profile_photo = true
-                                    AND ap.status = 'approved'
-                                  LIMIT 1) AS avatar_id"),
-                        'pv.viewed_at',
-                    ])
-                    ->orderByRaw('pv.viewed_id, pv.viewed_at DESC')
-                    ->limit(6)
-                    ->get();
-            } catch (\Exception $e) {}
+            $recentlyVisited = Cache::remember(
+                'recently_visited_' . $me . '_excl_' . $profile->user_id,
+                60,
+                function () use ($me, $profile) {
+                    try {
+                        return DB::table('profile_views as pv')
+                            ->join('profiles as pr', 'pr.user_id', '=', 'pv.viewed_id')
+                            ->join('users as u',     'u.id', '=', 'pv.viewed_id')
+                            ->whereRaw('pv.viewer_id::text = ?', [(string)$me])
+                            ->whereRaw('pv.viewed_id::text != ?', [(string)$profile->user_id])
+                            ->whereRaw('u.active = true')
+                            ->select([
+                                DB::raw('DISTINCT ON (pv.viewed_id) pv.viewed_id'),
+                                'pr.nickname',
+                                DB::raw('COALESCE(pr.display_name, u.username) AS display_name'),
+                                'pr.profile_type',
+                                'pr.verified_profile',
+                                DB::raw("(SELECT ap.id FROM photos ap
+                                          WHERE ap.user_id = pv.viewed_id
+                                            AND ap.is_profile_photo = true
+                                            AND ap.status = 'approved'
+                                          LIMIT 1) AS avatar_id"),
+                                'pv.viewed_at',
+                            ])
+                            ->orderByRaw('pv.viewed_id, pv.viewed_at DESC')
+                            ->limit(6)
+                            ->get();
+                    } catch (\Exception $e) {
+                        return collect();
+                    }
+                }
+            );
         }
 
-        // Perfiles recomendados
         $recommendedProfiles = collect();
         if ($me) {
-            try {
-                $meCity = DB::table('profiles')
-                    ->where('user_id', $me)
-                    ->value('city');
+            $recommendedProfiles = Cache::remember(
+                'recommended_profiles_' . $me,
+                60,
+                function () use ($me, $profile) {
+                    try {
+                        $meCity = DB::table('profiles')
+                            ->where('user_id', $me)
+                            ->value('city');
 
-                $alreadyFollowing = DB::table('follows')
-                    ->where('follower_id', $me)
-                    ->pluck('following_id')
-                    ->toArray();
-                $alreadyFollowing[] = (string)$me;
-                $alreadyFollowing[] = (string)$profile->user_id;
+                        $alreadyFollowing = DB::table('follows')
+                            ->where('follower_id', $me)
+                            ->pluck('following_id')
+                            ->toArray();
+                        $alreadyFollowing[] = (string)$me;
+                        $alreadyFollowing[] = (string)$profile->user_id;
 
-                $recommendedProfiles = DB::table('profiles as pr')
-                    ->join('users as u', 'u.id', '=', 'pr.user_id')
-                    ->whereRaw('pr.profile_completed = true')
-                    ->whereRaw('u.active = true')
-                    ->whereNotIn('pr.user_id', $alreadyFollowing)
-                    ->when($meCity, fn($q) => $q->where('pr.city', 'ilike', '%'.$meCity.'%'))
-                    ->select([
-                        'pr.nickname',
-                        DB::raw('COALESCE(pr.display_name, u.username) AS display_name'),
-                        'pr.profile_type',
-                        'pr.city',
-                        'pr.verified_profile',
-                        DB::raw("(SELECT ap.id FROM photos ap
-                                  WHERE ap.user_id = pr.user_id
-                                    AND ap.is_profile_photo = true
-                                    AND ap.status = 'approved'
-                                  LIMIT 1) AS avatar_id"),
-                    ])
-                    ->orderByDesc('pr.last_active_at')
-                    ->limit(5)
-                    ->get();
-            } catch (\Exception $e) {}
+                        return DB::table('profiles as pr')
+                            ->join('users as u', 'u.id', '=', 'pr.user_id')
+                            ->whereRaw('pr.profile_completed = true')
+                            ->whereRaw('u.active = true')
+                            ->whereNotIn('pr.user_id', $alreadyFollowing)
+                            ->when($meCity, fn($q) => $q->where('pr.city', 'ilike', '%'.$meCity.'%'))
+                            ->select([
+                                'pr.nickname',
+                                DB::raw('COALESCE(pr.display_name, u.username) AS display_name'),
+                                'pr.profile_type',
+                                'pr.city',
+                                'pr.verified_profile',
+                                DB::raw("(SELECT ap.id FROM photos ap
+                                          WHERE ap.user_id = pr.user_id
+                                            AND ap.is_profile_photo = true
+                                            AND ap.status = 'approved'
+                                          LIMIT 1) AS avatar_id"),
+                            ])
+                            ->orderByDesc('pr.last_active_at')
+                            ->limit(5)
+                            ->get();
+                    } catch (\Exception $e) {
+                        return collect();
+                    }
+                }
+            );
         }
 
         // Variables de presentacion
+        // ── OPTIMIZACIÓN A (cont.) ───────────────────────────────────────
+        // recommendation_score y boost_until vienen de $profile (ya cargado).
+        // Se eliminan las 2 queries duplicadas de las líneas originales 420-428.
+        // ────────────────────────────────────────────────────────────────
+        $recommendationScore = (float) ($profile->recommendation_score ?? 0.0);
+        $boostUntil          = $profile->boost_until ?? null;
+        $scoreBoostActive    = $boostUntil && Carbon::parse($boostUntil)->isFuture();
+
         $verificationStatus = $user->verification_status ?? null;
 
         $typeLabel = match($profile->profile_type ?? '') {
@@ -413,26 +461,13 @@ class ProfileController extends Controller
             'connectors' => asset('img/membership/connectors.png'),
             'influencer' => asset('img/membership/influencer.png'),
             'vip_elite'  => asset('img/membership/vip-elite.png'),
-            'Fundador'  => asset('img/membership/Fundador.png'),
+            'Fundador'   => asset('img/membership/Fundador.png'),
             default      => asset('img/membership/trial.png'),
         };
-        // Score de recomendacion
-        $recommendationScore = (float) DB::table('profiles')
-            ->whereRaw('user_id::text = ?', [(string)$profile->user_id])
-            ->value('recommendation_score') ?? 0.0;
-        $scoreBoostActive = false;
-        $boostUntil = DB::table('profiles')
-            ->whereRaw('user_id::text = ?', [(string)$profile->user_id])
-            ->value('boost_until');
-        if ($boostUntil && \Carbon\Carbon::parse($boostUntil)->isFuture()) {
-            $scoreBoostActive = true;
-        }
-
 
         $isPairing = $profile->profile_type === 'pareja';
         $isUnicorn = $profile->profile_type === 'unicornio';
 
-        // json_decode doble por si el campo tiene double-encoding (string dentro de string JSON)
         $lookingFor = json_decode($profile->looking_for ?? '[]', true) ?? [];
         if (is_string($lookingFor)) $lookingFor = json_decode($lookingFor, true) ?? [];
 
@@ -471,8 +506,6 @@ class ProfileController extends Controller
 
     /**
      * GET /mis-visitas
-     * Lista paginada de usuarios que visitaron el perfil del autenticado.
-     * Avatares via photos.serve (nunca avatar_url legacy).
      */
     public function visitors()
     {
@@ -483,15 +516,12 @@ class ProfileController extends Controller
             ->where('user_id', $uid)
             ->first();
 
-        // Total de visitantes únicos (excluye visitas propias)
         $totalVisitors = DB::table('profile_views')
             ->where('viewed_id', $uid)
             ->where('viewer_id', '!=', $uid)
             ->distinct()
             ->count('viewer_id');
 
-        // Una fila por visitante: la visita más reciente de cada uno
-        // avatar_photo_id via subquery correlacionada (evita JOIN + GROUP BY con JSON)
         $visitors = DB::table('profile_views as pv')
             ->join('profiles as pr', 'pr.user_id', '=', 'pv.viewer_id')
             ->join('users as u',     'u.id', '=', 'pv.viewer_id')
@@ -525,4 +555,3 @@ class ProfileController extends Controller
         return view('profiles.visitors', compact('userProfile', 'visitors', 'totalVisitors'));
     }
 }
-
