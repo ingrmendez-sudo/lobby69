@@ -1275,7 +1275,7 @@
                          data-caption="{{ $photo->caption ?? '' }}"
                          data-likes="{{ $likeCount }}"
                          data-iliked="{{ $iLiked ? '1' : '0' }}">
-                        @protectedImg(route('photos.serve', $photo->id), $photo->caption ?? '')
+                        <img loading="lazy" src="{{ route('photos.serve', $photo->id) }}" alt="{{ $photo->caption ?? '' }}" draggable="false" oncontextmenu="return false" class="l69-protected-img">
                         <div class="prf-carousel-item-overlay">
                             <div class="prf-carousel-item-meta">
                                 <span>{{ $iLiked ? 'Likes' : 'Likes' }} {{ $likeCount }}</span>
@@ -1982,6 +1982,155 @@ window.vgComment = function() {
 window._vgReady = true;
 </script>
 
+
+<script>
+/* ══════════════════════════════════════════════════════════════
+   MODAL DE CONVERSACIÓN — btn-msg-profile + btn-msg-profile-header
+   ══════════════════════════════════════════════════════════════ */
+(function () {
+    var CSRF    = document.querySelector('meta[name="csrf-token"]')
+                    ? document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+                    : '';
+    var overlay = document.getElementById('conv-modal');
+    var nameEl  = document.getElementById('conv-modal-name');
+    var msgBox  = document.getElementById('conv-modal-messages');
+    var form    = document.getElementById('conv-send-form');
+    var recvIn  = document.getElementById('conv-receiver-id');
+    var bodyIn  = document.getElementById('conv-body');
+    var closeBtn= document.getElementById('conv-modal-close');
+
+    /* ── Ruta de conversación completa (fallback) ── */
+    var CONV_URL = '{{ route("messages.conversation", ":id") }}';
+
+    /* ── Abrir modal ── */
+    function openConv(partnerId, partnerName) {
+        if (!overlay) return;
+        if (recvIn)  recvIn.value  = partnerId;
+        if (nameEl)  nameEl.textContent = partnerName || 'Conversación';
+        if (msgBox)  msgBox.innerHTML = '<p style="font-size:.8rem;color:var(--theme-muted,#888);padding:.5rem">Cargando&hellip;</p>';
+        overlay.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+        loadMessages(partnerId);
+    }
+
+    /* ── Cerrar modal ── */
+    function closeConv() {
+        if (!overlay) return;
+        overlay.classList.add('hidden');
+        document.body.style.overflow = '';
+        if (msgBox) msgBox.innerHTML = '';
+        if (bodyIn) bodyIn.value = '';
+    }
+
+    /* ── Cargar mensajes existentes ── */
+    function loadMessages(partnerId) {
+        fetch('/mensajes/conversacion/' + partnerId, {
+            headers: { 'Accept': 'application/json', 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (r) {
+            if (!r.ok) throw new Error(r.status);
+            return r.json();
+        })
+        .then(function (data) {
+            if (!msgBox) return;
+            var msgs = Array.isArray(data) ? data : (data.messages || data.data || []);
+            if (!msgs.length) {
+                msgBox.innerHTML = '<p style="font-size:.8rem;color:var(--theme-muted,#888);padding:.5rem">No hay mensajes aún. ¡Saluda!</p>';
+                return;
+            }
+            msgBox.innerHTML = '';
+            msgs.forEach(function (m) {
+                var div       = document.createElement('div');
+                var isMine    = String(m.sender_id) === String(recvIn ? recvIn.dataset.me || '' : '');
+                div.className = 'l69-msg-bubble ' + (isMine ? 'l69-msg-mine' : 'l69-msg-theirs');
+                div.textContent = m.body || '';
+                msgBox.appendChild(div);
+            });
+            msgBox.scrollTop = msgBox.scrollHeight;
+        })
+        .catch(function () {
+            /* Si la API no devuelve JSON, redirigir a la página completa */
+            if (recvIn && recvIn.value) {
+                window.location.href = CONV_URL.replace(':id', recvIn.value);
+            }
+        });
+    }
+
+    /* ── Enviar mensaje ── */
+    if (form) {
+        form.addEventListener('submit', function (e) {
+            e.preventDefault();
+            var body = bodyIn ? bodyIn.value.trim() : '';
+            var recv = recvIn ? recvIn.value : '';
+            if (!body || !recv) return;
+
+            fetch('/mensajes/enviar', {
+                method : 'POST',
+                headers: {
+                    'Content-Type'    : 'application/json',
+                    'Accept'          : 'application/json',
+                    'X-CSRF-TOKEN'    : CSRF,
+                    'X-Requested-With': 'XMLHttpRequest'
+                },
+                body: JSON.stringify({ receiver_id: recv, body: body })
+            })
+            .then(function (r) {
+                if (!r.ok) throw new Error(r.status);
+                return r.json();
+            })
+            .then(function () {
+                if (bodyIn) bodyIn.value = '';
+                loadMessages(recv);
+            })
+            .catch(function () {
+                /* Fallback: redirigir a página completa de mensajes */
+                window.location.href = CONV_URL.replace(':id', recv);
+            });
+        });
+    }
+
+    /* ── Cerrar con botón X ── */
+    if (closeBtn) {
+        closeBtn.addEventListener('click', closeConv);
+    }
+
+    /* ── Cerrar clickando overlay fuera del box ── */
+    if (overlay) {
+        overlay.addEventListener('click', function (e) {
+            if (e.target === overlay) closeConv();
+        });
+    }
+
+    /* ── Cerrar con Escape ── */
+    document.addEventListener('keydown', function (e) {
+        if (e.key === 'Escape') closeConv();
+    });
+
+    /* ── Conectar AMBOS botones de mensaje ── */
+    ['btn-msg-profile', 'btn-msg-profile-header'].forEach(function (id) {
+        var btn = document.getElementById(id);
+        if (!btn) return;
+        btn.addEventListener('click', function () {
+            var partnerId   = btn.dataset.partner || '';
+            var partnerName = btn.dataset.name    || 'Conversación';
+            if (!partnerId) {
+                /* Sin ID: ir directo a mensajes */
+                window.location.href = '{{ route("messages.index") }}';
+                return;
+            }
+            openConv(partnerId, partnerName);
+        });
+    });
+
+    /* ── Enlace "Ver conversación completa" en el modal ── */
+    var fullLink = document.getElementById('conv-full-link');
+    if (fullLink && recvIn) {
+        fullLink.addEventListener('click', function () {
+            window.location.href = CONV_URL.replace(':id', recvIn.value);
+        });
+    }
+})();
+</script>
 @endpush
 
 
