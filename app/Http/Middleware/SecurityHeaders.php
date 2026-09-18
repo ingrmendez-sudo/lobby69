@@ -25,7 +25,9 @@ class SecurityHeaders
             "connect-src 'self' wss://localhost:8080 ws://localhost:8080 https://*.supabase.co https://cdn.jsdelivr.net; " .
             "frame-ancestors 'self';"
         );
+        $response->headers->set('Strict-Transport-Security', 'max-age=31536000; includeSubDomains; preload');
 
         return $response;
     }
 }
+
