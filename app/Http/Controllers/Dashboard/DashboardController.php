@@ -77,100 +77,126 @@ class DashboardController extends Controller
         ]);
     }
 
-    public function photoModal(Request $request, $id)
+   public function photoModal(Request $request, $id)
     {
         $user   = auth()->user();
         $userId = (string) $user->id;
 
-        $photo = DB::table('photos')
-            ->join('users as u', function ($j) {
-                $j->on(DB::raw('u.id::text'), '=', DB::raw('photos.user_id::text'));
-            })
-            ->leftJoin('profiles as p', function ($j) {
-                $j->on(DB::raw('p.user_id::text'), '=', DB::raw('u.id::text'));
-            })
-            ->where(function($q) use ($id) {
-                $q->whereRaw('photos.photo_uuid::text = ?', [$id])
-                  ->orWhereRaw('photos.id::text = ?', [$id]);
-            })
-            ->select([
-                'photos.id',
-                'photos.photo_uuid',
-                'photos.user_id',
-                'photos.file_path',
-                'photos.caption',
-                'photos.created_at',
-                DB::raw('COALESCE(p.nickname, u.username) as nickname'),
-                DB::raw('COALESCE(p.display_name, u.username) as display_name'),
-                DB::raw('p.avatar_url as avatar_url'),
-                DB::raw('p.verified_profile as verified_profile'),
-                DB::raw('p.profile_type as profile_type'),
-                DB::raw('(SELECT id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = \'approved\' LIMIT 1) as avatar_photo_id'),
-                DB::raw('(SELECT COUNT(*) FROM photo_likes pl WHERE pl.photo_id::text = photos.photo_uuid::text) as likes_count'),
-                DB::raw('(SELECT COUNT(*) FROM photo_comments pc WHERE pc.photo_id::text = photos.photo_uuid::text AND pc.status = \'approved\') as comments_count'),
-                DB::raw('EXISTS(SELECT 1 FROM photo_likes pl WHERE pl.photo_id::text = photos.photo_uuid::text AND pl.user_id::text = \'' . $userId . '\') as user_liked'),
-            ])
-            ->first();
+        // Caché de 30 segundos por foto — elimina queries repetidas al navegar
+        $cacheKey = "photo_modal_{$id}_{$userId}";
 
-        if (!$photo) {
+        $data = cache()->remember($cacheKey, 30, function () use ($id, $userId) {
+
+            $photo = DB::table('photos')
+                ->join('users as u', function ($j) {
+                    $j->on(DB::raw('u.id::text'), '=', DB::raw('photos.user_id::text'));
+                })
+                ->leftJoin('profiles as p', function ($j) {
+                    $j->on(DB::raw('p.user_id::text'), '=', DB::raw('u.id::text'));
+                })
+                ->where(function($q) use ($id) {
+                    $q->whereRaw('photos.photo_uuid::text = ?', [$id])
+                    ->orWhereRaw('photos.id::text = ?', [$id]);
+                })
+                ->select([
+                    'photos.id',
+                    'photos.photo_uuid',
+                    'photos.user_id',
+                    'photos.file_path',
+                    'photos.caption',
+                    'photos.album_type',
+                    'photos.created_at',
+                    DB::raw('COALESCE(p.nickname, u.username) as nickname'),
+                    DB::raw('COALESCE(p.display_name, u.username) as display_name'),
+                    DB::raw('p.avatar_url as avatar_url'),
+                    DB::raw('p.verified_profile as verified_profile'),
+                    DB::raw('p.profile_type as profile_type'),
+                    // Subquery avatar: solo una vez
+                    DB::raw('(SELECT id FROM photos ap WHERE ap.user_id::text = u.id::text AND ap.is_profile_photo = true AND ap.status = \'approved\' LIMIT 1) as avatar_photo_id'),
+                ])
+                ->first();
+
+            if (!$photo) return null;
+
+            $photoUuid = (string) $photo->photo_uuid;
+
+            // Likes count + user_liked en una sola query agregada
+            $likesData = DB::table('photo_likes')
+                ->whereRaw('photo_id::text = ?', [$photoUuid])
+                ->selectRaw('COUNT(*) as total, SUM(CASE WHEN user_id::text = ? THEN 1 ELSE 0 END) as user_liked', [$userId])
+                ->first();
+
+            // Comentarios
+            $comments = DB::table('photo_comments')
+                ->join('users as u', function ($j) {
+                    $j->on(DB::raw('u.id::text'), '=', DB::raw('photo_comments.user_id::text'));
+                })
+                ->leftJoin('profiles as p', function ($j) {
+                    $j->on(DB::raw('p.user_id::text'), '=', DB::raw('u.id::text'));
+                })
+                ->whereRaw('photo_comments.photo_id::text = ?', [$photoUuid])
+                ->where('photo_comments.status', 'approved')
+                ->orderBy('photo_comments.created_at', 'asc')
+                ->select([
+                    'photo_comments.id',
+                    'photo_comments.body',
+                    'photo_comments.created_at',
+                    DB::raw('COALESCE(p.nickname, u.username) as user_nick'),
+                    DB::raw('p.nickname as commenter_nick'),
+                    DB::raw('COALESCE(p.display_name, u.username) as display_name'),
+                    DB::raw('(SELECT id FROM photos ap WHERE ap.user_id::text = photo_comments.user_id::text AND ap.is_profile_photo = true AND ap.status = \'approved\' LIMIT 1) as avatar_photo_id'),
+                ])
+                ->get();
+
+            // Likers
+            $likers = DB::table('photo_likes')
+                ->leftJoin('profiles as lp', function ($j) {
+                    $j->on(DB::raw('lp.user_id::text'), '=', DB::raw('photo_likes.user_id::text'));
+                })
+                ->leftJoin('users as lu', function ($j) {
+                    $j->on(DB::raw('lu.id::text'), '=', DB::raw('photo_likes.user_id::text'));
+                })
+                ->whereRaw('photo_likes.photo_id::text = ?', [$photoUuid])
+                ->orderByDesc('photo_likes.created_at')
+                ->limit(20)
+                ->select([
+                    DB::raw('COALESCE(lp.nickname, lu.username) as nick'),
+                    DB::raw('(SELECT id FROM photos ap WHERE ap.user_id::text = photo_likes.user_id::text AND ap.is_profile_photo = true AND ap.status = \'approved\' LIMIT 1) as avatar_id'),
+                ])
+                ->get()
+                ->map(fn($l) => ['nick' => $l->nick ?? 'Usuario', 'avatar_id' => $l->avatar_id]);
+
+            return [
+                'photo'    => $photo,
+                'likesData' => $likesData,
+                'comments' => $comments,
+                'likers'   => $likers,
+            ];
+        });
+
+        if (!$data) {
             return response()->json(['error' => 'Foto no encontrada'], 404);
         }
 
-        $comments = DB::table('photo_comments')
-            ->join('users as u', function ($j) {
-                $j->on(DB::raw('u.id::text'), '=', DB::raw('photo_comments.user_id::text'));
-            })
-            ->leftJoin('profiles as p', function ($j) {
-                $j->on(DB::raw('p.user_id::text'), '=', DB::raw('u.id::text'));
-            })
-            ->whereRaw('photo_comments.photo_id::text = ?', [(string)$photo->photo_uuid])
-            ->where('photo_comments.status', 'approved')
-            ->orderBy('photo_comments.created_at', 'asc')
-            ->select([
-                'photo_comments.id',
-                'photo_comments.body',
-                'photo_comments.created_at',
-                DB::raw('COALESCE(p.nickname, u.username) as user_nick'),
-                DB::raw('p.nickname as commenter_nick'),
-                DB::raw('COALESCE(p.display_name, u.username) as display_name'),
-                DB::raw('(SELECT id FROM photos ap WHERE ap.user_id::text = photo_comments.user_id::text AND ap.is_profile_photo = true AND ap.status = \'approved\' LIMIT 1) as avatar_photo_id'),
-            ])
-            ->get();
-
-        $likers = DB::table('photo_likes')
-            ->leftJoin('profiles as lp', function ($j) {
-                $j->on(DB::raw('lp.user_id::text'), '=', DB::raw('photo_likes.user_id::text'));
-            })
-            ->leftJoin('users as lu', function ($j) {
-                $j->on(DB::raw('lu.id::text'), '=', DB::raw('photo_likes.user_id::text'));
-            })
-            ->whereRaw('photo_likes.photo_id::text = ?', [(string) $photo->photo_uuid])
-            ->orderByDesc('photo_likes.created_at')
-            ->limit(20)
-            ->select([
-                DB::raw('COALESCE(lp.nickname, lu.username) as nick'),
-                DB::raw('(SELECT id FROM photos ap WHERE ap.user_id::text = photo_likes.user_id::text AND ap.is_profile_photo = true AND ap.status = \'approved\' LIMIT 1) as avatar_id'),
-            ])
-            ->get()
-            ->map(fn($l) => ['nick' => $l->nick ?? 'Usuario', 'avatar_id' => $l->avatar_id])
-            ->toArray();
+        $photo     = $data['photo'];
+        $likesData = $data['likesData'];
 
         return response()->json([
             'photo' => [
-                'id'             => $photo->photo_uuid,
-                'file_path'      => $photo->file_path,
-                'caption'        => $photo->caption ?? '',
-                'likes_count'    => (int) $photo->likes_count,
-                'comments_count' => (int) $photo->comments_count,
-                'user_liked'     => (bool) $photo->user_liked,
-                'comments'       => $comments,
-                'likers'         => $likers,
+                'id'          => $photo->id,
+                'photo_uuid'  => $photo->photo_uuid,
+                'caption'     => $photo->caption,
+                'likes_count' => (int) ($likesData->total ?? 0),
+                'user_liked'  => (bool) ($likesData->user_liked ?? false),
+                'comments'    => $data['comments'],
+                'likers'      => $data['likers'],
             ],
             'owner' => [
-                'name'            => $photo->display_name ?? 'Usuario',
-                'nickname'        => $photo->nickname ?? null,
-                'avatar_photo_id' => $photo->avatar_photo_id ?? null,
-                'url'             => $photo->nickname ? '/u/' . $photo->nickname : null,
+                'name'            => $photo->display_name,
+                'nickname'        => $photo->nickname,
+                'avatar_photo_id' => $photo->avatar_photo_id,
+                'verified'        => $photo->verified_profile,
+                'profile_type'    => $photo->profile_type,
             ],
         ]);
     }

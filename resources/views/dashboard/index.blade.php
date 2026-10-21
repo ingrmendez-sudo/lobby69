@@ -368,6 +368,25 @@
                 <div class="l69-spinner"></div>
             </div>
             <img id="modalPhoto" src="" alt="Foto">
+            {{-- Flecha izquierda --}}
+            <button id="modalPrev" aria-label="Anterior"
+                style="position:absolute;left:0.5rem;top:50%;transform:translateY(-50%);
+                    z-index:10;background:rgba(0,0,0,.55);border:none;color:#fff;
+                    width:36px;height:36px;border-radius:50%;cursor:pointer;
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:1.1rem;transition:background .2s;">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+
+            {{-- Flecha derecha --}}
+            <button id="modalNext" aria-label="Siguiente"
+                style="position:absolute;right:0.5rem;top:50%;transform:translateY(-50%);
+                    z-index:10;background:rgba(0,0,0,.55);border:none;color:#fff;
+                    width:36px;height:36px;border-radius:50%;cursor:pointer;
+                    display:flex;align-items:center;justify-content:center;
+                    font-size:1.1rem;transition:background .2s;">
+                <i class="fas fa-chevron-right"></i>
+            </button>
         </div>
 
         {{-- SECCIÓN INFO + COMENTARIOS --}}
@@ -962,6 +981,48 @@ if (elLoadMore) {
             tryOpen(0);
         }
     })();
+
+    /* ══ NAVEGACIÓN DE FLECHAS ══════════════════════════════ */
+var dsbPhotoIds  = [];   // array de IDs visibles en el feed
+var dsbPhotoIdx  = -1;   // índice actual
+
+/* Reconstruir el array cada vez que se abre el modal */
+function dsbBuildIds() {
+    dsbPhotoIds = Array.from(
+        document.querySelectorAll('#feedGrid .l69-feed-card[data-photo-id]')
+    ).map(function(c) { return c.dataset.photoId; });
+}
+
+/* Navegar: dir = +1 (siguiente) | -1 (anterior) */
+function dsbNavigate(dir) {
+    if (!dsbPhotoIds.length) return;
+    dsbPhotoIdx = (dsbPhotoIdx + dir + dsbPhotoIds.length) % dsbPhotoIds.length;
+    dsbOpenModal(dsbPhotoIds[dsbPhotoIdx]);
+}
+
+/* Sobrescribir apertura para registrar índice */
+var _origOpen = dsbOpenModal;
+dsbOpenModal = function(photoId) {
+    dsbBuildIds();
+    var idx = dsbPhotoIds.indexOf(String(photoId));
+    if (idx !== -1) dsbPhotoIdx = idx;
+    _origOpen(photoId);
+};
+
+/* Teclado: ← → */
+document.addEventListener('keydown', function(e) {
+    var modal = document.getElementById('photoModal');
+    if (!modal || !modal.classList.contains('modal-open')) return;
+    if (e.key === 'ArrowLeft')  { e.preventDefault(); dsbNavigate(-1); }
+    if (e.key === 'ArrowRight') { e.preventDefault(); dsbNavigate(+1); }
+});
+
+/* Botones de flecha */
+var elPrev = document.getElementById('modalPrev');
+var elNext = document.getElementById('modalNext');
+if (elPrev) elPrev.addEventListener('click', function(e) { e.stopPropagation(); dsbNavigate(-1); });
+if (elNext) elNext.addEventListener('click', function(e) { e.stopPropagation(); dsbNavigate(+1); });
+
 </script>
 @endpush
 
