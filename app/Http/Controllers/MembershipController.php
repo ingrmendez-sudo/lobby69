@@ -20,7 +20,7 @@ class MembershipController extends Controller
     public function index(Request $request)
     {
         $user    = $request->user();
-        $plans   = MembershipPlan::where('is_active', true)
+        $plans   = MembershipPlan::whereRaw('is_active = true')
                       ->orderBy('sort_order')
                       ->get();
 

@@ -51,7 +51,7 @@ class AdminMembershipController extends Controller
             ")
             ->first();
 
-        $plans = \App\Models\MembershipPlan::where('is_active', true)
+        $plans = \App\Models\MembershipPlan::whereRaw('is_active = true')
                      ->orderBy('sort_order')
                      ->get();
 

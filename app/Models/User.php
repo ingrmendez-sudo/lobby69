@@ -56,7 +56,7 @@ class User extends Authenticatable
     {
         $photo = \DB::table('photos')
             ->whereRaw('user_id::text = ?', [$this->id])
-            ->where('is_profile_photo', true)
+            ->whereRaw('is_profile_photo = true')
             ->where('status', 'approved')
             ->value('id');
 

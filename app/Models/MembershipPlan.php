@@ -80,7 +80,7 @@ class MembershipPlan extends Model
     public static function allActive()
     {
         return Cache::remember('plans.active', 3600, fn() =>
-            static::where('is_active', true)->orderBy('sort_order')->get()
+            static::whereRaw('is_active = true')->orderBy('sort_order')->get()
         );
     }
 
