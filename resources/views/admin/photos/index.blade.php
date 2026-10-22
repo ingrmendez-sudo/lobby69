@@ -117,7 +117,7 @@
           <div class="adm-card__meta">
             <strong>{{ $photo->display_name ?? $photo->username }}</strong>
             @if($photo->nickname)
-              <br>@{{ $photo->nickname }}
+              <br>{{ $photo->nickname }}
             @endif
             <br>
             <span>{{ ucfirst($photo->membership_type ?? 'trial') }}</span>

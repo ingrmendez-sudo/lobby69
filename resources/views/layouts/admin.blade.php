@@ -309,7 +309,29 @@
         color: #111827 !important;
     }
 
+    /* El paginador por defecto de Laravel asume Tailwind. Sin él, los SVG salen
+    gigantes y las clases sr-only dejan texto visible. */
+    nav[aria-label="Pagination Navigation"] svg {
+        width: 1.25rem;
+        height: 1.25rem;
+        display: inline-block;
+        vertical-align: middle;
+    }
+
+    nav[aria-label="Pagination Navigation"] .sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border-width: 0;
+    }
     @stack('styles')
+    
+
     </style>
     @stack('styles')
 </head>

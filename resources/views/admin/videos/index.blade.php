@@ -115,7 +115,7 @@
           <div class="adm-card__meta">
             <strong>{{ $video->display_name ?? $video->username }}</strong>
             @if($video->nickname)
-              <br>@{{ $video->nickname }}
+              <br>{{ $video->nickname }}
             @endif
             <br>
             <span>{{ ucfirst($video->membership_type ?? 'trial') }}</span>
