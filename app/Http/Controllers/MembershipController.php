@@ -96,7 +96,7 @@ class MembershipController extends Controller
         $receiptPath = null;
         if ($request->hasFile('receipt')) {
             $receiptPath = $request->file('receipt')
-                              ->store('receipts', 'public');
+                              ->store('receipts', 'private');
         }
 
         MembershipPayment::create([

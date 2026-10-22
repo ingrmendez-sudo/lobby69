@@ -28,6 +28,17 @@ class MembershipPlan extends Model
     ];
 
     // ── Precio activo según promo ────────────────────────────────────────
+    // Invalidar cache al guardar o borrar un plan.
+    protected static function booted(): void
+    {
+        $olvidar = function ($plan) {
+            Cache::forget('plans.active');
+            Cache::forget("plan.{$plan->slug}");
+        };
+
+        static::saved($olvidar);
+        static::deleted($olvidar);
+    }
     public function getActivePriceAttribute(): float
     {
         return $this->promo_active
