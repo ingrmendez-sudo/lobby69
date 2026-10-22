@@ -73,7 +73,7 @@ class MembershipPlan extends Model
     public static function findBySlug(string $slug): ?self
     {
         return Cache::remember("plan.{$slug}", 3600, fn() =>
-            static::where('slug', $slug)->where('is_active', true)->first()
+            static::where('slug', $slug)->whereRaw('is_active = true')->first()
         );
     }
 
