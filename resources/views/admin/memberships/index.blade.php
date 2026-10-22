@@ -129,7 +129,7 @@
             {{-- Comprobante --}}
             <td style="padding:.6rem .8rem;text-align:center;">
                 @if($payment->receipt_path)
-                <a href="{{ Storage::url($payment->receipt_path) }}" target="_blank"
+                <a href="{{ route('admin.memberships.receipt', $payment->id) }}" target="_blank"
                    style="color:var(--theme-accent);font-size:.78rem;text-decoration:none;">
                     <i class="fas fa-file-alt"></i> Ver
                 </a>

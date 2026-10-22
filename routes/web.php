@@ -244,6 +244,7 @@ Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->grou
     Route::get('membresias',                [AdminMembershipController::class, 'index'])->name('memberships.index');
     Route::post('membresias/{id}/aprobar',  [AdminMembershipController::class, 'approve'])->name('memberships.approve');
     Route::post('membresias/{id}/rechazar', [AdminMembershipController::class, 'reject'])->name('memberships.reject');
+    Route::get('membresias/{id}/comprobante', [AdminMembershipController::class, 'serveReceipt'])->name('memberships.receipt');
     Route::post('membresias/registrar',     [AdminMembershipController::class, 'store'])->name('memberships.store');
 
     Route::get('planes',                       [AdminMembershipController::class, 'planes'])->name('memberships.planes');

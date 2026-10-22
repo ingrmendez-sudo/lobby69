@@ -188,6 +188,31 @@ class AdminMembershipController extends Controller
     // ──────────────────────────────────────────────────────────────────────
     // Vista de gestión de planes y precios
     // ──────────────────────────────────────────────────────────────────────
+    /**
+     * Sirve el comprobante desde el disco privado.
+     */
+    public function serveReceipt($id)
+    {
+        $payment = \Illuminate\Support\Facades\DB::table('membership_payments')
+            ->where('id', $id)->first();
+
+        abort_if(! $payment, 404);
+        abort_if(! $payment->receipt_path, 404, 'Este pago no tiene comprobante.');
+
+        $disk = \Illuminate\Support\Facades\Storage::disk('private');
+
+        if (! $disk->exists($payment->receipt_path)) {
+            abort(404, 'El comprobante no se encuentra en el disco.');
+        }
+
+        $fullPath = $disk->path($payment->receipt_path);
+
+        return response()->file($fullPath, [
+            'Content-Type'        => mime_content_type($fullPath),
+            'Content-Disposition' => 'inline; filename="' . basename($payment->receipt_path) . '"',
+            'Cache-Control'       => 'no-store, private',
+        ]);
+    }
     public function planes(): \Illuminate\View\View
     {
         $plans = \App\Models\MembershipPlan::orderBy('sort_order')->get();
