@@ -16,15 +16,15 @@ class AuthService
             $user = User::where('email', $email)->first();
 
             if (!$user) {
-                return ['success' => false, 'message' => 'Credenciales inv├ílidas.'];
+                return ['success' => false, 'message' => 'Credenciales inválidas.'];
             }
 
             if (!$user->active) {
-                return ['success' => false, 'message' => 'Tu cuenta est├í desactivada.'];
+                return ['success' => false, 'message' => 'Tu cuenta está desactivada.'];
             }
 
             if (!Hash::check($password, $user->password)) {
-                return ['success' => false, 'message' => 'Credenciales inv├ílidas.'];
+                return ['success' => false, 'message' => 'Credenciales inválidas.'];
             }
 
             Auth::login($user, $remember);
