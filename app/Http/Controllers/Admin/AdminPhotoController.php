@@ -103,8 +103,6 @@ class AdminPhotoController extends Controller
 
     public function serve($id)
     {
-        abort_if(!Gate::allows('admin'), 403);
-
         $photo = DB::table('photos')->where('id', $id)->first();
         abort_if(!$photo, 404);
 
