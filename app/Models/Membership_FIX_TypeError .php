@@ -1,0 +1,148 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
+
+class Membership extends Model
+{
+    protected $table      = 'memberships';
+    protected $keyType    = 'string';
+    public    $incrementing = false;
+
+    protected $fillable = [
+        'id', 'user_id', 'tier', 'price', 'currency',
+        'payment_method', 'transaction_id',
+        'started_at', 'expires_at',
+        'auto_renew', 'status', 'features',
+    ];
+
+    protected $casts = [
+        'id'         => 'string',
+        'user_id'    => 'string',
+        'price'      => 'decimal:2',
+        'auto_renew' => 'boolean',
+        'started_at' => 'datetime',
+        'expires_at' => 'datetime',
+    ];
+
+    protected static function boot(): void
+    {
+        parent::boot();
+        static::creating(function ($m) {
+            if (empty($m->id)) {
+                $m->id = (string) Str::uuid();
+            }
+        });
+    }
+
+    // ── Relaciones ───────────────────────────────────────────────────────
+    public function user()
+    {
+        return $this->belongsTo(User::class, 'user_id', 'id');
+    }
+
+    // ── Helpers de estado ────────────────────────────────────────────────
+    public function isActive(): bool
+    {
+        if ($this->status !== 'active') return false;
+        if (is_null($this->expires_at))  return true;
+        return $this->expires_at->isFuture();
+    }
+
+    public function isExpired(): bool
+    {
+        if (is_null($this->expires_at)) return false;
+        return $this->expires_at->isPast();
+    }
+
+    // ── Activación centralizada ──────────────────────────────────────────
+    /**
+     * Crear o reemplazar la membresía activa de un usuario.
+     *
+     * CORREGIDO (v2):
+     *   · `memberships.user_id` es UNIQUE, así que un INSERT de segunda fila
+     *     viola la restricción. Se usa UPSERT sobre (user_id).
+     *   · Todo va en una transacción: si algo falla, el usuario conserva
+     *     su membresía anterior en lugar de quedar sin nada.
+     *   · Se invalida la clave de caché correcta (la que lee MembershipService).
+     *
+     * @param  string   $userId        UUID del usuario
+     * @param  string   $tier          Slug del plan (debe existir en el CHECK de la tabla)
+     * @param  int|null $durationDays  null = vitalicio
+     * @param  float    $price
+     * @param  string   $paymentMethod
+     * @param  string   $transactionId
+     * @return self
+     */
+    public static function activateForUser(
+        string $userId,
+        string $tier,
+        ?int   $durationDays,
+        float  $price         = 0,
+        string $paymentMethod = 'manual',
+        string $transactionId = ''
+    ): self {
+        $userId = trim($userId);
+
+        if (! preg_match('/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i', $userId)) {
+            throw new \InvalidArgumentException("user_id no es un UUID válido: {$userId}");
+        }
+
+        $expiresAt = $durationDays ? now()->addDays($durationDays) : null;
+
+        DB::transaction(function () use ($userId, $tier, $expiresAt, $price, $paymentMethod, $transactionId) {
+
+            $newId = (string) Str::uuid();
+
+            // UPSERT sobre user_id: la fila existente se reescribe, no se duplica.
+            DB::statement("
+                INSERT INTO memberships
+                    (id, user_id, tier, price, currency, payment_method, transaction_id,
+                     started_at, expires_at, auto_renew, status, created_at, updated_at)
+                VALUES
+                    (?::uuid, ?::uuid, ?, ?, 'MXN', ?, ?, NOW(), ?, false, 'active', NOW(), NOW())
+                ON CONFLICT (user_id) DO UPDATE SET
+                    tier           = EXCLUDED.tier,
+                    price          = EXCLUDED.price,
+                    payment_method = EXCLUDED.payment_method,
+                    transaction_id = EXCLUDED.transaction_id,
+                    started_at     = EXCLUDED.started_at,
+                    expires_at     = EXCLUDED.expires_at,
+                    auto_renew     = EXCLUDED.auto_renew,
+                    status         = 'active',
+                    updated_at     = NOW()
+            ", [
+                $newId,
+                $userId,
+                $tier,
+                $price,
+                $paymentMethod,
+                $transactionId ?: null,
+                $expiresAt?->toDateTimeString(),
+            ]);
+
+            // Columna de conveniencia en users (fallback de MembershipService::getPlan)
+            DB::statement("
+                UPDATE users
+                SET membership_type        = ?,
+                    membership_expires_at  = ?,
+                    membership_started_at  = NOW(),
+                    updated_at             = NOW()
+                WHERE id = ?::uuid
+            ", [
+                $tier,
+                $expiresAt?->toDateTimeString(),
+                $userId,
+            ]);
+        });
+
+        // Fuera de la transacción: invalidar la clave que realmente se lee.
+        \App\Services\MembershipService::clearCache($userId);
+
+        return static::where('user_id', $userId)->firstOrFail();
+    }
+}

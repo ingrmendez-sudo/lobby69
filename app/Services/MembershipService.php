@@ -8,12 +8,38 @@ use Illuminate\Support\Facades\Cache;
 class MembershipService
 {
     /**
+     * Niveles jerárquicos — alineados EXACTAMENTE al CHECK de la tabla:
+     *   memberships_tier_check → invitado, explorer, connectors, influencer,
+     *                            vip_elite, vitalicio
+     *
+     * CORREGIDO: se eliminaron 'trial' y 'fundador' (no existen en el CHECK y
+     * un INSERT con ellos falla) y se agregó 'vitalicio' (sí existe, pero antes
+     * se evaluaba como nivel 0, igual que invitado).
+     *
+     * El nombre comercial "Fundador" corresponde al slug 'vitalicio'.
+     */
+    public const LEVELS = [
+        'invitado'   => 0,
+        'explorer'   => 1,
+        'connectors' => 2,
+        'influencer' => 3,
+        'vip_elite'  => 4,
+        'vitalicio'  => 5,
+    ];
+
+    /** Clave de caché única. Es la que lee getPlan() y la que invalida activateForUser(). */
+    public static function cacheKey($userId): string
+    {
+        return "membership_plan_{$userId}";
+    }
+
+    /**
      * Obtener el plan activo del usuario con sus features.
      * Cache de 5 minutos por usuario.
      */
     public static function getPlan($userId): object
     {
-        return Cache::remember("membership_plan_{$userId}", 300, function () use ($userId) {
+        return Cache::remember(self::cacheKey($userId), 300, function () use ($userId) {
 
             // Prioridad 1: tabla memberships (suscripción activa)
             $membership = DB::table('memberships')
@@ -27,13 +53,12 @@ class MembershipService
             $userMembership = DB::table('users')->where('id', $userId)->value('membership_type');
 
             // Usar el tier más alto entre memberships y users
-            $levels = ['invitado'=>0,'trial'=>0,'explorer'=>1,'connectors'=>2,'influencer'=>3,'vip_elite'=>4,'fundador'=>5];
-            $tierA  = $membership->tier ?? 'invitado';
-            $tierB  = $userMembership ?? 'invitado';
-            $slug   = ($levels[$tierA] ?? 0) >= ($levels[$tierB] ?? 0) ? $tierA : $tierB;
+            $tierA = $membership->tier ?? 'invitado';
+            $tierB = $userMembership ?? 'invitado';
+            $slug  = (self::LEVELS[$tierA] ?? 0) >= (self::LEVELS[$tierB] ?? 0) ? $tierA : $tierB;
 
             $plan = DB::table('membership_plans')->where('slug', $slug)->first();
-            if (!$plan) {
+            if (! $plan) {
                 $plan = DB::table('membership_plans')->where('slug', 'invitado')->first();
                 $slug = 'invitado';
             }
@@ -80,7 +105,6 @@ class MembershipService
         $limit = self::limit($userId, $limitKey);
         if ($limit >= 999) return false; // ilimitado
 
-        // Contar mensajes enviados hoy por este usuario
         $count = DB::table('messages')
             ->where('sender_id', $userId)
             ->whereDate('created_at', today())
@@ -91,19 +115,23 @@ class MembershipService
 
     /**
      * Obtener el slug/tier del plan activo.
+     *
+     * CORREGIDO: antes leía ->active_slug, propiedad que getPlan() nunca
+     * devolvía, así que retornaba 'invitado' SIEMPRE. Eso hacía que
+     * hasMinLevel() negativa el acceso a todos, incluidos los VIP.
      */
     public static function getSlug($userId): string
     {
-        return self::getPlan($userId)->active_slug ?? 'invitado';
+        return self::getPlan($userId)->slug ?? 'invitado';
     }
 
     /**
-     * Verificar si el usuario está en período de gracia (día 1, primera hora).
+     * Verificar si el usuario está en período de gracia.
      */
     public static function inGracePeriod($userId): bool
     {
         $user = DB::table('users')->where('id', $userId)->first();
-        if (!$user) return false;
+        if (! $user) return false;
 
         $gracePeriod = self::limit($userId, 'grace_period_hours');
         if ($gracePeriod <= 0) return false;
@@ -118,18 +146,22 @@ class MembershipService
      */
     public static function clearCache($userId): void
     {
-        Cache::forget("membership_plan_{$userId}");
+        Cache::forget(self::cacheKey($userId));
     }
 
     /**
      * Resumen completo del plan para vistas/API.
+     *
+     * CORREGIDO: leía $plan->name y $plan->active_slug, que no existen en el
+     * objeto devuelto por getPlan(). Ahora usa el objeto anidado.
      */
     public static function summary($userId): array
     {
         $plan = self::getPlan($userId);
+
         return [
-            'plan'                    => $plan->active_slug,
-            'plan_name'               => $plan->name,
+            'plan'                    => $plan->slug,
+            'plan_name'               => $plan->plan->name ?? null,
             'max_photos'              => $plan->features['max_photos']              ?? 0,
             'max_videos'              => $plan->features['max_videos']              ?? 0,
             'max_messages_day'        => $plan->features['max_messages_day']        ?? 0,
@@ -148,17 +180,9 @@ class MembershipService
      */
     public static function hasMinLevel($userId, string $minTier): bool
     {
-        $levels = [
-            'invitado'   => 0,
-            'explorer'   => 1,
-            'connectors' => 2,
-            'influencer' => 3,
-            'vip_elite'  => 4,
-            'fundador'   => 5,
-        ];
         $userSlug  = self::getSlug($userId);
-        $userLevel = $levels[$userSlug]  ?? 0;
-        $minLevel  = $levels[$minTier]   ?? 0;
+        $userLevel = self::LEVELS[$userSlug] ?? 0;
+        $minLevel  = self::LEVELS[$minTier]  ?? 0;
         return $userLevel >= $minLevel;
     }
 }
