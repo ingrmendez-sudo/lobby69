@@ -16,6 +16,10 @@ class AdminMembershipController extends Controller
     {
         $status = $request->get('status', 'pending');
 
+        // La pestana «Pendientes» agrupa 'pending' y 'under_review': una orden con
+        // comprobante ya subido sigue requiriendo que el admin la revise.
+        $statusFilter = $status === 'pending' ? ['pending', 'under_review'] : [$status];
+
         $payments = DB::table('membership_payments')
             ->join(
                 DB::raw('(SELECT id::text as uid, username, email, membership_type FROM users) as u'),
@@ -25,7 +29,7 @@ class AdminMembershipController extends Controller
                 DB::raw('(SELECT user_id::text as pid, nickname, display_name FROM profiles) as p'),
                 DB::raw('membership_payments.user_id::text'), '=', 'p.pid'
             )
-            ->where('membership_payments.status', $status)
+            ->whereIn('membership_payments.status', $statusFilter)
             ->select(
                 'membership_payments.*',
                 'u.username',
@@ -49,7 +53,7 @@ class AdminMembershipController extends Controller
             ->selectRaw("
                 count(*) as total,
                 coalesce(sum(case when status = 'approved' then amount else 0 end), 0) as total_aprobado,
-                coalesce(sum(case when status = 'pending'  then amount else 0 end), 0) as total_pendiente
+                coalesce(sum(case when status in ('pending','under_review') then amount else 0 end), 0) as total_pendiente
             ")
             ->first();
 
@@ -257,6 +261,13 @@ class AdminMembershipController extends Controller
     // ──────────────────────────────────────────────────────────────────────
     public function updatePlan(Request $request, string $slug): \Illuminate\Http\RedirectResponse
     {
+        // El boton de promocion envia el mismo formulario: se resuelve aqui,
+        // antes de validar, porque ese boton no incluye los precios.
+        if ($request->input('action') === 'toggle_promo') {
+            $plan = \App\Models\MembershipPlan::where('slug', $slug)->firstOrFail();
+            $plan->update(['promo_active' => \DB::raw($plan->promo_active ? 'false' : 'true')]);
+            return back()->with('success', 'Promocion actualizada.');
+        }
         $request->validate([
             'price_promo'   => ['required', 'numeric', 'min:0'],
             'price_normal'  => ['required', 'numeric', 'min:0'],
@@ -283,6 +294,9 @@ class AdminMembershipController extends Controller
             'features'      => json_encode($features),
             'updated_at'    => now(),
         ]);
+
+        \Illuminate\Support\Facades\Cache::forget('plans.active');
+        \Illuminate\Support\Facades\Cache::forget("plan.{$slug}");
 
         // Invalidar cache de usuarios con este plan
         $userIds = \DB::table('memberships')->where('tier', $slug)->where('status','active')->pluck('user_id');
