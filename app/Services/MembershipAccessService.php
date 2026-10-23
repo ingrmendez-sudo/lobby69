@@ -22,7 +22,7 @@ class MembershipAccessService
         'connectors' => 2,
         'influencer' => 3,
         'vip_elite'  => 4,
-        'Fundador'  => 5,
+        'vitalicio' => 5,
     ];
 
     // Mapa: feature antigua -> key en features JSON de membership_plans
@@ -110,7 +110,7 @@ class MembershipAccessService
             if ($hasAccess) return $plan->slug;
         }
 
-        return 'Fundador';
+        return 'vitalicio';
     }
 
     /** ¿Es un nivel mayor o igual al requerido? */
@@ -136,7 +136,7 @@ class MembershipAccessService
             'error'         => 'membership_required',
             'message'       => 'Tu membresía actual no permite acceder a esta función.',
             'required_tier' => $required,
-            'upgrade_url'   => '/membresias',
+            'upgrade_url'   => route('membership.index'),
         ], 403);
     }
 

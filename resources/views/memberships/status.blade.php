@@ -15,7 +15,8 @@ $tierImages = [
     'connectors' => '/img/membership/connectors.png',
     'influencer' => '/img/membership/influencer.png',
     'vip_elite'  => '/img/membership/vip-elite.png',
-    'Fundador'  => '/img/membership/Fundador.png',
+    'vitalicio'  => '/img/membership/Fundador.png',
+    'Fundador'   => '/img/membership/Fundador.png',
 ];
 
 // Mapa de colores por tier
@@ -25,7 +26,8 @@ $tierColors = [
     'connectors' => '#8b5cf6',
     'influencer' => '#ec4899',
     'vip_elite'  => '#f59e0b',
-    'Fundador'  => '#ef4444',
+    'vitalicio'  => '#ef4444',
+    'Fundador'   => '#ef4444',
 ];
 
 // Membresía activa actual del usuario
@@ -283,6 +285,15 @@ $currentImage    = $tierImages[$currentTier] ?? null;
             <div style="font-size:.7rem;color:var(--theme-muted);margin-top:.3rem;">
                 {{ \Carbon\Carbon::parse($payment->created_at)->format('d/m/Y H:i') }}
             </div>
+            @if($payment->isPending() && $payment->public_code)
+            <div style="margin-top:.5rem;">
+                <a href="{{ route('membership.pay', ['code' => $payment->public_code]) }}"
+                   style="display:inline-block;padding:.35rem .8rem;background:var(--theme-accent);color:#fff;
+                          border-radius:8px;text-decoration:none;font-size:.74rem;font-weight:700;">
+                    <i class="fas fa-university"></i> Ver datos para transferir
+                </a>
+            </div>
+            @endif
         </div>
 
     </div>

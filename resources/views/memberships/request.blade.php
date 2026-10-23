@@ -13,7 +13,7 @@
     <a href="{{ route('membership.index') }}" style="color:var(--theme-accent);text-decoration:none;">
         <i class="fas fa-crown"></i> Membresías
     </a>
-    <span style="margin:0 .4rem;">›</span>
+    <span style="margin:0 .4rem;">&rsaquo;</span>
     <span>Solicitar {{ $plan->name }}</span>
 </div>
 
@@ -30,16 +30,22 @@
             </div>
             <div style="text-align:right;">
                 <div style="font-size:1.4rem;font-weight:800;color:var(--theme-accent);">
-                    ${{ number_format($plan->active_price, 0) }} MXN
+                    ${{ number_format($plan->active_price, 2) }} MXN
                 </div>
+                {{-- Antes: ternario sobre el slug 'Fundador', que ya no existe, así
+                     que todo plan salía como "por mes" (incluido el vitalicio). --}}
                 <div style="font-size:.72rem;color:var(--theme-muted);">
-                    {{ $plan->slug === 'Fundador' ? 'único pago' : 'por mes' }}
+                    {{ $plan->duration_label }}
                 </div>
             </div>
         </div>
         <div style="font-size:.75rem;color:var(--theme-muted);padding-top:.75rem;border-top:1px solid rgba(180,60,120,.12);">
             <i class="fas fa-info-circle" style="color:var(--theme-accent);"></i>
-            Tu membresía se activa en menos de 24 horas tras confirmar tu pago.
+            @if($plan->active_price <= 0)
+                Este plan es gratuito: no necesitas subir ningún comprobante.
+            @else
+                Tu membresía se activa en menos de 24 horas tras confirmar tu pago.
+            @endif
         </div>
     </div>
 
@@ -69,7 +75,7 @@
                 <label style="display:block;font-size:.8rem;color:var(--theme-muted);margin-bottom:.4rem;font-weight:600;">
                     Método de pago <span style="color:#ef4444;">*</span>
                 </label>
-                <select name="payment_method" required
+                <select name="payment_method" id="metodo-pago" required
                         style="width:100%;padding:.55rem .85rem;border-radius:8px;border:1px solid var(--theme-border);background:var(--theme-bg);color:var(--theme-text);font-size:.88rem;">
                     <option value="">— Selecciona cómo pagaste —</option>
                     <option value="transferencia" {{ old('payment_method') === 'transferencia' ? 'selected' : '' }}>Transferencia bancaria / SPEI</option>
@@ -82,6 +88,17 @@
                 </select>
             </div>
 
+            {{-- Aviso SPEI: aquí no se pide comprobante todavía --}}
+            <div id="spei-hint"
+                 style="display:none;background:rgba(59,130,246,.1);border:1px solid rgba(59,130,246,.35);
+                        border-radius:8px;padding:.75rem .9rem;margin-bottom:1rem;font-size:.79rem;color:var(--theme-text);line-height:1.6;">
+                <i class="fas fa-university" style="color:#3b82f6;"></i>
+                <strong>Transferencia SPEI:</strong> al enviar te mostraremos la CLABE, el
+                <strong>monto exacto</strong> (con centavos que identifican tu pago) y la referencia.
+                No necesitas adjuntar nada ahora: el comprobante lo subes después de transferir.
+            </div>
+
+            <div id="campos-comprobante">
             {{-- Referencia --}}
             <div style="margin-bottom:1rem;">
                 <label style="display:block;font-size:.8rem;color:var(--theme-muted);margin-bottom:.4rem;font-weight:600;">
@@ -114,6 +131,7 @@
                        style="display:none;"
                        onchange="document.getElementById('receipt-label').textContent = this.files[0]?.name || 'Haz clic para subir'">
             </div>
+            </div>{{-- /#campos-comprobante --}}
 
             {{-- Botones --}}
             <div style="display:flex;gap:.75rem;">
@@ -132,3 +150,21 @@
 
 @endsection
 
+@push('scripts')
+<script>
+(function () {
+    var sel    = document.getElementById('metodo-pago');
+    var aviso  = document.getElementById('spei-hint');
+    var campos = document.getElementById('campos-comprobante');
+    if (!sel) return;
+
+    function sync() {
+        var esSpei = sel.value === 'transferencia';
+        if (aviso)  aviso.style.display  = esSpei ? 'block' : 'none';
+        if (campos) campos.style.display = esSpei ? 'none'  : 'block';
+    }
+    sel.addEventListener('change', sync);
+    sync();
+})();
+</script>
+@endpush

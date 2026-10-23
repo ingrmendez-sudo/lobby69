@@ -176,6 +176,9 @@ Route::middleware(['auth', 'profile.completed', 'force.password.change'])->group
         Route::get('/',           [\App\Http\Controllers\MembershipController::class, 'index'])->name('index');
         Route::get('/solicitar',  [\App\Http\Controllers\MembershipController::class, 'request'])->name('request');
         Route::post('/solicitar', [\App\Http\Controllers\MembershipController::class, 'submit'])->name('submit');
+        Route::get('/pago',            [\App\Http\Controllers\MembershipController::class, 'payCurrent'])->name('pay.current');
+        Route::get('/pago/{code}',     [\App\Http\Controllers\MembershipController::class, 'pay'])->name('pay');
+        Route::post('/pago/{code}/comprobante', [\App\Http\Controllers\MembershipController::class, 'attachProof'])->name('proof');
         Route::get('/estado',     [\App\Http\Controllers\MembershipController::class, 'status'])->name('status');
     });
 

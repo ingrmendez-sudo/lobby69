@@ -38,9 +38,11 @@ class AdminMembershipController extends Controller
             ->paginate(20);
 
         $counts = [
-            'pending'  => DB::table('membership_payments')->where('status', 'pending')->count(),
-            'approved' => DB::table('membership_payments')->where('status', 'approved')->count(),
-            'rejected' => DB::table('membership_payments')->where('status', 'rejected')->count(),
+            'pending'      => DB::table('membership_payments')->where('status', 'pending')->count(),
+            'under_review' => DB::table('membership_payments')->where('status', 'under_review')->count(),
+            'approved'     => DB::table('membership_payments')->where('status', 'approved')->count(),
+            'rejected'     => DB::table('membership_payments')->where('status', 'rejected')->count(),
+            'expired'      => DB::table('membership_payments')->where('status', 'expired')->count(),
         ];
 
         $stats = DB::table('membership_payments')
@@ -67,15 +69,30 @@ class AdminMembershipController extends Controller
     {
         $payment = \App\Models\MembershipPayment::findOrFail($id);
 
-        if ($payment->status !== 'pending') {
+        if (! in_array($payment->status, ['pending', 'under_review'], true)) {
             return back()->with('error', 'Este pago ya fue procesado.');
+        }
+
+        // membership_payments_approved_check exige, para poder aprobar,
+        // reviewed_at Y una referencia bancaria verificable. Si no se cumple,
+        // el UPDATE truena con un error de CHECK de PostgreSQL.
+        $bankKey = trim((string) ($request->input('bank_tracking_key')
+            ?: $payment->bank_tracking_key
+            ?: $payment->payment_reference
+            ?: $payment->public_code));
+
+        if ($bankKey === '') {
+            return back()->with('error', 'Registra la clave de rastreo o la referencia bancaria antes de aprobar.');
         }
 
         // 1. Marcar el pago como aprobado
         $payment->update([
-            'status'      => 'approved',
-            'reviewed_by' => auth()->user()->username ?? auth()->id(),
-            'reviewed_at' => now(),
+            'status'            => 'approved',
+            'reviewed_by'       => auth()->user()->username ?? (string) auth()->id(),
+            'reviewed_at'       => now(),
+            'bank_tracking_key' => $bankKey,
+            'payer_name'        => $request->input('payer_name') ?: $payment->payer_name,
+            'payer_bank'        => $request->input('payer_bank') ?: $payment->payer_bank,
         ]);
 
         // 2. Resolver datos necesarios
@@ -84,7 +101,10 @@ class AdminMembershipController extends Controller
 
         if ($plan) {
             // Calcular duración en días según el plan
-            $durationDays = ($plan->slug === 'Fundador') ? null : ($plan->duration_days ?? 30);
+            // 'Fundador' es un slug que ya no existe: el plan vitalicio es
+            // 'vitalicio'. Comparar contra 'Fundador' daba 30 dias a una
+            // membresia vitalicia en lugar de dejarla sin vencimiento.
+            $durationDays = $plan->is_lifetime ? null : ($plan->duration_days ?? 30);
 
             // Llamar correctamente: (string userId, string tier, ?int days, float price)
             \App\Models\Membership::activateForUser(
@@ -97,7 +117,7 @@ class AdminMembershipController extends Controller
             );
         } else {
             // Fallback: plan no encontrado en membership_plans
-            $expiry = ($payment->requested_membership === 'Fundador')
+            $expiry = ($payment->requested_membership === 'vitalicio')
                 ? null
                 : now()->addDays(30);
 
@@ -107,6 +127,13 @@ class AdminMembershipController extends Controller
                 'membership_started_at' => now(),
             ]);
         }
+
+        \App\Models\PaymentEvent::log((int) $payment->id, 'approved', 'admin', (string) auth()->id(), [
+            'tier'     => $plan->slug ?? $payment->requested_membership,
+            'days'     => $durationDays ?? null,
+            'bank_key' => $bankKey,
+            'amount'   => (float) $payment->amount,
+        ]);
 
         return redirect()
             ->route('admin.memberships.index', ['status' => 'pending'])
@@ -129,6 +156,10 @@ class AdminMembershipController extends Controller
             'reviewed_by' => (string) auth()->id(),
             'reviewed_at' => now(),
             'updated_at'  => now(),
+        ]);
+
+        \App\Models\PaymentEvent::log((int) $id, 'rejected', 'admin', (string) auth()->id(), [
+            'reason' => $request->reason ?? 'Rechazado por administrador.',
         ]);
 
         return back()->with('success', 'Pago rechazado.');
@@ -166,7 +197,9 @@ class AdminMembershipController extends Controller
         // Subir comprobante si se adjuntó
         $receiptPath = null;
         if ($request->hasFile('receipt')) {
-            $receiptPath = $request->file('receipt')->store('receipts', 'public');
+            // El disco 'private' es el que lee serveReceipt(); en 'public'
+            // el archivo se guardaba donde nadie lo buscaba y daba 404.
+            $receiptPath = $request->file('receipt')->store('receipts', 'private');
         }
 
         \App\Models\MembershipPayment::create([
@@ -224,13 +257,6 @@ class AdminMembershipController extends Controller
     // ──────────────────────────────────────────────────────────────────────
     public function updatePlan(Request $request, string $slug): \Illuminate\Http\RedirectResponse
     {
-        // El boton de promocion envia el mismo formulario: se resuelve aqui,
-        // antes de validar, porque ese boton no incluye los precios.
-        if ($request->input('action') === 'toggle_promo') {
-            $plan = \App\Models\MembershipPlan::where('slug', $slug)->firstOrFail();
-            $plan->update(['promo_active' => \DB::raw($plan->promo_active ? 'false' : 'true')]);
-            return back()->with('success', 'Promocion actualizada.');
-        }
         $request->validate([
             'price_promo'   => ['required', 'numeric', 'min:0'],
             'price_normal'  => ['required', 'numeric', 'min:0'],
@@ -257,9 +283,6 @@ class AdminMembershipController extends Controller
             'features'      => json_encode($features),
             'updated_at'    => now(),
         ]);
-
-        \Illuminate\Support\Facades\Cache::forget('plans.active');
-        \Illuminate\Support\Facades\Cache::forget("plan.{$slug}");
 
         // Invalidar cache de usuarios con este plan
         $userIds = \DB::table('memberships')->where('tier', $slug)->where('status','active')->pluck('user_id');
