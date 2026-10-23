@@ -224,6 +224,13 @@ class AdminMembershipController extends Controller
     // ──────────────────────────────────────────────────────────────────────
     public function updatePlan(Request $request, string $slug): \Illuminate\Http\RedirectResponse
     {
+        // El boton de promocion envia el mismo formulario: se resuelve aqui,
+        // antes de validar, porque ese boton no incluye los precios.
+        if ($request->input('action') === 'toggle_promo') {
+            $plan = \App\Models\MembershipPlan::where('slug', $slug)->firstOrFail();
+            $plan->update(['promo_active' => \DB::raw($plan->promo_active ? 'false' : 'true')]);
+            return back()->with('success', 'Promocion actualizada.');
+        }
         $request->validate([
             'price_promo'   => ['required', 'numeric', 'min:0'],
             'price_normal'  => ['required', 'numeric', 'min:0'],
@@ -250,6 +257,9 @@ class AdminMembershipController extends Controller
             'features'      => json_encode($features),
             'updated_at'    => now(),
         ]);
+
+        \Illuminate\Support\Facades\Cache::forget('plans.active');
+        \Illuminate\Support\Facades\Cache::forget("plan.{$slug}");
 
         // Invalidar cache de usuarios con este plan
         $userIds = \DB::table('memberships')->where('tier', $slug)->where('status','active')->pluck('user_id');
