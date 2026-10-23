@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\MembershipPlan;
 use App\Models\MembershipPayment;
+use App\Mail\AvisoComprobanteSubido;
 use App\Mail\InstruccionesPagoSpei;
 use App\Models\PaymentEvent;
 use App\Services\MembershipAccessService;
@@ -296,6 +297,8 @@ class MembershipController extends Controller
         ]);
         PaymentEvent::log((int) $payment->id, 'review_started', 'system', null, []);
 
+        $this->avisarAdmin($payment, $user, $cambios);
+
         return redirect()->route('membership.status')
                          ->with('success', '¡Listo! Recibimos tu comprobante y lo revisaremos en menos de 24 horas.');
     }
@@ -323,6 +326,47 @@ class MembershipController extends Controller
             'user'     => $user,
             'payments' => $payments,
         ]);
+    }
+
+    /**
+     * Avisa al administrador que hay un comprobante por revisar.
+     *
+     * Igual que el correo al socio, nunca interrumpe el flujo: si falla queda
+     * un aviso en el log y el comprobante ya quedó registrado en la orden.
+     *
+     * @param array<string,mixed> $cambios
+     */
+    private function avisarAdmin(MembershipPayment $payment, $user, array $cambios): void
+    {
+        $destino = trim((string) (config('spei.admin_email') ?: config('mail.from.address')));
+
+        if ($destino === '') {
+            Log::warning('Aviso de comprobante sin destinatario configurado', [
+                'payment_id' => $payment->id,
+            ]);
+            return;
+        }
+
+        try {
+            Mail::to($destino)->send(new AvisoComprobanteSubido($payment, [
+                'username'          => $user->username ?? $user->nickname ?? null,
+                'email'             => $payment->email ?: ($user->email ?? null),
+                'receipt_path'      => $cambios['receipt_path'] ?? $payment->receipt_path,
+                'payment_reference' => $cambios['payment_reference'] ?? $payment->payment_reference,
+                'bank_tracking_key' => $cambios['bank_tracking_key'] ?? $payment->bank_tracking_key,
+            ]));
+
+            PaymentEvent::log((int) $payment->id, 'email_sent', 'system', null, [
+                'to'       => $destino,
+                'template' => 'emails.aviso-comprobante',
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('No se pudo avisar al admin del comprobante', [
+                'payment_id' => $payment->id,
+                'to'         => $destino,
+                'error'      => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
@@ -383,3 +427,4 @@ class MembershipController extends Controller
         ]);
     }
 }
+

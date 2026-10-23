@@ -27,6 +27,13 @@ return [
     'window_hours' => (int) env('SPEI_VENTANA_HORAS', 24),
 
     /*
+     | Correo que recibe el aviso cuando un socio sube su comprobante.
+     | Si queda vacío se usa MAIL_FROM_ADDRESS. Si tampoco hay, no se envía
+     | nada y queda un aviso en el log (la acción del socio nunca se bloquea).
+     */
+    'admin_email' => env('SPEI_ADMIN_EMAIL', ''),
+
+    /*
      | Centavos discriminadores: al precio base se le suman de 1 a 99 centavos
      | derivados del id del pedido. Así dos transferencias del mismo plan dejan
      | de ser indistinguibles en el estado de cuenta y la conciliación es exacta.
