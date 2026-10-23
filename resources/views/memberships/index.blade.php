@@ -147,14 +147,28 @@
     </p>
     @endif
 
-    {{-- Features --}}
+    @php
+    // Etiquetas legibles por clave de features. Solo se muestran las claves
+    // listadas: las demas (p. ej. grace_period_hours, parametro interno) se omiten.
+    $featLabels = [
+        'max_photos'              => 'fotos en galería',
+        'max_videos'              => 'videos',
+        'max_messages_day'        => 'mensajes por día',
+        'max_direct_messages_day' => 'mensajes directos por día',
+        'can_view_private_photos' => 'Fotos privadas',
+        'can_video_call'          => 'Videollamadas',
+        'can_see_visitors'        => 'Ver visitantes',
+        'can_send_friend_request' => 'Solicitudes de amistad',
+        'profile_boost'           => 'Boost en búsqueda',
+        'priority_support'        => 'Soporte prioritario',
+    ];
+@endphp
+
+{{-- Features --}}
     @if($plan->features && is_array($plan->features))
     <ul style="list-style:none;margin:0 0 1rem;padding:0;display:flex;flex-direction:column;gap:.3rem;">
-        @foreach($plan->features as $feat)
-        <li style="font-size:.78rem;color:var(--theme-muted);display:flex;align-items:center;gap:.4rem;">
-            <i class="fas fa-check" style="color:#22c55e;font-size:.65rem;flex-shrink:0;"></i>
-            {{ $feat }}
-        </li>
+        @foreach($plan->features as $featKey => $featVal)
+        @if(isset($featLabels[$featKey]) && $featVal !== false && $featVal !== 0 && $featVal !== '0')<li style="font-size:.78rem;color:var(--theme-muted);display:flex;align-items:center;gap:.4rem;"><i class="fas fa-check" style="color:#22c55e;font-size:.65rem;flex-shrink:0;"></i>{{ is_bool($featVal) ? $featLabels[$featKey] : $featVal . ' ' . $featLabels[$featKey] }}</li>@endif
         @endforeach
     </ul>
     @endif

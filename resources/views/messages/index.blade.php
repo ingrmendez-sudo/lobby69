@@ -3277,7 +3277,7 @@ body.page-mensajes .l69-sidebar--right {
                     <div class="upgrade-plan__perk">Perfil destacado</div>
                 </div>
             </div>
-            <a href="/membresias" class="upgrade-cta">
+            <a href="/membresia" class="upgrade-cta">
                 🚀 Ver planes y precios
             </a>
             <button class="upgrade-dismiss" id="upgradeDismiss">

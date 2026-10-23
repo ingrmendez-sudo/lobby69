@@ -18,6 +18,16 @@
         </a>
     </div>
 
+    @if($errors->any())
+        <div style="background:#7f1d1d33;border:1px solid #b91c1c;color:#fca5a5;padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.85rem">
+            <strong>No se pudo guardar:</strong>
+            <ul style="margin:.4rem 0 0 1rem">
+                @foreach($errors->all() as $e)<li>{{ $e }}</li>@endforeach
+            </ul>
+        </div>
+    @endif
+
+
     @if(session('success'))
     <div style="background:#22c55e22;border:1px solid #22c55e;color:#22c55e;padding:.75rem 1rem;border-radius:8px;margin-bottom:1rem;font-size:.85rem;">
         <i class="fas fa-check-circle"></i> {{ session('success') }}
@@ -57,14 +67,14 @@
                     @endif
                 </div>
                 <div style="display:flex;gap:.5rem;align-items:center;">
-                    <form method="POST" action="{{ route('admin.memberships.plans.toggle-promo', $plan->slug) }}" style="display:inline;">
+
                         @csrf
-                        <button type="submit" style="padding:.35rem .85rem;border-radius:6px;border:1px solid {{ $plan->promo_active ? '#f59e0b' : 'var(--theme-border)' }};
+                        <button type="submit" name="action" value="toggle_promo" style="padding:.35rem .85rem;border-radius:6px;border:1px solid {{ $plan->promo_active ? '#f59e0b' : 'var(--theme-border)' }};
                                 background:{{ $plan->promo_active ? '#f59e0b22' : 'transparent' }};color:{{ $plan->promo_active ? '#f59e0b' : 'var(--theme-muted)' }};
                                 font-size:.76rem;cursor:pointer;">
                             {{ $plan->promo_active ? '🏷️ Promo ON' : 'Promo OFF' }}
                         </button>
-                    </form>
+                    
                     <button type="submit" style="padding:.35rem 1rem;border-radius:6px;background:#6C3FC5;color:#fff;border:none;font-size:.8rem;cursor:pointer;font-weight:600;">
                         Guardar cambios
                     </button>

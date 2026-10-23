@@ -267,6 +267,7 @@ Route::middleware(['auth', 'admin.only'])->prefix('admin')->name('admin.')->grou
     Route::delete('boost/{userId}',  [\App\Http\Controllers\Admin\AdminBoostController::class, 'remove'])->name('boost.remove');
 
     // invitation.success definida en rutas publicas (linea 53)
+    
 });
 
 

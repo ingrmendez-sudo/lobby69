@@ -331,6 +331,7 @@
             <li><a href="/eventos" class="l69-nav__link {{ request()->is('eventos*') ? 'is-active' : '' }}">
                 <i class="fas fa-calendar-alt"></i> Eventos
             </a></li>
+            <li><a href="{{ route('membership.index') }}" class="l69-nav__link {{ request()->is('membresia*') ? 'is-active' : '' }}"><i class="fas fa-crown"></i><span>Membresías</span></a></li>
             <li><a href="/noticias" class="l69-nav__link {{ request()->is('noticias*') ? 'is-active' : '' }}">
                 <i class="fas fa-newspaper"></i> Noticias
             </a></li>

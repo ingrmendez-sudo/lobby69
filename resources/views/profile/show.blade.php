@@ -2090,10 +2090,10 @@ window._vgReady = true;
                     var msg = '';
                     if (res.status === 403 && res.data.error === 'membership_required') {
                         msg = '🔒 ' + (res.data.message || 'Necesitas membresía para enviar mensajes.');
-                        showConvError(msg, res.data.upgrade_url || '/membresias', 'Ver planes');
+                        showConvError(msg, res.data.upgrade_url || '/membresia', 'Ver planes');
                     } else if (res.status === 429 && res.data.error === 'daily_limit_reached') {
                         msg = '⏳ ' + (res.data.message || 'Límite diario alcanzado.');
-                        showConvError(msg, res.data.upgrade_url || '/membresias', 'Mejorar plan');
+                        showConvError(msg, res.data.upgrade_url || '/membresia', 'Mejorar plan');
                     } else {
                         /* Error desconocido: fallback a página completa */
                         window.location.href = CONV_URL.replace(':id', recv);

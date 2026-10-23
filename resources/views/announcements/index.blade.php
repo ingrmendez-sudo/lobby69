@@ -210,7 +210,7 @@
         <div class="an-upgrade-notice">
             <i class="fas fa-lock" style="color:#d4af37;"></i>
             <span style="font-size:.875rem;color:var(--theme-muted);">Solo miembros con membresía de pago pueden publicar.</span>
-            <a href="/membresias" style="color:#d4af37;font-weight:700;font-size:.825rem;text-decoration:none;">Ver planes →</a>
+            <a href="/membresia" style="color:#d4af37;font-weight:700;font-size:.825rem;text-decoration:none;">Ver planes →</a>
         </div>
     @endif
 
