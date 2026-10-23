@@ -39,7 +39,7 @@
 
 {{-- Tabs de estado --}}
 <div style="display:flex;gap:.5rem;margin-bottom:1.25rem;flex-wrap:wrap;">
-    @foreach(['pending' => ['Pendientes','#f59e0b'], 'approved' => ['Aprobados','#22c55e'], 'rejected' => ['Rechazados','#ef4444']] as $key => [$label, $color])
+    @foreach(['pending' => ['Pendientes','#f59e0b'], 'under_review' => ['En revisión','#3b82f6'], 'approved' => ['Aprobados','#22c55e'], 'rejected' => ['Rechazados','#ef4444'], 'expired' => ['Vencidos','#6b7280']] as $key => [$label, $color])
     <a href="{{ route('admin.memberships.index', ['status' => $key]) }}"
        style="padding:.4rem 1rem;border-radius:20px;font-size:.82rem;text-decoration:none;font-weight:600;
               background:{{ $status === $key ? $color.'33' : 'var(--theme-card)' }};
@@ -63,7 +63,7 @@
 @if($payments->isEmpty())
 <div class="adm-card" style="padding:3rem;text-align:center;color:var(--theme-muted);">
     <i class="fas fa-credit-card" style="font-size:3rem;opacity:.2;display:block;margin-bottom:1rem;"></i>
-    <p style="font-size:.9rem;">No hay pagos con estado <strong>{{ $status }}</strong>.</p>
+    <p style="font-size:.9rem;">No hay pagos en <strong>{{ ['pending'=>'Pendientes','under_review'=>'En revisión','approved'=>'Aprobados','rejected'=>'Rechazados','expired'=>'Vencidos'][$status] ?? $status }}</strong>.</p>
 </div>
 @else
 <div class="adm-card" style="overflow-x:auto;">
@@ -75,6 +75,8 @@
                 <th style="padding:.6rem .8rem;color:var(--theme-muted);font-weight:600;text-align:right;">Monto</th>
                 <th style="padding:.6rem .8rem;color:var(--theme-muted);font-weight:600;text-align:left;">Método</th>
                 <th style="padding:.6rem .8rem;color:var(--theme-muted);font-weight:600;text-align:left;">Referencia</th>
+                <th style="padding:.6rem .8rem;color:var(--theme-muted);font-weight:600;text-align:left;">Orden SPEI</th>
+                <th style="padding:.6rem .8rem;color:var(--theme-muted);font-weight:600;text-align:left;">Vence</th>
                 <th style="padding:.6rem .8rem;color:var(--theme-muted);font-weight:600;text-align:left;">Comprobante</th>
                 <th style="padding:.6rem .8rem;color:var(--theme-muted);font-weight:600;text-align:left;">Fecha</th>
                 @if($status === 'pending')
@@ -126,6 +128,45 @@
                 {{ $payment->payment_reference ?? '—' }}
             </td>
 
+            {{-- Orden SPEI: referencia publica que el socio cita al transferir.
+                 $payment es un stdClass (viene de DB::table), asi que solo se leen
+                 atributos planos y expires_at se parsea con Carbon. --}}
+            <td style="padding:.6rem .8rem;font-size:.74rem;">
+                @if($payment->public_code)
+                    <div style="font-family:monospace;font-weight:700;color:var(--theme-accent);">{{ $payment->public_code }}</div>
+                @else
+                    <div style="color:var(--theme-muted);">—</div>
+                @endif
+                @if($payment->bank_tracking_key)
+                    <div style="font-family:monospace;color:var(--theme-muted);margin-top:.2rem;" title="Clave de rastreo">
+                        <i class="fas fa-hashtag"></i> {{ $payment->bank_tracking_key }}
+                    </div>
+                @elseif(in_array($payment->status, ['pending','under_review'], true))
+                    <div style="color:#f59e0b;margin-top:.2rem;font-size:.7rem;">
+                        <i class="fas fa-exclamation-triangle"></i> sin clave de rastreo
+                    </div>
+                @endif
+            </td>
+
+            {{-- Vencimiento de la ventana de pago --}}
+            <td style="padding:.6rem .8rem;font-size:.74rem;">
+                @if($payment->expires_at)
+                    @php $vence = \Carbon\Carbon::parse($payment->expires_at); @endphp
+                    <div style="color:{{ $vence->isPast() ? '#6b7280' : 'var(--theme-text)' }};">
+                        {{ $vence->format('d/m/Y H:i') }}
+                    </div>
+                    @if($payment->status === 'pending')
+                        <div style="font-size:.7rem;margin-top:.2rem;color:{{ $vence->isPast() ? '#ef4444' : '#f59e0b' }};">
+                            {{ $vence->isPast() ? 'vencida' : 'abierta' }}
+                        </div>
+                    @elseif($payment->status === 'expired')
+                        <div style="font-size:.7rem;margin-top:.2rem;color:#6b7280;">vencida</div>
+                    @endif
+                @else
+                    <span style="color:var(--theme-muted);">—</span>
+                @endif
+            </td>
+
             {{-- Comprobante --}}
             <td style="padding:.6rem .8rem;text-align:center;">
                 @if($payment->receipt_path)
@@ -147,8 +188,14 @@
             @if($status === 'pending')
             <td style="padding:.6rem .8rem;text-align:center;">
                 <div style="display:flex;gap:.35rem;justify-content:center;">
-                    <form method="POST" action="{{ route('admin.memberships.approve', $payment->id) }}">
+                    <form method="POST" action="{{ route('admin.memberships.approve', $payment->id) }}"
+                          style="display:flex;flex-direction:column;gap:.3rem;">
                         @csrf
+                        <input type="text" name="bank_tracking_key"
+                               value="{{ $payment->bank_tracking_key ?? '' }}"
+                               placeholder="Clave de rastreo"
+                               title="Clave de rastreo bancaria. Si el socio no escribió referencia, es obligatoria para poder aprobar."
+                               style="width:130px;padding:.25rem .4rem;border-radius:6px;border:1px solid var(--theme-border);background:var(--theme-bg);color:var(--theme-text);font-size:.7rem;">
                         <button type="submit"
                                 onclick="return confirm('¿Aprobar y actualizar membresía de {{ addslashes($payment->username) }}?')"
                                 style="padding:.3rem .7rem;background:#22c55e22;color:#22c55e;border:1px solid #22c55e;border-radius:6px;font-size:.75rem;cursor:pointer;font-weight:600;">
