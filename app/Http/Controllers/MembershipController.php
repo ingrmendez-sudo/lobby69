@@ -5,9 +5,12 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use App\Models\MembershipPlan;
 use App\Models\MembershipPayment;
+use App\Mail\InstruccionesPagoSpei;
 use App\Models\PaymentEvent;
 use App\Services\MembershipAccessService;
 use App\Services\SpeiService;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 
 class MembershipController extends Controller
 {
@@ -172,6 +175,8 @@ class MembershipController extends Controller
         ]);
 
         if ($isSpei) {
+            $this->enviarInstrucciones($payment, $plan, $user);
+
             return redirect()
                 ->route('membership.pay', ['code' => $payment->public_code])
                 ->with('success', 'Orden creada. Transfiere el monto exacto dentro de las próximas '
@@ -318,6 +323,43 @@ class MembershipController extends Controller
             'user'     => $user,
             'payments' => $payments,
         ]);
+    }
+
+    /**
+     * Envía al socio las instrucciones de transferencia por correo.
+     *
+     * Nunca interrumpe la creación de la orden: si el correo falla (SMTP caído,
+     * MAIL_MAILER mal configurado), el usuario igual llega a la pantalla con la
+     * CLABE y queda un aviso en el log. El envío se registra en la bitácora.
+     */
+    private function enviarInstrucciones(MembershipPayment $payment, ?MembershipPlan $plan, $user): void
+    {
+        $destino = $payment->email ?: ($user->email ?? null);
+
+        if (! $destino) {
+            Log::warning('Orden SPEI sin correo de destino', ['payment_id' => $payment->id]);
+            return;
+        }
+
+        try {
+            Mail::to($destino)->send(new InstruccionesPagoSpei(
+                $payment,
+                $this->spei->instructions($payment),
+                $plan?->name,
+                $user->username ?? null,
+            ));
+
+            PaymentEvent::log((int) $payment->id, 'email_sent', 'system', null, [
+                'to'       => $destino,
+                'template' => 'emails.instrucciones-spei',
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('No se pudieron enviar las instrucciones SPEI', [
+                'payment_id' => $payment->id,
+                'to'         => $destino,
+                'error'      => $e->getMessage(),
+            ]);
+        }
     }
 
     /**
