@@ -39,3 +39,5 @@ database/migrations/2026_09_09_011102_add_avatar_to_users_table.php
 fix_layout_global.php
 bootstrap/cache/packages.php
 bootstrap/cache/services.php
+
+prueba-correo.*
